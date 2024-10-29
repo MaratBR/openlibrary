@@ -2,24 +2,28 @@ package uiserver
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log/slog"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/koding/websocketproxy"
 )
 
-type proxy struct {
+type devProxy struct {
 	target     *url.URL
 	httpClient *http.Client
 	wsProxy    http.Handler
+	options    DevServerOptions
 }
 
 // ServeHTTP implements http.Handler.
-func (p *proxy) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (p *devProxy) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.Header.Get("Upgrade") == "websocket" {
 		p.wsProxy.ServeHTTP(w, req)
 		return
@@ -27,7 +31,7 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	p.proxy(w, req)
 }
 
-func (p *proxy) proxy(w http.ResponseWriter, req *http.Request) {
+func (p *devProxy) proxy(w http.ResponseWriter, req *http.Request) {
 	// we need to buffer the body if we want to read it here and send it
 	// in the request.
 	body, err := io.ReadAll(req.Body)
@@ -64,12 +68,76 @@ func (p *proxy) proxy(w http.ResponseWriter, req *http.Request) {
 			w.Header().Add(h, value)
 		}
 	}
-	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, resp.Body)
 
+	if resp.Header.Get("Content-Type") == "text/html" {
+		var serverData map[string]any
+		if p.options.GetServerPushedData != nil {
+			serverData = p.options.GetServerPushedData(req)
+		}
+		writeWithServerData(resp.StatusCode, w, resp.Body, serverData)
+	} else {
+		w.WriteHeader(resp.StatusCode)
+		io.Copy(w, resp.Body)
+	}
 }
 
-func newProxy(targetHost string) http.Handler {
+func injectStringAtEndOfBody(response []byte, injectedString string) ([]byte, bool) {
+	idx := bytes.LastIndex(response, []byte("</body>"))
+	if idx == -1 {
+		return response, false
+	}
+
+	injectedBytes := []byte(injectedString)
+	newResponse := make([]byte, len(response)+len(injectedBytes))
+	copy(newResponse, response[:idx])
+	copy(newResponse[idx:], injectedBytes)
+	copy(newResponse[idx+len(injectedBytes):], response[idx:])
+	return newResponse, true
+}
+
+func writeWithServerData(statusCode int, w http.ResponseWriter, r io.Reader, serverData map[string]any) error {
+	if serverData == nil {
+		w.WriteHeader(statusCode)
+		_, err := io.Copy(w, r)
+		return err
+	}
+
+	jsonString, err := json.Marshal(serverData)
+	if err != nil {
+		slog.Error("failed to marshal server data", "err", err)
+		w.WriteHeader(statusCode)
+		_, err = io.Copy(w, r)
+		return err
+	}
+
+	html, err := io.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	idx := bytes.LastIndex(html, []byte("</body>"))
+	if idx == -1 {
+		w.WriteHeader(statusCode)
+		_, err = w.Write(html)
+		if err != nil {
+			return err
+		}
+	} else {
+		contentLength, _ := strconv.ParseInt(w.Header().Get("Content-Length"), 10, 32)
+
+		injectedString := fmt.Sprintf("<script data-ts=\"%d\">window.SERVER_DATA=%s</script>", time.Now().Unix(), jsonString)
+		html, _ := injectStringAtEndOfBody(html, injectedString)
+		contentLength = int64(len(html))
+		w.Header().Add("x-is-proxy", "yes")
+		w.Header().Set("Content-Length", strconv.FormatInt(contentLength, 10))
+
+		w.WriteHeader(statusCode)
+		w.Write(html)
+	}
+
+	return nil
+}
+
+func newDevProxy(targetHost string, options DevServerOptions) http.Handler {
 	u, err := url.Parse(targetHost)
 	if err != nil {
 		panic(err)
@@ -81,15 +149,20 @@ func newProxy(targetHost string) http.Handler {
 	} else {
 		wsUrl.Scheme = "ws"
 	}
-	return &proxy{
+	return &devProxy{
 		target: u,
 		httpClient: &http.Client{
 			Timeout: time.Second * 60,
 		},
 		wsProxy: websocketproxy.NewProxy(&wsUrl),
+		options: options,
 	}
 }
 
-func NewDevServerProxy() http.Handler {
-	return newProxy("http://localhost:5173")
+type DevServerOptions struct {
+	GetServerPushedData func(*http.Request) map[string]any
+}
+
+func NewDevServerProxy(options DevServerOptions) http.Handler {
+	return newDevProxy("http://localhost:5173", options)
 }

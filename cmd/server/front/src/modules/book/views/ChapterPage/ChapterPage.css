@@ -1,0 +1,4 @@
+.chapter-content {
+    font-family: charter, serif;
+    @apply text-xl max-w-[70em] mx-auto;
+}

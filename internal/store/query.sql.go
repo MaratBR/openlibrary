@@ -31,47 +31,104 @@ func (q *Queries) FindUserByUsername(ctx context.Context, name string) (User, er
 }
 
 const getBook = `-- name: GetBook :one
-select id, name, author_user_id, created_at
+select books.id, books.name, books.author_user_id, books.created_at, books.age_rating, books.words, books.chapters, books.tags, users.name as author_name
 from books
-where id = $1
+join users on books.author_user_id = users.id
+where books.id = $1
 limit 1
 `
 
-func (q *Queries) GetBook(ctx context.Context, id int64) (Book, error) {
+type GetBookRow struct {
+	ID           int64
+	Name         string
+	AuthorUserID pgtype.UUID
+	CreatedAt    pgtype.Timestamptz
+	AgeRating    AgeRating
+	Words        int32
+	Chapters     int32
+	Tags         []string
+	AuthorName   string
+}
+
+func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
 	row := q.db.QueryRow(ctx, getBook, id)
-	var i Book
+	var i GetBookRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.AuthorUserID,
 		&i.CreatedAt,
+		&i.AgeRating,
+		&i.Words,
+		&i.Chapters,
+		&i.Tags,
+		&i.AuthorName,
+	)
+	return i, err
+}
+
+const getBookChapterWithDetails = `-- name: GetBookChapterWithDetails :one
+select book_chapters.id, book_chapters.name, book_chapters.book_id, book_chapters.content, book_chapters."order", book_chapters.created_at, book_chapters.words, book_chapters.is_adult_override, book_chapters.summary
+from book_chapters
+join books on book_chapters.book_id = books.id
+join users on users.id = books.author_user_id
+where book_chapters.id = $1 and book_chapters.book_id = $2
+`
+
+type GetBookChapterWithDetailsParams struct {
+	ID     int64
+	BookID int64
+}
+
+func (q *Queries) GetBookChapterWithDetails(ctx context.Context, arg GetBookChapterWithDetailsParams) (BookChapter, error) {
+	row := q.db.QueryRow(ctx, getBookChapterWithDetails, arg.ID, arg.BookID)
+	var i BookChapter
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.BookID,
+		&i.Content,
+		&i.Order,
+		&i.CreatedAt,
+		&i.Words,
+		&i.IsAdultOverride,
+		&i.Summary,
 	)
 	return i, err
 }
 
 const getBookChapters = `-- name: GetBookChapters :many
-select id, name, book_id, content, "order", created_at
-from book_chapters
+select c.id, c.name, c.words, c."order", c.created_at, c.summary
+from book_chapters c
 where book_id = $1
 order by "order"
 `
 
-func (q *Queries) GetBookChapters(ctx context.Context, bookID int64) ([]BookChapter, error) {
+type GetBookChaptersRow struct {
+	ID        int64
+	Name      string
+	Words     int32
+	Order     int32
+	CreatedAt pgtype.Timestamptz
+	Summary   string
+}
+
+func (q *Queries) GetBookChapters(ctx context.Context, bookID int64) ([]GetBookChaptersRow, error) {
 	rows, err := q.db.Query(ctx, getBookChapters, bookID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []BookChapter
+	var items []GetBookChaptersRow
 	for rows.Next() {
-		var i BookChapter
+		var i GetBookChaptersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.BookID,
-			&i.Content,
+			&i.Words,
 			&i.Order,
 			&i.CreatedAt,
+			&i.Summary,
 		); err != nil {
 			return nil, err
 		}
@@ -92,7 +149,7 @@ order by "order"
 
 type GetBookChaptersMinimalRow struct {
 	ID   int64
-	Name pgtype.Text
+	Name string
 }
 
 func (q *Queries) GetBookChaptersMinimal(ctx context.Context, bookID int64) ([]GetBookChaptersMinimalRow, error) {
@@ -115,6 +172,102 @@ func (q *Queries) GetBookChaptersMinimal(ctx context.Context, bookID int64) ([]G
 	return items, nil
 }
 
+const getBookCollections = `-- name: GetBookCollections :many
+select collections.id, collections.name, collections.books_count as size, collection_books."order" as position, collections.created_at, users.name as user_name, collections.user_id
+from collections
+join collection_books on collections.id = collection_books.collection_id
+join users on collections.user_id = users.id
+where collection_books.book_id = $1
+order by collections.created_at desc
+`
+
+type GetBookCollectionsRow struct {
+	ID        int64
+	Name      string
+	Size      int32
+	Position  int32
+	CreatedAt pgtype.Timestamptz
+	UserName  string
+	UserID    pgtype.UUID
+}
+
+func (q *Queries) GetBookCollections(ctx context.Context, bookID int64) ([]GetBookCollectionsRow, error) {
+	rows, err := q.db.Query(ctx, getBookCollections, bookID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBookCollectionsRow
+	for rows.Next() {
+		var i GetBookCollectionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Size,
+			&i.Position,
+			&i.CreatedAt,
+			&i.UserName,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLastChapterOrder = `-- name: GetLastChapterOrder :one
+select cast(coalesce(max("order"), 0) as int4) as last_order
+from book_chapters
+where book_id = $1
+`
+
+func (q *Queries) GetLastChapterOrder(ctx context.Context, bookID int64) (int32, error) {
+	row := q.db.QueryRow(ctx, getLastChapterOrder, bookID)
+	var last_order int32
+	err := row.Scan(&last_order)
+	return last_order, err
+}
+
+const getSessionInfo = `-- name: GetSessionInfo :one
+select s.id, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, u.id as user_id, u.name as user_name, u.joined_at as user_joined_at
+from sessions s
+join users u on s.user_id = u.id
+where s.id = $1
+`
+
+type GetSessionInfoRow struct {
+	ID           string
+	UserID       pgtype.UUID
+	CreatedAt    pgtype.Timestamptz
+	UserAgent    string
+	IpAddress    string
+	ExpiresAt    pgtype.Timestamptz
+	UserID_2     pgtype.UUID
+	UserName     string
+	UserJoinedAt pgtype.Timestamptz
+}
+
+func (q *Queries) GetSessionInfo(ctx context.Context, id string) (GetSessionInfoRow, error) {
+	row := q.db.QueryRow(ctx, getSessionInfo, id)
+	var i GetSessionInfoRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UserAgent,
+		&i.IpAddress,
+		&i.ExpiresAt,
+		&i.UserID_2,
+		&i.UserName,
+		&i.UserJoinedAt,
+	)
+	return i, err
+}
+
 const getUser = `-- name: GetUser :one
 select id, name, joined_at, password_hash
 from users
@@ -134,10 +287,79 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 	return i, err
 }
 
+const getUserBooks = `-- name: GetUserBooks :many
+select 
+    books.id, books.name, books.author_user_id, books.created_at, books.age_rating, books.words, books.chapters, books.tags,
+    collections.id as collection_id,
+    collections.name as collection_name,
+    collection_books."order" as collection_position,
+    collections.books_count as collection_size
+from books
+left join collection_books on books.id = collection_books.book_id
+left join collections on collection_books.collection_id = collections.id
+where author_user_id = $1
+order by books.created_at desc
+limit $2 offset $3
+`
+
+type GetUserBooksParams struct {
+	AuthorUserID pgtype.UUID
+	Limit        int32
+	Offset       int32
+}
+
+type GetUserBooksRow struct {
+	ID                 int64
+	Name               string
+	AuthorUserID       pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	AgeRating          AgeRating
+	Words              int32
+	Chapters           int32
+	Tags               []string
+	CollectionID       pgtype.Int8
+	CollectionName     pgtype.Text
+	CollectionPosition pgtype.Int4
+	CollectionSize     pgtype.Int4
+}
+
+func (q *Queries) GetUserBooks(ctx context.Context, arg GetUserBooksParams) ([]GetUserBooksRow, error) {
+	rows, err := q.db.Query(ctx, getUserBooks, arg.AuthorUserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserBooksRow
+	for rows.Next() {
+		var i GetUserBooksRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.AuthorUserID,
+			&i.CreatedAt,
+			&i.AgeRating,
+			&i.Words,
+			&i.Chapters,
+			&i.Tags,
+			&i.CollectionID,
+			&i.CollectionName,
+			&i.CollectionPosition,
+			&i.CollectionSize,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertBook = `-- name: InsertBook :exec
 insert into books 
-(id, name, author_user_id, created_at)
-values ($1, $2, $3, $4)
+(id, name, author_user_id, created_at, age_rating, tags)
+values ($1, $2, $3, $4, $5, $6)
 `
 
 type InsertBookParams struct {
@@ -145,6 +367,8 @@ type InsertBookParams struct {
 	Name         string
 	AuthorUserID pgtype.UUID
 	CreatedAt    pgtype.Timestamptz
+	AgeRating    AgeRating
+	Tags         []string
 }
 
 func (q *Queries) InsertBook(ctx context.Context, arg InsertBookParams) error {
@@ -153,23 +377,27 @@ func (q *Queries) InsertBook(ctx context.Context, arg InsertBookParams) error {
 		arg.Name,
 		arg.AuthorUserID,
 		arg.CreatedAt,
+		arg.AgeRating,
+		arg.Tags,
 	)
 	return err
 }
 
 const insertBookChapter = `-- name: InsertBookChapter :exec
 insert into book_chapters
-(id, name, book_id, content, "order", created_at)
-values ($1, $2, $3, $4, $5, $6)
+(id, name, book_id, content, "order", created_at, words, summary)
+values ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
 type InsertBookChapterParams struct {
 	ID        int64
-	Name      pgtype.Text
+	Name      string
 	BookID    int64
 	Content   string
 	Order     int32
 	CreatedAt pgtype.Timestamptz
+	Words     int32
+	Summary   string
 }
 
 func (q *Queries) InsertBookChapter(ctx context.Context, arg InsertBookChapterParams) error {
@@ -180,6 +408,8 @@ func (q *Queries) InsertBookChapter(ctx context.Context, arg InsertBookChapterPa
 		arg.Content,
 		arg.Order,
 		arg.CreatedAt,
+		arg.Words,
+		arg.Summary,
 	)
 	return err
 }
@@ -232,6 +462,63 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
 		arg.JoinedAt,
 	)
 	return err
+}
+
+const recalculateBookStats = `-- name: RecalculateBookStats :exec
+update books
+set words = stat.words, chapters = stat.chapters
+from (select sum(words) as words, count(1) as chapters from book_chapters where book_id = $1) as stat
+where books.id = $1
+`
+
+func (q *Queries) RecalculateBookStats(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, recalculateBookStats, id)
+	return err
+}
+
+const reorderChapters = `-- name: ReorderChapters :exec
+update book_chapters
+set "order" = c.new_order
+from (values ($1::int[])) as v(arr)
+join unnest(v.arr) with ordinality as c (value, new_order)
+on c.value = book_chapters.id
+where book_chapters.book_id = $2
+`
+
+type ReorderChaptersParams struct {
+	Column1 []int32
+	BookID  int64
+}
+
+func (q *Queries) ReorderChapters(ctx context.Context, arg ReorderChaptersParams) error {
+	_, err := q.db.Exec(ctx, reorderChapters, arg.Column1, arg.BookID)
+	return err
+}
+
+const updateBookChapter = `-- name: UpdateBookChapter :one
+update book_chapters
+set name = $2, content = $3, words = $4
+where id = $1
+returning book_chapters.book_id
+`
+
+type UpdateBookChapterParams struct {
+	ID      int64
+	Name    string
+	Content string
+	Words   int32
+}
+
+func (q *Queries) UpdateBookChapter(ctx context.Context, arg UpdateBookChapterParams) (int64, error) {
+	row := q.db.QueryRow(ctx, updateBookChapter,
+		arg.ID,
+		arg.Name,
+		arg.Content,
+		arg.Words,
+	)
+	var book_id int64
+	err := row.Scan(&book_id)
+	return book_id, err
 }
 
 const updateSession = `-- name: UpdateSession :exec

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { httpSignIn } from "../api";
 
 const formSchema = z.object({
   username: z.string().min(1).max(50),
@@ -27,10 +28,15 @@ export default function LoginForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await httpSignIn({
+        username: values.username,
+        password: values.password,
+      });
+    } catch {
+      alert("failed to log in");
+    }
   }
 
   return (

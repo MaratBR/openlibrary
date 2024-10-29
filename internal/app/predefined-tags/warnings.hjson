@@ -1,0 +1,21 @@
+[
+    {
+        name: "Major character death",
+        isAdult: false,
+        isSpoiler: true,
+        category: warning
+    },
+    {
+        name: "Graphical depiction of violence",
+        isAdult: false,
+        isSpoiler: false,
+        category: warning
+    },
+    {
+        name: "Suicide or self-harm",
+        isAdult: false,
+        // not sure if this can be considered a "spoiler"
+        isSpoiler: false,
+        category: warning
+    }
+]

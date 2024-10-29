@@ -2,21 +2,21 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type AuthService struct {
 	queries *store.Queries
-	db      *pgx.Conn
+	db      *pgxpool.Pool
 }
 
-func NewAuthService(db *pgx.Conn) AuthService {
-	return AuthService{
+func NewAuthService(db *pgxpool.Pool) *AuthService {
+	return &AuthService{
 		queries: store.New(db),
 		db:      db,
 	}
@@ -47,7 +47,7 @@ func (s AuthService) SignIn(ctx context.Context, input SignInCommand) (SignInRes
 	queries := s.queries.WithTx(tx)
 	user, err := queries.FindUserByUsername(ctx, input.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			return SignInResult{
 				IsSuccess: false}, nil
 		}
@@ -84,6 +84,7 @@ func (s AuthService) createNewSession(ctx context.Context, queries *store.Querie
 		UserAgent: userAgent,
 		IpAddress: ip,
 		ExpiresAt: timeToTimestamptz(time.Now().Add(90 * 24 * time.Hour)),
+		CreatedAt: timeToTimestamptz(time.Now()),
 	})
 	if err != nil {
 		return "", err
@@ -118,34 +119,106 @@ func (s AuthService) SignUp(ctx context.Context, input SignUpCommand) (SignUpRes
 	queries := s.queries.WithTx(tx)
 	exists, err := queries.UserExistsByUsername(ctx, input.Username)
 	if err != nil {
+		rollbackTx(ctx, tx)
 		return SignUpResult{}, err
 	}
 
 	if exists {
+		rollbackTx(ctx, tx)
 		return SignUpResult{IsSuccess: false}, nil
 	}
 
-	hashedPassword, err := hashPassword(input.Password)
+	userID, err := createUser(ctx, queries, input.Username, input.Password)
 	if err != nil {
+		rollbackTx(ctx, tx)
 		return SignUpResult{}, err
 	}
-	userID := uuidV4()
-	err = queries.InsertUser(ctx, store.InsertUserParams{
-		ID:           uuidDomainToDb(userID),
-		PasswordHash: hashedPassword,
-		Name:         input.Username,
-		JoinedAt:     timeToTimestamptz(time.Now()),
-	})
-	if err != nil {
-		return SignUpResult{}, err
-	}
+
 	sessionID, err := s.createNewSession(ctx, queries, userID, input.UserAgent, input.IpAddress)
 	if err != nil {
+		rollbackTx(ctx, tx)
 		return SignUpResult{}, err
 	}
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		return SignUpResult{}, err
 	}
 	return SignUpResult{IsSuccess: true, SessionID: sessionID}, nil
+}
+
+func createUser(ctx context.Context, queries *store.Queries, username, password string) (id uuid.UUID, err error) {
+	userID := uuidV4()
+	hashedPassword, err := hashPassword(password)
+	if err != nil {
+		return
+	}
+	err = queries.InsertUser(ctx, store.InsertUserParams{
+		ID:           uuidDomainToDb(userID),
+		PasswordHash: hashedPassword,
+		Name:         username,
+		JoinedAt:     timeToTimestamptz(time.Now()),
+	})
+	if err == nil {
+		id = userID
+	}
+	return
+}
+
+func (s AuthService) EnsureAdminUserExists(ctx context.Context) error {
+	exists, err := s.queries.UserExistsByUsername(ctx, "admin")
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	queries := s.queries.WithTx(tx)
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return err
+	}
+
+	_, err = createUser(ctx, queries, "admin", "admin")
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	return err
+}
+
+type SessionInfo struct {
+	SessionID    string
+	CreatedAt    time.Time
+	ExpiresAt    time.Time
+	UserID       uuid.UUID
+	UserAgent    string
+	IpAddress    string
+	UserName     string
+	UserJoinedAt time.Time
+}
+
+func (s AuthService) GetUserBySessionID(ctx context.Context, sessionID string) (*SessionInfo, error) {
+	result, err := s.queries.GetSessionInfo(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SessionInfo{
+		SessionID:    result.ID,
+		CreatedAt:    timeDbToDomain(result.CreatedAt),
+		ExpiresAt:    timeDbToDomain(result.ExpiresAt),
+		UserID:       uuidDbToDomain(result.UserID),
+		UserAgent:    result.UserAgent,
+		IpAddress:    result.IpAddress,
+		UserName:     result.UserName,
+		UserJoinedAt: timeDbToDomain(result.UserJoinedAt),
+	}, nil
 }

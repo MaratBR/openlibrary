@@ -14,23 +14,16 @@ build-server:
 build: sqlc templ build-server
 
 watch-server:
-	gow run ./cmd/server
-
-run: build
-	$(EXE)
-
-templ:
-	templ generate
-
-sqlc:
-	sqlc -f internal/store/sqlc.yaml generate
-
-tailwind:
-	npx tailwindcss -i cmd/server/css/input.css -o cmd/server/dist/all.css --minify
+	gow run ./cmd/server --dev-frontend-proxy
 
 watch-tailwind:
 	npx tailwindcss -i cmd/server/css/input.css -o cmd/server/dist/all.css --minify --watch
 
+watch-templ:
+	templ generate --watch
+
+watch-front:
+	cd ./cmd/server/front && pnpm run dev
 
 migration:
 	migrate create -ext sql -dir internal/store/migrations -seq $N
@@ -42,3 +35,9 @@ reset-db:
 	PGPASSWORD=$(LOCAL_DB_PASSWORD) psql -p $(LOCAL_DB_PORT) -h $(LOCAL_DB_HOST) -U $(LOCAL_DB_USER) -c "DROP DATABASE IF EXISTS openlibrary"
 	PGPASSWORD=$(LOCAL_DB_PASSWORD) psql -p $(LOCAL_DB_PORT) -h $(LOCAL_DB_HOST) -U $(LOCAL_DB_USER) -c "CREATE DATABASE openlibrary"
 	migrate -source=$(PGX_MIGRATIONS) -database=$(LOCAL_DB) up
+
+templ:
+	templ generate
+
+sqlc:
+	sqlc -f internal/store/sqlc.yaml generate

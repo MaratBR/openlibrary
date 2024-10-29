@@ -5,23 +5,93 @@
 package store
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type AgeRating string
+
+const (
+	AgeRatingValue0 AgeRating = "?"
+	AgeRatingG      AgeRating = "G"
+	AgeRatingPG     AgeRating = "PG"
+	AgeRatingPG13   AgeRating = "PG-13"
+	AgeRatingR      AgeRating = "R"
+	AgeRatingNC17   AgeRating = "NC-17"
+)
+
+func (e *AgeRating) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AgeRating(s)
+	case string:
+		*e = AgeRating(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AgeRating: %T", src)
+	}
+	return nil
+}
+
+type NullAgeRating struct {
+	AgeRating AgeRating
+	Valid     bool // Valid is true if AgeRating is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAgeRating) Scan(value interface{}) error {
+	if value == nil {
+		ns.AgeRating, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AgeRating.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAgeRating) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AgeRating), nil
+}
 
 type Book struct {
 	ID           int64
 	Name         string
 	AuthorUserID pgtype.UUID
 	CreatedAt    pgtype.Timestamptz
+	AgeRating    AgeRating
+	Words        int32
+	Chapters     int32
+	Tags         []string
 }
 
 type BookChapter struct {
-	ID        int64
-	Name      pgtype.Text
-	BookID    int64
-	Content   string
-	Order     int32
-	CreatedAt pgtype.Timestamptz
+	ID              int64
+	Name            string
+	BookID          int64
+	Content         string
+	Order           int32
+	CreatedAt       pgtype.Timestamptz
+	Words           int32
+	IsAdultOverride bool
+	Summary         string
+}
+
+type Collection struct {
+	ID         int64
+	Name       string
+	UserID     pgtype.UUID
+	CreatedAt  pgtype.Timestamptz
+	BooksCount int32
+}
+
+type CollectionBook struct {
+	CollectionID int64
+	BookID       int64
+	Order        int32
 }
 
 type Session struct {
