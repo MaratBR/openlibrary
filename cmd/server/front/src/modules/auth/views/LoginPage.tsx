@@ -1,15 +1,15 @@
-import LoginForm from "./LoginForm";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TabsContent } from "@radix-ui/react-tabs";
-import SignUpForm from "./SignUpForm";
-import useAuthState from "../state";
-import { Navigate } from "react-router";
+import LoginForm from './LoginForm'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TabsContent } from '@radix-ui/react-tabs'
+import SignUpForm from './SignUpForm'
+import useAuthState from '../state'
+import { Navigate } from 'react-router'
 
 export default function LoginPage() {
-  const state = useAuthState();
+  const state = useAuthState()
 
   if (state.user) {
-    return <Navigate to="/home" />;
+    return <Navigate to="/home" />
   }
 
   return (
@@ -36,5 +36,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

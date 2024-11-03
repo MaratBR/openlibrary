@@ -1,35 +1,17 @@
-import { useNavigate, useParams } from "react-router";
-import { BookDetailsDto, useBookQuery } from "../../api";
-import AdultIndicator from "@/components/adult-indicator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { NavLink } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import {
-  EllipsisVerticalIcon,
-  LayoutDashboard,
-  ListIcon,
-  ListOrdered,
-  PenIcon,
-  Plus,
-} from "lucide-react";
-import ChapterCard from "./ChapterCard";
-import BookInfoCard from "./BookInfoCard";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { useParams } from 'react-router'
+import { BookDetailsDto, useBookQuery } from '../../api'
+import AdultIndicator from '@/components/adult-indicator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { NavLink } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { LayoutDashboard } from 'lucide-react'
+import ChapterCard from './ChapterCard'
+import BookInfoCard from './BookInfoCard'
 
 export default function BookPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>()
 
-  const { data } = useBookQuery(id);
+  const { data } = useBookQuery(id)
 
   return (
     <main className="container-default relative">
@@ -54,16 +36,14 @@ export default function BookPage() {
         </>
       )}
     </main>
-  );
+  )
 }
 
 function ChaptersList({ book }: { book: BookDetailsDto }) {
   return (
     <section id="chapters" className="mt-8">
       <header>
-        <h2 className="text-xl font-semibold">
-          {book.chapters.length} chapters
-        </h2>
+        <h2 className="text-xl font-semibold">{book.chapters.length} chapters</h2>
 
         {book.chapters.length === 0 && (
           <div className="text-muted-foreground mt-3">
@@ -72,18 +52,12 @@ function ChaptersList({ book }: { book: BookDetailsDto }) {
         )}
         <div className="space-y-2 mt-4">
           {book.chapters.map((chapter) => {
-            return (
-              <ChapterCard
-                key={chapter.id}
-                bookId={book.id}
-                chapter={chapter}
-              />
-            );
+            return <ChapterCard key={chapter.id} bookId={book.id} chapter={chapter} />
           })}
         </div>
       </header>
     </section>
-  );
+  )
 }
 
 function QuickEditSection({ bookId }: { bookId: string }) {
@@ -101,19 +75,19 @@ function QuickEditSection({ bookId }: { bookId: string }) {
         </Button> */}
       </div>
     </section>
-  );
+  )
 }
 
 function BookAdultIndicator() {
   return (
     <Tooltip>
-      <TooltipTrigger>
-        <AdultIndicator className="mr-3" />
+      <TooltipTrigger asChild>
+        <AdultIndicator className="mr-3 relative -top-[0.2em]" />
       </TooltipTrigger>
       <TooltipContent className="max-w-64 font-text font-normal">
-        This book's rating indicates it contains some degree of adult content
-        that may not be suitable for children.
+        This book's rating indicates it contains some degree of adult content that may not be
+        suitable for children.
       </TooltipContent>
     </Tooltip>
-  );
+  )
 }

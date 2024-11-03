@@ -1,6 +1,6 @@
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Form,
   FormControl,
@@ -8,23 +8,23 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/form'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const formSchema = z.object({
   username: z.string().min(1).max(50),
   password: z.string().min(1).max(50),
-});
+})
 
 export default function SignUpForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
-      password: "",
+      username: '',
+      password: '',
     },
-  });
+  })
 
   function onSubmit(values: z.infer<typeof formSchema>) {}
 
@@ -60,5 +60,5 @@ export default function SignUpForm() {
         <Button type="submit">Sign up</Button>
       </form>
     </Form>
-  );
+  )
 }

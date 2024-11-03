@@ -1,3 +1,2 @@
-drop table book_chapters;
-drop table books;
-drop type age_rating;
+drop table collection_books;
+drop table collections;

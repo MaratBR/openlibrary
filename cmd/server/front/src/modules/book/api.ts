@@ -1,130 +1,126 @@
-import { useQuery } from "@tanstack/react-query";
-import { httpClient } from "../common/api";
+import { useQuery } from '@tanstack/react-query'
+import { httpClient } from '../common/api'
+import { z } from 'zod'
 
 export type AuthorBookDto = {
-  id: string;
-  name: string;
-  createdAt: string;
-  ageRating: AgeRating;
-  words: number;
-  wordsPerChapter: number;
-  chapters: number;
-  tags: TagDto[];
-  collections: BookCollectionDto[];
-};
+  id: string
+  name: string
+  createdAt: string
+  ageRating: AgeRating
+  words: number
+  wordsPerChapter: number
+  chapters: number
+  tags: DefinedTagDto[]
+  collections: BookCollectionDto[]
+}
 
 export type BookCollectionDto = {
-  id: string;
-  name: string;
-  position: number;
-  size: number;
-};
+  id: string
+  name: string
+  position: number
+  size: number
+}
 
-export type TagsCategory =
-  | "other"
-  | "warning"
-  | "fandom"
-  | "relationship"
-  | "relationshipType"
-  | "unknown";
+const tagCategorySchema = z.enum(['other', 'warning', 'fandom', 'rel', 'reltype', 'unknown'])
 
-export type TagDto = {
-  id: string;
-  name: string;
-  isAdult: boolean;
-  isSpoiler: boolean;
-  category: TagsCategory;
-  isDefined: boolean;
-};
+export type TagsCategory = z.infer<typeof tagCategorySchema>
 
-export type AgeRating = "?" | "G" | "PG" | "PG-13" | "R" | "NC-17";
+export const definedTagDtoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  isAdult: z.boolean(),
+  isSpoiler: z.boolean(),
+  category: tagCategorySchema,
+})
 
-export const AGE_RATINGS_LIST: AgeRating[] = [
-  "?",
-  "G",
-  "PG",
-  "PG-13",
-  "R",
-  "NC-17",
-];
+export type DefinedTagDto = z.infer<typeof definedTagDtoSchema>
+
+export type SearchTagsResponse = {
+  query: string
+  tags: DefinedTagDto[]
+}
+
+export function httpTagsSearch(q: string): Promise<SearchTagsResponse> {
+  return httpClient.get('/api/tags/search', { searchParams: { q } }).then((r) => r.json())
+}
+
+export type AgeRating = '?' | 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17'
+
+export const AGE_RATINGS_LIST: AgeRating[] = ['?', 'G', 'PG', 'PG-13', 'R', 'NC-17']
 
 export type BookChapterDto = {
-  id: string;
-  order: number;
-  name: string;
-  words: number;
-  createdAt: string;
-};
+  id: string
+  order: number
+  name: string
+  words: number
+  createdAt: string
+}
 
 export type BookDetailsDto = {
-  id: string;
-  name: string;
-  ageRating: AgeRating;
-  isAdult: boolean;
-  tags: TagDto[];
-  words: number;
-  wordsPerChapter: number;
-  collections: BookCollectionDto[];
-  chapters: BookChapterDto[];
-  createdAt: string;
+  id: string
+  name: string
+  ageRating: AgeRating
+  isAdult: boolean
+  tags: DefinedTagDto[]
+  words: number
+  wordsPerChapter: number
+  collections: BookCollectionDto[]
+  chapters: BookChapterDto[]
+  createdAt: string
   author: {
-    id: string;
-    name: string;
-  };
+    id: string
+    name: string
+  }
   permissions: {
-    canEdit: boolean;
-  };
-};
+    canEdit: boolean
+  }
+}
 
-export type GetBookResponse = BookDetailsDto;
+export type GetBookResponse = BookDetailsDto
 
 export function httpGetBook(id: string): Promise<GetBookResponse> {
-  return httpClient.get(`/api/books/${id}`).then((r) => r.json());
+  return httpClient.get(`/api/books/${id}`).then((r) => r.json())
 }
 
 export function useBookQuery(bookId: string | undefined) {
   return useQuery({
-    queryKey: ["book", bookId],
+    queryKey: ['book', bookId],
     enabled: !!bookId,
     queryFn: () => httpGetBook(bookId!),
     staleTime: 0,
     gcTime: 60000,
-  });
+  })
 }
 
 export type ChapterDto = {
-  id: string;
-  name: string;
-  words: number;
-  content: string;
-  isAdultOverride: boolean;
-  createdAt: string;
-  order: number;
-  summary: string;
-};
+  id: string
+  name: string
+  words: number
+  content: string
+  isAdultOverride: boolean
+  createdAt: string
+  order: number
+  summary: string
+}
 
 export type GetBookChapterResponse = {
-  chapter: ChapterDto;
-};
+  chapter: ChapterDto
+}
 
 export function httpGetBookChapter(
   bookId: string,
-  chapterId: string
+  chapterId: string,
 ): Promise<GetBookChapterResponse> {
-  return httpClient
-    .get(`/api/books/${bookId}/chapters/${chapterId}`)
-    .then((r) => r.json());
+  return httpClient.get(`/api/books/${bookId}/chapters/${chapterId}`).then((r) => r.json())
 }
 
-export function useBookChapterQuery(
-  bookId: string | undefined,
-  chapterId: string | undefined
-) {
+export function useBookChapterQuery(bookId: string | undefined, chapterId: string | undefined) {
   return useQuery({
-    queryKey: ["book", bookId, "chapter", chapterId],
+    queryKey: ['book', bookId, 'chapter', chapterId],
     enabled: !!bookId && !!chapterId,
     queryFn: () => httpGetBookChapter(bookId!, chapterId!),
     staleTime: 0,
     gcTime: 60000,
-  });
+  })
 }

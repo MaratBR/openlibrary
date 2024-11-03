@@ -11,6 +11,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const definedTagsAreInitialized = `-- name: DefinedTagsAreInitialized :one
+select exists(select 1 from defined_tags) as initialized
+`
+
+func (q *Queries) DefinedTagsAreInitialized(ctx context.Context) (bool, error) {
+	row := q.db.QueryRow(ctx, definedTagsAreInitialized)
+	var initialized bool
+	err := row.Scan(&initialized)
+	return initialized, err
+}
+
 const findUserByUsername = `-- name: FindUserByUsername :one
 select id, name, joined_at, password_hash
 from users
@@ -31,7 +42,7 @@ func (q *Queries) FindUserByUsername(ctx context.Context, name string) (User, er
 }
 
 const getBook = `-- name: GetBook :one
-select books.id, books.name, books.author_user_id, books.created_at, books.age_rating, books.words, books.chapters, books.tags, users.name as author_name
+select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, users.name as author_name
 from books
 join users on books.author_user_id = users.id
 where books.id = $1
@@ -39,15 +50,17 @@ limit 1
 `
 
 type GetBookRow struct {
-	ID           int64
-	Name         string
-	AuthorUserID pgtype.UUID
-	CreatedAt    pgtype.Timestamptz
-	AgeRating    AgeRating
-	Words        int32
-	Chapters     int32
-	Tags         []string
-	AuthorName   string
+	ID                 int64
+	Name               string
+	Summary            string
+	AuthorUserID       pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	AgeRating          AgeRating
+	Words              int32
+	Chapters           int32
+	TagIds             []int64
+	CachedParentTagIds []int64
+	AuthorName         string
 }
 
 func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
@@ -56,12 +69,14 @@ func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Summary,
 		&i.AuthorUserID,
 		&i.CreatedAt,
 		&i.AgeRating,
 		&i.Words,
 		&i.Chapters,
-		&i.Tags,
+		&i.TagIds,
+		&i.CachedParentTagIds,
 		&i.AuthorName,
 	)
 	return i, err
@@ -268,6 +283,122 @@ func (q *Queries) GetSessionInfo(ctx context.Context, id string) (GetSessionInfo
 	return i, err
 }
 
+const getTag = `-- name: GetTag :one
+select id, name, description, is_spoiler, is_adult, created_at, tag_type, synonym_of, is_default, lowercased_name from defined_tags where id = $1
+`
+
+func (q *Queries) GetTag(ctx context.Context, id int64) (DefinedTag, error) {
+	row := q.db.QueryRow(ctx, getTag, id)
+	var i DefinedTag
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.IsSpoiler,
+		&i.IsAdult,
+		&i.CreatedAt,
+		&i.TagType,
+		&i.SynonymOf,
+		&i.IsDefault,
+		&i.LowercasedName,
+	)
+	return i, err
+}
+
+const getTagParent = `-- name: GetTagParent :one
+select t0.id, t0.name, t0.description, t0.is_spoiler, t0.is_adult, t0.created_at, t0.tag_type, t0.synonym_of, t0.is_default, t0.lowercased_name 
+from defined_tags t0
+where t0.id = (select coalesce(t1.synonym_of, t1.id) from defined_tags t1 where t1.id = $1)
+`
+
+func (q *Queries) GetTagParent(ctx context.Context, id int64) (DefinedTag, error) {
+	row := q.db.QueryRow(ctx, getTagParent, id)
+	var i DefinedTag
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.IsSpoiler,
+		&i.IsAdult,
+		&i.CreatedAt,
+		&i.TagType,
+		&i.SynonymOf,
+		&i.IsDefault,
+		&i.LowercasedName,
+	)
+	return i, err
+}
+
+const getTagsByIds = `-- name: GetTagsByIds :many
+select id, name, description, is_spoiler, is_adult, created_at, tag_type, synonym_of, is_default, lowercased_name from defined_tags where id = ANY($1::int8[])
+`
+
+func (q *Queries) GetTagsByIds(ctx context.Context, ids []int64) ([]DefinedTag, error) {
+	rows, err := q.db.Query(ctx, getTagsByIds, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DefinedTag
+	for rows.Next() {
+		var i DefinedTag
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.IsSpoiler,
+			&i.IsAdult,
+			&i.CreatedAt,
+			&i.TagType,
+			&i.SynonymOf,
+			&i.IsDefault,
+			&i.LowercasedName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTagsByName = `-- name: GetTagsByName :many
+select id, name, description, is_spoiler, is_adult, created_at, tag_type, synonym_of, is_default, lowercased_name from defined_tags where name = ANY($1::text[])
+`
+
+func (q *Queries) GetTagsByName(ctx context.Context, names []string) ([]DefinedTag, error) {
+	rows, err := q.db.Query(ctx, getTagsByName, names)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DefinedTag
+	for rows.Next() {
+		var i DefinedTag
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.IsSpoiler,
+			&i.IsAdult,
+			&i.CreatedAt,
+			&i.TagType,
+			&i.SynonymOf,
+			&i.IsDefault,
+			&i.LowercasedName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUser = `-- name: GetUser :one
 select id, name, joined_at, password_hash
 from users
@@ -289,7 +420,7 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 
 const getUserBooks = `-- name: GetUserBooks :many
 select 
-    books.id, books.name, books.author_user_id, books.created_at, books.age_rating, books.words, books.chapters, books.tags,
+    books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids,
     collections.id as collection_id,
     collections.name as collection_name,
     collection_books."order" as collection_position,
@@ -311,12 +442,14 @@ type GetUserBooksParams struct {
 type GetUserBooksRow struct {
 	ID                 int64
 	Name               string
+	Summary            string
 	AuthorUserID       pgtype.UUID
 	CreatedAt          pgtype.Timestamptz
 	AgeRating          AgeRating
 	Words              int32
 	Chapters           int32
-	Tags               []string
+	TagIds             []int64
+	CachedParentTagIds []int64
 	CollectionID       pgtype.Int8
 	CollectionName     pgtype.Text
 	CollectionPosition pgtype.Int4
@@ -335,12 +468,14 @@ func (q *Queries) GetUserBooks(ctx context.Context, arg GetUserBooksParams) ([]G
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Summary,
 			&i.AuthorUserID,
 			&i.CreatedAt,
 			&i.AgeRating,
 			&i.Words,
 			&i.Chapters,
-			&i.Tags,
+			&i.TagIds,
+			&i.CachedParentTagIds,
 			&i.CollectionID,
 			&i.CollectionName,
 			&i.CollectionPosition,
@@ -356,29 +491,56 @@ func (q *Queries) GetUserBooks(ctx context.Context, arg GetUserBooksParams) ([]G
 	return items, nil
 }
 
+const importTags = `-- name: ImportTags :exec
+insert into defined_tags
+(id, name, description, is_spoiler, is_adult, created_at, tag_type, synonym_of, is_default)
+select
+    id, name, description, is_spoiler, is_adult, created_at, tag_type, synonym_of, true
+from jsonb_to_recordset($1::jsonb)
+as json_set (
+    id int8, 
+    name text, 
+    description text, 
+    is_spoiler boolean, 
+    is_adult boolean, 
+    created_at timestamptz, 
+    tag_type tag_type, 
+    synonym_of int8)
+where not exists (select 1 from defined_tags where name = json_set.name)
+`
+
+func (q *Queries) ImportTags(ctx context.Context, dollar_1 []byte) error {
+	_, err := q.db.Exec(ctx, importTags, dollar_1)
+	return err
+}
+
 const insertBook = `-- name: InsertBook :exec
 insert into books 
-(id, name, author_user_id, created_at, age_rating, tags)
-values ($1, $2, $3, $4, $5, $6)
+(id, name, summary, author_user_id, created_at, age_rating, tag_ids, cached_parent_tag_ids)
+values ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
 type InsertBookParams struct {
-	ID           int64
-	Name         string
-	AuthorUserID pgtype.UUID
-	CreatedAt    pgtype.Timestamptz
-	AgeRating    AgeRating
-	Tags         []string
+	ID                 int64
+	Name               string
+	Summary            string
+	AuthorUserID       pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	AgeRating          AgeRating
+	TagIds             []int64
+	CachedParentTagIds []int64
 }
 
 func (q *Queries) InsertBook(ctx context.Context, arg InsertBookParams) error {
 	_, err := q.db.Exec(ctx, insertBook,
 		arg.ID,
 		arg.Name,
+		arg.Summary,
 		arg.AuthorUserID,
 		arg.CreatedAt,
 		arg.AgeRating,
-		arg.Tags,
+		arg.TagIds,
+		arg.CachedParentTagIds,
 	)
 	return err
 }
@@ -412,6 +574,48 @@ func (q *Queries) InsertBookChapter(ctx context.Context, arg InsertBookChapterPa
 		arg.Summary,
 	)
 	return err
+}
+
+const insertDefinedTag = `-- name: InsertDefinedTag :exec
+insert into defined_tags
+(id, name, description, is_spoiler, is_adult, created_at, tag_type, synonym_of)
+values ($1, $2, $3, $4, $5, $6, $7, $8)
+`
+
+type InsertDefinedTagParams struct {
+	ID          int64
+	Name        string
+	Description string
+	IsSpoiler   bool
+	IsAdult     bool
+	CreatedAt   pgtype.Timestamptz
+	TagType     TagType
+	SynonymOf   pgtype.Int8
+}
+
+func (q *Queries) InsertDefinedTag(ctx context.Context, arg InsertDefinedTagParams) error {
+	_, err := q.db.Exec(ctx, insertDefinedTag,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.IsSpoiler,
+		arg.IsAdult,
+		arg.CreatedAt,
+		arg.TagType,
+		arg.SynonymOf,
+	)
+	return err
+}
+
+type InsertDefinedTagEnMasseParams struct {
+	ID          int64
+	Name        string
+	Description string
+	IsSpoiler   bool
+	IsAdult     bool
+	CreatedAt   pgtype.Timestamptz
+	TagType     TagType
+	SynonymOf   pgtype.Int8
 }
 
 const insertSession = `-- name: InsertSession :exec
@@ -476,6 +680,20 @@ func (q *Queries) RecalculateBookStats(ctx context.Context, id int64) error {
 	return err
 }
 
+const removeUnusedDefaultTags = `-- name: RemoveUnusedDefaultTags :exec
+delete from defined_tags d
+where 
+    d.name <> ANY($1::text[]) and
+    d.is_default = true and 
+    not exists (select 1 from defined_tags where synonym_of = d.id) and
+    not exists (select 1 from books where tag_ids @> array[d.id])
+`
+
+func (q *Queries) RemoveUnusedDefaultTags(ctx context.Context, names []string) error {
+	_, err := q.db.Exec(ctx, removeUnusedDefaultTags, names)
+	return err
+}
+
 const reorderChapters = `-- name: ReorderChapters :exec
 update book_chapters
 set "order" = c.new_order
@@ -492,6 +710,120 @@ type ReorderChaptersParams struct {
 
 func (q *Queries) ReorderChapters(ctx context.Context, arg ReorderChaptersParams) error {
 	_, err := q.db.Exec(ctx, reorderChapters, arg.Column1, arg.BookID)
+	return err
+}
+
+const searchDefinedTags = `-- name: SearchDefinedTags :many
+select id, name, description, is_spoiler, is_adult, created_at, tag_type, synonym_of, is_default, lowercased_name
+from defined_tags
+where lowercased_name like $1
+limit $2
+`
+
+type SearchDefinedTagsParams struct {
+	LowercasedName string
+	Limit          int32
+}
+
+func (q *Queries) SearchDefinedTags(ctx context.Context, arg SearchDefinedTagsParams) ([]DefinedTag, error) {
+	rows, err := q.db.Query(ctx, searchDefinedTags, arg.LowercasedName, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DefinedTag
+	for rows.Next() {
+		var i DefinedTag
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.IsSpoiler,
+			&i.IsAdult,
+			&i.CreatedAt,
+			&i.TagType,
+			&i.SynonymOf,
+			&i.IsDefault,
+			&i.LowercasedName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchDefinedTagsWithType = `-- name: SearchDefinedTagsWithType :many
+select id, name, description, is_spoiler, is_adult, created_at, tag_type, synonym_of, is_default, lowercased_name
+from defined_tags
+where lowercased_name like $1 and tag_type = $3
+limit $2
+`
+
+type SearchDefinedTagsWithTypeParams struct {
+	LowercasedName string
+	Limit          int32
+	TagType        TagType
+}
+
+func (q *Queries) SearchDefinedTagsWithType(ctx context.Context, arg SearchDefinedTagsWithTypeParams) ([]DefinedTag, error) {
+	rows, err := q.db.Query(ctx, searchDefinedTagsWithType, arg.LowercasedName, arg.Limit, arg.TagType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DefinedTag
+	for rows.Next() {
+		var i DefinedTag
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.IsSpoiler,
+			&i.IsAdult,
+			&i.CreatedAt,
+			&i.TagType,
+			&i.SynonymOf,
+			&i.IsDefault,
+			&i.LowercasedName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateBook = `-- name: UpdateBook :exec
+update books
+set name = $2, age_rating = $3, tag_ids = $4, cached_parent_tag_ids = $5, summary = $6
+where id = $1
+`
+
+type UpdateBookParams struct {
+	ID                 int64
+	Name               string
+	AgeRating          AgeRating
+	TagIds             []int64
+	CachedParentTagIds []int64
+	Summary            string
+}
+
+func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
+	_, err := q.db.Exec(ctx, updateBook,
+		arg.ID,
+		arg.Name,
+		arg.AgeRating,
+		arg.TagIds,
+		arg.CachedParentTagIds,
+		arg.Summary,
+	)
 	return err
 }
 

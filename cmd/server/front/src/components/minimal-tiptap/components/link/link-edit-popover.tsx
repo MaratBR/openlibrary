@@ -31,17 +31,17 @@ const LinkEditPopover = ({ editor, size, variant }: LinkEditPopoverProps) => {
               type: 'link',
               attrs: {
                 href: url,
-                target: openInNewTab ? '_blank' : ''
-              }
-            }
-          ]
+                target: openInNewTab ? '_blank' : '',
+              },
+            },
+          ],
         })
         .setLink({ href: url })
         .run()
 
       editor.commands.enter()
     },
-    [editor]
+    [editor],
   )
 
   return (

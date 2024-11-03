@@ -15,7 +15,7 @@ import {
   Color,
   UnsetAllMarks,
   ResetMarksOnEnter,
-  FileHandler
+  FileHandler,
 } from '../extensions'
 import { cn } from '@/lib/utils'
 import { blobUrlToBase64, getOutput } from '../utils'
@@ -41,16 +41,16 @@ const createExtensions = (placeholder: string) => [
     bulletList: { HTMLAttributes: { class: 'list-node' } },
     orderedList: { HTMLAttributes: { class: 'list-node' } },
     code: { HTMLAttributes: { class: 'inline', spellcheck: 'false' } },
-    dropcursor: { width: 2, class: 'ProseMirror-dropcursor border' }
+    dropcursor: { width: 2, class: 'ProseMirror-dropcursor border' },
   }),
   Link,
   Image.configure({
     allowedMimeTypes: ['image/*'],
     maxFileSize: 5 * 1024 * 1024,
     allowBase64: true,
-    uploadFn: async file => {
+    uploadFn: async (file) => {
       // wait 5s to simulate a slow upload
-      await new Promise(resolve => setTimeout(resolve, 5000))
+      await new Promise((resolve) => setTimeout(resolve, 5000))
 
       const url = await blobUrlToBase64(file)
       return url
@@ -59,7 +59,7 @@ const createExtensions = (placeholder: string) => [
       console.log('customCopyLink', props, options)
     },
     onValidationError(errors) {
-      errors.forEach(error => {
+      errors.forEach((error) => {
         console.log('Image validation error', error)
       })
     },
@@ -68,25 +68,30 @@ const createExtensions = (placeholder: string) => [
     },
     onActionError(error, props) {
       console.error('Image action error', error, props)
-    }
+    },
   }),
   FileHandler.configure({
     allowBase64: true,
     allowedMimeTypes: ['image/*'],
     maxFileSize: 5 * 1024 * 1024,
     onDrop: (editor, files, pos) => {
-      files.forEach(file =>
-        editor.commands.insertContentAt(pos, { type: 'image', attrs: { src: URL.createObjectURL(file) } })
+      files.forEach((file) =>
+        editor.commands.insertContentAt(pos, {
+          type: 'image',
+          attrs: { src: URL.createObjectURL(file) },
+        }),
       )
     },
     onPaste: (editor, files) => {
-      files.forEach(file => editor.commands.insertContent({ type: 'image', attrs: { src: URL.createObjectURL(file) } }))
+      files.forEach((file) =>
+        editor.commands.insertContent({ type: 'image', attrs: { src: URL.createObjectURL(file) } }),
+      )
     },
-    onValidationError: errors => {
-      errors.forEach(error => {
+    onValidationError: (errors) => {
+      errors.forEach((error) => {
         console.log('File validation error', error)
       })
-    }
+    },
   }),
   Color,
   TextStyle,
@@ -96,7 +101,7 @@ const createExtensions = (placeholder: string) => [
   HorizontalRule,
   ResetMarksOnEnter,
   CodeBlockLowlight,
-  Placeholder.configure({ placeholder: () => placeholder })
+  Placeholder.configure({ placeholder: () => placeholder }),
 ]
 
 export const useMinimalTiptapEditor = ({
@@ -113,7 +118,7 @@ export const useMinimalTiptapEditor = ({
 
   const handleUpdate = React.useCallback(
     (editor: Editor) => throttledSetValue(getOutput(editor, output)),
-    [output, throttledSetValue]
+    [output, throttledSetValue],
   )
 
   const handleCreate = React.useCallback(
@@ -122,10 +127,13 @@ export const useMinimalTiptapEditor = ({
         editor.commands.setContent(value)
       }
     },
-    [value]
+    [value],
   )
 
-  const handleBlur = React.useCallback((editor: Editor) => onBlur?.(getOutput(editor, output)), [output, onBlur])
+  const handleBlur = React.useCallback(
+    (editor: Editor) => onBlur?.(getOutput(editor, output)),
+    [output, onBlur],
+  )
 
   const editor = useEditor({
     extensions: createExtensions(placeholder),
@@ -134,13 +142,13 @@ export const useMinimalTiptapEditor = ({
         autocomplete: 'off',
         autocorrect: 'off',
         autocapitalize: 'off',
-        class: cn('focus:outline-none', editorClassName)
-      }
+        class: cn('focus:outline-none', editorClassName),
+      },
     },
     onUpdate: ({ editor }) => handleUpdate(editor),
     onCreate: ({ editor }) => handleCreate(editor),
     onBlur: ({ editor }) => handleBlur(editor),
-    ...props
+    ...props,
   })
 
   return editor

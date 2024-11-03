@@ -44,7 +44,7 @@ const getPlatform = (): string => {
   }
 
   if (nav.userAgentData) {
-    nav.userAgentData.getHighEntropyValues(['platform']).then(highEntropyValues => {
+    nav.userAgentData.getHighEntropyValues(['platform']).then((highEntropyValues) => {
       if (highEntropyValues.platform) {
         return highEntropyValues.platform
       }
@@ -65,7 +65,7 @@ export const isMacOS = (): boolean => {
 const shortcutKeyMap: Record<string, ShortcutKeyResult> = {
   mod: isMacOS() ? { symbol: '⌘', readable: 'Command' } : { symbol: 'Ctrl', readable: 'Control' },
   alt: isMacOS() ? { symbol: '⌥', readable: 'Option' } : { symbol: 'Alt', readable: 'Alt' },
-  shift: isMacOS() ? { symbol: '⇧', readable: 'Shift' } : { symbol: 'Shift', readable: 'Shift' }
+  shift: isMacOS() ? { symbol: '⇧', readable: 'Shift' } : { symbol: 'Shift', readable: 'Shift' },
 }
 
 export const getShortcutKey = (key: string): ShortcutKeyResult =>
@@ -81,15 +81,24 @@ export const getOutput = (editor: Editor, format: MinimalTiptapProps['output']) 
 }
 
 // URL validation and sanitization
-export const isUrl = (text: string, options?: { requireHostname: boolean; allowBase64?: boolean }): boolean => {
+export const isUrl = (
+  text: string,
+  options?: { requireHostname: boolean; allowBase64?: boolean },
+): boolean => {
   if (text.match(/\n/)) return false
 
   try {
     const url = new URL(text)
-    const blockedProtocols = ['javascript:', 'file:', 'vbscript:', ...(options?.allowBase64 ? [] : ['data:'])]
+    const blockedProtocols = [
+      'javascript:',
+      'file:',
+      'vbscript:',
+      ...(options?.allowBase64 ? [] : ['data:']),
+    ]
 
     if (blockedProtocols.includes(url.protocol)) return false
-    if (options?.allowBase64 && url.protocol === 'data:') return /^data:image\/[a-z]+;base64,/.test(text)
+    if (options?.allowBase64 && url.protocol === 'data:')
+      return /^data:image\/[a-z]+;base64,/.test(text)
     if (url.hostname) return true
 
     return (
@@ -104,7 +113,7 @@ export const isUrl = (text: string, options?: { requireHostname: boolean; allowB
 
 export const sanitizeUrl = (
   url: string | null | undefined,
-  options?: { allowBase64?: boolean }
+  options?: { allowBase64?: boolean },
 ): string | undefined => {
   if (!url) return undefined
 
@@ -142,7 +151,7 @@ const validateFileOrBase64 = <T extends FileInput>(
   options: FileValidationOptions,
   originalFile: T,
   validFiles: T[],
-  errors: FileError[]
+  errors: FileError[],
 ) => {
   const { isValidType, isValidSize } = checkTypeAndSize(input, options)
 
@@ -154,7 +163,10 @@ const validateFileOrBase64 = <T extends FileInput>(
   }
 }
 
-const checkTypeAndSize = (input: File | string, { allowedMimeTypes, maxFileSize }: FileValidationOptions) => {
+const checkTypeAndSize = (
+  input: File | string,
+  { allowedMimeTypes, maxFileSize }: FileValidationOptions,
+) => {
   const mimeType = input instanceof File ? input.type : base64MimeType(input)
   const size = input instanceof File ? input.size : atob(input.split(',')[1]).length
 
@@ -191,11 +203,14 @@ const isBase64 = (str: string): boolean => {
   }
 }
 
-export const filterFiles = <T extends FileInput>(files: T[], options: FileValidationOptions): [T[], FileError[]] => {
+export const filterFiles = <T extends FileInput>(
+  files: T[],
+  options: FileValidationOptions,
+): [T[], FileError[]] => {
   const validFiles: T[] = []
   const errors: FileError[] = []
 
-  files.forEach(file => {
+  files.forEach((file) => {
     const actualFile = 'src' in file ? file.src : file
 
     if (actualFile instanceof File) {

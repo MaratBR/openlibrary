@@ -32,8 +32,8 @@ const COLORS: ColorPalette[] = [
       { cssVar: 'var(--mt-accent-bold-green)', label: 'Bold green' },
       { cssVar: 'var(--mt-accent-bold-orange)', label: 'Bold orange' },
       { cssVar: 'var(--mt-accent-bold-red)', label: 'Bold red' },
-      { cssVar: 'var(--mt-accent-bold-purple)', label: 'Bold purple' }
-    ]
+      { cssVar: 'var(--mt-accent-bold-purple)', label: 'Bold purple' },
+    ],
   },
   {
     label: 'Palette 2',
@@ -45,8 +45,8 @@ const COLORS: ColorPalette[] = [
       { cssVar: 'var(--mt-accent-green)', label: 'Green' },
       { cssVar: 'var(--mt-accent-orange)', label: 'Orange' },
       { cssVar: 'var(--mt-accent-red)', label: 'Red' },
-      { cssVar: 'var(--mt-accent-purple)', label: 'Purple' }
-    ]
+      { cssVar: 'var(--mt-accent-purple)', label: 'Purple' },
+    ],
   },
   {
     label: 'Palette 3',
@@ -58,9 +58,9 @@ const COLORS: ColorPalette[] = [
       { cssVar: 'var(--mt-accent-green-subtler)', label: 'Green subtle' },
       { cssVar: 'var(--mt-accent-yellow-subtler)', label: 'Yellow subtle' },
       { cssVar: 'var(--mt-accent-red-subtler)', label: 'Red subtle' },
-      { cssVar: 'var(--mt-accent-purple-subtler)', label: 'Purple subtle' }
-    ]
-  }
+      { cssVar: 'var(--mt-accent-purple-subtler)', label: 'Purple subtle' },
+    ],
+  },
 ]
 
 const MemoizedColorButton = React.memo<{
@@ -85,7 +85,9 @@ const MemoizedColorButton = React.memo<{
             onClick(color.cssVar)
           }}
         >
-          {isSelected && <CheckIcon className="absolute inset-0 m-auto size-6" style={{ color: inverse }} />}
+          {isSelected && (
+            <CheckIcon className="absolute inset-0 m-auto size-6" style={{ color: inverse }} />
+          )}
         </ToggleGroupItem>
       </TooltipTrigger>
       <TooltipContent side="bottom">
@@ -138,7 +140,7 @@ export const SectionThree: React.FC<SectionThreeProps> = ({ editor, size, varian
       setSelectedColor(value)
       editor.chain().setColor(value).run()
     },
-    [editor]
+    [editor],
   )
 
   React.useEffect(() => {
@@ -148,7 +150,13 @@ export const SectionThree: React.FC<SectionThreeProps> = ({ editor, size, varian
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <ToolbarButton tooltip="Text color" aria-label="Text color" className="w-12" size={size} variant={variant}>
+        <ToolbarButton
+          tooltip="Text color"
+          aria-label="Text color"
+          className="w-12"
+          size={size}
+          variant={variant}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"

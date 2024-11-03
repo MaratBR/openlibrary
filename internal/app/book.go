@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -22,7 +23,7 @@ type AuthorBookDto struct {
 	Name            string              `json:"name"`
 	CreatedAt       time.Time           `json:"createdAt"`
 	AgeRating       AgeRating           `json:"ageRating"`
-	Tags            []TagDto            `json:"tags"`
+	Tags            []DefinedTagDto     `json:"tags"`
 	Words           int                 `json:"words"`
 	WordsPerChapter int                 `json:"wordsPerChapter"`
 	Chapters        int                 `json:"chapters"`
@@ -42,11 +43,6 @@ func getWordsPerChapter(words, chapters int) int {
 	}
 
 	return words / chapters
-}
-
-func aggregateTags(tagsService *TagsService, tagNames []string) []TagDto {
-	tags := tagsService.FindTags(tagNames)
-	return tags
 }
 
 type GetBookQuery struct {
@@ -77,7 +73,7 @@ type BookDetailsDto struct {
 	Name            string               `json:"name"`
 	AgeRating       AgeRating            `json:"ageRating"`
 	IsAdult         bool                 `json:"isAdult"`
-	Tags            []TagDto             `json:"tags"`
+	Tags            []DefinedTagDto      `json:"tags"`
 	Words           int                  `json:"words"`
 	WordsPerChapter int                  `json:"wordsPerChapter"`
 	CreatedAt       time.Time            `json:"createdAt"`
@@ -95,12 +91,17 @@ func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 
 	ageRating := ageRatingFromDbValue(book.AgeRating)
 	authorID := uuidDbToDomain(book.AuthorUserID)
+	tags, err := s.tagsService.GetTagsByIds(ctx, book.TagIds)
+	if err != nil {
+		return BookDetailsDto{}, err
+	}
+
 	bookDto := BookDetailsDto{
 		ID:              book.ID,
 		Name:            book.Name,
 		AgeRating:       ageRating,
 		IsAdult:         ageRating.IsAdult(),
-		Tags:            aggregateTags(s.tagsService, book.Tags),
+		Tags:            tags,
 		Words:           int(book.Words),
 		WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 		CreatedAt:       book.CreatedAt.Time,
@@ -146,6 +147,11 @@ func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 	}
 
 	return bookDto, nil
+}
+
+type embedTagsObjectEnvelope struct {
+	Version int             `json:"v"`
+	Data    json.RawMessage `json:"d"`
 }
 
 type ChapterDto struct {

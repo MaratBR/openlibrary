@@ -46,7 +46,7 @@ declare module '@tiptap/core' {
 const handleError = (
   error: unknown,
   props: ImageActionProps,
-  errorHandler?: (error: Error, props: ImageActionProps) => void
+  errorHandler?: (error: Error, props: ImageActionProps) => void,
 ) => {
   const typedError = error instanceof Error ? error : new Error('Unknown error')
   errorHandler?.(typedError, props)
@@ -92,7 +92,10 @@ const saveImage = async (blob: Blob, name: string, extension: string): Promise<v
   URL.revokeObjectURL(imageURL)
 }
 
-const defaultDownloadImage = async (props: ImageActionProps, options: CustomImageOptions): Promise<void> => {
+const defaultDownloadImage = async (
+  props: ImageActionProps,
+  options: CustomImageOptions,
+): Promise<void> => {
   const { src, alt } = props
   const potentialName = alt || 'image'
 
@@ -135,7 +138,7 @@ export const Image = TiptapImage.extend<CustomImageOptions>({
       ...this.parent?.(),
       allowedMimeTypes: [],
       maxFileSize: 0,
-      uploadFn: undefined
+      uploadFn: undefined,
     }
   },
 
@@ -143,23 +146,23 @@ export const Image = TiptapImage.extend<CustomImageOptions>({
     return {
       ...this.parent?.(),
       width: {
-        default: undefined
+        default: undefined,
       },
       height: {
-        default: undefined
-      }
+        default: undefined,
+      },
     }
   },
 
   addCommands() {
     return {
       setImages:
-        attrs =>
+        (attrs) =>
         ({ commands }) => {
           const [validImages, errors] = filterFiles(attrs, {
             allowedMimeTypes: this.options.allowedMimeTypes,
             maxFileSize: this.options.maxFileSize,
-            allowBase64: this.options.allowBase64
+            allowBase64: this.options.allowBase64,
           })
 
           if (errors.length > 0 && this.options.onValidationError) {
@@ -168,47 +171,47 @@ export const Image = TiptapImage.extend<CustomImageOptions>({
 
           if (validImages.length > 0) {
             return commands.insertContent(
-              validImages.map(image => {
+              validImages.map((image) => {
                 return {
                   type: this.type.name,
                   attrs: {
                     src:
                       image.src instanceof File
                         ? sanitizeUrl(URL.createObjectURL(image.src), {
-                            allowBase64: this.options.allowBase64
+                            allowBase64: this.options.allowBase64,
                           })
                         : image.src,
                     alt: image.alt,
-                    title: image.title
-                  }
+                    title: image.title,
+                  },
                 }
-              })
+              }),
             )
           }
 
           return false
         },
-      downloadImage: attrs => () => {
+      downloadImage: (attrs) => () => {
         const downloadFunc = this.options.customDownloadImage || defaultDownloadImage
         void downloadFunc({ ...attrs, action: 'download' }, this.options)
         return true
       },
-      copyImage: attrs => () => {
+      copyImage: (attrs) => () => {
         const copyImageFunc = this.options.customCopyImage || defaultCopyImage
         void copyImageFunc({ ...attrs, action: 'copyImage' }, this.options)
         return true
       },
-      copyLink: attrs => () => {
+      copyLink: (attrs) => () => {
         const copyLinkFunc = this.options.customCopyLink || defaultCopyLink
         void copyLinkFunc({ ...attrs, action: 'copyLink' }, this.options)
         return true
-      }
+      },
     }
   },
 
   addNodeView() {
     return ReactNodeViewRenderer(ImageViewBlock, {
-      className: 'block-node'
+      className: 'block-node',
     })
-  }
+  },
 })

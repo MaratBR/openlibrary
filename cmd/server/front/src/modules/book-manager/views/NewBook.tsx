@@ -1,5 +1,5 @@
-import Spinner, { ButtonSpinner } from "@/components/spinner";
-import { Button } from "@/components/ui/button";
+import { ButtonSpinner } from '@/components/spinner'
+import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
@@ -7,15 +7,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { PlusIcon } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { AgeRating } from "../../book/api";
-import { httpCreateBook } from "../api";
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { AgeRating } from '../../book/api'
+import { httpCreateBook } from '../api'
 
 export default function NewBook() {
   return (
@@ -26,42 +25,45 @@ export default function NewBook() {
 
       <NewBookForm />
     </main>
-  );
+  )
 }
 
-const tagName = z.string().min(1).max(255);
+const tagName = z.string().min(1).max(255)
 
 const formSchema = z.object({
   name: z.string().min(1).max(255),
   tags: z.array(tagName).max(60),
-  ageRating: z.enum(["?", "G", "PG", "PG-13", "R", "NC-17"]),
-});
+  summary: z.string().max(1000).default(''),
+  ageRating: z.enum(['?', 'G', 'PG', 'PG-13', 'R', 'NC-17']),
+})
 
 function NewBookForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: '',
       tags: [],
-      ageRating: "?",
+      ageRating: '?',
     },
-  });
+  })
 
   const createBook = useMutation({
     mutationFn: ({
       name,
       ageRating,
       tags,
+      summary,
     }: {
-      name: string;
-      ageRating: AgeRating;
-      tags: string[];
+      name: string
+      ageRating: AgeRating
+      tags: string[]
+      summary: string
     }) => {
-      return httpCreateBook({ name, ageRating, tags });
+      return httpCreateBook({ name, ageRating, tags, summary })
     },
-  });
+  })
 
-  const disabled = createBook.isPending;
+  const disabled = createBook.isPending
 
   return (
     <Form {...form}>
@@ -74,11 +76,7 @@ function NewBookForm() {
               <FormItem>
                 <FormLabel>Name of your book</FormLabel>
                 <FormControl>
-                  <Input
-                    disabled={disabled}
-                    placeholder="For example, UwUAnimeGirl69"
-                    {...field}
-                  />
+                  <Input disabled={disabled} placeholder="For example, UwUAnimeGirl69" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -91,13 +89,14 @@ function NewBookForm() {
         </Button>
       </form>
     </Form>
-  );
+  )
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     createBook.mutate({
       name: values.name,
       ageRating: values.ageRating,
       tags: values.tags,
-    });
+      summary: values.summary,
+    })
   }
 }

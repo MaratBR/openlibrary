@@ -1,38 +1,12 @@
-import { Card } from "@/components/ui/card";
-import { BookDetailsDto } from "../../api";
-import {
-  LabeledValue,
-  LabeledValueLabel,
-  LabeledValueLayout,
-} from "@/components/labeled-value";
-import AgeRatingBadge from "@/components/age-rating-badge";
-import { Separator } from "@/components/ui/separator";
-import WordsCount from "@/components/words-count";
-import Tag from "../Tag";
+import { Card } from '@/components/ui/card'
+import { BookDetailsDto } from '../../api'
+import { LabeledValue, LabeledValueLabel, LabeledValueLayout } from '@/components/labeled-value'
+import AgeRatingBadge from '@/components/age-rating-badge'
+import { Separator } from '@/components/ui/separator'
+import WordsCount from '@/components/words-count'
+import Tag from '../Tag'
 
 export default function BookInfoCard({ book }: { book: BookDetailsDto }) {
-  book = {
-    ...book,
-    tags: [
-      {
-        id: "rw",
-        name: "Hermione Granger/Ron Weasley",
-        isAdult: false,
-        isDefined: true,
-        isSpoiler: false,
-        category: "relationship",
-      },
-      {
-        id: "rw",
-        name: "Hermione Granger/Harry Potter",
-        isAdult: false,
-        isDefined: true,
-        isSpoiler: false,
-        category: "relationship",
-      },
-    ],
-  };
-
   return (
     <Card>
       <div className="space-y-2 py-3">
@@ -48,7 +22,7 @@ export default function BookInfoCard({ book }: { book: BookDetailsDto }) {
           <LabeledValue>
             <div className="flex flex-wrap gap-2">
               {book.tags.map((tag) => {
-                return <Tag key={tag.id} tag={tag} />;
+                return <Tag key={tag.id} tag={tag} />
               })}
             </div>
           </LabeledValue>
@@ -75,5 +49,5 @@ export default function BookInfoCard({ book }: { book: BookDetailsDto }) {
         </LabeledValueLayout>
       </div>
     </Card>
-  );
+  )
 }

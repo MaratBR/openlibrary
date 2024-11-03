@@ -1,18 +1,18 @@
-import { BookChapterDto } from "../../api";
-import { useChapterName } from "../../utils";
-import { NavLink } from "react-router-dom";
+import { BookChapterDto } from '../../api'
+import { useChapterName } from '../../utils'
+import { NavLink } from 'react-router-dom'
 
 export default function ChapterCard({
   chapter,
   bookId,
 }: {
-  chapter: BookChapterDto;
-  bookId: string;
+  chapter: BookChapterDto
+  bookId: string
 }) {
   const chapterName = useChapterName({
     name: chapter.name,
     order: chapter.order,
-  });
+  })
 
   return (
     <NavLink
@@ -22,9 +22,9 @@ export default function ChapterCard({
       <span className="font-[500]">{chapterName}</span>
       &nbsp;&nbsp;&bull;&nbsp;&nbsp;
       <span className="text-sm text-muted-foreground">
-        {chapter.words} words &nbsp;&nbsp;&bull;&nbsp;&nbsp; published{" "}
-        {new Date(chapter.createdAt).toLocaleDateString("en-US")}
+        {chapter.words} words &nbsp;&nbsp;&bull;&nbsp;&nbsp; published{' '}
+        {new Date(chapter.createdAt).toLocaleDateString('en-US')}
       </span>
     </NavLink>
-  );
+  )
 }

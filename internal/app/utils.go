@@ -48,6 +48,14 @@ func mapSlice[T, U any](ts []T, f func(T) U) []U {
 	return us
 }
 
+func mapKeys[K comparable, V any](m map[K]V) []K {
+	keys := make([]K, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 type Nullable[T any] struct {
 	Value T
 	Valid bool

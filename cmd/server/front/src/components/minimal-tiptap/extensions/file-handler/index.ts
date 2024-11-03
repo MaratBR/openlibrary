@@ -30,13 +30,13 @@ const FileHandlePlugin = (options: FileHandlePluginOptions) => {
 
         const pos = view.posAtCoords({
           left: event.clientX,
-          top: event.clientY
+          top: event.clientY,
         })
 
         const [validFiles, errors] = filterFiles(Array.from(dataTransfer.files), {
           allowedMimeTypes,
           maxFileSize,
-          allowBase64: options.allowBase64
+          allowBase64: options.allowBase64,
         })
 
         if (errors.length > 0 && onValidationError) {
@@ -61,7 +61,7 @@ const FileHandlePlugin = (options: FileHandlePluginOptions) => {
         const [validFiles, errors] = filterFiles(Array.from(clipboardData.files), {
           allowedMimeTypes,
           maxFileSize,
-          allowBase64: options.allowBase64
+          allowBase64: options.allowBase64,
         })
         const html = clipboardData.getData('text/html')
 
@@ -72,8 +72,8 @@ const FileHandlePlugin = (options: FileHandlePluginOptions) => {
         if (validFiles.length > 0 && onPaste) {
           onPaste(editor, validFiles, html)
         }
-      }
-    }
+      },
+    },
   })
 }
 
@@ -84,7 +84,7 @@ export const FileHandler = Extension.create<Omit<FileHandlePluginOptions, 'key' 
     return {
       allowBase64: false,
       allowedMimeTypes: [],
-      maxFileSize: 0
+      maxFileSize: 0,
     }
   },
 
@@ -93,8 +93,8 @@ export const FileHandler = Extension.create<Omit<FileHandlePluginOptions, 'key' 
       FileHandlePlugin({
         key: new PluginKey(this.name),
         editor: this.editor,
-        ...this.options
-      })
+        ...this.options,
+      }),
     ]
-  }
+  },
 })

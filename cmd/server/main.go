@@ -58,13 +58,18 @@ func main() {
 
 		r.Handle("/auth/csrf", http.HandlerFunc(refreshCsrfToken))
 
-		tagsService := app.NewTagsService()
+		tagsService := app.NewTagsService(db)
 		bookService := app.NewBookService(db, tagsService)
 		bookManagerService := app.NewBookManagerService(db, tagsService)
 		bookController := newBookController(bookService)
 
 		r.Get("/books/{id}", bookController.GetBook)
 		r.Get("/books/{bookID}/chapters/{chapterID}", bookController.GetChapter)
+
+		r.Route("/tags", func(r chi.Router) {
+			tagsController := newTagsController(tagsService)
+			r.Get("/search", tagsController.Search)
+		})
 
 		r.Route("/manager", func(r chi.Router) {
 			r.Use(requiresAuthorization)
@@ -74,17 +79,23 @@ func main() {
 			r.Post("/books", bookManagerController.CreateBook)
 			r.Get("/books/my-books", bookManagerController.GetMyBooks)
 			r.Get("/books/{bookID}", bookManagerController.GetBook)
+			r.Post("/books/{bookID}", bookManagerController.UpdateBook)
 			r.Post("/books/{bookID}/chapters", bookManagerController.CreateChapter)
 			r.Post("/books/{bookID}/chapters/{chapterID}", bookManagerController.UpdateChapter)
-
 		})
-
 	})
 
 	go func() {
 		err := authService.EnsureAdminUserExists(context.Background())
 		if err != nil {
 			slog.Error("failed to ensure admin user exists", "err", err)
+		}
+	}()
+
+	go func() {
+		err := app.ImportPredefinedTags(context.Background(), store.New(db))
+		if err != nil {
+			slog.Error("failed to import predefined tags", "err", err)
 		}
 	}()
 

@@ -3,9 +3,34 @@ package app
 import (
 	"io"
 	"strings"
+
+	"github.com/MaratBR/openlibrary/internal/app/htmlsanitizer"
+	"github.com/k3a/html2text"
 )
 
-func CountWords(content string) int32 {
+func SanitizeHtml(html string) string {
+	return htmlsanitizer.Sanitize(html)
+}
+
+type ProcessedContentData struct {
+	Sanitized string
+	Words     int32
+}
+
+func ProcessContent(content string) ProcessedContentData {
+	sanitized := SanitizeHtml(content)
+	words := CountWordsHtml(sanitized)
+	return ProcessedContentData{Sanitized: sanitized, Words: words}
+}
+
+func CountWordsHtml(html string) int32 {
+	text := html2text.HTML2Text(html)
+	words := countWordsPlainText(text)
+	return words
+}
+
+func countWordsPlainText(content string) int32 {
+
 	r := strings.NewReader(content)
 	var (
 		words        int32
@@ -34,9 +59,4 @@ func CountWords(content string) int32 {
 	}
 
 	return words
-}
-
-func CleanUpContent(content string) string {
-	// TODO implement
-	return content
 }

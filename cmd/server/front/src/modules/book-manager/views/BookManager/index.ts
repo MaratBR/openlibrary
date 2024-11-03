@@ -1,3 +1,3 @@
-import BookManager from "./BookManager";
+import BookManager from './BookManager'
 
-export { BookManager };
+export { BookManager }

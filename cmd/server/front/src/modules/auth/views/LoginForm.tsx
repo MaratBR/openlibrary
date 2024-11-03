@@ -1,41 +1,40 @@
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { httpSignIn } from "../api";
+} from '@/components/ui/form'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { httpSignIn } from '../api'
 
 const formSchema = z.object({
   username: z.string().min(1).max(50),
   password: z.string().min(1).max(50),
-});
+})
 
 export default function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
-      password: "",
+      username: '',
+      password: '',
     },
-  });
+  })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       await httpSignIn({
         username: values.username,
         password: values.password,
-      });
+      })
     } catch {
-      alert("failed to log in");
+      alert('failed to log in')
     }
   }
 
@@ -71,5 +70,5 @@ export default function LoginForm() {
         <Button type="submit">Log in</Button>
       </form>
     </Form>
-  );
+  )
 }

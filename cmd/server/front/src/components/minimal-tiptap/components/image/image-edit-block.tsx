@@ -35,7 +35,7 @@ export const ImageEditBlock: React.FC<ImageEditBlockProps> = ({ editor, close })
       await insertImages()
       close()
     },
-    [editor, close]
+    [editor, close],
   )
 
   const handleSubmit = React.useCallback(
@@ -48,7 +48,7 @@ export const ImageEditBlock: React.FC<ImageEditBlockProps> = ({ editor, close })
         close()
       }
     },
-    [editor, link, close]
+    [editor, link, close],
   )
 
   return (
@@ -73,7 +73,14 @@ export const ImageEditBlock: React.FC<ImageEditBlockProps> = ({ editor, close })
       <Button type="button" className="w-full" onClick={handleClick}>
         Upload from your computer
       </Button>
-      <input type="file" accept="image/*" ref={fileInputRef} multiple className="hidden" onChange={handleFile} />
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        multiple
+        className="hidden"
+        onChange={handleFile}
+      />
     </form>
   )
 }

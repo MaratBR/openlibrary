@@ -13,17 +13,19 @@ create type age_rating as enum (
 create table books (
     id int8 primary key,
     name text not null,
+    summary text not null,
     author_user_id uuid not null references users(id),
     created_at timestamptz not null default now(),
     age_rating age_rating not null default '?',
     words int4 not null default 0,
     chapters int4 not null default 0,
-    tags text[] not null default '{}'
+    tag_ids int8[] not null default '{}',
+    cached_parent_tag_ids int8[] not null default '{}'
 );
 
 create index ix_books_author_user_id on books (author_user_id);
 create index ix_books_age_rating on books (age_rating);
-create index ix_books_tags on books using gin(tags);
+create index ix_books_tags on books using gin(cached_parent_tag_ids);
 create index ix_books_name on books using gin(name);
 
 

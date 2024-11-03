@@ -1,3 +1,3 @@
 export default function WordsCount({ value }: { value: number }) {
-  return <span className="">{value}</span>;
+  return <span className="">{value}</span>
 }

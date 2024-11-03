@@ -57,15 +57,62 @@ func (ns NullAgeRating) Value() (driver.Value, error) {
 	return string(ns.AgeRating), nil
 }
 
+type TagType string
+
+const (
+	TagTypeFreeform TagType = "freeform"
+	TagTypeWarning  TagType = "warning"
+	TagTypeFandom   TagType = "fandom"
+	TagTypeReltype  TagType = "reltype"
+	TagTypeRel      TagType = "rel"
+)
+
+func (e *TagType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TagType(s)
+	case string:
+		*e = TagType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TagType: %T", src)
+	}
+	return nil
+}
+
+type NullTagType struct {
+	TagType TagType
+	Valid   bool // Valid is true if TagType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTagType) Scan(value interface{}) error {
+	if value == nil {
+		ns.TagType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TagType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTagType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TagType), nil
+}
+
 type Book struct {
-	ID           int64
-	Name         string
-	AuthorUserID pgtype.UUID
-	CreatedAt    pgtype.Timestamptz
-	AgeRating    AgeRating
-	Words        int32
-	Chapters     int32
-	Tags         []string
+	ID                 int64
+	Name               string
+	Summary            string
+	AuthorUserID       pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	AgeRating          AgeRating
+	Words              int32
+	Chapters           int32
+	TagIds             []int64
+	CachedParentTagIds []int64
 }
 
 type BookChapter struct {
@@ -92,6 +139,19 @@ type CollectionBook struct {
 	CollectionID int64
 	BookID       int64
 	Order        int32
+}
+
+type DefinedTag struct {
+	ID             int64
+	Name           string
+	Description    string
+	IsSpoiler      bool
+	IsAdult        bool
+	CreatedAt      pgtype.Timestamptz
+	TagType        TagType
+	SynonymOf      pgtype.Int8
+	IsDefault      bool
+	LowercasedName string
 }
 
 type Session struct {

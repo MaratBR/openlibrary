@@ -23,14 +23,14 @@ export const Selection = Extension.create({
 
             return DecorationSet.create(state.doc, [
               Decoration.inline(state.selection.from, state.selection.to, {
-                class: 'selection'
-              })
+                class: 'selection',
+              }),
             ])
-          }
-        }
-      })
+          },
+        },
+      }),
     ]
-  }
+  },
 })
 
 export default Selection

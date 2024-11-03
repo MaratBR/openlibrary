@@ -1,14 +1,14 @@
-import { create } from "zustand";
+import { create } from 'zustand'
 
 type AuthState = {
   user: {
-    id: string;
-    name: string;
-    sessionExpiresAt: string;
-  } | null;
+    id: string
+    name: string
+    sessionExpiresAt: string
+  } | null
 
-  reset: () => void;
-};
+  reset: () => void
+}
 
 const useAuthState = create<AuthState>()((set) => ({
   user: window.SERVER_DATA.session
@@ -19,8 +19,8 @@ const useAuthState = create<AuthState>()((set) => ({
       }
     : null,
   reset() {
-    set({ user: null });
+    set({ user: null })
   },
-}));
+}))
 
-export default useAuthState;
+export default useAuthState

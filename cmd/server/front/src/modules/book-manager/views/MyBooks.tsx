@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import Spinner from "@/components/spinner";
-import { Button } from "@/components/ui/button";
-import { PenIcon } from "lucide-react";
-import { useNavigate } from "react-router";
-import BookCard from "../../book/views/BookCard";
-import { httpGetMyBooks } from "../api";
+import { useQuery } from '@tanstack/react-query'
+import Spinner from '@/components/spinner'
+import { Button } from '@/components/ui/button'
+import { PenIcon } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import BookCard from '../../book/views/BookCard'
+import { httpGetMyBooks } from '../api'
 
 export default function MyBooks() {
   return (
@@ -14,26 +14,24 @@ export default function MyBooks() {
       </header>
       <BooksList />
     </main>
-  );
+  )
 }
 
 function BooksList() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const { data, isFetching } = useQuery({
-    queryKey: ["my-books"],
+    queryKey: ['my-books'],
     queryFn: () => httpGetMyBooks().then((r) => r.books),
     initialData: [],
-  });
+  })
 
   return (
     <div>
       {isFetching && <Spinner />}
       {data.length === 0 && !isFetching && (
         <div className="mb-5">
-          <p className="text-muted-foreground">
-            You have not written any books yet.
-          </p>
+          <p className="text-muted-foreground">You have not written any books yet.</p>
         </div>
       )}
       <Button variant="outline" onClick={handleStartNewBookClick}>
@@ -46,9 +44,9 @@ function BooksList() {
         ))}
       </div>
     </div>
-  );
+  )
 
   function handleStartNewBookClick() {
-    navigate("/new-book");
+    navigate('/new-book')
   }
 }

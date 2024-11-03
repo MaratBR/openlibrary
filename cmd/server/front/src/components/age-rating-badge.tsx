@@ -1,23 +1,23 @@
-import { AgeRating } from "@/modules/book/api";
-import clsx from "clsx";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { useAgeRatingsInfo } from "./age-rating-util";
+import { AgeRating } from '@/modules/book/api'
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
+import { useAgeRatingsInfo } from './age-rating-util'
+import { cn } from '@/lib/utils'
 
 export type AgeRatingProps = {
-  value: AgeRating;
-  disableTooltip?: boolean;
-  className?: string;
-};
+  value: AgeRating
+  disableTooltip?: boolean
+  className?: string
+}
 
 export default function AgeRatingBadge({
   value,
   disableTooltip = false,
   className,
 }: AgeRatingProps) {
-  const ratings = useAgeRatingsInfo();
+  const ratings = useAgeRatingsInfo()
 
   if (disableTooltip) {
-    return <AgeRatingBadgeNoTooltip className={className} value={value} />;
+    return <AgeRatingBadgeNoTooltip className={className} value={value} />
   }
 
   return (
@@ -35,28 +35,28 @@ export default function AgeRatingBadge({
         </div>
       </TooltipContent>
     </Tooltip>
-  );
+  )
 }
 
 function AgeRatingBadgeNoTooltip({ value, className }: AgeRatingProps) {
   return (
     <div
-      className={clsx(
+      className={cn(
         className,
         {
-          "text-white bg-[#006835] w-7": value === "G",
-          "text-white bg-[#f15a24] w-9": value === "PG",
-          "text-white bg-[#955ea9] w-16": value === "PG-13",
-          "text-white bg-[#d8121a] w-7": value === "R",
-          "text-white bg-[#1b3e9b] w-16": value === "NC-17",
-          "text-white bg-gray-500 w-7": value === "?",
+          'text-white bg-[#006835] w-7': value === 'G',
+          'text-white bg-[#f15a24] w-9': value === 'PG',
+          'text-white bg-[#955ea9] w-16': value === 'PG-13',
+          'text-white bg-[#d8121a] w-7': value === 'R',
+          'text-white bg-[#1b3e9b] w-16': value === 'NC-17',
+          'text-white bg-gray-500 w-7': value === '?',
         },
-        "font-semibold text-[1.2em] rounded-[5px] h-7 flex flex-col align-middle items-center justify-center"
+        'font-semibold text-[1.2em] rounded-[5px] h-7 flex flex-col align-middle items-center justify-center',
       )}
     >
       {value}
     </div>
-  );
+  )
 }
 
 function AgeRatingTooltipContent({ value }: { value: AgeRating }) {
@@ -64,5 +64,5 @@ function AgeRatingTooltipContent({ value }: { value: AgeRating }) {
     <div className="w-[300px]">
       <AgeRatingBadgeNoTooltip value={value} />
     </div>
-  );
+  )
 }

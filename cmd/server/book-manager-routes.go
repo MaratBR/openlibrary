@@ -18,6 +18,7 @@ type createBookRequest struct {
 	Name      string        `json:"name"`
 	AgeRating app.AgeRating `json:"ageRating"`
 	Tags      []string      `json:"tags"`
+	Summary   string        `json:"summary"`
 }
 
 type createBookResponse struct {
@@ -37,11 +38,6 @@ func (c *bookManagerController) CreateBook(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if len(req.Name) == 0 || len(req.Name) > 50 {
-		writeUnprocessableEntity(w, "book name must be between 1 and 50 characters")
-		return
-	}
-
 	bookID, err := c.service.CreateBook(r.Context(), app.CreateBookCommand{
 		UserID:    session.UserID,
 		Name:      req.Name,
@@ -53,6 +49,57 @@ func (c *bookManagerController) CreateBook(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	writeJSON(w, createBookResponse{ID: bookID})
+}
+
+type updateBookRequest struct {
+	Name      string        `json:"name"`
+	AgeRating app.AgeRating `json:"ageRating"`
+	Tags      []string      `json:"tags"`
+	Summary   string        `json:"summary"`
+}
+
+type updateBookResponse struct {
+	Book app.ManagerBookDetailsDto `json:"book"`
+}
+
+func (c *bookManagerController) UpdateBook(w http.ResponseWriter, r *http.Request) {
+	bookID, err := urlParamInt64(r, "bookID")
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+
+	session, ok := getSession(r)
+	if !ok {
+		writeUnauthorizedError(w)
+		return
+	}
+
+	req, err := getJSON[updateBookRequest](r)
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+
+	err = c.service.UpdateBook(r.Context(), app.UpdateBookCommand{
+		BookID:    bookID,
+		UserID:    session.UserID,
+		Name:      req.Name,
+		Tags:      req.Tags,
+		AgeRating: req.AgeRating,
+	})
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+
+	book, err := c.service.GetBook(r.Context(), app.ManagerGetBookQuery{BookID: bookID, ActorUserID: session.UserID})
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+
+	writeJSON(w, updateBookResponse{Book: book.Book})
 }
 
 type getBookResponse struct {

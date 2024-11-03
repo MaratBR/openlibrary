@@ -1,21 +1,32 @@
 [
     {
-        name: "Major character death",
-        isAdult: false,
-        isSpoiler: true,
+        name: "Major character death"
+        isAdult: false
+        isSpoiler: true
         category: warning
     },
     {
-        name: "Graphical depiction of violence",
-        isAdult: false,
-        isSpoiler: false,
+        name: "Graphical depiction of violence"
+        isAdult: false
+        isSpoiler: false
         category: warning
     },
     {
-        name: "Suicide or self-harm",
-        isAdult: false,
-        // not sure if this can be considered a "spoiler"
-        isSpoiler: false,
+        name: "Suicide"
+        isAdult: false
+        isSpoiler: false
+        category: warning
+    },
+    {
+        name: "Self-harm"
+        isAdult: false
+        isSpoiler: false
+        category: warning
+    },
+    {
+        name: Underage
+        isAdult: false // not sure if this is adult or not since it does not mean there are explicit content in there
+        isSpoiler: false
         category: warning
     }
 ]

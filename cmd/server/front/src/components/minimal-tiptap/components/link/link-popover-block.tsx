@@ -23,7 +23,7 @@ export const LinkPopoverBlock: React.FC<LinkPopoverBlockProps> = ({ url, onClear
         })
         .catch(console.error)
     },
-    [url]
+    [url],
   )
 
   const handleOpenLink = React.useCallback(() => {
@@ -49,9 +49,9 @@ export const LinkPopoverBlock: React.FC<LinkPopoverBlockProps> = ({ url, onClear
           tooltip={copyTitle}
           onClick={handleCopy}
           tooltipOptions={{
-            onPointerDownOutside: e => {
+            onPointerDownOutside: (e) => {
               if (e.target === e.currentTarget) e.preventDefault()
-            }
+            },
           }}
         >
           <CopyIcon className="size-4" />

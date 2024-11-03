@@ -22,84 +22,72 @@ type CreateBookCommand struct {
 	UserID    uuid.UUID
 	AgeRating AgeRating
 	Tags      []string
+	Summary   string
 }
 
 func (s *BookManagerService) CreateBook(ctx context.Context, input CreateBookCommand) (int64, error) {
+	err := validateBookName(input.Name)
+	if err != nil {
+		return 0, err
+	}
+
+	err = validateBookSummary(input.Summary)
+	if err != nil {
+		return 0, err
+	}
+
+	tags, err := s.tagsService.findBookTags(ctx, input.Tags)
+	if err != nil {
+		return 0, err
+	}
+
 	id := GenID()
-	err := s.queries.InsertBook(ctx, store.InsertBookParams{
-		ID:           id,
-		Name:         input.Name,
-		AuthorUserID: uuidDomainToDb(input.UserID),
-		CreatedAt:    timeToTimestamptz(time.Now()),
-		Tags:         input.Tags,
-		AgeRating:    ageRatingDbValue(input.AgeRating),
+	err = s.queries.InsertBook(ctx, store.InsertBookParams{
+		ID:                 id,
+		Name:               input.Name,
+		AuthorUserID:       uuidDomainToDb(input.UserID),
+		CreatedAt:          timeToTimestamptz(time.Now()),
+		TagIds:             tags.TagIds,
+		CachedParentTagIds: tags.ParentTagIds,
+		AgeRating:          ageRatingDbValue(input.AgeRating),
+		Summary:            input.Summary,
 	})
 	return id, err
 }
 
-type CreateBookChapterCommand struct {
-	BookID          int64
-	Name            string
-	Content         string
-	IsAdultOverride bool
-	Summary         string
+type UpdateBookCommand struct {
+	BookID    int64
+	UserID    uuid.UUID
+	Name      string
+	AgeRating AgeRating
+	Tags      []string
+	Summary   string
 }
 
-type CreateBookChapterResult struct {
-	ID int64
-}
-
-func (s *BookManagerService) CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterResult, error) {
-	lastOrder, err := s.queries.GetLastChapterOrder(ctx, input.BookID)
-	if err != nil {
-		return CreateBookChapterResult{}, err
-	}
-
-	id := GenID()
-	content := CleanUpContent(input.Content)
-	err = s.queries.InsertBookChapter(ctx, store.InsertBookChapterParams{
-		ID:        id,
-		BookID:    input.BookID,
-		Name:      input.Name,
-		CreatedAt: timeToTimestamptz(time.Now()),
-		Content:   content,
-		Order:     lastOrder + 1,
-		Words:     CountWords(content),
-		Summary:   input.Summary,
-	})
-	if err != nil {
-		return CreateBookChapterResult{}, err
-	}
-	err = s.queries.RecalculateBookStats(ctx, input.BookID)
-	if err != nil {
-		return CreateBookChapterResult{}, err
-	}
-	return CreateBookChapterResult{ID: id}, nil
-}
-
-type UpdateBookChapterCommand struct {
-	ID              int64
-	Name            string
-	Content         string
-	IsAdultOverride bool
-}
-
-func (s *BookManagerService) UpdateBookChapter(ctx context.Context, input UpdateBookChapterCommand) error {
-	content := CleanUpContent(input.Content)
-	bookID, err := s.queries.UpdateBookChapter(ctx, store.UpdateBookChapterParams{
-		ID:      input.ID,
-		Name:    input.Name,
-		Content: content,
-		Words:   CountWords(content),
-	})
+func (s *BookManagerService) UpdateBook(ctx context.Context, input UpdateBookCommand) error {
+	err := validateBookName(input.Name)
 	if err != nil {
 		return err
 	}
-	err = s.queries.RecalculateBookStats(ctx, bookID)
+
+	err = validateBookSummary(input.Summary)
 	if err != nil {
 		return err
 	}
-	return nil
+
+	tags, err := s.tagsService.findBookTags(ctx, input.Tags)
+	if err != nil {
+		return err
+	}
+
+	return s.queries.UpdateBook(ctx, store.UpdateBookParams{
+		ID:                 input.BookID,
+		Name:               input.Name,
+		TagIds:             tags.TagIds,
+		CachedParentTagIds: tags.ParentTagIds,
+		AgeRating:          ageRatingDbValue(input.AgeRating),
+		Summary:            input.Summary,
+	})
 }
 
 type ManagerGetBookQuery struct {
@@ -112,7 +100,7 @@ type ManagerBookDetailsDto struct {
 	Name            string               `json:"name"`
 	AgeRating       AgeRating            `json:"ageRating"`
 	IsAdult         bool                 `json:"isAdult"`
-	Tags            []TagDto             `json:"tags"`
+	Tags            []DefinedTagDto      `json:"tags"`
 	Words           int                  `json:"words"`
 	WordsPerChapter int                  `json:"wordsPerChapter"`
 	CreatedAt       time.Time            `json:"createdAt"`
@@ -131,14 +119,20 @@ func (s *BookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		return ManagerGetBookResult{}, err
 	}
 
+	tags, err := s.tagsService.GetTagsByIds(ctx, book.TagIds)
+	if err != nil {
+		return ManagerGetBookResult{}, err
+	}
+
 	ageRating := ageRatingFromDbValue(book.AgeRating)
 	authorID := uuidDbToDomain(book.AuthorUserID)
+
 	bookDto := ManagerBookDetailsDto{
 		ID:              book.ID,
 		Name:            book.Name,
 		AgeRating:       ageRating,
 		IsAdult:         ageRating.IsAdult(),
-		Tags:            aggregateTags(s.tagsService, book.Tags),
+		Tags:            tags,
 		Words:           int(book.Words),
 		WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 		CreatedAt:       book.CreatedAt.Time,
@@ -207,13 +201,19 @@ func (s *BookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 		return GetUserBooksResult{}, err
 	}
 
-	return GetUserBooksResult{Books: s.aggregateUserBooks(books)}, nil
+	userBooks, err := s.aggregateUserBooks(ctx, books)
+	if err != nil {
+		return GetUserBooksResult{}, err
+	}
+
+	return GetUserBooksResult{Books: userBooks}, nil
 }
 
-func (s *BookManagerService) aggregateUserBooks(rows []store.GetUserBooksRow) []AuthorBookDto {
+func (s *BookManagerService) aggregateUserBooks(ctx context.Context, rows []store.GetUserBooksRow) ([]AuthorBookDto, error) {
 	books := []AuthorBookDto{}
 	var (
-		book AuthorBookDto
+		book    AuthorBookDto
+		tagsAgg = newTagsAggregator(s.tagsService)
 	)
 
 	for _, row := range rows {
@@ -222,12 +222,14 @@ func (s *BookManagerService) aggregateUserBooks(rows []store.GetUserBooksRow) []
 				books = append(books, book)
 			}
 
+			tagsAgg.Add(book.ID, row.TagIds)
+
 			book = AuthorBookDto{
 				ID:              row.ID,
 				Name:            row.Name,
 				CreatedAt:       row.CreatedAt.Time,
 				AgeRating:       AgeRatingPG13,
-				Tags:            aggregateTags(s.tagsService, row.Tags),
+				Tags:            nil, // will be set later
 				Words:           int(row.Words),
 				Chapters:        int(row.Chapters),
 				WordsPerChapter: getWordsPerChapter(int(row.Words), int(row.Chapters)),
@@ -250,5 +252,86 @@ func (s *BookManagerService) aggregateUserBooks(rows []store.GetUserBooksRow) []
 		books = append(books, book)
 	}
 
-	return books
+	tags, err := tagsAgg.Fetch(ctx)
+	if err != nil {
+		return []AuthorBookDto{}, err
+	}
+
+	for i := 0; i < len(books); i++ {
+		bookTagIDs := tagsAgg.BookTags(books[i].ID)
+		if bookTagIDs != nil {
+			books[i].Tags = mapSlice(bookTagIDs, func(tagID int64) DefinedTagDto {
+				return tags[tagID]
+			})
+		} else {
+			books[i].Tags = []DefinedTagDto{}
+		}
+	}
+
+	return books, nil
+}
+
+type CreateBookChapterCommand struct {
+	BookID          int64
+	Name            string
+	Content         string
+	IsAdultOverride bool
+	Summary         string
+}
+
+type CreateBookChapterResult struct {
+	ID int64
+}
+
+func (s *BookManagerService) CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterResult, error) {
+	lastOrder, err := s.queries.GetLastChapterOrder(ctx, input.BookID)
+	if err != nil {
+		return CreateBookChapterResult{}, err
+	}
+
+	id := GenID()
+	content := ProcessContent(input.Content)
+	err = s.queries.InsertBookChapter(ctx, store.InsertBookChapterParams{
+		ID:        id,
+		BookID:    input.BookID,
+		Name:      input.Name,
+		CreatedAt: timeToTimestamptz(time.Now()),
+		Content:   content.Sanitized,
+		Order:     lastOrder + 1,
+		Words:     content.Words,
+		Summary:   input.Summary,
+	})
+	if err != nil {
+		return CreateBookChapterResult{}, err
+	}
+	err = s.queries.RecalculateBookStats(ctx, input.BookID)
+	if err != nil {
+		return CreateBookChapterResult{}, err
+	}
+	return CreateBookChapterResult{ID: id}, nil
+}
+
+type UpdateBookChapterCommand struct {
+	ID              int64
+	Name            string
+	Content         string
+	IsAdultOverride bool
+}
+
+func (s *BookManagerService) UpdateBookChapter(ctx context.Context, input UpdateBookChapterCommand) error {
+	content := ProcessContent(input.Content)
+	bookID, err := s.queries.UpdateBookChapter(ctx, store.UpdateBookChapterParams{
+		ID:      input.ID,
+		Name:    input.Name,
+		Content: content.Sanitized,
+		Words:   content.Words,
+	})
+	if err != nil {
+		return err
+	}
+	err = s.queries.RecalculateBookStats(ctx, bookID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

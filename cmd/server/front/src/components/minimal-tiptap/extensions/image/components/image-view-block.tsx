@@ -26,7 +26,13 @@ interface ImageState {
   naturalSize: ElementDimensions
 }
 
-export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, selected, updateAttributes }) => {
+export const ImageViewBlock: React.FC<NodeViewProps> = ({
+  editor,
+  node,
+  getPos,
+  selected,
+  updateAttributes,
+}) => {
   const { src: initialSrc, width: initialWidth, height: initialHeight } = node.attrs
   const [imageState, setImageState] = React.useState<ImageState>({
     src: initialSrc,
@@ -34,7 +40,7 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, 
     imageLoaded: false,
     isZoomed: false,
     error: false,
-    naturalSize: { width: initialWidth, height: initialHeight }
+    naturalSize: { width: initialWidth, height: initialHeight },
   })
 
   const containerRef = React.useRef<HTMLDivElement>(null)
@@ -51,7 +57,7 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, 
       focus()
       updateAttributes({ width, height })
     },
-    [focus, updateAttributes]
+    [focus, updateAttributes],
   )
 
   const aspectRatio = imageState.naturalSize.width / imageState.naturalSize.height
@@ -61,20 +67,21 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, 
     editor,
     node,
     src: imageState.src,
-    onViewClick: isZoomed => setImageState(prev => ({ ...prev, isZoomed }))
+    onViewClick: (isZoomed) => setImageState((prev) => ({ ...prev, isZoomed })),
   })
 
-  const { currentWidth, currentHeight, updateDimensions, initiateResize, isResizing } = useDragResize({
-    initialWidth: initialWidth ?? imageState.naturalSize.width,
-    initialHeight: initialHeight ?? imageState.naturalSize.height,
-    contentWidth: imageState.naturalSize.width,
-    contentHeight: imageState.naturalSize.height,
-    gridInterval: 0.1,
-    onDimensionsChange,
-    minWidth: MIN_WIDTH,
-    minHeight: MIN_HEIGHT,
-    maxWidth
-  })
+  const { currentWidth, currentHeight, updateDimensions, initiateResize, isResizing } =
+    useDragResize({
+      initialWidth: initialWidth ?? imageState.naturalSize.width,
+      initialHeight: initialHeight ?? imageState.naturalSize.height,
+      contentWidth: imageState.naturalSize.width,
+      contentHeight: imageState.naturalSize.height,
+      gridInterval: 0.1,
+      onDimensionsChange,
+      minWidth: MIN_WIDTH,
+      minHeight: MIN_HEIGHT,
+      maxWidth,
+    })
 
   const shouldMerge = React.useMemo(() => currentWidth <= 180, [currentWidth])
 
@@ -83,29 +90,29 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, 
       const img = ev.target as HTMLImageElement
       const newNaturalSize = {
         width: img.naturalWidth,
-        height: img.naturalHeight
+        height: img.naturalHeight,
       }
-      setImageState(prev => ({
+      setImageState((prev) => ({
         ...prev,
         naturalSize: newNaturalSize,
-        imageLoaded: true
+        imageLoaded: true,
       }))
       updateAttributes({
         width: newNaturalSize.width,
         height: newNaturalSize.height,
         alt: img.alt,
-        title: img.title
+        title: img.title,
       })
 
       if (!initialWidth) {
-        updateDimensions(state => ({ ...state, width: newNaturalSize.width }))
+        updateDimensions((state) => ({ ...state, width: newNaturalSize.width }))
       }
     },
-    [initialWidth, updateAttributes, updateDimensions]
+    [initialWidth, updateAttributes, updateDimensions],
   )
 
   const handleImageError = React.useCallback(() => {
-    setImageState(prev => ({ ...prev, error: true, imageLoaded: true }))
+    setImageState((prev) => ({ ...prev, error: true, imageLoaded: true }))
   }, [])
 
   const handleResizeStart = React.useCallback(
@@ -113,7 +120,7 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, 
       setActiveResizeHandle(direction)
       initiateResize(direction)(event)
     },
-    [initiateResize]
+    [initiateResize],
   )
 
   const handleResizeEnd = React.useCallback(() => {
@@ -128,33 +135,33 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, 
 
   React.useEffect(() => {
     const handleImage = async () => {
-      const imageExtension = editor.options.extensions.find(ext => ext.name === 'image')
+      const imageExtension = editor.options.extensions.find((ext) => ext.name === 'image')
       const { uploadFn } = imageExtension?.options ?? {}
 
       if (initialSrc.startsWith('blob:')) {
         if (!uploadFn) {
           try {
             const base64 = await blobUrlToBase64(initialSrc)
-            setImageState(prev => ({ ...prev, src: base64 }))
+            setImageState((prev) => ({ ...prev, src: base64 }))
             updateAttributes({ src: base64 })
           } catch {
-            setImageState(prev => ({ ...prev, error: true }))
+            setImageState((prev) => ({ ...prev, error: true }))
           }
         } else {
           try {
-            setImageState(prev => ({ ...prev, isServerUploading: true }))
+            setImageState((prev) => ({ ...prev, isServerUploading: true }))
             const url = await uploadFn(initialSrc, editor)
-            setImageState(prev => ({
+            setImageState((prev) => ({
               ...prev,
               src: url,
-              isServerUploading: false
+              isServerUploading: false,
             }))
             updateAttributes({ src: url })
           } catch {
-            setImageState(prev => ({
+            setImageState((prev) => ({
               ...prev,
               error: true,
-              isServerUploading: false
+              isServerUploading: false,
             }))
           }
         }
@@ -165,19 +172,23 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, 
   }, [editor, initialSrc, updateAttributes])
 
   return (
-    <NodeViewWrapper ref={containerRef} data-drag-handle className="relative text-center leading-none">
+    <NodeViewWrapper
+      ref={containerRef}
+      data-drag-handle
+      className="relative text-center leading-none"
+    >
       <div
         className="group/node-image relative mx-auto rounded-md object-contain"
         style={{
           maxWidth: `min(${maxWidth}px, 100%)`,
           width: currentWidth,
           maxHeight: MAX_HEIGHT,
-          aspectRatio: `${imageState.naturalSize.width} / ${imageState.naturalSize.height}`
+          aspectRatio: `${imageState.naturalSize.width} / ${imageState.naturalSize.height}`,
         }}
       >
         <div
           className={cn('relative flex h-full cursor-default flex-col items-center gap-2 rounded', {
-            'outline outline-2 outline-offset-1 outline-primary': selected || isResizing
+            'outline outline-2 outline-offset-1 outline-primary': selected || isResizing,
           })}
         >
           <div className="h-full contain-paint">
@@ -197,16 +208,16 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, 
 
               <ControlledZoom
                 isZoomed={imageState.isZoomed}
-                onZoomChange={() => setImageState(prev => ({ ...prev, isZoomed: false }))}
+                onZoomChange={() => setImageState((prev) => ({ ...prev, isZoomed: false }))}
               >
                 <img
                   className={cn('h-auto rounded object-contain transition-shadow', {
-                    'opacity-0': !imageState.imageLoaded || imageState.error
+                    'opacity-0': !imageState.imageLoaded || imageState.error,
                   })}
                   style={{
                     maxWidth: `min(100%, ${maxWidth}px)`,
                     minWidth: `${MIN_WIDTH}px`,
-                    maxHeight: MAX_HEIGHT
+                    maxHeight: MAX_HEIGHT,
                   }}
                   width={currentWidth}
                   height={currentHeight}
@@ -220,29 +231,36 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({ editor, node, getPos, 
 
             {imageState.isServerUploading && <ImageOverlay />}
 
-            {editor.isEditable && imageState.imageLoaded && !imageState.error && !imageState.isServerUploading && (
-              <>
-                <ResizeHandle
-                  onPointerDown={handleResizeStart('left')}
-                  className={cn('left-1', {
-                    hidden: isResizing && activeResizeHandle === 'right'
-                  })}
-                  isResizing={isResizing && activeResizeHandle === 'left'}
-                />
-                <ResizeHandle
-                  onPointerDown={handleResizeStart('right')}
-                  className={cn('right-1', {
-                    hidden: isResizing && activeResizeHandle === 'left'
-                  })}
-                  isResizing={isResizing && activeResizeHandle === 'right'}
-                />
-              </>
-            )}
+            {editor.isEditable &&
+              imageState.imageLoaded &&
+              !imageState.error &&
+              !imageState.isServerUploading && (
+                <>
+                  <ResizeHandle
+                    onPointerDown={handleResizeStart('left')}
+                    className={cn('left-1', {
+                      hidden: isResizing && activeResizeHandle === 'right',
+                    })}
+                    isResizing={isResizing && activeResizeHandle === 'left'}
+                  />
+                  <ResizeHandle
+                    onPointerDown={handleResizeStart('right')}
+                    className={cn('right-1', {
+                      hidden: isResizing && activeResizeHandle === 'left',
+                    })}
+                    isResizing={isResizing && activeResizeHandle === 'right'}
+                  />
+                </>
+              )}
           </div>
 
           {imageState.error && (
             <ActionWrapper>
-              <ActionButton icon={<TrashIcon className="size-4" />} tooltip="Remove image" onClick={onRemoveImg} />
+              <ActionButton
+                icon={<TrashIcon className="size-4" />}
+                tooltip="Remove image"
+                onClick={onRemoveImg}
+              />
             </ActionWrapper>
           )}
 

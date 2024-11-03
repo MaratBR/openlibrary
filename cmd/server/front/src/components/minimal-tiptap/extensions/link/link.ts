@@ -29,8 +29,8 @@ export const Link = TiptapLink.extend({
       ...this.parent?.(),
       openOnClick: false,
       HTMLAttributes: {
-        class: 'link'
-      }
+        class: 'link',
+      },
     }
   },
 
@@ -79,11 +79,11 @@ export const Link = TiptapLink.extend({
             const transaction = tr.setSelection(new TextSelection($start, $end))
 
             view.dispatch(transaction)
-          }
-        }
-      })
+          },
+        },
+      }),
     ]
-  }
+  },
 })
 
 export default Link

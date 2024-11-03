@@ -1,1 +1,1 @@
-export { CreateChapterPage } from "./CreateChapter";
+export { CreateChapterPage } from './CreateChapter'

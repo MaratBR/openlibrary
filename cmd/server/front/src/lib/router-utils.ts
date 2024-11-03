@@ -1,47 +1,42 @@
-import React from "react";
-import { NavigateOptions, useLocation } from "react-router";
-import { useSearchParams } from "react-router-dom";
-import { useEffectOnce } from "./utils";
+import React from 'react'
+import { NavigateOptions } from 'react-router'
+import { useSearchParams } from 'react-router-dom'
+import { useEffectOnce } from './utils'
 
-type SetQueryParam = (
-  value: string | null,
-  navigateOps?: NavigateOptions
-) => void;
+type SetQueryParam = (value: string | null, navigateOps?: NavigateOptions) => void
 
-export function useQueryParam(
-  param: string
-): [value: string | null, setValue: SetQueryParam] {
-  const [params, setParams] = useSearchParams();
-  const paramsRef = React.useRef(params);
-  paramsRef.current = params;
+export function useQueryParam(param: string): [value: string | null, setValue: SetQueryParam] {
+  const [params, setParams] = useSearchParams()
+  const paramsRef = React.useRef(params)
+  paramsRef.current = params
 
   const setParam = React.useCallback(
     (value: string | null) => {
-      const newParams = new URLSearchParams(paramsRef.current.toString());
+      const newParams = new URLSearchParams(paramsRef.current.toString())
       if (value === null) {
-        newParams.delete(param);
+        newParams.delete(param)
       } else {
-        newParams.set(param, value);
+        newParams.set(param, value)
       }
-      setParams(newParams);
+      setParams(newParams)
     },
-    [setParams]
-  );
+    [setParams],
+  )
 
-  return [params.get(param), setParam];
+  return [params.get(param), setParam]
 }
 
 export function useQueryParamDefault(
   param: string,
-  defaultValue: string
+  defaultValue: string,
 ): [value: string | null, setValue: SetQueryParam] {
-  const [value, setValue] = useQueryParam(param);
+  const [value, setValue] = useQueryParam(param)
 
   useEffectOnce(() => {
     if (value === null) {
-      setValue(defaultValue, { replace: true });
+      setValue(defaultValue, { replace: true })
     }
-  });
+  })
 
-  return [value, setValue];
+  return [value, setValue]
 }

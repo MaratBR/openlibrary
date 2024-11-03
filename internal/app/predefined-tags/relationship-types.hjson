@@ -1,0 +1,37 @@
+[
+    {
+        name: "Gen"
+        isAdult: false
+        isSpoiler: false
+        category: reltype
+        description: This books is focused mainly on the plot and does not feature romance for the most part
+    },
+    {
+        name: "M/M"
+        isAdult: false
+        isSpoiler: false
+        category: reltype
+        description: This book is focused mainly and features relationship of two male characters
+    },
+    {
+        name: "M/F"
+        isAdult: false
+        isSpoiler: false
+        category: reltype
+        description: This book is focused mainly and features relationship of a male and female chracter
+    },
+    {
+        name: "F/F"
+        isAdult: false
+        isSpoiler: false
+        category: reltype
+        description: This book is focused mainly and features relationship of two female characters
+    },
+    {
+        name: "Other relationship"
+        isAdult: false
+        isSpoiler: false
+        category: reltype
+        description: This books features some kind of relationship between at least 2 character that cannot be described by any other relatiship tag
+    }
+]

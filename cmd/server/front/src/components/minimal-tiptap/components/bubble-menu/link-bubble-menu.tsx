@@ -41,7 +41,7 @@ export const LinkBubbleMenu: React.FC<LinkBubbleMenuProps> = ({ editor }) => {
       }
       return false
     },
-    [updateLinkState]
+    [updateLinkState],
   )
 
   const handleEdit = React.useCallback(() => {
@@ -62,17 +62,17 @@ export const LinkBubbleMenu: React.FC<LinkBubbleMenuProps> = ({ editor }) => {
               type: 'link',
               attrs: {
                 href: url,
-                target: openInNewTab ? '_blank' : ''
-              }
-            }
-          ]
+                target: openInNewTab ? '_blank' : '',
+              },
+            },
+          ],
         })
         .setLink({ href: url, target: openInNewTab ? '_blank' : '' })
         .run()
       setShowEdit(false)
       updateLinkState()
     },
-    [editor, updateLinkState]
+    [editor, updateLinkState],
   )
 
   const onUnsetLink = React.useCallback(() => {
@@ -87,7 +87,7 @@ export const LinkBubbleMenu: React.FC<LinkBubbleMenuProps> = ({ editor }) => {
       shouldShow={shouldShow}
       tippyOptions={{
         placement: 'bottom-start',
-        onHidden: () => setShowEdit(false)
+        onHidden: () => setShowEdit(false),
       }}
     >
       {showEdit ? (
