@@ -1,9 +1,9 @@
 import { Card } from '@/components/ui/card'
-import { AuthorBookDto } from '../../api'
+import { ManagerAuthorBookDto } from '../../api'
 import { NavLink } from 'react-router-dom'
 
 export type BookCardProps = {
-  book: AuthorBookDto
+  book: ManagerAuthorBookDto
 }
 
 export default function BookCard({ book }: BookCardProps) {

@@ -1,6 +1,6 @@
 import { AgeRating } from './api'
 
-export function useChapterName({ name, order }: { name: string; order: number }): string {
+export function useChapterName(name: string, order: number): string {
   let finalName = `Chapter ${order}`
   if (name) {
     finalName += ': ' + name

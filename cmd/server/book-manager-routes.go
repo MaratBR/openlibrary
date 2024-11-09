@@ -15,10 +15,11 @@ func newBookManagerController(service *app.BookManagerService) *bookManagerContr
 }
 
 type createBookRequest struct {
-	Name      string        `json:"name"`
-	AgeRating app.AgeRating `json:"ageRating"`
-	Tags      []string      `json:"tags"`
-	Summary   string        `json:"summary"`
+	Name              string        `json:"name"`
+	AgeRating         app.AgeRating `json:"ageRating"`
+	Tags              []string      `json:"tags"`
+	Summary           string        `json:"summary"`
+	IsPubliclyVisible bool          `json:"isPubliclyVisible"`
 }
 
 type createBookResponse struct {
@@ -39,10 +40,11 @@ func (c *bookManagerController) CreateBook(w http.ResponseWriter, r *http.Reques
 	}
 
 	bookID, err := c.service.CreateBook(r.Context(), app.CreateBookCommand{
-		UserID:    session.UserID,
-		Name:      req.Name,
-		Tags:      req.Tags,
-		AgeRating: req.AgeRating,
+		UserID:            session.UserID,
+		Name:              req.Name,
+		Tags:              req.Tags,
+		AgeRating:         req.AgeRating,
+		IsPubliclyVisible: req.IsPubliclyVisible,
 	})
 	if err != nil {
 		writeApplicationError(w, err)
@@ -52,10 +54,11 @@ func (c *bookManagerController) CreateBook(w http.ResponseWriter, r *http.Reques
 }
 
 type updateBookRequest struct {
-	Name      string        `json:"name"`
-	AgeRating app.AgeRating `json:"ageRating"`
-	Tags      []string      `json:"tags"`
-	Summary   string        `json:"summary"`
+	Name              string        `json:"name"`
+	AgeRating         app.AgeRating `json:"ageRating"`
+	Tags              []string      `json:"tags"`
+	Summary           string        `json:"summary"`
+	IsPubliclyVisible bool          `json:"isPubliclyVisible"`
 }
 
 type updateBookResponse struct {
@@ -82,11 +85,13 @@ func (c *bookManagerController) UpdateBook(w http.ResponseWriter, r *http.Reques
 	}
 
 	err = c.service.UpdateBook(r.Context(), app.UpdateBookCommand{
-		BookID:    bookID,
-		UserID:    session.UserID,
-		Name:      req.Name,
-		Tags:      req.Tags,
-		AgeRating: req.AgeRating,
+		BookID:            bookID,
+		UserID:            session.UserID,
+		Name:              req.Name,
+		Tags:              req.Tags,
+		AgeRating:         req.AgeRating,
+		IsPubliclyVisible: req.IsPubliclyVisible,
+		Summary:           req.Summary,
 	})
 	if err != nil {
 		writeApplicationError(w, err)
@@ -179,6 +184,7 @@ type updateChapterRequest struct {
 	Content         string `json:"content"`
 	Name            string `json:"name"`
 	IsAdultOverride bool   `json:"isAdultOverride"`
+	Summary         string `json:"summary"`
 }
 
 func (c *bookManagerController) UpdateChapter(w http.ResponseWriter, r *http.Request) {
@@ -212,6 +218,7 @@ func (c *bookManagerController) UpdateChapter(w http.ResponseWriter, r *http.Req
 		Name:            body.Name,
 		Content:         body.Content,
 		IsAdultOverride: body.IsAdultOverride,
+		Summary:         body.Summary,
 	})
 	if err != nil {
 		writeApplicationError(w, err)
@@ -220,12 +227,81 @@ func (c *bookManagerController) UpdateChapter(w http.ResponseWriter, r *http.Req
 	writeOK(w)
 }
 
-func (c *bookManagerController) GetMyBooks(w http.ResponseWriter, r *http.Request) {
-	session, ok := getSession(r)
-	if !ok {
-		writeUnauthorizedError(w)
+type reorderChapterRequest struct {
+	Sequence []app.Int64String `json:"sequence"`
+}
+
+func (c *bookManagerController) UpdateChaptersOrder(w http.ResponseWriter, r *http.Request) {
+	bookID, err := urlParamInt64(r, "bookID")
+	if err != nil {
+		writeRequestError(err, w)
 		return
 	}
+	sessionInfo := requireSession(r)
+
+	body, err := getJSON[reorderChapterRequest](r)
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+
+	err = c.service.ReorderChapters(r.Context(), app.ReorderChaptersCommand{
+		UserID:     sessionInfo.UserID,
+		BookID:     bookID,
+		ChapterIDs: int64StringArr(body.Sequence),
+	})
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+	writeOK(w)
+}
+
+func (c *bookManagerController) GetChapters(w http.ResponseWriter, r *http.Request) {
+	bookID, err := urlParamInt64(r, "bookID")
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+	sessionInfo := requireSession(r)
+
+	chapters, err := c.service.GetBookChapters(r.Context(), app.ManagerGetBookChaptersQuery{
+		UserID: sessionInfo.UserID,
+		BookID: bookID})
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+	writeJSON(w, chapters.Chapters)
+}
+
+func (c *bookManagerController) GetChapter(w http.ResponseWriter, r *http.Request) {
+	bookID, err := urlParamInt64(r, "bookID")
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+	chapterID, err := urlParamInt64(r, "chapterID")
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+	sessionInfo := requireSession(r)
+
+	result, err := c.service.GetChapter(r.Context(), app.ManagerGetChapterQuery{
+		UserID:    sessionInfo.UserID,
+		BookID:    bookID,
+		ChapterID: chapterID,
+	})
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+	writeJSON(w, result.Chapter)
+}
+
+func (c *bookManagerController) GetMyBooks(w http.ResponseWriter, r *http.Request) {
+	session := requireSession(r)
 
 	books, err := c.service.GetUserBooks(r.Context(), app.GetUserBooksQuery{
 		UserID: session.UserID,

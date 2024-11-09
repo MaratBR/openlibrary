@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -81,12 +82,24 @@ type BookDetailsDto struct {
 	Chapters        []BookChapterDto     `json:"chapters"`
 	Author          BookDetailsAuthorDto `json:"author"`
 	Permissions     BookUserPermissions  `json:"permissions"`
+	Summary         string               `json:"summary"`
+
+	Notifications []GenericNotification `json:"notifications,omitempty"`
 }
 
 func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDetailsDto, error) {
 	book, err := s.queries.GetBook(ctx, query.ID)
 	if err != nil {
 		return BookDetailsDto{}, err
+	}
+
+	userPermissionState := getUserBookPermissionsState(getUserBookPermissionsStateRequest{
+		IsPubliclyVisible: book.IsPubliclyVisible,
+		UserID:            query.ActorUserID,
+		BookAuthorID:      uuidDbToDomain(book.AuthorUserID),
+	})
+	if !userPermissionState.CanView {
+		return BookDetailsDto{}, ErrGenericForbidden
 	}
 
 	ageRating := ageRatingFromDbValue(book.AgeRating)
@@ -102,6 +115,7 @@ func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 		AgeRating:       ageRating,
 		IsAdult:         ageRating.IsAdult(),
 		Tags:            tags,
+		Summary:         book.Summary,
 		Words:           int(book.Words),
 		WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 		CreatedAt:       book.CreatedAt.Time,
@@ -112,6 +126,22 @@ func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 			Name: book.AuthorName,
 		},
 		Permissions: BookUserPermissions{CanEdit: query.ActorUserID.Valid && authorID == query.ActorUserID.UUID},
+	}
+
+	if userPermissionState.IsOwner {
+		if !book.IsPubliclyVisible {
+			bookDto.Notifications = append(bookDto.Notifications, GenericNotification{
+				ID:   "book:owner:not_publicly_visible",
+				Text: fmt.Sprintf("This book is not publicly visible, you can change that in the settings if you want. [Click here](/manager/book/%d?tab=info&from=book-page-notification) to edit book settings.<br />Only you can see this message.", book.ID),
+			})
+		}
+
+		if book.IsBanned {
+			bookDto.Notifications = append(bookDto.Notifications, GenericNotification{
+				ID:   "book:owner:banned",
+				Text: fmt.Sprintf("This book has been banned by our moderation team, please [click here](/manager/book/banned/%d?from=book-page-notification) to find out more about this", book.ID),
+			})
+		}
 	}
 
 	{
@@ -154,15 +184,23 @@ type embedTagsObjectEnvelope struct {
 	Data    json.RawMessage `json:"d"`
 }
 
+type ChapterNextPrevDto struct {
+	ID    int64  `json:"id,string"`
+	Name  string `json:"name"`
+	Order int32  `json:"order"`
+}
+
 type ChapterDto struct {
-	ID              int64     `json:"id,string"`
-	Name            string    `json:"name"`
-	Words           int32     `json:"words"`
-	Content         string    `json:"content"`
-	IsAdultOverride bool      `json:"isAdultOverride"`
-	CreatedAt       time.Time `json:"createdAt"`
-	Order           int32     `json:"order"`
-	Summary         string    `json:"summary"`
+	ID              int64                        `json:"id,string"`
+	Name            string                       `json:"name"`
+	Words           int32                        `json:"words"`
+	Content         string                       `json:"content"`
+	IsAdultOverride bool                         `json:"isAdultOverride"`
+	CreatedAt       time.Time                    `json:"createdAt"`
+	Order           int32                        `json:"order"`
+	Summary         string                       `json:"summary"`
+	NextChapter     Nullable[ChapterNextPrevDto] `json:"nextChapter"`
+	PrevChapter     Nullable[ChapterNextPrevDto] `json:"prevChapter"`
 }
 
 type ChapterWithDetails struct {
@@ -188,6 +226,27 @@ func (s BookService) GetBookChapter(ctx context.Context, query GetBookChapterQue
 		return GetBookChapterResult{}, err
 	}
 
+	var (
+		prev Nullable[ChapterNextPrevDto]
+		next Nullable[ChapterNextPrevDto]
+	)
+
+	if chapter.PrevChapterID.Valid {
+		prev = Value(ChapterNextPrevDto{
+			ID:    chapter.PrevChapterID.Int64,
+			Name:  chapter.PrevChapterName.String,
+			Order: int32(chapter.Order - 1),
+		})
+	}
+
+	if chapter.NextChapterID.Valid {
+		next = Value(ChapterNextPrevDto{
+			ID:    chapter.NextChapterID.Int64,
+			Name:  chapter.NextChapterName.String,
+			Order: int32(chapter.Order - 1),
+		})
+	}
+
 	return GetBookChapterResult{
 		Chapter: ChapterWithDetails{
 			Chapter: ChapterDto{
@@ -199,6 +258,8 @@ func (s BookService) GetBookChapter(ctx context.Context, query GetBookChapterQue
 				CreatedAt:       chapter.CreatedAt.Time,
 				Order:           chapter.Order,
 				Summary:         chapter.Summary,
+				PrevChapter:     prev,
+				NextChapter:     next,
 			},
 		},
 	}, nil

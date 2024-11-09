@@ -3,8 +3,8 @@ import Spinner from '@/components/spinner'
 import { Button } from '@/components/ui/button'
 import { PenIcon } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import BookCard from '../../book/views/BookCard'
-import { httpGetMyBooks } from '../api'
+import { httpGetMyBooks } from '../../api'
+import AuthorBookCard from './AuthorBookCard'
 
 export default function MyBooks() {
   return (
@@ -40,7 +40,7 @@ function BooksList() {
       </Button>
       <div className="space-y-2 mt-6">
         {data.map((book) => (
-          <BookCard key={book.id} book={book} />
+          <AuthorBookCard key={book.id} book={book} />
         ))}
       </div>
     </div>

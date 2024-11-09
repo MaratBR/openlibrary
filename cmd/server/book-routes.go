@@ -18,7 +18,7 @@ func newBookController(bookService *app.BookService) *bookController {
 }
 
 type myBooksResponse struct {
-	Books []app.AuthorBookDto `json:"books"`
+	Books []app.ManagerAuthorBookDto `json:"books"`
 }
 
 func (c *bookController) GetBook(w http.ResponseWriter, r *http.Request) {

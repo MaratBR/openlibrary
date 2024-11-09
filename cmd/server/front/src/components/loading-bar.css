@@ -1,0 +1,9 @@
+@keyframes loading-bar {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
+.loading-bar .loading-bar__inner {
+    width: 50%;
+    animation: loading-bar var(--loading-bar-duration) ease-in-out 0s infinite;
+}

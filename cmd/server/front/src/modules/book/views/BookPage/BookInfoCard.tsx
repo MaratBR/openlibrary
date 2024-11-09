@@ -5,8 +5,9 @@ import AgeRatingBadge from '@/components/age-rating-badge'
 import { Separator } from '@/components/ui/separator'
 import WordsCount from '@/components/words-count'
 import Tag from '../Tag'
+import React from 'react'
 
-export default function BookInfoCard({ book }: { book: BookDetailsDto }) {
+const BookInfoCard = React.memo(({ book }: { book: BookDetailsDto }) => {
   return (
     <Card>
       <div className="space-y-2 py-3">
@@ -50,4 +51,6 @@ export default function BookInfoCard({ book }: { book: BookDetailsDto }) {
       </div>
     </Card>
   )
-}
+})
+
+export default BookInfoCard

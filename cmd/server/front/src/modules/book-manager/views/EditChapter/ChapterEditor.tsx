@@ -1,4 +1,3 @@
-import { MinimalTiptapEditor } from '@/components/minimal-tiptap'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -12,15 +11,27 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { ButtonSpinner } from '@/components/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import { CreateBookChapterRequest, httpCreateBookChapter } from '../../api'
+import {
+  CreateBookChapterRequest,
+  createBookChapterRequestSchema,
+  httpCreateBookChapter,
+  httpManagerGetBookChapter,
+  httpUpdateBookChapter,
+  UpdateBookChapterRequest,
+  updateBookChapterRequestSchema,
+} from '@/modules/book-manager/api'
+import { useBookManager } from '../book-manager-context'
+import { useChapterName } from '@/modules/book/utils'
+import React from 'react'
+import BackToBookButton from '../BackToBookButton'
+import { useMinimalTiptapEditorComponent } from '@/components/minimal-tiptap'
 
 export type ChapterEditorProps = {
-  bookId: string
   chapterId: string | null
 }
 
@@ -31,29 +42,88 @@ const formSchema = z.object({
   summary: z.string().max(1000).optional(),
 })
 
-export default function ChapterEditor({ bookId, chapterId }: ChapterEditorProps) {
+export default function ChapterEditor({ chapterId }: ChapterEditorProps) {
+  const { book } = useBookManager()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   })
 
+  useQuery({
+    queryKey: ['manager', 'book', book.id, 'chapter', chapterId],
+    queryFn: async () => {
+      const data = await httpManagerGetBookChapter(book.id, chapterId!)
+
+      form.setValue('name', data.name)
+      form.setValue('content', data.content)
+      editor?.commands.setContent(data.content)
+      form.setValue('isAdultOverride', data.isAdultOverride)
+      form.setValue('summary', data.summary)
+      setExistingChapterName({ order: data.order, name: data.name })
+      return data
+    },
+    enabled: !!chapterId,
+    gcTime: 0,
+    staleTime: 0,
+  })
+
+  const [existingChapterName, setExistingChapterName] = React.useState({ name: '', order: 0 })
+  const chapterName = useChapterName(existingChapterName.name, existingChapterName.order)
+
+  const { editorElement, editor } = useMinimalTiptapEditorComponent({
+    editorContentClassName: 'px-4 py-2',
+  })
+  React.useEffect(() => {
+    if (!editor) return
+
+    editor.commands.setContent(form.getValues('content'))
+  }, [editor, form])
+
   const createChapterMutation = useMutation({
-    mutationFn: (req: CreateBookChapterRequest) => httpCreateBookChapter(bookId, req),
+    mutationFn: (req: CreateBookChapterRequest) => httpCreateBookChapter(book.id, req),
+  })
+
+  const updateChapterMutation = useMutation({
+    mutationFn: (req: UpdateBookChapterRequest) => httpUpdateBookChapter(book.id, chapterId!, req),
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (createChapterMutation.isPending) return
-    createChapterMutation.mutate({
-      name: values.name || '',
-      content: values.content,
-      isAdultOverride: values.isAdultOverride,
-      summary: values.summary || '',
-    })
+    if (!editor) {
+      throw new Error('WYSIWYG editor is not initialized yet')
+    }
+
+    // a hack because the editor does not work well with react-hook-form
+    form.setValue('content', editor.getHTML() || '')
+    values = form.getValues()
+
+    if (chapterId) {
+      updateChapterMutation.mutate(
+        updateBookChapterRequestSchema.parse({
+          name: values.name || '',
+          content: values.content,
+          isAdultOverride: values.isAdultOverride,
+          summary: values.summary || '',
+        } satisfies UpdateBookChapterRequest),
+      )
+    } else {
+      if (createChapterMutation.isPending) return
+
+      createChapterMutation.mutate(
+        createBookChapterRequestSchema.parse({
+          name: values.name || '',
+          content: values.content,
+          isAdultOverride: values.isAdultOverride,
+          summary: values.summary || '',
+        } satisfies CreateBookChapterRequest),
+      )
+    }
   }
 
   return (
-    <main className="container-default">
-      <header className="page-header">
-        <h1 className="page-header-text">{chapterId ? '' : 'New chapter'}</h1>
+    <section className="page-section">
+      <header className="section-header">
+        <BackToBookButton />
+        <h1 className="section-header-text">{chapterId ? chapterName : 'New chapter'}</h1>
       </header>
 
       <Form {...form}>
@@ -120,16 +190,7 @@ export default function ChapterEditor({ bookId, chapterId }: ChapterEditorProps)
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Contents</FormLabel>
-                <FormControl>
-                  <MinimalTiptapEditor
-                    value={field.value}
-                    onChange={field.onChange}
-                    className="w-full"
-                    output="html"
-                    editorContentClassName="p-5"
-                    editable
-                  />
-                </FormControl>
+                <FormControl>{editorElement}</FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -140,6 +201,6 @@ export default function ChapterEditor({ bookId, chapterId }: ChapterEditorProps)
           </Button>
         </form>
       </Form>
-    </main>
+    </section>
   )
 }

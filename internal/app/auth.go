@@ -7,15 +7,14 @@ import (
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type AuthService struct {
 	queries *store.Queries
-	db      *pgxpool.Pool
+	db      DB
 }
 
-func NewAuthService(db *pgxpool.Pool) *AuthService {
+func NewAuthService(db DB) *AuthService {
 	return &AuthService{
 		queries: store.New(db),
 		db:      db,

@@ -1,8 +1,11 @@
 {
     "cSpell.words": [
         "denormalized",
+        "pgconn",
         "pgtype",
+        "sqlx",
         "Timestamptz",
+        "Tiptap",
         "vite"
     ],
     "eslint.useFlatConfig": true,

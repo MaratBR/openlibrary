@@ -1,0 +1,3 @@
+.notification .link-default {
+    @apply text-primary underline hover:text-primary hover:brightness-110;
+}

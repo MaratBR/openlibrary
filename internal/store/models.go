@@ -109,10 +109,20 @@ type Book struct {
 	AuthorUserID       pgtype.UUID
 	CreatedAt          pgtype.Timestamptz
 	AgeRating          AgeRating
+	IsPubliclyVisible  bool
+	IsBanned           bool
 	Words              int32
 	Chapters           int32
 	TagIds             []int64
 	CachedParentTagIds []int64
+}
+
+type BookBanHistory struct {
+	BookID    int64
+	UserID    pgtype.UUID
+	CreatedAt pgtype.Timestamptz
+	Reason    string
+	Action    string
 }
 
 type BookChapter struct {

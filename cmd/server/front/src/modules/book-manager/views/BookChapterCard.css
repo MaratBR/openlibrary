@@ -1,0 +1,16 @@
+.manager-chapter-card {
+    @apply 
+        p-2 rounded-none border bg-card text-card-foreground shadow-sm text-left block w-full;
+}
+
+.manager-chapter-card__name {
+    @apply font-[500];
+}
+
+.manager-chapter-card__summary {
+    @apply text-muted-foreground text-sm;
+}
+
+.manager-chapter-card__info {
+    @apply text-muted-foreground text-[0.8em] mt-1;
+}

@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -10,19 +12,21 @@ import (
 
 type BookManagerService struct {
 	queries     *store.Queries
+	db          DB
 	tagsService *TagsService
 }
 
-func NewBookManagerService(db store.DBTX, tagsService *TagsService) *BookManagerService {
-	return &BookManagerService{queries: store.New(db), tagsService: tagsService}
+func NewBookManagerService(db DB, tagsService *TagsService) *BookManagerService {
+	return &BookManagerService{queries: store.New(db), tagsService: tagsService, db: db}
 }
 
 type CreateBookCommand struct {
-	Name      string
-	UserID    uuid.UUID
-	AgeRating AgeRating
-	Tags      []string
-	Summary   string
+	Name              string
+	UserID            uuid.UUID
+	AgeRating         AgeRating
+	Tags              []string
+	Summary           string
+	IsPubliclyVisible bool
 }
 
 func (s *BookManagerService) CreateBook(ctx context.Context, input CreateBookCommand) (int64, error) {
@@ -51,17 +55,19 @@ func (s *BookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 		CachedParentTagIds: tags.ParentTagIds,
 		AgeRating:          ageRatingDbValue(input.AgeRating),
 		Summary:            input.Summary,
+		IsPubliclyVisible:  input.IsPubliclyVisible,
 	})
 	return id, err
 }
 
 type UpdateBookCommand struct {
-	BookID    int64
-	UserID    uuid.UUID
-	Name      string
-	AgeRating AgeRating
-	Tags      []string
-	Summary   string
+	BookID            int64
+	UserID            uuid.UUID
+	Name              string
+	AgeRating         AgeRating
+	Tags              []string
+	Summary           string
+	IsPubliclyVisible bool
 }
 
 func (s *BookManagerService) UpdateBook(ctx context.Context, input UpdateBookCommand) error {
@@ -87,6 +93,7 @@ func (s *BookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		CachedParentTagIds: tags.ParentTagIds,
 		AgeRating:          ageRatingDbValue(input.AgeRating),
 		Summary:            input.Summary,
+		IsPubliclyVisible:  input.IsPubliclyVisible,
 	})
 }
 
@@ -96,17 +103,20 @@ type ManagerGetBookQuery struct {
 }
 
 type ManagerBookDetailsDto struct {
-	ID              int64                `json:"id,string"`
-	Name            string               `json:"name"`
-	AgeRating       AgeRating            `json:"ageRating"`
-	IsAdult         bool                 `json:"isAdult"`
-	Tags            []DefinedTagDto      `json:"tags"`
-	Words           int                  `json:"words"`
-	WordsPerChapter int                  `json:"wordsPerChapter"`
-	CreatedAt       time.Time            `json:"createdAt"`
-	Collections     []BookCollectionDto  `json:"collections"`
-	Chapters        []BookChapterDto     `json:"chapters"`
-	Author          BookDetailsAuthorDto `json:"author"`
+	ID                int64                `json:"id,string"`
+	Name              string               `json:"name"`
+	AgeRating         AgeRating            `json:"ageRating"`
+	IsAdult           bool                 `json:"isAdult"`
+	Tags              []DefinedTagDto      `json:"tags"`
+	Words             int                  `json:"words"`
+	WordsPerChapter   int                  `json:"wordsPerChapter"`
+	CreatedAt         time.Time            `json:"createdAt"`
+	Collections       []BookCollectionDto  `json:"collections"`
+	Chapters          []BookChapterDto     `json:"chapters"`
+	Author            BookDetailsAuthorDto `json:"author"`
+	Summary           string               `json:"summary"`
+	IsPubliclyVisible bool                 `json:"isPubliclyVisible"`
+	IsBanned          bool                 `json:"isBanned"`
 }
 
 type ManagerGetBookResult struct {
@@ -142,6 +152,9 @@ func (s *BookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 			ID:   authorID,
 			Name: book.AuthorName,
 		},
+		Summary:           book.Summary,
+		IsPubliclyVisible: book.IsPubliclyVisible,
+		IsBanned:          book.IsBanned,
 	}
 
 	{
@@ -187,12 +200,27 @@ type GetUserBooksQuery struct {
 	Offset int
 }
 
+type ManagerAuthorBookDto struct {
+	ID                int64               `json:"id,string"`
+	Name              string              `json:"name"`
+	CreatedAt         time.Time           `json:"createdAt"`
+	AgeRating         AgeRating           `json:"ageRating"`
+	Tags              []DefinedTagDto     `json:"tags"`
+	Words             int                 `json:"words"`
+	WordsPerChapter   int                 `json:"wordsPerChapter"`
+	Chapters          int                 `json:"chapters"`
+	Collections       []BookCollectionDto `json:"collections"`
+	IsPubliclyVisible bool                `json:"isPubliclyVisible"`
+	IsBanned          bool                `json:"isBanned"`
+	Summary           string              `json:"summary"`
+}
+
 type GetUserBooksResult struct {
-	Books []AuthorBookDto
+	Books []ManagerAuthorBookDto
 }
 
 func (s *BookManagerService) GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error) {
-	books, err := s.queries.GetUserBooks(ctx, store.GetUserBooksParams{
+	books, err := s.queries.ManagerGetUserBooks(ctx, store.ManagerGetUserBooksParams{
 		AuthorUserID: uuidDomainToDb(input.UserID),
 		Limit:        int32(input.Limit),
 		Offset:       int32(input.Offset),
@@ -209,10 +237,10 @@ func (s *BookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 	return GetUserBooksResult{Books: userBooks}, nil
 }
 
-func (s *BookManagerService) aggregateUserBooks(ctx context.Context, rows []store.GetUserBooksRow) ([]AuthorBookDto, error) {
-	books := []AuthorBookDto{}
+func (s *BookManagerService) aggregateUserBooks(ctx context.Context, rows []store.ManagerGetUserBooksRow) ([]ManagerAuthorBookDto, error) {
 	var (
-		book    AuthorBookDto
+		books   []ManagerAuthorBookDto = []ManagerAuthorBookDto{}
+		book    ManagerAuthorBookDto
 		tagsAgg = newTagsAggregator(s.tagsService)
 	)
 
@@ -224,16 +252,19 @@ func (s *BookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 
 			tagsAgg.Add(book.ID, row.TagIds)
 
-			book = AuthorBookDto{
-				ID:              row.ID,
-				Name:            row.Name,
-				CreatedAt:       row.CreatedAt.Time,
-				AgeRating:       AgeRatingPG13,
-				Tags:            nil, // will be set later
-				Words:           int(row.Words),
-				Chapters:        int(row.Chapters),
-				WordsPerChapter: getWordsPerChapter(int(row.Words), int(row.Chapters)),
-				Collections:     []BookCollectionDto{},
+			book = ManagerAuthorBookDto{
+				ID:                row.ID,
+				Name:              row.Name,
+				CreatedAt:         row.CreatedAt.Time,
+				AgeRating:         ageRatingFromDbValue(row.AgeRating),
+				Tags:              nil, // will be set later
+				Words:             int(row.Words),
+				Chapters:          int(row.Chapters),
+				WordsPerChapter:   getWordsPerChapter(int(row.Words), int(row.Chapters)),
+				Collections:       []BookCollectionDto{},
+				Summary:           row.Summary,
+				IsPubliclyVisible: row.IsPubliclyVisible,
+				IsBanned:          row.IsBanned,
 			}
 		}
 
@@ -254,7 +285,7 @@ func (s *BookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 
 	tags, err := tagsAgg.Fetch(ctx)
 	if err != nil {
-		return []AuthorBookDto{}, err
+		return []ManagerAuthorBookDto{}, err
 	}
 
 	for i := 0; i < len(books); i++ {
@@ -316,6 +347,7 @@ type UpdateBookChapterCommand struct {
 	Name            string
 	Content         string
 	IsAdultOverride bool
+	Summary         string
 }
 
 func (s *BookManagerService) UpdateBookChapter(ctx context.Context, input UpdateBookChapterCommand) error {
@@ -325,6 +357,7 @@ func (s *BookManagerService) UpdateBookChapter(ctx context.Context, input Update
 		Name:    input.Name,
 		Content: content.Sanitized,
 		Words:   content.Words,
+		Summary: input.Summary,
 	})
 	if err != nil {
 		return err
@@ -334,4 +367,173 @@ func (s *BookManagerService) UpdateBookChapter(ctx context.Context, input Update
 		return err
 	}
 	return nil
+}
+
+type ReorderChaptersCommand struct {
+	UserID     uuid.UUID
+	BookID     int64
+	ChapterIDs []int64
+}
+
+func (s *BookManagerService) ReorderChapters(ctx context.Context, input ReorderChaptersCommand) error {
+
+	var (
+		oldChapterOrder map[int64]int
+	)
+
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	queries := s.queries.WithTx(tx)
+
+	{
+		chapterOrders, err := queries.GetChapterOrder(ctx, input.BookID)
+		if err != nil {
+			rollbackTx(ctx, tx)
+			return err
+		}
+
+		oldChapterOrder = make(map[int64]int, len(chapterOrders))
+
+		for _, v := range chapterOrders {
+			oldChapterOrder[v.ID] = int(v.Order)
+		}
+	}
+
+	var (
+		newChapterOrder = make(map[int64]int)
+	)
+
+	{
+		newChapterOrder = make(map[int64]int, len(oldChapterOrder))
+
+		for i, chapterID := range input.ChapterIDs {
+			if _, ok := oldChapterOrder[chapterID]; !ok {
+				rollbackTx(ctx, tx)
+				return fmt.Errorf("chapter %d does not exist", chapterID)
+			}
+			if _, ok := newChapterOrder[chapterID]; ok {
+				rollbackTx(ctx, tx)
+				return fmt.Errorf("chapter %d is duplicated", chapterID)
+			}
+
+			newChapterOrder[chapterID] = i + 1
+		}
+	}
+
+	if len(newChapterOrder) < len(oldChapterOrder) {
+		rollbackTx(ctx, tx)
+		return errors.New("not enough chapters provided")
+	}
+
+	for chapterID, newOrder := range newChapterOrder {
+		if oldChapterOrder[chapterID] == newOrder {
+			continue
+		}
+		err = queries.SetChapterOrder(ctx, store.SetChapterOrderParams{
+			ID:    chapterID,
+			Order: int32(newOrder),
+		})
+		if err != nil {
+			rollbackTx(ctx, tx)
+			return err
+		}
+	}
+
+	err = tx.Commit(ctx)
+
+	return err
+}
+
+type ManagerBookChapterDto struct {
+	ID              int64     `json:"id,string"`
+	Name            string    `json:"name"`
+	CreatedAt       time.Time `json:"createdAt"`
+	Words           int       `json:"words"`
+	Summary         string    `json:"summary"`
+	Order           int32     `json:"order"`
+	IsAdultOverride bool      `json:"isAdultOverride"`
+}
+
+type ManagerGetBookChaptersQuery struct {
+	BookID int64
+	UserID uuid.UUID
+}
+
+type ManagerGetBookChapterResult struct {
+	Chapters []ManagerBookChapterDto
+}
+
+func (s *BookManagerService) GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChapterResult, error) {
+	rows, err := s.queries.GetBookChapters(ctx, query.BookID)
+	if err != nil {
+		return ManagerGetBookChapterResult{}, err
+	}
+
+	var (
+		chapters = make([]ManagerBookChapterDto, len(rows))
+	)
+
+	for i, row := range rows {
+		chapters[i] = ManagerBookChapterDto{
+			ID:              row.ID,
+			Name:            row.Name,
+			Summary:         row.Summary,
+			CreatedAt:       row.CreatedAt.Time,
+			Words:           int(row.Words),
+			IsAdultOverride: row.IsAdultOverride,
+			Order:           row.Order,
+		}
+	}
+
+	return ManagerGetBookChapterResult{
+		Chapters: chapters,
+	}, nil
+}
+
+type ManagerGetChapterQuery struct {
+	BookID    int64
+	ChapterID int64
+	UserID    uuid.UUID
+}
+
+type ManagerBookChapterDetailsDto struct {
+	ID                int64     `json:"id,string"`
+	Name              string    `json:"name"`
+	CreatedAt         time.Time `json:"createdAt"`
+	Words             int       `json:"words"`
+	Summary           string    `json:"summary"`
+	Order             int32     `json:"order"`
+	IsAdultOverride   bool      `json:"isAdultOverride"`
+	Content           string    `json:"content"`
+	IsPubliclyVisible bool      `json:"isPubliclyVisible"`
+}
+
+type ManagerGetChapterResult struct {
+	Chapter ManagerBookChapterDetailsDto
+}
+
+func (s *BookManagerService) GetChapter(ctx context.Context, query ManagerGetChapterQuery) (ManagerGetChapterResult, error) {
+	chapter, err := s.queries.GetBookChapterWithDetails(ctx, store.GetBookChapterWithDetailsParams{
+		ID:     query.ChapterID,
+		BookID: query.BookID,
+	})
+	if err != nil {
+		return ManagerGetChapterResult{}, err
+	}
+
+	return ManagerGetChapterResult{
+		Chapter: ManagerBookChapterDetailsDto{
+			ID:                chapter.ID,
+			Name:              chapter.Name,
+			Summary:           chapter.Summary,
+			CreatedAt:         chapter.CreatedAt.Time,
+			Words:             int(chapter.Words),
+			IsAdultOverride:   chapter.IsAdultOverride,
+			Order:             chapter.Order,
+			Content:           chapter.Content,
+			IsPubliclyVisible: true,
+		},
+	}, nil
 }

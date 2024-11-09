@@ -167,6 +167,14 @@ func getSession(r *http.Request) (*app.SessionInfo, bool) {
 	return sessionInfo, true
 }
 
+func requireSession(r *http.Request) *app.SessionInfo {
+	sessionInfo, ok := getSession(r)
+	if !ok {
+		panic("no session")
+	}
+	return sessionInfo
+}
+
 func getNullableUserID(r *http.Request) uuid.NullUUID {
 	session, ok := getSession(r)
 	if !ok {

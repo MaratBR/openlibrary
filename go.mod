@@ -1,13 +1,16 @@
 module github.com/MaratBR/openlibrary
 
-go 1.22.0
+go 1.23
 
-toolchain go1.22.8
+toolchain go1.23.3
 
 require (
 	github.com/BurntSushi/toml v1.4.0 // indirect
+	github.com/Masterminds/squirrel v1.5.4 // indirect
+	github.com/PuerkitoBio/goquery v1.10.0 // indirect
 	github.com/a-h/templ v0.2.778 // indirect
 	github.com/alexedwards/argon2id v1.0.0 // indirect
+	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/go-chi/chi/v5 v5.1.0 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
@@ -22,8 +25,11 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
+	github.com/joomcode/errorx v1.2.0 // indirect
 	github.com/k3a/html2text v1.2.1 // indirect
 	github.com/koding/websocketproxy v0.0.0-20181220232114-7ed82d81a28c // indirect
+	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
+	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.4.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect

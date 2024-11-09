@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"time"
 
@@ -67,4 +68,25 @@ func Null[T any]() Nullable[T] {
 
 func Value[T any](v T) Nullable[T] {
 	return Nullable[T]{Value: v, Valid: true}
+}
+
+func (v Nullable[T]) MarshalJSON() ([]byte, error) {
+	if !v.Valid {
+		return []byte("null"), nil
+	}
+	return json.Marshal(v.Value)
+}
+
+func (v *Nullable[T]) UnmarshalJSON(b []byte) error {
+	if len(b) == 4 && string(b) == "null" {
+		*v = Null[T]()
+		return nil
+	} else {
+		err := json.Unmarshal(b, &v.Value)
+		if err != nil {
+			return err
+		}
+		v.Valid = true
+		return nil
+	}
 }

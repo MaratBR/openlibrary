@@ -205,7 +205,7 @@ type tagsAggregator struct {
 }
 
 func newTagsAggregator(service *TagsService) tagsAggregator {
-	return tagsAggregator{service: service}
+	return tagsAggregator{service: service, tags: make(map[int64]struct{}), bookTags: make(map[int64][]int64)}
 }
 
 func (agg *tagsAggregator) Add(bookID int64, tagIDs []int64) {

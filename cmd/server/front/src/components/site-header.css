@@ -1,4 +1,9 @@
+:root {
+    --site-header-height: 64px;
+}
+
 .site-header {
+    height: var(--site-header-height);
     @apply bg-background overflow-hidden;
 }
 

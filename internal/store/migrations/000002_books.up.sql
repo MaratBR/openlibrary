@@ -17,6 +17,8 @@ create table books (
     author_user_id uuid not null references users(id),
     created_at timestamptz not null default now(),
     age_rating age_rating not null default '?',
+    is_publicly_visible boolean not null default true,
+    is_banned boolean not null default false,
     words int4 not null default 0,
     chapters int4 not null default 0,
     tag_ids int8[] not null default '{}',
@@ -28,6 +30,14 @@ create index ix_books_age_rating on books (age_rating);
 create index ix_books_tags on books using gin(cached_parent_tag_ids);
 create index ix_books_name on books using gin(name);
 
+
+create table book_ban_history (
+    book_id int8 not null references books(id) primary key,
+    user_id uuid not null references users(id),
+    created_at timestamptz not null default now(),
+    reason text not null default '',
+    action text not null
+);
 
 create table book_chapters (
     id int8 primary key,

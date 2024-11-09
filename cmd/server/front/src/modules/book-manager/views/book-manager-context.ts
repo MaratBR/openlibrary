@@ -1,9 +1,15 @@
 import React, { startTransition } from 'react'
-import { httpUpdateBook, ManagerBookDetailsDto, UpdateBookRequest } from '../../api'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  httpManagerGetChapters,
+  httpUpdateBook,
+  ManagerBookDetailsDto,
+  UpdateBookRequest,
+} from '../api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export type BookManagerContext = {
   book: ManagerBookDetailsDto
+  refetch: () => void
 }
 
 export const BookManagerContext = React.createContext<BookManagerContext | null>(null)
@@ -28,5 +34,14 @@ export function useBookManagerUpdateMutation() {
           })
         })
     },
+  })
+}
+
+export function useBookManagerChaptersQuery() {
+  const { book } = useBookManager()
+
+  return useQuery({
+    queryKey: ['manager', 'book', book.id, 'chapters'],
+    queryFn: () => httpManagerGetChapters(book.id),
   })
 }

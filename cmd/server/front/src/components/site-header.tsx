@@ -2,9 +2,9 @@ import React from 'react'
 import './site-header.css'
 import { NavLink, NavLinkRenderProps } from 'react-router-dom'
 
-export default function SiteHeader({ children }: React.PropsWithChildren<{}>) {
+export default function SiteHeader({ children }: React.PropsWithChildren) {
   return (
-    <header id="site-header" className="sticky top-0 z-50 w-full border-border/40 site-header">
+    <header id="site-header" className="fixed top-0 z-50 w-full border-border/40 site-header">
       <div className="container-default h-14 flex items-center">
         <div id="site-logo" className="mr-8 font-semibold text-4xl">
           OpenLibrary

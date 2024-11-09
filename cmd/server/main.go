@@ -11,7 +11,6 @@ import (
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
@@ -21,6 +20,8 @@ var (
 )
 
 func main() {
+	var err error
+
 	flag.BoolVar(&cliParams.DevProxy, "dev-frontend-proxy", false, "enable dev frontend proxy")
 	flag.Parse()
 
@@ -77,11 +78,16 @@ func main() {
 			bookManagerController := newBookManagerController(bookManagerService)
 
 			r.Post("/books", bookManagerController.CreateBook)
+			r.Post("/books/ao3-import", bookManagerController.ImportAO3)
 			r.Get("/books/my-books", bookManagerController.GetMyBooks)
 			r.Get("/books/{bookID}", bookManagerController.GetBook)
 			r.Post("/books/{bookID}", bookManagerController.UpdateBook)
+			r.Get("/books/{bookID}/chapters", bookManagerController.GetChapters)
 			r.Post("/books/{bookID}/chapters", bookManagerController.CreateChapter)
+			r.Post("/books/{bookID}/chapters/reorder", bookManagerController.UpdateChaptersOrder)
 			r.Post("/books/{bookID}/chapters/{chapterID}", bookManagerController.UpdateChapter)
+			r.Get("/books/{bookID}/chapters/{chapterID}", bookManagerController.GetChapter)
+
 		})
 	})
 
@@ -99,13 +105,13 @@ func main() {
 		}
 	}()
 
-	err := http.ListenAndServe(":8080", r)
+	err = http.ListenAndServe(":8080", r)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func connectToDatabase() *pgxpool.Pool {
+func connectToDatabase() app.DB {
 	db, err := store.Connect(context.Background(), "postgres://postgres:postgres@localhost:5432/openlibrary?sslmode=disable")
 	if err != nil {
 		panic(err)

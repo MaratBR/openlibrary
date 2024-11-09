@@ -4,6 +4,7 @@ import { useBookManager, useBookManagerUpdateMutation } from './book-manager-con
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -18,16 +19,18 @@ import TagsField from '@/modules/book/components/tags-field'
 import { useForm } from 'react-hook-form'
 import { ButtonSpinner } from '@/components/spinner'
 import { definedTagDtoSchema } from '@/modules/book/api'
+import { Switch } from '@/components/ui/switch'
 
 const formSchema = z.object({
   name: z.string().min(1).max(50),
   rating: z.enum(['?', 'G', 'PG', 'PG-13', 'R', 'NC-17']).default('?'),
   tags: z.array(definedTagDtoSchema).min(0).max(50),
   summary: z.string().max(1000).default(''),
+  isPubliclyVisible: z.boolean(),
 })
 
 export default function EditBookForm() {
-  const { book } = useBookManager()
+  const { book, refetch } = useBookManager()
   const [isEditing, setIsEditing] = React.useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -36,7 +39,8 @@ export default function EditBookForm() {
       name: book.name,
       rating: book.ageRating,
       summary: '', // TODO
-      tags: book.tags, // TODO
+      tags: book.tags,
+      isPubliclyVisible: book.isPubliclyVisible,
     },
   })
 
@@ -44,12 +48,18 @@ export default function EditBookForm() {
   const disableFields = !isEditing || updateBook.isPending
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    updateBook.mutate({
-      name: values.name,
-      ageRating: values.rating,
-      tags: values.tags.map((x) => x.name),
-      summary: values.summary,
-    })
+    updateBook
+      .mutateAsync({
+        name: values.name,
+        ageRating: values.rating,
+        tags: values.tags.map((x) => x.name),
+        summary: values.summary,
+        isPubliclyVisible: values.isPubliclyVisible,
+      })
+      .then(() => {
+        setIsEditing(false)
+        refetch()
+      })
   }
 
   function startEditing() {
@@ -94,7 +104,7 @@ export default function EditBookForm() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-x-5">
+        <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-5 md:max-w-[1200px]">
           <div className="space-y-2">
             <FormField
               disabled={disableFields}
@@ -149,6 +159,30 @@ export default function EditBookForm() {
             />
           </div>
           <div className="space-y-2">
+            <FormField
+              control={form.control}
+              name="isPubliclyVisible"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between">
+                  <div className="space-y-0.5">
+                    <FormLabel>Make your book publicly accessible</FormLabel>
+                    <FormDescription>
+                      This will allow other users to find your book.
+                    </FormDescription>
+                  </div>
+
+                  <FormControl>
+                    <Switch
+                      disabled={disableFields}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               disabled={disableFields}

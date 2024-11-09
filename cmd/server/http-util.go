@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/go-chi/chi/v5"
+	"github.com/joomcode/errorx"
 )
 
 func readJSON(r *http.Request, v interface{}) error {
@@ -67,11 +69,27 @@ func writeUnprocessableEntity(w http.ResponseWriter, message string) {
 }
 
 func writeApplicationError(w http.ResponseWriter, err error) {
-	w.WriteHeader(http.StatusConflict)
-	_, err2 := w.Write([]byte(err.Error()))
-	if err2 != nil {
+	var werr error
+
+	if errx, ok := err.(*errorx.Error); ok {
+
+		if errorx.HasTrait(errx, app.ErrTraitForbidden) {
+			w.WriteHeader(http.StatusForbidden)
+			_, werr = w.Write([]byte(err.Error()))
+		} else {
+			w.WriteHeader(http.StatusConflict)
+			_, werr = w.Write([]byte(err.Error()))
+		}
+
+	} else {
+		w.WriteHeader(http.StatusConflict)
+		_, werr = w.Write([]byte(err.Error()))
+	}
+
+	if werr != nil {
 		slog.Error("error while writing to the client", "err", err)
 	}
+
 }
 
 func write404(w http.ResponseWriter, message string) {
@@ -101,4 +119,12 @@ func urlParamInt64(r *http.Request, name string) (int64, error) {
 		return 0, nil
 	}
 	return strconv.ParseInt(value, 10, 64)
+}
+
+func int64StringArr(arr []app.Int64String) []int64 {
+	arr2 := make([]int64, len(arr))
+	for i, v := range arr {
+		arr2[i] = int64(v)
+	}
+	return arr2
 }

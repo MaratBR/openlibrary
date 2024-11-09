@@ -14,48 +14,62 @@ export default function BookPage() {
   const { data } = useBookQuery(id)
 
   return (
-    <main className="container-default relative">
+    <>
       {data && (
-        <>
-          <header className="page-header relative">
-            <h1 className="page-header-text">
-              {data.isAdult && <BookAdultIndicator />}
-              {data.name}
-            </h1>
-            <p>
-              by&nbsp;
-              <NavLink className="link" to={`/user/${data.author.id}`}>
-                {data.author.name}
-              </NavLink>
-            </p>
+        <div className="bg-muted pb-6">
+          <div className="container-default">
+            <header className="page-header relative">
+              <h1 className="page-header-text">
+                {data.isAdult && <BookAdultIndicator />}
+                {data.name}
+              </h1>
+              <p>
+                by&nbsp;
+                <NavLink className="link" to={`/user/${data.author.id}`}>
+                  {data.author.name}
+                </NavLink>
+              </p>
 
-            {data.permissions.canEdit && <QuickEditSection bookId={data.id} />}
-          </header>
-          <BookInfoCard book={data} />
-          <ChaptersList book={data} />
-        </>
+              {data.permissions.canEdit && <QuickEditSection bookId={data.id} />}
+            </header>
+            <BookInfoCard book={data} />
+          </div>
+        </div>
       )}
-    </main>
+      <main className="container-default relative">
+        {data && (
+          <>
+            <ChaptersList book={data} />
+          </>
+        )}
+      </main>
+    </>
   )
 }
 
 function ChaptersList({ book }: { book: BookDetailsDto }) {
   return (
     <section id="chapters" className="mt-8">
-      <header>
-        <h2 className="text-xl font-semibold">{book.chapters.length} chapters</h2>
+      <section className="page-section">
+        <h2 className="text-xl font-semibold">Summary</h2>
 
-        {book.chapters.length === 0 && (
-          <div className="text-muted-foreground mt-3">
-            It looks like author did not write anything yet
-          </div>
-        )}
-        <div className="space-y-2 mt-4">
-          {book.chapters.map((chapter) => {
-            return <ChapterCard key={chapter.id} bookId={book.id} chapter={chapter} />
-          })}
+        <p>
+          {book.summary ? book.summary : <span className="text-muted-foreground">No summary</span>}
+        </p>
+      </section>
+
+      <h2 className="text-xl font-semibold">{book.chapters.length} chapters</h2>
+
+      {book.chapters.length === 0 && (
+        <div className="text-muted-foreground mt-3">
+          It looks like author did not write anything yet
         </div>
-      </header>
+      )}
+      <div className="space-y-2 mt-4">
+        {book.chapters.map((chapter) => {
+          return <ChapterCard key={chapter.id} bookId={book.id} chapter={chapter} />
+        })}
+      </div>
     </section>
   )
 }
@@ -69,10 +83,6 @@ function QuickEditSection({ bookId }: { bookId: string }) {
             <LayoutDashboard /> Go to book manager
           </Button>
         </NavLink>
-
-        {/* <Button variant="ghost">
-          <EllipsisVerticalIcon />
-        </Button> */}
       </div>
     </section>
   )

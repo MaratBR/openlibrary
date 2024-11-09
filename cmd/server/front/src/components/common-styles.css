@@ -10,10 +10,22 @@
   @apply py-10;
 }
 
+.section-header {
+  @apply py-4;
+}
+
+.section-header-text {
+  @apply text-xl font-semibold text-foreground;
+}
+
 .link-default {
   @apply font-[500] text-foreground/80 underline-offset-4 hover:text-foreground hover:underline active:outline active:outline-primary active:no-underline;
 }
 
 .page-section {
-  @apply rounded-[1.2rem] p-8 border-muted border shadow-sm;
+  @apply py-8;
+}
+
+.badge-alt {
+  @apply bg-background flex gap-1 rounded-full border border-border py-1 px-2 text-muted-foreground hover:bg-muted;
 }
