@@ -9,7 +9,6 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 )
 
 type authController struct {
@@ -131,54 +130,3 @@ func newRequireAuthorizationMiddleware() func(http.Handler) http.Handler {
 type sessionInfoKeyType struct{}
 
 var sessionInfoKey sessionInfoKeyType = sessionInfoKeyType{}
-
-func getServerData(r *http.Request) map[string]any {
-	now := time.Now()
-	tz, offset := now.Zone()
-	serverParams := map[string]any{
-		"ts":    now.Unix(),
-		"tz":    tz,
-		"tzoff": offset,
-		"id":    app.GenID(),
-	}
-
-	sessionInfoAny := r.Context().Value(sessionInfoKey)
-	if sessionInfoAny != nil {
-		sessionInfo := sessionInfoAny.(*app.SessionInfo)
-		serverParams["session"] = map[string]any{
-			"id":           sessionInfo.UserID,
-			"username":     sessionInfo.UserName,
-			"createdAt":    sessionInfo.CreatedAt,
-			"expiresAt":    sessionInfo.ExpiresAt,
-			"userJoinedAt": sessionInfo.UserJoinedAt,
-		}
-	}
-
-	return serverParams
-}
-
-func getSession(r *http.Request) (*app.SessionInfo, bool) {
-	value := r.Context().Value(sessionInfoKey)
-	if value == nil {
-		return nil, false
-	}
-
-	sessionInfo := value.(*app.SessionInfo)
-	return sessionInfo, true
-}
-
-func requireSession(r *http.Request) *app.SessionInfo {
-	sessionInfo, ok := getSession(r)
-	if !ok {
-		panic("no session")
-	}
-	return sessionInfo
-}
-
-func getNullableUserID(r *http.Request) uuid.NullUUID {
-	session, ok := getSession(r)
-	if !ok {
-		return uuid.NullUUID{}
-	}
-	return uuid.NullUUID{Valid: true, UUID: session.UserID}
-}

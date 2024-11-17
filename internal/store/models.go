@@ -115,6 +115,7 @@ type Book struct {
 	Chapters           int32
 	TagIds             []int64
 	CachedParentTagIds []int64
+	Favorites          int32
 }
 
 type BookBanHistory struct {
@@ -162,6 +163,13 @@ type DefinedTag struct {
 	SynonymOf      pgtype.Int8
 	IsDefault      bool
 	LowercasedName string
+}
+
+type Favorite struct {
+	UserID     pgtype.UUID
+	BookID     int64
+	IsFavorite bool
+	CreatedAt  pgtype.Timestamptz
 }
 
 type Session struct {

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { LayoutDashboard } from 'lucide-react'
 import ChapterCard from './ChapterCard'
 import BookInfoCard from './BookInfoCard'
+import BookFavoritesCounter from '../../components/book-favorites-counter'
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>()
@@ -50,6 +51,10 @@ export default function BookPage() {
 function ChaptersList({ book }: { book: BookDetailsDto }) {
   return (
     <section id="chapters" className="mt-8">
+      <section className="page-section">
+        <BookFavoritesCounter bookId={book.id} count={book.favorites} isLiked={book.isFavorite} />
+      </section>
+
       <section className="page-section">
         <h2 className="text-xl font-semibold">Summary</h2>
 

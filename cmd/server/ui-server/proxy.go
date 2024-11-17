@@ -2,11 +2,9 @@ package uiserver
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -70,24 +68,24 @@ func (p *devProxy) proxy(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if resp.Header.Get("Content-Type") == "text/html" {
-		var serverData map[string]any
-		if p.options.GetServerPushedData != nil {
-			serverData = p.options.GetServerPushedData(req)
+		var serverData []byte
+		if p.options.GetInjectedHTMLSegment != nil {
+			serverData = p.options.GetInjectedHTMLSegment(req)
 		}
-		writeWithServerData(resp.StatusCode, w, resp.Body, serverData)
+		injectAtHeadTailOfResponse(resp.StatusCode, w, resp.Body, serverData)
 	} else {
 		w.WriteHeader(resp.StatusCode)
 		io.Copy(w, resp.Body)
 	}
 }
 
-func injectStringAtEndOfBody(response []byte, injectedString string) ([]byte, bool) {
-	idx := bytes.LastIndex(response, []byte("</body>"))
+func injectAtHeadTail(response, headTail []byte) ([]byte, bool) {
+	idx := bytes.LastIndex(response, []byte("</head>"))
 	if idx == -1 {
 		return response, false
 	}
 
-	injectedBytes := []byte(injectedString)
+	injectedBytes := []byte(headTail)
 	newResponse := make([]byte, len(response)+len(injectedBytes))
 	copy(newResponse, response[:idx])
 	copy(newResponse[idx:], injectedBytes)
@@ -95,18 +93,10 @@ func injectStringAtEndOfBody(response []byte, injectedString string) ([]byte, bo
 	return newResponse, true
 }
 
-func writeWithServerData(statusCode int, w http.ResponseWriter, r io.Reader, serverData map[string]any) error {
-	if serverData == nil {
+func injectAtHeadTailOfResponse(statusCode int, w http.ResponseWriter, r io.Reader, injectedBytes []byte) error {
+	if len(injectedBytes) == 0 {
 		w.WriteHeader(statusCode)
 		_, err := io.Copy(w, r)
-		return err
-	}
-
-	jsonString, err := json.Marshal(serverData)
-	if err != nil {
-		slog.Error("failed to marshal server data", "err", err)
-		w.WriteHeader(statusCode)
-		_, err = io.Copy(w, r)
 		return err
 	}
 
@@ -114,7 +104,7 @@ func writeWithServerData(statusCode int, w http.ResponseWriter, r io.Reader, ser
 	if err != nil {
 		return err
 	}
-	idx := bytes.LastIndex(html, []byte("</body>"))
+	idx := bytes.LastIndex(html, []byte("</head>"))
 	if idx == -1 {
 		w.WriteHeader(statusCode)
 		_, err = w.Write(html)
@@ -124,8 +114,7 @@ func writeWithServerData(statusCode int, w http.ResponseWriter, r io.Reader, ser
 	} else {
 		contentLength, _ := strconv.ParseInt(w.Header().Get("Content-Length"), 10, 32)
 
-		injectedString := fmt.Sprintf("<script data-ts=\"%d\">window.SERVER_DATA=%s</script>", time.Now().Unix(), jsonString)
-		html, _ := injectStringAtEndOfBody(html, injectedString)
+		html, _ := injectAtHeadTail(html, injectedBytes)
 		contentLength = int64(len(html))
 		w.Header().Add("x-is-proxy", "yes")
 		w.Header().Set("Content-Length", strconv.FormatInt(contentLength, 10))
@@ -160,7 +149,7 @@ func newDevProxy(targetHost string, options DevServerOptions) http.Handler {
 }
 
 type DevServerOptions struct {
-	GetServerPushedData func(*http.Request) map[string]any
+	GetInjectedHTMLSegment func(*http.Request) []byte
 }
 
 func NewDevServerProxy(options DevServerOptions) http.Handler {

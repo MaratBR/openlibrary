@@ -11,11 +11,11 @@ type AuthState = {
 }
 
 const useAuthState = create<AuthState>()((set) => ({
-  user: window.SERVER_DATA.session
+  user: SERVER_DATA.session
     ? {
-        id: window.SERVER_DATA.session.id,
-        name: window.SERVER_DATA.session.username,
-        sessionExpiresAt: window.SERVER_DATA.session.expiresAt,
+        id: SERVER_DATA.session.id,
+        name: SERVER_DATA.session.username,
+        sessionExpiresAt: SERVER_DATA.session.expiresAt,
       }
     : null,
   reset() {

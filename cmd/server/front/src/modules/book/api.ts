@@ -1,8 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
-import { httpClient } from '../common/api'
+import { QueryClient, useQuery } from '@tanstack/react-query'
+import { getPreloadedData, httpClient, stringArray, withPreloadCache } from '../common/api'
 import { z } from 'zod'
 import { useNotificationsSlot } from '../notifications/state'
 import { GenericNotification } from '../notifications'
+import React from 'react'
 
 export type ManagerAuthorBookDto = {
   id: string
@@ -47,7 +48,9 @@ export type SearchTagsResponse = {
 }
 
 export function httpTagsSearch(q: string): Promise<SearchTagsResponse> {
-  return httpClient.get('/api/tags/search', { searchParams: { q } }).then((r) => r.json())
+  return httpClient
+    .get('/api/tags/search-tags', { searchParams: q ? { q } : undefined })
+    .then((r) => r.json())
 }
 
 export type AgeRating = '?' | 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17'
@@ -82,6 +85,8 @@ export type BookDetailsDto = {
     canEdit: boolean
   }
   summary: string
+  favorites: number
+  isFavorite: boolean
   notifications: GenericNotification[]
 }
 
@@ -91,20 +96,34 @@ export function httpGetBook(id: string): Promise<GetBookResponse> {
   return httpClient.get(`/api/books/${id}`).then((r) => r.json())
 }
 
+export function preloadBookQuery(queryClient: QueryClient, bookId: string) {
+  queryClient.prefetchQuery({
+    queryKey: ['book', bookId],
+    queryFn: () => httpGetBook(bookId),
+    staleTime: 30000,
+    gcTime: 60000,
+  })
+}
+
 export function useBookQuery(bookId: string | undefined) {
   const setNotifications = useNotificationsSlot()
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['book', bookId],
     enabled: !!bookId,
-    queryFn: () =>
-      httpGetBook(bookId!).then((resp) => {
-        if (resp.notifications) setNotifications(resp.notifications)
-        return resp
-      }),
-    staleTime: 0,
+    queryFn: () => httpGetBook(bookId!),
+    staleTime: 10000,
     gcTime: 60000,
   })
+
+  const { data } = query
+
+  React.useEffect(() => {
+    if (!data) return
+    if (data.notifications) setNotifications(data.notifications)
+  }, [data, setNotifications])
+
+  return query
 }
 
 export type ChapterPrevNextDto = {
@@ -145,4 +164,150 @@ export function useBookChapterQuery(bookId: string | undefined, chapterId: strin
     staleTime: 0,
     gcTime: 0,
   })
+}
+
+export function httpFavoriteBook(id: string, isFavorite: boolean): Promise<GetBookResponse> {
+  return httpClient
+    .post(`/api/favorite`, { searchParams: { bookId: id, isFavorite } })
+    .then((r) => r.json())
+}
+
+export type BookSearchItem = {
+  id: string
+  name: string
+  createdAt: string
+  ageRating: AgeRating
+  words: number
+  wordsPerChapter: number
+  chapters: number
+  favorites: number
+  summary: string
+  author: BookDetailsDto['author']
+  tags: DefinedTagDto[]
+}
+
+export type SearchBooksResponse = {
+  cache: {
+    hit: boolean
+    key: string
+  }
+  took: number
+  books: BookSearchItem[]
+}
+
+export type SearchBooksRequest = {
+  'w.min'?: string
+  'w.max'?: string
+  'c.min'?: string
+  'c.max'?: string
+  'wc.min'?: string
+  'wc.max'?: string
+  'f.min'?: string
+  'f.max'?: string
+  it?: string
+  et?: string
+  iu?: string
+  eu?: string
+}
+
+export function parseSearchBooksRequest(sp: URLSearchParams): SearchBooksRequest {
+  const set = (key: keyof SearchBooksRequest, into: SearchBooksRequest) => {
+    let v = sp.get(key)
+    if (!v) return
+    v = v.trim()
+    into[key] = v
+  }
+
+  const params: SearchBooksRequest = {}
+  set('w.max', params)
+  set('w.min', params)
+  set('c.max', params)
+  set('c.min', params)
+  set('wc.max', params)
+  set('wc.min', params)
+  set('f.max', params)
+  set('f.min', params)
+  set('it', params)
+  set('et', params)
+  set('iu', params)
+  set('eu', params)
+
+  return params
+}
+
+export function searchBookRequestToURLSearchParams(query: SearchBooksRequest): URLSearchParams {
+  const urlSp = new URLSearchParams()
+
+  const set = (key: keyof SearchBooksRequest, from: SearchBooksRequest) => {
+    const v = from[key]?.trim()
+    if (!v) return
+    urlSp.set(key, v)
+  }
+
+  set('w.max', query)
+  set('w.min', query)
+  set('c.max', query)
+  set('c.min', query)
+  set('wc.max', query)
+  set('wc.min', query)
+  set('f.max', query)
+  set('f.min', query)
+  set('it', query)
+  set('et', query)
+  set('iu', query)
+  set('eu', query)
+
+  return urlSp
+}
+
+export async function httpSearchBooks(query: SearchBooksRequest): Promise<SearchBooksResponse> {
+  const sp = searchBookRequestToURLSearchParams(query)
+
+  return await withPreloadCache(`/api/search?${sp.toString()}`, () =>
+    httpClient
+      .get('/api/search', {
+        searchParams: sp,
+      })
+      .then((r) => r.json()),
+  )
+}
+
+export function getPreloadedBookSearchResult(query: SearchBooksRequest) {
+  return getPreloadedData<SearchBooksResponse>(
+    `/api/search?${new URLSearchParams(query).toString()}`,
+  )
+}
+
+export type BookExtremes = {
+  words: {
+    min: number
+    max: number
+  }
+  chapters: {
+    min: number
+    max: number
+  }
+  wordsPerChapter: {
+    min: number
+    max: number
+  }
+  favorites: {
+    min: number
+    max: number
+  }
+}
+
+export function httpGetBookExtremes(): Promise<BookExtremes> {
+  return withPreloadCache('/api/search/book-extremes', () =>
+    httpClient.get('/api/search/book-extremes').then((r) => r.json()),
+  )
+}
+
+export function httpTagsGetByName(tags: string[]): Promise<DefinedTagDto[]> {
+  const q = stringArray(tags)
+  const searchParams = q ? new URLSearchParams({ q }) : undefined
+  return withPreloadCache(
+    `/api/tags/lookup` + (searchParams ? `?${searchParams.toString()}` : ''),
+    () => httpClient.get('/api/tags/lookup', { searchParams }).then((r) => r.json()),
+  )
 }

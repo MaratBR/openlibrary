@@ -27,20 +27,41 @@ func main() {
 
 	db := connectToDatabase()
 	authService := app.NewAuthService(db)
+	favoriteRecalculationBackgroundService := app.NewFavoriteRecalculationBackgroundService(db)
+	favoritesService := app.NewFavoriteService(db, favoriteRecalculationBackgroundService)
+
 	authorizationMiddleware := newAuthorizationMiddleware(authService)
 	requiresAuthorization := newRequireAuthorizationMiddleware()
+
+	// application layer services
+	tagsService := app.NewTagsService(db)
+	bookService := app.NewBookService(db, tagsService)
+	bookManagerService := app.NewBookManagerService(db, tagsService)
+	searchService := app.NewSearchService(db, tagsService)
+	userService := app.NewUserService(db)
+
+	// controllers
+	bookController := newBookController(bookService)
+	authController := newAuthController(authService)
+	searchController := newSearchController(searchService, tagsService)
+	userController := newUserController(userService)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(csrfMiddleware)
+	r.Use(authorizationMiddleware)
+	r.Use(injectServerData)
 
+	staticController := newStaticController()
 	if cliParams.DevProxy {
 		fallbackHandler := newAuthorizationMiddlewareConditional(authService, func(r *http.Request) bool {
 			if strings.HasPrefix(r.URL.Path, "/node_modules/") || strings.HasPrefix(r.URL.Path, "/src/") || strings.HasPrefix(r.URL.Path, "/@vite/") || r.URL.Path == "/vite.svg" {
 				return false
 			}
 			return true
-		})(http.HandlerFunc(devProxyIndex))
+		})(http.HandlerFunc(staticController.DevProxyIndex))
+
+		r.Get("/search", staticController.PreloadData(searchController.SearchPreload))
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			fallbackHandler.ServeHTTP(w, r)
@@ -48,28 +69,33 @@ func main() {
 	}
 
 	r.Route("/api", func(r chi.Router) {
-		authController := newAuthController(authService)
+		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+			w.Write([]byte("not found"))
+		})
 
-		r.Use(authorizationMiddleware)
 		r.Post("/auth/signin", authController.SignIn)
-
 		if cliParams.DevProxy {
 			r.HandleFunc("/auth/signin-admin", authController.SignInAdmin)
 		}
-
 		r.Handle("/auth/csrf", http.HandlerFunc(refreshCsrfToken))
 
-		tagsService := app.NewTagsService(db)
-		bookService := app.NewBookService(db, tagsService)
-		bookManagerService := app.NewBookManagerService(db, tagsService)
-		bookController := newBookController(bookService)
+		r.Get("/users/{userID}", userController.GetUser)
 
 		r.Get("/books/{id}", bookController.GetBook)
 		r.Get("/books/{bookID}/chapters/{chapterID}", bookController.GetChapter)
 
+		favoritesController := newFavoritesController(favoritesService)
+		r.Post("/favorite", favoritesController.SetFavorite)
+
+		r.Get("/search", searchController.Search)
+		r.Get("/search/book-extremes", searchController.GetBookExtremes)
+
 		r.Route("/tags", func(r chi.Router) {
 			tagsController := newTagsController(tagsService)
-			r.Get("/search", tagsController.Search)
+			r.Get("/search-tags", tagsController.Search)
+			r.Get("/lookup", tagsController.GetByName)
+
 		})
 
 		r.Route("/manager", func(r chi.Router) {
@@ -104,6 +130,8 @@ func main() {
 			slog.Error("failed to import predefined tags", "err", err)
 		}
 	}()
+
+	favoriteRecalculationBackgroundService.Start()
 
 	err = http.ListenAndServe(":8080", r)
 	if err != nil {

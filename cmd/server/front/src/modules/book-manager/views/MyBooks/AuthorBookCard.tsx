@@ -5,6 +5,7 @@ import { NavLink } from 'react-router-dom'
 import BookIsHiddenIndicator from '../common/book-is-hidden-indicator'
 import BookIsBannedIndicator from '../common/book-is-banned-indicator'
 import GoToBookPage from '../common/go-to-book-page'
+import SanitizeHtml from '@/components/sanitizer-html'
 
 export default function AuthorBookCard({ book }: { book: ManagerAuthorBookDto }) {
   return (
@@ -21,7 +22,11 @@ export default function AuthorBookCard({ book }: { book: ManagerAuthorBookDto })
       </header>
 
       <p className="pt-3 text-sm">
-        {book.summary ? book.summary : <span className="text-muted-foreground">No summary</span>}
+        {book.summary ? (
+          <SanitizeHtml html={book.summary} />
+        ) : (
+          <span className="text-muted-foreground">No summary</span>
+        )}
       </p>
 
       <div className="flex gap-2 mt-3">

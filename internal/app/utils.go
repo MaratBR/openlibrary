@@ -30,8 +30,17 @@ func uuidV4() uuid.UUID {
 func uuidDbToDomain(v pgtype.UUID) uuid.UUID {
 	return uuid.UUID(v.Bytes)
 }
+
 func uuidDomainToDb(v uuid.UUID) pgtype.UUID {
 	return pgtype.UUID{Bytes: [16]byte(v), Valid: true}
+}
+
+func arrUuidDomainToDb(v []uuid.UUID) []pgtype.UUID {
+	uuids := make([]pgtype.UUID, len(v))
+	for i := range v {
+		uuids[i] = uuidDomainToDb(v[i])
+	}
+	return uuids
 }
 
 func rollbackTx(ctx context.Context, tx pgx.Tx) {

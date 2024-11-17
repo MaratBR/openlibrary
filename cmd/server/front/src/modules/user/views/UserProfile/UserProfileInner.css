@@ -1,0 +1,25 @@
+.user-page {
+    @apply pt-10 w-[100%] mx-auto px-[2rem] max-w-screen-2xl;
+}
+
+.user-layout {
+    @apply grid gap-4;
+    grid-template-columns: 1fr auto;
+}
+
+.user-card {
+    @apply 
+        flex flex-col items-center gap-4 bg-muted rounded-sm p-4 border shadow-lg mb-4;
+
+        &__joined-at {
+            @apply text-sm text-muted-foreground;
+        }
+}
+
+.user-avatar {
+    @apply rounded-xl border overflow-hidden;
+
+    &__img {
+        @apply w-64 h-64 min-w-64 min-h-64 object-cover;
+    }
+}

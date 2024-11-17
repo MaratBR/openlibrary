@@ -7,6 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function useEffectOnce(callback: () => void) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(callback, [])
 }
 
@@ -53,4 +54,19 @@ export function useSetRef<T>(
     if (!ref) return
     setRef(ref, value)
   }, [ref, value])
+}
+
+export function debounce<Args extends unknown[]>(
+  fn: (...args: Args) => void,
+  ms: number,
+): (...args: Args) => void {
+  let timer: number
+
+  return (...args: Args) => {
+    clearTimeout(timer)
+
+    timer = window.setTimeout(() => {
+      fn(...args)
+    }, ms)
+  }
 }

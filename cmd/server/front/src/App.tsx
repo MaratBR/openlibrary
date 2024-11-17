@@ -4,8 +4,10 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import queryClient, { QueryClientLoadingBar } from './query-client'
 import { TooltipProvider } from './components/ui/tooltip'
 import { LoadingBarProvider } from './components/loading-bar-context'
-import { ScrollArea } from './components/ui/scroll-area'
 import { Suspense } from 'react'
+import { initIframeAgent } from './lib/iframe-auto-resize'
+
+document.addEventListener('DOMContentLoaded', initIframeAgent)
 
 function App() {
   return (
@@ -13,11 +15,9 @@ function App() {
       <TooltipProvider>
         <LoadingBarProvider>
           <QueryClientLoadingBar />
-          <ScrollArea className="w-screen h-screen">
-            <Suspense>
-              <RouterProvider router={router} />
-            </Suspense>
-          </ScrollArea>
+          <Suspense>
+            <RouterProvider router={router} />
+          </Suspense>
         </LoadingBarProvider>
       </TooltipProvider>
     </QueryClientProvider>

@@ -13,10 +13,10 @@ import (
 type BookManagerService struct {
 	queries     *store.Queries
 	db          DB
-	tagsService *TagsService
+	tagsService TagsService
 }
 
-func NewBookManagerService(db DB, tagsService *TagsService) *BookManagerService {
+func NewBookManagerService(db DB, tagsService TagsService) *BookManagerService {
 	return &BookManagerService{queries: store.New(db), tagsService: tagsService, db: db}
 }
 
@@ -40,7 +40,7 @@ func (s *BookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 		return 0, err
 	}
 
-	tags, err := s.tagsService.findBookTags(ctx, input.Tags)
+	tags, err := s.tagsService.FindBookTags(ctx, input.Tags)
 	if err != nil {
 		return 0, err
 	}
@@ -81,7 +81,7 @@ func (s *BookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return err
 	}
 
-	tags, err := s.tagsService.findBookTags(ctx, input.Tags)
+	tags, err := s.tagsService.FindBookTags(ctx, input.Tags)
 	if err != nil {
 		return err
 	}
@@ -117,6 +117,7 @@ type ManagerBookDetailsDto struct {
 	Summary           string               `json:"summary"`
 	IsPubliclyVisible bool                 `json:"isPubliclyVisible"`
 	IsBanned          bool                 `json:"isBanned"`
+	Favorites         int32                `json:"favorites"`
 }
 
 type ManagerGetBookResult struct {
@@ -155,6 +156,7 @@ func (s *BookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		Summary:           book.Summary,
 		IsPubliclyVisible: book.IsPubliclyVisible,
 		IsBanned:          book.IsBanned,
+		Favorites:         book.Favorites,
 	}
 
 	{

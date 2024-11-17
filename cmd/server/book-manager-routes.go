@@ -161,7 +161,7 @@ func (c *bookManagerController) CreateChapter(w http.ResponseWriter, r *http.Req
 		writeUnprocessableEntity(w, "chapter content must be between 1 and 50000 characters")
 		return
 	}
-	if len(body.Name) > 50 {
+	if len(body.Name) > 500 {
 		writeUnprocessableEntity(w, "chapter name must not be over 50 characters")
 		return
 	}
@@ -208,7 +208,7 @@ func (c *bookManagerController) UpdateChapter(w http.ResponseWriter, r *http.Req
 		writeUnprocessableEntity(w, "chapter content must be between 1 and 50000 characters")
 		return
 	}
-	if len(body.Name) > 50 {
+	if len(body.Name) > 500 {
 		writeUnprocessableEntity(w, "chapter name must not be over 50 characters")
 		return
 	}

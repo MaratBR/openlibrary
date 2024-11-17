@@ -12,7 +12,6 @@ import {
 import { NavLink } from 'react-router-dom'
 import { useChapterName } from '../../utils'
 import { ArrowLeft, ArrowRight, Book } from 'lucide-react'
-import React from 'react'
 
 export default function ChapterPage() {
   const { chapterId, bookId } = useParams<{

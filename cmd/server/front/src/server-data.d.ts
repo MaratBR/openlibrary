@@ -9,4 +9,5 @@ declare let SERVER_DATA: {
   ts: number
   tz: string
   tzoff: number
+  _preload?: Record<string, unknown>
 }

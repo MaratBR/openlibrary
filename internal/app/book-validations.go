@@ -19,7 +19,7 @@ func validateBookName(name string) error {
 }
 
 func validateBookSummary(summary string) error {
-	if len(summary) > 1000 {
+	if len(summary) > 100_000 {
 		return BookSummaryTooLong
 	}
 	return nil

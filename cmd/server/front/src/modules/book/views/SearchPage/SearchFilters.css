@@ -1,0 +1,30 @@
+.range {
+    &__input {
+        @apply outline-none p-3 text-[1rem] border ring-primary focus:ring-2 focus:z-10 bg-background;
+
+        &:first-child {
+            @apply rounded-l-lg;
+        }
+
+        &:last-child {
+            @apply rounded-r-lg;
+        }
+
+        &:not(:last-child) {
+            @apply border-r-0;
+        }
+    }
+}
+
+.expandable-field {
+    &__trigger {
+        @apply 
+            mt-1 h-14 flex items-center cursor-pointer bg-muted
+            data-[state=closed]:border-b data-[state=open]:font-[500] data-[state=open]:bg-transparent data-[state=closed]:rounded-md
+            md:data-[state=closed]:border-b-0;
+
+        & > span:first-child {
+            @apply md:hover:shadow-[0_2px_0_currentColor];
+        }
+    }
+}

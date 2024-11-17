@@ -24,5 +24,5 @@ export default function Spinner({ style, className, size = 24 }: SpinnerProps) {
 }
 
 export function ButtonSpinner() {
-  return <Spinner size={16} className="text-foreground opacity-80" />
+  return <Spinner size={16} className="text-[currentColor] opacity-80" />
 }

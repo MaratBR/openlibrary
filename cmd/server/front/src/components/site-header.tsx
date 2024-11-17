@@ -5,15 +5,15 @@ import { NavLink, NavLinkRenderProps } from 'react-router-dom'
 export default function SiteHeader({ children }: React.PropsWithChildren) {
   return (
     <header id="site-header" className="fixed top-0 z-50 w-full border-border/40 site-header">
-      <div className="container-default h-14 flex items-center">
+      <div className="container-default h-full flex items-center">
         <div id="site-logo" className="mr-8 font-semibold text-4xl">
           OpenLibrary
         </div>
         <div className="space-x-2 flex">
           <SiteHeaderLink href="/home">Home</SiteHeaderLink>
-          <SiteHeaderLink href="/my-books">Your stories</SiteHeaderLink>
+          <SiteHeaderLink href="/manager/books">Your stories</SiteHeaderLink>
           <SiteHeaderLink href="/logout">Logout</SiteHeaderLink>
-          <SiteHeaderLink href="/about">About</SiteHeaderLink>
+          <SiteHeaderLink href="/search?it=Gen">Search test</SiteHeaderLink>
         </div>
       </div>
     </header>

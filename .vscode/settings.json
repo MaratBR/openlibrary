@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
         "denormalized",
+        "favourite",
+        "goqu",
         "pgconn",
         "pgtype",
         "sqlx",
@@ -21,7 +23,7 @@
     "[typescriptreact]": {
         "editor.tabSize": 2,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
     "[typescript]": {
         "editor.tabSize": 2,
@@ -31,7 +33,7 @@
     "[javascriptreact]": {
         "editor.tabSize": 2,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
     "[javascript]": {
         "editor.tabSize": 2,

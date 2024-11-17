@@ -22,7 +22,7 @@ import { definedTagDtoSchema } from '@/modules/book/api'
 import { Switch } from '@/components/ui/switch'
 
 const formSchema = z.object({
-  name: z.string().min(1).max(50),
+  name: z.string().min(1).max(500),
   rating: z.enum(['?', 'G', 'PG', 'PG-13', 'R', 'NC-17']).default('?'),
   tags: z.array(definedTagDtoSchema).min(0).max(50),
   summary: z.string().max(1000).default(''),

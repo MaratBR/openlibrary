@@ -22,7 +22,8 @@ create table books (
     words int4 not null default 0,
     chapters int4 not null default 0,
     tag_ids int8[] not null default '{}',
-    cached_parent_tag_ids int8[] not null default '{}'
+    cached_parent_tag_ids int8[] not null default '{}',
+    favorites int4 not null default 0
 );
 
 create index ix_books_author_user_id on books (author_user_id);

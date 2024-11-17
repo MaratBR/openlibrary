@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { DefinedTagDto } from '../api'
 import { cn } from '@/lib/utils'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import './Tag.css'
 
 export type TagProps = {
   tag: DefinedTagDto
@@ -16,9 +17,9 @@ export default function Tag({ tag, disableInteractive = false }: TagProps) {
       data-defined={true}
       className={cn(
         {
-          '!border-red-900/50': tag.isAdult,
+          'tag--adult': tag.isAdult,
         },
-        'text-sm bg-muted rounded-sm active:outline outline-2 outline-primary outline-offset-[-1px] inline items-center overflow-hidden border-2 border-muted',
+        'tag',
       )}
       to={`/tag/${encodeURIComponent(tag.name)}`}
       onClick={disableInteractive ? (e) => e.preventDefault() : undefined}

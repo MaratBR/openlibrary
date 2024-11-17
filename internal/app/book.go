@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -12,10 +13,10 @@ import (
 
 type BookService struct {
 	queries     *store.Queries
-	tagsService *TagsService
+	tagsService TagsService
 }
 
-func NewBookService(db store.DBTX, tagsService *TagsService) *BookService {
+func NewBookService(db store.DBTX, tagsService TagsService) *BookService {
 	return &BookService{queries: store.New(db), tagsService: tagsService}
 }
 
@@ -70,21 +71,22 @@ type BookUserPermissions struct {
 }
 
 type BookDetailsDto struct {
-	ID              int64                `json:"id,string"`
-	Name            string               `json:"name"`
-	AgeRating       AgeRating            `json:"ageRating"`
-	IsAdult         bool                 `json:"isAdult"`
-	Tags            []DefinedTagDto      `json:"tags"`
-	Words           int                  `json:"words"`
-	WordsPerChapter int                  `json:"wordsPerChapter"`
-	CreatedAt       time.Time            `json:"createdAt"`
-	Collections     []BookCollectionDto  `json:"collections"`
-	Chapters        []BookChapterDto     `json:"chapters"`
-	Author          BookDetailsAuthorDto `json:"author"`
-	Permissions     BookUserPermissions  `json:"permissions"`
-	Summary         string               `json:"summary"`
-
-	Notifications []GenericNotification `json:"notifications,omitempty"`
+	ID              int64                 `json:"id,string"`
+	Name            string                `json:"name"`
+	AgeRating       AgeRating             `json:"ageRating"`
+	IsAdult         bool                  `json:"isAdult"`
+	Tags            []DefinedTagDto       `json:"tags"`
+	Words           int                   `json:"words"`
+	WordsPerChapter int                   `json:"wordsPerChapter"`
+	CreatedAt       time.Time             `json:"createdAt"`
+	Collections     []BookCollectionDto   `json:"collections"`
+	Chapters        []BookChapterDto      `json:"chapters"`
+	Author          BookDetailsAuthorDto  `json:"author"`
+	Permissions     BookUserPermissions   `json:"permissions"`
+	Summary         string                `json:"summary"`
+	Favorites       int32                 `json:"favorites"`
+	IsFavorite      bool                  `json:"isFavorite"`
+	Notifications   []GenericNotification `json:"notifications,omitempty"`
 }
 
 func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDetailsDto, error) {
@@ -121,6 +123,7 @@ func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 		CreatedAt:       book.CreatedAt.Time,
 		Collections:     []BookCollectionDto{},
 		Chapters:        []BookChapterDto{},
+		Favorites:       book.Favorites,
 		Author: BookDetailsAuthorDto{
 			ID:   authorID,
 			Name: book.AuthorName,
@@ -141,6 +144,18 @@ func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 				ID:   "book:owner:banned",
 				Text: fmt.Sprintf("This book has been banned by our moderation team, please [click here](/manager/book/banned/%d?from=book-page-notification) to find out more about this", book.ID),
 			})
+		}
+	}
+
+	if query.ActorUserID.Valid {
+		isFavorite, err := s.queries.IsFavoritedBy(ctx, store.IsFavoritedByParams{
+			BookID: query.ID,
+			UserID: uuidDomainToDb(query.ActorUserID.UUID),
+		})
+		if err != nil {
+			slog.Error("failed to get isFavorite value for a book and a user", "bookID", book.ID, "userID", query.ActorUserID.UUID, "error", err)
+		} else {
+			bookDto.IsFavorite = isFavorite
 		}
 	}
 

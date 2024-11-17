@@ -1,0 +1,13 @@
+.tag {
+    @apply 
+        text-sm inline items-center overflow-hidden transition-shadow shadow-[0_0_0_currentColor]
+        hover:shadow-[0_2px_0_currentColor] active:text-muted-foreground;
+
+
+    &--adult {
+        @apply before:inline before:text-red-800 before:dark:text-red-400 font-[500];
+        &::before {
+            content: '18+';
+        }
+    }
+}

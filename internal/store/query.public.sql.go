@@ -31,7 +31,7 @@ func (q *Queries) FindUserByUsername(ctx context.Context, name string) (User, er
 }
 
 const getBook = `-- name: GetBook :one
-select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, users.name as author_name
+select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.favorites, users.name as author_name
 from books
 join users on books.author_user_id = users.id
 where books.id = $1
@@ -51,6 +51,7 @@ type GetBookRow struct {
 	Chapters           int32
 	TagIds             []int64
 	CachedParentTagIds []int64
+	Favorites          int32
 	AuthorName         string
 }
 
@@ -70,6 +71,7 @@ func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
 		&i.Chapters,
 		&i.TagIds,
 		&i.CachedParentTagIds,
+		&i.Favorites,
 		&i.AuthorName,
 	)
 	return i, err

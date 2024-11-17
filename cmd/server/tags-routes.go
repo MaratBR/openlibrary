@@ -8,10 +8,10 @@ import (
 )
 
 type tagsController struct {
-	tagsService *app.TagsService
+	tagsService app.TagsService
 }
 
-func newTagsController(service *app.TagsService) *tagsController {
+func newTagsController(service app.TagsService) *tagsController {
 	return &tagsController{tagsService: service}
 }
 
@@ -36,4 +36,27 @@ func (t *tagsController) Search(w http.ResponseWriter, r *http.Request) {
 		Tags:  tags,
 		Query: q,
 	})
+}
+
+func (t *tagsController) GetByName(w http.ResponseWriter, r *http.Request) {
+	tagNames := getStringArray(r.URL.Query(), "q")
+
+	if len(tagNames) == 0 {
+		writeJSON(w, []app.DefinedTagDto{})
+		return
+	}
+
+	bookTags, err := t.tagsService.FindBookTags(r.Context(), tagNames)
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+
+	tags, err := t.tagsService.GetTagsByIds(r.Context(), bookTags.TagIds)
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+
+	writeJSON(w, tags)
 }

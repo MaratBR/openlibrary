@@ -51,16 +51,25 @@ export type TagsAutocompleteProps = {
   onTagAdded: (value: DefinedTagDto) => void
   selectedTags: DefinedTagDto[]
   disabled?: boolean
+  fetchWhenCollapsed?: boolean
 }
 
-export function TagsAutocomplete({ onTagAdded, selectedTags, disabled }: TagsAutocompleteProps) {
+export function TagsAutocomplete({
+  onTagAdded,
+  selectedTags,
+  disabled,
+  fetchWhenCollapsed = false,
+}: TagsAutocompleteProps) {
   const [query, setQuery] = React.useState('')
   const debouncedSetQuery = React.useMemo(() => debounce(setQuery, 500), [])
+  const [isOpen, setOpen] = React.useState(false)
 
   const { data } = useQuery({
     queryKey: ['tags', query],
     queryFn: () => httpTagsSearch(query),
+    enabled: fetchWhenCollapsed || isOpen,
   })
+
   const options = useMemo(() => {
     const tags = data?.tags ?? []
     if (tags.length > 0 && selectedTags.length > 0) {
@@ -69,6 +78,18 @@ export function TagsAutocomplete({ onTagAdded, selectedTags, disabled }: TagsAut
       return tags
     }
   }, [data, selectedTags])
+
+  function handleOpen() {
+    if (!fetchWhenCollapsed) {
+      setOpen(true)
+    }
+  }
+
+  function handleClose() {
+    if (!fetchWhenCollapsed) {
+      setOpen(false)
+    }
+  }
 
   return (
     <AutoComplete<DefinedTagDto>
@@ -81,6 +102,8 @@ export function TagsAutocomplete({ onTagAdded, selectedTags, disabled }: TagsAut
       options={options}
       onValueChange={onTagAdded}
       itemComponent={DefinedTagListItem}
+      onOpen={handleOpen}
+      onClosed={handleClose}
     />
   )
 }
