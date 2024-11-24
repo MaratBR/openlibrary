@@ -43,6 +43,8 @@ func (s *FavoriteRecalculationBackgroundService) Stop() {
 }
 
 func (s *FavoriteRecalculationBackgroundService) run() {
+	slog.Debug("starting FavoriteRecalculationBackgroundService...")
+
 	for s.ctx.Err() == nil {
 		time.Sleep(time.Second)
 		if len(s.scheduledRecalculation) > 0 {

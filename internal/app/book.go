@@ -12,12 +12,13 @@ import (
 )
 
 type BookService struct {
-	queries     *store.Queries
-	tagsService TagsService
+	queries       *store.Queries
+	tagsService   TagsService
+	uploadService *UploadService
 }
 
-func NewBookService(db store.DBTX, tagsService TagsService) *BookService {
-	return &BookService{queries: store.New(db), tagsService: tagsService}
+func NewBookService(db store.DBTX, tagsService TagsService, uploadService *UploadService) *BookService {
+	return &BookService{queries: store.New(db), tagsService: tagsService, uploadService: uploadService}
 }
 
 type AuthorBookDto struct {
@@ -28,8 +29,10 @@ type AuthorBookDto struct {
 	Tags            []DefinedTagDto     `json:"tags"`
 	Words           int                 `json:"words"`
 	WordsPerChapter int                 `json:"wordsPerChapter"`
+	Favorites       int32               `json:"favorites"`
 	Chapters        int                 `json:"chapters"`
 	Collections     []BookCollectionDto `json:"collections"`
+	IsPinned        bool                `json:"isPinned"`
 }
 
 type BookCollectionDto struct {

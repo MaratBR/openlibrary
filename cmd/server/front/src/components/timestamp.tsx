@@ -20,7 +20,7 @@ export default function Timestamp({ value }: TimestampProps) {
   }, [value])
 
   return (
-    <time dateTime={dt.toISO()} className="timestamp">
+    <time title={dt.toLocaleString()} dateTime={dt.toISO()} className="timestamp">
       {dt.toRelative()}
     </time>
   )

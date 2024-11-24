@@ -1,6 +1,10 @@
 .chapter-content {
     font-family: charter, serif;
     @apply text-xl max-w-[70em] mx-auto;
+
+    & hr {
+        margin: 1.8em 0;
+    }
 }
 
 .link-chapter-control {

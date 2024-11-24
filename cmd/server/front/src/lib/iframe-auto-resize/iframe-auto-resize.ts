@@ -51,7 +51,7 @@ function initParent(): () => void {
     const iframe = document.getElementById(event.iframeId)
 
     if (iframe instanceof HTMLIFrameElement) {
-      iframe.style.height = `${Math.ceil(event.height)}px`
+      iframe.style.height = `${Math.ceil(event.height) + 1}px`
     }
   })
 

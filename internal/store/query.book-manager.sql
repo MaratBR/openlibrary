@@ -12,7 +12,13 @@ values
 
 -- name: UpdateBook :exec
 update books
-set name = $2, age_rating = $3, tag_ids = $4, cached_parent_tag_ids = $5, summary = $6, is_publicly_visible = $7
+set name = $2, age_rating = $3, tag_ids = $4, cached_parent_tag_ids = $5, summary = $6, is_publicly_visible = $7,
+    has_cover = $8
+where id = $1;
+
+-- name: BookSetHasCover :exec
+update books
+set has_cover = $2
 where id = $1;
 
 -- name: RecalculateBookStats :exec

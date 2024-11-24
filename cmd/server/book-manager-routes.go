@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"net/http"
@@ -7,10 +7,10 @@ import (
 )
 
 type bookManagerController struct {
-	service *app.BookManagerService
+	service app.BookManagerService
 }
 
-func newBookManagerController(service *app.BookManagerService) *bookManagerController {
+func newBookManagerController(service app.BookManagerService) *bookManagerController {
 	return &bookManagerController{service: service}
 }
 
@@ -315,4 +315,31 @@ func (c *bookManagerController) GetMyBooks(w http.ResponseWriter, r *http.Reques
 	writeJSON(w, myBooksResponse{
 		Books: books.Books,
 	})
+}
+
+func (c *bookManagerController) UploadBookCover(w http.ResponseWriter, r *http.Request) {
+	bookID, err := urlParamInt64(r, "bookID")
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+	session := requireSession(r)
+
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+	defer file.Close()
+
+	err = c.service.UploadBookCover(r.Context(), app.UploadBookCoverCommand{
+		UserID: session.UserID,
+		BookID: bookID,
+		File:   file,
+	})
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+	writeOK(w)
 }

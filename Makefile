@@ -9,15 +9,12 @@ LOCAL_DB_PORT := 5432
 LOCAL_DB := postgres://$(LOCAL_DB_USER):$(LOCAL_DB_PASSWORD)@$(LOCAL_DB_HOST):$(LOCAL_DB_PORT)/openlibrary?sslmode=disable
 
 build-server:
-	go build -o $(EXE) ./cmd/server
+	go build -o $(EXE) ./cmd/server-main
 
 build: sqlc templ build-server
 
 watch-server:
-	gow run ./cmd/server --dev-frontend-proxy
-
-watch-tailwind:
-	npx tailwindcss -i cmd/server/css/input.css -o cmd/server/dist/all.css --minify --watch
+	gow run ./cmd/server-main --dev-frontend-proxy --bypass-tls-check
 
 watch-templ:
 	templ generate --watch

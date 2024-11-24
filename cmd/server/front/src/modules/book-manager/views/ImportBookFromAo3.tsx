@@ -15,6 +15,10 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { httpImportBookFromAo3 } from '../api'
 import { useNavigate } from 'react-router'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { useState } from 'react'
+import { Textarea } from '@/components/ui/textarea'
 
 export default function ImportBookFromAo3() {
   return (
@@ -33,6 +37,8 @@ const formSchema = z.object({
 })
 
 function ImportBookFromAo3Form() {
+  const [isMultiple, setMultiple] = useState(false)
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,19 +60,45 @@ function ImportBookFromAo3Form() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="max-w-[400px]">
-          <FormField
-            control={form.control}
-            name="id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>ID of the book on Ao3</FormLabel>
-                <FormControl>
-                  <Input disabled={disabled} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="flex gap-3 flex-col mb-8">
+            <Label htmlFor="auto-apply-filters-switch">Import multiple</Label>
+            <Switch checked={isMultiple} onCheckedChange={setMultiple} />
+          </div>
+
+          {isMultiple ? (
+            <FormField
+              control={form.control}
+              name="id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID of the books on Ao3</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Put each book ID in a new line"
+                      rows={10}
+                      disabled={disabled}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : (
+            <FormField
+              control={form.control}
+              name="id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID of the book on Ao3</FormLabel>
+                  <FormControl>
+                    <Input disabled={disabled} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
         <Button disabled={disabled} variant="outline" type="submit">
           {createBook.isPending && <ButtonSpinner />}
@@ -76,13 +108,28 @@ function ImportBookFromAo3Form() {
     </Form>
   )
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    createBook
-      .mutateAsync({
-        id: values.id,
-      })
-      .then(({ id }) => {
-        navigate(`/book/${id}`)
-      })
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (isMultiple) {
+      const ids = values.id
+        .split('\n')
+        .map((x) => x.trim())
+        .map(Number)
+      for (const id of ids) {
+        if (Number.isNaN(id)) continue
+
+        await createBook.mutateAsync({
+          id: id + '',
+        })
+      }
+      navigate('/manager/books')
+    } else {
+      await createBook
+        .mutateAsync({
+          id: values.id,
+        })
+        .then(({ id }) => {
+          navigate(`/book/${id}`)
+        })
+    }
   }
 }

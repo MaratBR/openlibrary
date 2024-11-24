@@ -1,7 +1,7 @@
 import { createBrowserRouter, Outlet } from 'react-router-dom'
 import LoginPage from './modules/auth/views/LoginPage'
 import HomePage from './modules/book/views/HomePage'
-import SiteHeader from './components/site-header'
+import SiteHeader from './modules/common/components/site-header'
 import BookPage from './modules/book/views/BookPage'
 import ChapterPage from './modules/book/views/ChapterPage'
 import { Suspense } from 'react'
@@ -10,17 +10,21 @@ import Spinner from './components/spinner'
 import { NotificationRenderer } from './modules/notifications'
 import SearchPage from './modules/book/views/SearchPage/SearchPage'
 import UserProfile, { UserProfileInner } from './modules/user/views/UserProfile'
+import LogoutPage from './modules/auth/views/LogoutPage'
 
 const bookManagerChunk = componentsChunk(() => import('./modules/book-manager'))
 const BookManagerLayout = bookManagerChunk.componentType('BookManagerLayout')
+
+const accountChunk = componentsChunk(() => import('./modules/account'))
 
 const router = createBrowserRouter([
   {
     path: 'login',
     element: <LoginPage />,
   },
+
   {
-    path: 'user/:userId/__profile',
+    path: 'user/__profile',
     element: <UserProfileInner />,
   },
   {
@@ -28,13 +32,17 @@ const router = createBrowserRouter([
     element: (
       <>
         <SiteHeader />
-        <div style={{ marginTop: 'var(--site-header-height)' }}>
+        <div>
           <NotificationRenderer />
           <Outlet />
         </div>
       </>
     ),
     children: [
+      {
+        path: 'logout',
+        element: <LogoutPage />,
+      },
       {
         path: 'home',
         element: <HomePage />,
@@ -64,6 +72,20 @@ const router = createBrowserRouter([
         path: 'user/:userId',
         element: <UserProfile />,
       },
+
+      //
+      // account stuff
+      //
+      {
+        path: 'account',
+        children: [
+          {
+            path: 'settings',
+            element: accountChunk.element('AccountSettings'),
+          },
+        ],
+      },
+
       {
         path: 'manager/books',
         element: bookManagerChunk.element('MyBooks'),

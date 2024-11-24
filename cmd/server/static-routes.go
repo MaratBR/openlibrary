@@ -1,41 +1,80 @@
-package main
+package server
 
 import (
-	"log/slog"
+	"fmt"
 	"net/http"
+	"time"
 
 	uiserver "github.com/MaratBR/openlibrary/cmd/server/ui-server"
+	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/knadh/koanf/v2"
 )
 
-var devFrontEndServerProxy = uiserver.NewDevServerProxy(uiserver.DevServerOptions{
-	GetInjectedHTMLSegment: getInjectedHTMLSegment,
-})
-
-type staticController struct{}
-
-func newStaticController() staticController {
-	return staticController{}
+type serverSessionData struct {
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-func (staticController) DevProxyIndex(w http.ResponseWriter, r *http.Request) {
-	devFrontEndServerProxy.ServeHTTP(w, r)
+type devStaticHandler struct {
+	devFrontEndServerProxy http.Handler
+	userService            app.UserService
 }
 
-func (c staticController) PreloadData(preload func(r *http.Request, serverData *serverData) error) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		data, ok := getServerData(r)
-		if ok {
-			err := preload(r, data)
-			if err != nil {
-				slog.Error("failed to preload data", "err", err)
-			}
-		}
+func NewDevStaticHandler(
+	config *koanf.Koanf,
+	enableDevProxy bool,
+	userService app.UserService,
+) http.Handler {
+	var c devStaticHandler
 
-		c.DevProxyIndex(w, r)
+	c.userService = userService
+
+	if enableDevProxy {
+		address := fmt.Sprintf("%s://%s:%d", config.String("frontend-proxy.target-protocol"), config.String("frontend-proxy.target-host"), config.Int("frontend-proxy.target-port"))
+		c.devFrontEndServerProxy = uiserver.NewDevServerProxy(address, uiserver.DevServerOptions{
+			GetInjectedHTMLSegment: c.getInjectedHTMLSegment,
+		})
 	}
+
+	return c
 }
 
-func (staticController) Index(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-	w.Write([]byte("not implemented"))
+func (c *devStaticHandler) getInjectedHTMLSegment(r *http.Request) []byte {
+
+	data := &serverData{
+		ServerMetadata: map[string]any{
+			"session":       nil,
+			"user":          nil,
+			"_preload":      map[string]any{},
+			"clientPreload": true,
+			"serverPreload": true,
+		},
+	}
+
+	session, ok := getSession(r)
+
+	if ok {
+		user, err := c.userService.GetUserSelfData(r.Context(), session.UserID)
+		if err == nil {
+			data.ServerMetadata["session"] = serverSessionData{
+				ExpiresAt: session.ExpiresAt,
+			}
+			data.ServerMetadata["user"] = user
+		}
+	}
+
+	if r.URL.Path == "/user/__profile" {
+		data.ServerMetadata["iframeAllowed"] = true
+	}
+
+	return getInjectedHTMLSegment(r, data)
+}
+
+func (c devStaticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if c.devFrontEndServerProxy == nil {
+		w.WriteHeader(http.StatusNotImplemented)
+		w.Write([]byte("this endpoint is disabled in the current environment"))
+		return
+	}
+
+	c.devFrontEndServerProxy.ServeHTTP(w, r)
 }

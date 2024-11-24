@@ -23,7 +23,9 @@ create table books (
     chapters int4 not null default 0,
     tag_ids int8[] not null default '{}',
     cached_parent_tag_ids int8[] not null default '{}',
-    favorites int4 not null default 0
+    favorites int4 not null default 0,
+    has_cover boolean not null default false,
+    view int4 not null default 0
 );
 
 create index ix_books_author_user_id on books (author_user_id);
@@ -54,4 +56,10 @@ create table book_chapters (
 
 create index ix_bok_chapters_book_id on book_chapters (book_id);
 create index ix_bok_chapters_order on book_chapters ("order");
+
+create table book_view (
+    ip_address inet not null,
+    book_id int8 not null references books(id),
+    recorded_at timestamptz not null 
+);
 

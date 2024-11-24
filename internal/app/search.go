@@ -73,9 +73,9 @@ type BookSearchItem struct {
 	Summary         string               `json:"summary"`
 	Favorites       int32                `json:"favorites"`
 	Author          BookDetailsAuthorDto `json:"author"`
-
-	Tags        []DefinedTagDto     `json:"tags"`
-	Collections []BookCollectionDto `json:"collections"`
+	Cover           string               `json:"cover"`
+	Tags            []DefinedTagDto      `json:"tags"`
+	Collections     []BookCollectionDto  `json:"collections"`
 }
 
 type BookSearchResult struct {

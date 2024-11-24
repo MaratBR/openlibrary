@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"net/http"
@@ -24,7 +24,7 @@ func (c *userController) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := c.service.GetUser(r.Context(), app.GetUserQuery{
+	user, err := c.service.GetUserDetails(r.Context(), app.GetUserQuery{
 		UserID: currentUserID,
 		ID:     userID,
 	})
@@ -33,4 +33,27 @@ func (c *userController) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, user)
+}
+
+type whoamiResponse struct {
+	User *app.SelfUserDto `json:"user"`
+}
+
+func (c *userController) Whoami(w http.ResponseWriter, r *http.Request) {
+	var response whoamiResponse
+
+	currentUserID := getNullableUserID(r)
+	if !currentUserID.Valid {
+		writeJSON(w, response)
+		return
+	}
+
+	user, err := c.service.GetUserSelfData(r.Context(), currentUserID.UUID)
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	} else {
+		response.User = user
+	}
+	writeJSON(w, response)
 }

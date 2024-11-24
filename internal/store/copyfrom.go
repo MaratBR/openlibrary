@@ -9,6 +9,40 @@ import (
 	"context"
 )
 
+// iteratorForAddMultipleBookViews implements pgx.CopyFromSource.
+type iteratorForAddMultipleBookViews struct {
+	rows                 []AddMultipleBookViewsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForAddMultipleBookViews) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForAddMultipleBookViews) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].IpAddress,
+		r.rows[0].BookID,
+		r.rows[0].RecordedAt,
+	}, nil
+}
+
+func (r iteratorForAddMultipleBookViews) Err() error {
+	return nil
+}
+
+func (q *Queries) AddMultipleBookViews(ctx context.Context, arg []AddMultipleBookViewsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"book_view"}, []string{"ip_address", "book_id", "recorded_at"}, &iteratorForAddMultipleBookViews{rows: arg})
+}
+
 // iteratorForInsertDefinedTagEnMasse implements pgx.CopyFromSource.
 type iteratorForInsertDefinedTagEnMasse struct {
 	rows                 []InsertDefinedTagEnMasseParams

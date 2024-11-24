@@ -7,6 +7,7 @@ package store
 import (
 	"database/sql/driver"
 	"fmt"
+	"net/netip"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -57,6 +58,49 @@ func (ns NullAgeRating) Value() (driver.Value, error) {
 	return string(ns.AgeRating), nil
 }
 
+type CensorMode string
+
+const (
+	CensorModeHide   CensorMode = "hide"
+	CensorModeCensor CensorMode = "censor"
+	CensorModeNone   CensorMode = "none"
+)
+
+func (e *CensorMode) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = CensorMode(s)
+	case string:
+		*e = CensorMode(s)
+	default:
+		return fmt.Errorf("unsupported scan type for CensorMode: %T", src)
+	}
+	return nil
+}
+
+type NullCensorMode struct {
+	CensorMode CensorMode
+	Valid      bool // Valid is true if CensorMode is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCensorMode) Scan(value interface{}) error {
+	if value == nil {
+		ns.CensorMode, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.CensorMode.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCensorMode) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.CensorMode), nil
+}
+
 type TagType string
 
 const (
@@ -102,6 +146,92 @@ func (ns NullTagType) Value() (driver.Value, error) {
 	return string(ns.TagType), nil
 }
 
+type TypeOf2fa string
+
+const (
+	TypeOf2faTotp     TypeOf2fa = "totp"
+	TypeOf2faWebauthn TypeOf2fa = "webauthn"
+)
+
+func (e *TypeOf2fa) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TypeOf2fa(s)
+	case string:
+		*e = TypeOf2fa(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TypeOf2fa: %T", src)
+	}
+	return nil
+}
+
+type NullTypeOf2fa struct {
+	TypeOf2fa TypeOf2fa
+	Valid     bool // Valid is true if TypeOf2fa is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTypeOf2fa) Scan(value interface{}) error {
+	if value == nil {
+		ns.TypeOf2fa, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TypeOf2fa.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTypeOf2fa) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TypeOf2fa), nil
+}
+
+type UserRole string
+
+const (
+	UserRoleUser      UserRole = "user"
+	UserRoleAdmin     UserRole = "admin"
+	UserRoleModerator UserRole = "moderator"
+	UserRoleSystem    UserRole = "system"
+)
+
+func (e *UserRole) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserRole(s)
+	case string:
+		*e = UserRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
+	}
+	return nil
+}
+
+type NullUserRole struct {
+	UserRole UserRole
+	Valid    bool // Valid is true if UserRole is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserRole.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserRole), nil
+}
+
 type Book struct {
 	ID                 int64
 	Name               string
@@ -116,6 +246,8 @@ type Book struct {
 	TagIds             []int64
 	CachedParentTagIds []int64
 	Favorites          int32
+	HasCover           bool
+	View               int32
 }
 
 type BookBanHistory struct {
@@ -136,6 +268,12 @@ type BookChapter struct {
 	Words           int32
 	IsAdultOverride bool
 	Summary         string
+}
+
+type BookView struct {
+	IpAddress  netip.Addr
+	BookID     int64
+	RecordedAt pgtype.Timestamptz
 }
 
 type Collection struct {
@@ -173,17 +311,60 @@ type Favorite struct {
 }
 
 type Session struct {
-	ID        string
-	UserID    pgtype.UUID
-	CreatedAt pgtype.Timestamptz
-	UserAgent string
-	IpAddress string
-	ExpiresAt pgtype.Timestamptz
+	ID           string
+	UserID       pgtype.UUID
+	CreatedAt    pgtype.Timestamptz
+	UserAgent    string
+	IpAddress    string
+	ExpiresAt    pgtype.Timestamptz
+	IsTerminated bool
 }
 
 type User struct {
-	ID           pgtype.UUID
-	Name         string
-	JoinedAt     pgtype.Timestamptz
-	PasswordHash string
+	ID                    pgtype.UUID
+	Name                  string
+	JoinedAt              pgtype.Timestamptz
+	PasswordHash          string
+	Role                  UserRole
+	IsBanned              bool
+	AvatarFile            pgtype.Text
+	About                 string
+	Gender                string
+	Status                string
+	ProfileCss            string
+	EnableProfileCss      bool
+	DefaultTheme          string
+	PrivacyHideStats      bool
+	PrivacyHideFavorites  bool
+	PrivacyHideComments   bool
+	PrivacyHideEmail      bool
+	PrivacyAllowSearching bool
+	ShowAdultContent      bool
+	CensoredTags          []string
+	CensoredTagsMode      CensorMode
+}
+
+type User2fa struct {
+	ID          pgtype.UUID
+	UserID      pgtype.UUID
+	Type        TypeOf2fa
+	Key         string
+	CreatedAt   pgtype.Timestamptz
+	Initialized bool
+	Active      bool
+}
+
+type UserBan struct {
+	ID             int64
+	UserID         pgtype.UUID
+	CreatedAt      pgtype.Timestamptz
+	BannedByUserID pgtype.UUID
+	Note           string
+	ExpiresAt      pgtype.Timestamptz
+}
+
+type UserFollower struct {
+	FollowerID pgtype.UUID
+	FollowedID pgtype.UUID
+	CreatedAt  pgtype.Timestamptz
 }

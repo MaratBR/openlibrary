@@ -107,7 +107,7 @@ func ImportPredefinedTags(ctx context.Context, queries *store.Queries) error {
 		if err != nil {
 			return err
 		}
-		slog.Info("called RemoveUnusedDefaultTags")
+		slog.Debug("called RemoveUnusedDefaultTags")
 	}
 
 	jsonStr, err := json.Marshal(tagRows)

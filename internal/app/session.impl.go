@@ -1,0 +1,153 @@
+package app
+
+import (
+	"context"
+	"time"
+
+	"github.com/MaratBR/openlibrary/internal/commonutil"
+	"github.com/MaratBR/openlibrary/internal/store"
+	"github.com/gofrs/uuid"
+)
+
+type sessionService struct {
+	db      DB
+	queries *store.Queries
+}
+
+// GetByUserID implements SessionService.
+func (s *sessionService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]SessionInfo, error) {
+	sessions, err := s.queries.GetUserSessions(ctx, uuidDomainToDb(userID))
+	if err != nil {
+		if err == store.ErrNoRows {
+			return nil, ErrSessionNotFound
+		}
+		return nil, wrapUnexpectedDBError(err)
+	}
+	return mapSlice(sessions, func(user store.GetUserSessionsRow) SessionInfo {
+		return SessionInfo{
+			SessionID:    user.ID,
+			CreatedAt:    timeDbToDomain(user.CreatedAt),
+			ExpiresAt:    timeDbToDomain(user.ExpiresAt),
+			UserID:       uuidDbToDomain(user.UserID),
+			UserAgent:    user.UserAgent,
+			IpAddress:    user.IpAddress,
+			UserName:     user.UserName,
+			UserJoinedAt: timeDbToDomain(user.UserJoinedAt),
+		}
+	}), nil
+}
+
+// Create implements SessionService.
+func (s *sessionService) Create(ctx context.Context, command CreateSessionCommand) (*SessionInfo, error) {
+	sessionID, err := commonutil.GenerateRandomStringURLSafe(32)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.queries.InsertSession(ctx, store.InsertSessionParams{
+		ID:        sessionID,
+		UserID:    uuidDomainToDb(command.UserID),
+		UserAgent: command.UserAgent,
+		IpAddress: command.IpAddress,
+		ExpiresAt: timeToTimestamptz(time.Now().Add(90 * 24 * time.Hour)),
+		CreatedAt: timeToTimestamptz(time.Now()),
+	})
+	if err != nil {
+		return nil, wrapUnexpectedDBError(err)
+	}
+
+	session, err := s.GetBySID(ctx, sessionID)
+	return session, err
+}
+
+// GetBySID implements SessionService.
+func (s *sessionService) GetBySID(ctx context.Context, sessionID string) (*SessionInfo, error) {
+	result, err := s.queries.GetSessionInfo(ctx, sessionID)
+	if err != nil {
+		if err == store.ErrNoRows {
+			return nil, ErrSessionNotFound
+		}
+		return nil, wrapUnexpectedDBError(err)
+	}
+
+	return &SessionInfo{
+		SessionID:    result.ID,
+		CreatedAt:    timeDbToDomain(result.CreatedAt),
+		ExpiresAt:    timeDbToDomain(result.ExpiresAt),
+		UserID:       uuidDbToDomain(result.UserID),
+		UserAgent:    result.UserAgent,
+		IpAddress:    result.IpAddress,
+		UserName:     result.UserName,
+		UserJoinedAt: timeDbToDomain(result.UserJoinedAt),
+		UserRole:     UserRole(result.UserRole),
+	}, nil
+}
+
+// Renew implements SessionService.
+func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand) (*SessionInfo, error) {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	queries := s.queries.WithTx(tx)
+
+	session, err := queries.GetSessionInfo(ctx, command.SessionID)
+	if err != nil {
+		rollbackTx(ctx, tx)
+		if err == store.ErrNoRows {
+			return nil, ErrSessionNotFound
+		}
+		return nil, wrapUnexpectedDBError(err)
+	}
+	err = queries.TerminateSession(ctx, command.SessionID)
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return nil, wrapUnexpectedDBError(err)
+	}
+
+	err = queries.InsertSession(ctx, store.InsertSessionParams{
+		ID:        command.SessionID,
+		UserID:    session.UserID,
+		UserAgent: command.UserAgent,
+		IpAddress: command.IpAddress,
+		ExpiresAt: timeToTimestamptz(time.Now().Add(90 * 24 * time.Hour)),
+		CreatedAt: timeToTimestamptz(time.Now()),
+	})
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return nil, wrapUnexpectedDBError(err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.GetBySID(ctx, command.SessionID)
+}
+
+// TerminateAllByUserID implements SessionService.
+func (s *sessionService) TerminateAllByUserID(ctx context.Context, userID uuid.UUID) error {
+	err := s.queries.TerminateSessionsByUserID(ctx, uuidDomainToDb(userID))
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	return nil
+}
+
+// TerminateBySID implements SessionService.
+func (s *sessionService) TerminateBySID(ctx context.Context, sessionID string) error {
+	err := s.queries.TerminateSession(ctx, sessionID)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	return nil
+}
+
+func NewSessionService(db DB) SessionService {
+	return &sessionService{
+		db:      db,
+		queries: store.New(db),
+	}
+}

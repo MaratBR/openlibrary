@@ -4,10 +4,9 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import queryClient, { QueryClientLoadingBar } from './query-client'
 import { TooltipProvider } from './components/ui/tooltip'
 import { LoadingBarProvider } from './components/loading-bar-context'
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { initIframeAgent } from './lib/iframe-auto-resize'
-
-document.addEventListener('DOMContentLoaded', initIframeAgent)
+import { initScrollbarWidth } from './lib/scrollbar-width'
 
 function App() {
   return (
@@ -16,7 +15,9 @@ function App() {
         <LoadingBarProvider>
           <QueryClientLoadingBar />
           <Suspense>
-            <RouterProvider router={router} />
+            <Initialization>
+              <RouterProvider router={router} />
+            </Initialization>
           </Suspense>
         </LoadingBarProvider>
       </TooltipProvider>
@@ -24,4 +25,14 @@ function App() {
   )
 }
 
+function Initialization({ children }: React.PropsWithChildren) {
+  return <>{children}</>
+}
+
 export default App
+
+export function staticInitApp() {
+  document.addEventListener('DOMContentLoaded', initIframeAgent)
+
+  initScrollbarWidth()
+}

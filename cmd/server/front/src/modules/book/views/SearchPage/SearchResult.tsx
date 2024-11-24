@@ -61,6 +61,8 @@ function useDebounceSearchResultsQuery() {
       }
     },
     initialData: getPreloadedBookSearchResult(searchParams),
+    gcTime: 600000,
+    staleTime: 60000,
   })
 }
 

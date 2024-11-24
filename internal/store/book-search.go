@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/doug-martin/goqu/v9"
@@ -64,40 +63,41 @@ type BookSearchRow struct {
 	CachedParentTagIds []int64            `db:"cached_parent_tag_ids"`
 	AuthorUserID       pgtype.UUID        `db:"author_user_id"`
 	AuthorName         string             `db:"author_name"`
+	HasCover           bool               `db:"has_cover"`
 }
 
 func applyWhere(query *goqu.SelectDataset, filter *BookSearchFilter) *goqu.SelectDataset {
 	query = applyRange(query, goqu.I("books.words"), filter.Words)
 	query = applyRange(query, goqu.I("books.chapters"), filter.Chapters)
 	query = applyRange(query, goqu.I("books.favorites"), filter.Favorites)
-	query = applyRange(query, goqu.L("cast(words as real) / chapters"), filter.WordsPerChapter)
+	query = applyRange(query, goqu.L("cast(books.words as real) / books.chapters"), filter.WordsPerChapter)
 
 	if len(filter.IncludeAuthors) > 0 {
-		query = query.Where(goqu.C("author_user_id").In(filter.IncludeAuthors))
+		query = query.Where(goqu.I("books.author_user_id").In(filter.IncludeAuthors))
 	}
 
 	if len(filter.ExcludeAuthors) > 0 {
-		query = query.Where(goqu.C("author_user_id").NotIn(filter.ExcludeAuthors))
+		query = query.Where(goqu.I("books.author_user_id").NotIn(filter.ExcludeAuthors))
 	}
 
 	if len(filter.IncludeParentTags) > 0 {
-		query = query.Where(goqu.Literal("cached_parent_tag_ids @> ?::int8[]", PGArrayExpr(filter.IncludeParentTags)))
+		query = query.Where(goqu.Literal("books.cached_parent_tag_ids @> ?::int8[]", PGArrayExpr(filter.IncludeParentTags)))
 	}
 
 	if len(filter.ExcludeParentTags) > 0 {
-		query = query.Where(goqu.Literal("not (cached_parent_tag_ids && ?::int8[])", PGArrayExpr(filter.ExcludeParentTags)))
+		query = query.Where(goqu.Literal("not (books.cached_parent_tag_ids && ?::int8[])", PGArrayExpr(filter.ExcludeParentTags)))
 	}
 
 	if !filter.IncludeBanned {
-		query = query.Where(goqu.C("is_banned").IsFalse())
+		query = query.Where(goqu.I("books.is_banned").IsFalse())
 	}
 
 	if !filter.IncludeHidden {
-		query = query.Where(goqu.C("is_publicly_visible").IsTrue())
+		query = query.Where(goqu.I("books.is_publicly_visible").IsTrue())
 	}
 
 	if !filter.IncludeEmpty {
-		query = query.Where(goqu.C("chapters").Gt(0))
+		query = query.Where(goqu.I("books.chapters").Gt(0))
 	}
 
 	return query
@@ -125,6 +125,7 @@ func createBookSearchSelect(req *BookSearchRequest) *goqu.SelectDataset {
 			goqu.I("books.favorites"),
 			goqu.I("books.cached_parent_tag_ids"),
 			goqu.I("books.author_user_id"),
+			goqu.I("books.has_cover"),
 			goqu.I("author.name").As("author_name"),
 		).
 		From("books").
@@ -143,7 +144,6 @@ func SearchBooks(ctx context.Context, db DBTX, req BookSearchRequest) ([]BookSea
 		return nil, err
 	}
 
-	println(sql)
 	rows, err := db.Query(ctx, sql, params...)
 	defer rows.Close()
 	if err != nil {
@@ -181,6 +181,17 @@ type BookStats struct {
 }
 
 func GetBooksFilterExtremes(ctx context.Context, db DBTX, req *BookSearchFilter) (BookStats, error) {
+	type statsRow struct {
+		ChaptersMin        pgtype.Int8 `db:"chapters_min"`
+		ChaptersMax        pgtype.Int8 `db:"chapters_max"`
+		WordsMin           pgtype.Int8 `db:"words_min"`
+		WordsMax           pgtype.Int8 `db:"words_max"`
+		WordsPerChapterMin pgtype.Int8 `db:"words_per_chapter_min"`
+		WordsPerChapterMax pgtype.Int8 `db:"words_per_chapter_max"`
+		FavoritesMin       pgtype.Int8 `db:"favorites_min"`
+		FavoritesMax       pgtype.Int8 `db:"favorites_max"`
+	}
+
 	query := postgresQuery.
 		Select(
 			goqu.MAX(goqu.I("books.chapters")).As("chapters_max"),
@@ -206,19 +217,23 @@ func GetBooksFilterExtremes(ctx context.Context, db DBTX, req *BookSearchFilter)
 	rows, err := db.Query(ctx, sql, params...)
 	defer rows.Close()
 	if err != nil {
-		println("err1")
-
 		return BookStats{}, err
 	}
 	if rows.Next() {
-		stats, err := pgx.RowToStructByName[BookStats](rows)
+		stats, err := pgx.RowToStructByName[statsRow](rows)
 		if err != nil {
-			fmt.Printf("ERR : %s\n", err.Error())
-
 			return BookStats{}, err
 		}
-		fmt.Printf("OK : %v\n", stats)
-		return stats, nil
+		return BookStats{
+			ChaptersMin:        stats.ChaptersMin.Int64,
+			ChaptersMax:        stats.ChaptersMax.Int64,
+			WordsMin:           stats.WordsMin.Int64,
+			WordsMax:           stats.WordsMax.Int64,
+			WordsPerChapterMin: stats.WordsPerChapterMin.Int64,
+			WordsPerChapterMax: stats.WordsPerChapterMax.Int64,
+			FavoritesMin:       stats.FavoritesMin.Int64,
+			FavoritesMax:       stats.FavoritesMax.Int64,
+		}, nil
 	} else {
 		return BookStats{}, pgx.ErrNoRows
 	}

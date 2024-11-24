@@ -5,6 +5,8 @@ import './notification-renderer.css'
 export function NotificationRenderer() {
   const notifications = useNotificationsState((s) => s.notifications)
 
+  if (notifications.length === 0) return null
+
   return (
     <div className="container-default space-y-0.5 px-1 md:px-8" data-testid="notifications">
       {notifications.map((notif) => (

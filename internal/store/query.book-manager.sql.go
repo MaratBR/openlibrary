@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const bookSetHasCover = `-- name: BookSetHasCover :exec
+update books
+set has_cover = $2
+where id = $1
+`
+
+type BookSetHasCoverParams struct {
+	ID       int64
+	HasCover bool
+}
+
+func (q *Queries) BookSetHasCover(ctx context.Context, arg BookSetHasCoverParams) error {
+	_, err := q.db.Exec(ctx, bookSetHasCover, arg.ID, arg.HasCover)
+	return err
+}
+
 const getChapterOrder = `-- name: GetChapterOrder :many
 select "order", id
 from book_chapters
@@ -129,7 +145,7 @@ func (q *Queries) InsertBookChapter(ctx context.Context, arg InsertBookChapterPa
 
 const managerGetUserBooks = `-- name: ManagerGetUserBooks :many
 select 
-    books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.favorites,
+    books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.favorites, books.has_cover, books.view,
     collections.id as collection_id,
     collections.name as collection_name,
     collection_books."order" as collection_position,
@@ -162,6 +178,8 @@ type ManagerGetUserBooksRow struct {
 	TagIds             []int64
 	CachedParentTagIds []int64
 	Favorites          int32
+	HasCover           bool
+	View               int32
 	CollectionID       pgtype.Int8
 	CollectionName     pgtype.Text
 	CollectionPosition pgtype.Int4
@@ -191,6 +209,8 @@ func (q *Queries) ManagerGetUserBooks(ctx context.Context, arg ManagerGetUserBoo
 			&i.TagIds,
 			&i.CachedParentTagIds,
 			&i.Favorites,
+			&i.HasCover,
+			&i.View,
 			&i.CollectionID,
 			&i.CollectionName,
 			&i.CollectionPosition,
@@ -236,7 +256,8 @@ func (q *Queries) SetChapterOrder(ctx context.Context, arg SetChapterOrderParams
 
 const updateBook = `-- name: UpdateBook :exec
 update books
-set name = $2, age_rating = $3, tag_ids = $4, cached_parent_tag_ids = $5, summary = $6, is_publicly_visible = $7
+set name = $2, age_rating = $3, tag_ids = $4, cached_parent_tag_ids = $5, summary = $6, is_publicly_visible = $7,
+    has_cover = $8
 where id = $1
 `
 
@@ -248,6 +269,7 @@ type UpdateBookParams struct {
 	CachedParentTagIds []int64
 	Summary            string
 	IsPubliclyVisible  bool
+	HasCover           bool
 }
 
 func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
@@ -259,6 +281,7 @@ func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
 		arg.CachedParentTagIds,
 		arg.Summary,
 		arg.IsPubliclyVisible,
+		arg.HasCover,
 	)
 	return err
 }

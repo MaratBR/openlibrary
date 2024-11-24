@@ -11,6 +11,9 @@ import {
 } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useMutation } from '@tanstack/react-query'
+import { httpSignUp, SignUpRequest } from '../api'
+import { ButtonSpinner } from '@/components/spinner'
 
 const formSchema = z.object({
   username: z.string().min(1).max(50),
@@ -26,7 +29,18 @@ export default function SignUpForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {}
+  const signUpMutation = useMutation({
+    mutationFn: (req: SignUpRequest) => {
+      return httpSignUp(req)
+    },
+  })
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    signUpMutation.mutate({
+      username: values.username,
+      password: values.password,
+    })
+  }
 
   return (
     <Form {...form}>
@@ -57,7 +71,10 @@ export default function SignUpForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Sign up</Button>
+        <Button type="submit" disabled={signUpMutation.isPending}>
+          {signUpMutation.isPending && <ButtonSpinner />}
+          Sign up
+        </Button>
       </form>
     </Form>
   )

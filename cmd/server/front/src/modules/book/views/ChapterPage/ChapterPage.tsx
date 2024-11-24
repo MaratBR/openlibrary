@@ -1,4 +1,4 @@
-import { ChapterDto, useBookChapterQuery, useBookQuery } from '../../api'
+import { ChapterDto, preloadBookChapterQuery, useBookChapterQuery, useBookQuery } from '../../api'
 import { useParams } from 'react-router'
 import './ChapterPage.css'
 import BookInfoCard from '../BookPage/BookInfoCard'
@@ -12,6 +12,7 @@ import {
 import { NavLink } from 'react-router-dom'
 import { useChapterName } from '../../utils'
 import { ArrowLeft, ArrowRight, Book } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function ChapterPage() {
   const { chapterId, bookId } = useParams<{
@@ -95,12 +96,16 @@ function ChapterControls({ chapter, bookId }: { chapter: ChapterDto; bookId: str
     chapter.nextChapter?.order ?? 0,
   )
 
+  const queryClient = useQueryClient()
+
   return (
-    <div className="my-6 flex justify-center gap-16 container-default h-12">
+    <div className="my-6 grid grid-cols-2 justify-center gap-16 container-default h-12">
       {chapter.prevChapter ? (
         <NavLink
           to={`/book/${bookId}/chapters/${chapter.prevChapter.id}#chapter`}
           className="link-default link-chapter-control link-chapter-control--prev"
+          onMouseEnter={() => preloadBookChapterQuery(queryClient, bookId, chapter.prevChapter!.id)}
+          onMouseDown={() => preloadBookChapterQuery(queryClient, bookId, chapter.prevChapter!.id)}
         >
           <div className="link-chapter-control__label">
             <ArrowLeft className="link-chapter-control__icon" />
@@ -115,16 +120,23 @@ function ChapterControls({ chapter, bookId }: { chapter: ChapterDto; bookId: str
         </NavLink>
       )}
 
-      {chapter.nextChapter && (
+      {chapter.nextChapter ? (
         <NavLink
           to={`/book/${bookId}/chapters/${chapter.nextChapter.id}#chapter`}
           className="link-default link-chapter-control link-chapter-control--next"
+          onMouseEnter={() => preloadBookChapterQuery(queryClient, bookId, chapter.nextChapter!.id)}
+          onMouseDown={() => preloadBookChapterQuery(queryClient, bookId, chapter.nextChapter!.id)}
         >
           <div className="link-chapter-control__label">
             Next chapter
             <ArrowRight className="link-chapter-control__icon" />
           </div>
           <span className="link-chapter-control__name">{nextChapterName}</span>
+        </NavLink>
+      ) : (
+        <NavLink to={`/book/${bookId}`} className="link-default link-chapter-control">
+          <Book />
+          Book page
         </NavLink>
       )}
     </div>

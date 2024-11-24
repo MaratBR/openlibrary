@@ -1,4 +1,3 @@
-import ReactDOM from 'react-dom'
 import { useParams } from 'react-router'
 
 export default function UserProfile() {
@@ -6,12 +5,5 @@ export default function UserProfile() {
 
   const id = `iframe${userId?.replace(/-/g, '')}`
 
-  return (
-    <>
-      {ReactDOM.createPortal(
-        <iframe id={id} className="w-full" src={`/user/${userId}/__profile`} />,
-        document.body,
-      )}
-    </>
-  )
+  return <iframe id={id} className="w-full" src={`/user/__profile?userId=${userId}`} />
 }

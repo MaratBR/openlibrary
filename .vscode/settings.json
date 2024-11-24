@@ -3,6 +3,7 @@
         "denormalized",
         "favourite",
         "goqu",
+        "Minio",
         "pgconn",
         "pgtype",
         "sqlx",

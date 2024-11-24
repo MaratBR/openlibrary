@@ -1,92 +1,106 @@
-package main
+package server
 
 import (
 	"context"
-	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
-	"strings"
+	"os"
+	"time"
 
+	"github.com/MaratBR/openlibrary/cmd/server/csrf"
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/knadh/koanf/v2"
 )
 
-var (
-	cliParams struct {
-		DevProxy bool
+type CLIParams struct {
+	Dev            bool
+	BypassTLSCheck bool
+}
+
+func Main(
+	cliParams CLIParams,
+	config *koanf.Koanf,
+) {
+
+	if cliParams.Dev {
+		slog.SetLogLoggerLevel(slog.LevelDebug)
 	}
-)
 
-func main() {
 	var err error
 
-	flag.BoolVar(&cliParams.DevProxy, "dev-frontend-proxy", false, "enable dev frontend proxy")
-	flag.Parse()
+	db := connectToDatabase(config)
 
-	db := connectToDatabase()
-	authService := app.NewAuthService(db)
-	favoriteRecalculationBackgroundService := app.NewFavoriteRecalculationBackgroundService(db)
-	favoritesService := app.NewFavoriteService(db, favoriteRecalculationBackgroundService)
-
-	authorizationMiddleware := newAuthorizationMiddleware(authService)
-	requiresAuthorization := newRequireAuthorizationMiddleware()
+	// infrastructure layer services
+	uploadService := app.NewUploadServiceFromApplicationConfig(config)
+	// cache := cache.New(cache.NewMemoryCacheBackend())
 
 	// application layer services
+	sessionService := app.NewSessionService(db)
+	authService := app.NewAuthService(db, sessionService)
+	favoriteRecalculationBackgroundService := app.NewFavoriteRecalculationBackgroundService(db)
+	favoritesService := app.NewFavoriteService(db, favoriteRecalculationBackgroundService)
 	tagsService := app.NewTagsService(db)
-	bookService := app.NewBookService(db, tagsService)
-	bookManagerService := app.NewBookManagerService(db, tagsService)
-	searchService := app.NewSearchService(db, tagsService)
+	bookService := app.NewBookService(db, tagsService, uploadService)
+	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService)
+	searchService := app.NewSearchService(db, tagsService, uploadService)
 	userService := app.NewUserService(db)
+
+	// middlewares
+	authorizationMiddleware := newAuthorizationMiddleware(sessionService)
+	requiresAuthorization := newRequireAuthorizationMiddleware()
+	csrfHandler := csrf.NewHandler("csrf secret here, REPLACE LATER")
 
 	// controllers
 	bookController := newBookController(bookService)
-	authController := newAuthController(authService)
+	authController := newAuthController(authService, cliParams.BypassTLSCheck, csrfHandler)
 	searchController := newSearchController(searchService, tagsService)
 	userController := newUserController(userService)
+	favoritesController := newFavoritesController(favoritesService)
+	bookManagerController := newBookManagerController(bookManagerService)
+	settingsController := newSettingsController(userService)
 
+	// create router
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(csrfMiddleware)
+	r.Use(csrfHandler.Middleware)
 	r.Use(authorizationMiddleware)
-	r.Use(injectServerData)
 
-	staticController := newStaticController()
-	if cliParams.DevProxy {
-		fallbackHandler := newAuthorizationMiddlewareConditional(authService, func(r *http.Request) bool {
-			if strings.HasPrefix(r.URL.Path, "/node_modules/") || strings.HasPrefix(r.URL.Path, "/src/") || strings.HasPrefix(r.URL.Path, "/@vite/") || r.URL.Path == "/vite.svg" {
-				return false
-			}
-			return true
-		})(http.HandlerFunc(staticController.DevProxyIndex))
-
-		r.Get("/search", staticController.PreloadData(searchController.SearchPreload))
-
-		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-			fallbackHandler.ServeHTTP(w, r)
-		})
+	if cliParams.Dev {
+		staticHandler := NewDevStaticHandler(config, cliParams.Dev, userService)
+		r.NotFound(staticHandler.ServeHTTP)
 	}
 
+	//
+	// init api endpoints
+	//
+
 	r.Route("/api", func(r chi.Router) {
+		r.Use(middleware.Logger)
+
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(404)
 			w.Write([]byte("not found"))
 		})
 
+		//
+		// public endpoints first
+		//
 		r.Post("/auth/signin", authController.SignIn)
-		if cliParams.DevProxy {
+		r.Post("/auth/signup", authController.SignUp)
+		r.Post("/auth/signout", authController.SignOut)
+		if cliParams.Dev {
 			r.HandleFunc("/auth/signin-admin", authController.SignInAdmin)
 		}
-		r.Handle("/auth/csrf", http.HandlerFunc(refreshCsrfToken))
+		r.Handle("/auth/csrf-check", http.HandlerFunc(csrfHandler.CheckEndpoint))
 
 		r.Get("/users/{userID}", userController.GetUser)
+		r.Get("/users/whoami", userController.Whoami)
 
 		r.Get("/books/{id}", bookController.GetBook)
 		r.Get("/books/{bookID}/chapters/{chapterID}", bookController.GetChapter)
-
-		favoritesController := newFavoritesController(favoritesService)
-		r.Post("/favorite", favoritesController.SetFavorite)
 
 		r.Get("/search", searchController.Search)
 		r.Get("/search/book-extremes", searchController.GetBookExtremes)
@@ -95,52 +109,95 @@ func main() {
 			tagsController := newTagsController(tagsService)
 			r.Get("/search-tags", tagsController.Search)
 			r.Get("/lookup", tagsController.GetByName)
-
 		})
 
-		r.Route("/manager", func(r chi.Router) {
+		//
+		// endpoints requiring authorization grouped
+		//
+		r.Group(func(r chi.Router) {
 			r.Use(requiresAuthorization)
 
-			bookManagerController := newBookManagerController(bookManagerService)
+			r.Post("/favorite", favoritesController.SetFavorite)
 
-			r.Post("/books", bookManagerController.CreateBook)
-			r.Post("/books/ao3-import", bookManagerController.ImportAO3)
-			r.Get("/books/my-books", bookManagerController.GetMyBooks)
-			r.Get("/books/{bookID}", bookManagerController.GetBook)
-			r.Post("/books/{bookID}", bookManagerController.UpdateBook)
-			r.Get("/books/{bookID}/chapters", bookManagerController.GetChapters)
-			r.Post("/books/{bookID}/chapters", bookManagerController.CreateChapter)
-			r.Post("/books/{bookID}/chapters/reorder", bookManagerController.UpdateChaptersOrder)
-			r.Post("/books/{bookID}/chapters/{chapterID}", bookManagerController.UpdateChapter)
-			r.Get("/books/{bookID}/chapters/{chapterID}", bookManagerController.GetChapter)
+			r.Get("/settings/about", settingsController.GetAboutSettings)
+			r.Put("/settings/about", settingsController.UpdateAboutSettings)
+			r.Get("/settings/privacy", settingsController.GetPrivacySettings)
+			r.Put("/settings/privacy", settingsController.UpdatePrivacySettings)
+			r.Get("/settings/moderation", settingsController.GetModerationSettings)
+			r.Put("/settings/moderation", settingsController.UpdateModerationSettings)
+			r.Get("/settings/customization", settingsController.GetCustomizationSettings)
+			r.Put("/settings/customization", settingsController.UpdateCustomizationSettings)
 
+			r.Route("/manager", func(r chi.Router) {
+				r.Post("/books", bookManagerController.CreateBook)
+				r.Post("/books/ao3-import", bookManagerController.ImportAO3)
+				r.Get("/books/my-books", bookManagerController.GetMyBooks)
+				r.Get("/books/{bookID}", bookManagerController.GetBook)
+				r.Post("/books/{bookID}", bookManagerController.UpdateBook)
+				r.Post("/books/{bookID}/cover", bookManagerController.UploadBookCover)
+				r.Get("/books/{bookID}/chapters", bookManagerController.GetChapters)
+				r.Post("/books/{bookID}/chapters", bookManagerController.CreateChapter)
+				r.Post("/books/{bookID}/chapters/reorder", bookManagerController.UpdateChaptersOrder)
+				r.Post("/books/{bookID}/chapters/{chapterID}", bookManagerController.UpdateChapter)
+				r.Get("/books/{bookID}/chapters/{chapterID}", bookManagerController.GetChapter)
+			})
 		})
+
 	})
 
-	go func() {
-		err := authService.EnsureAdminUserExists(context.Background())
-		if err != nil {
-			slog.Error("failed to ensure admin user exists", "err", err)
-		}
-	}()
+	//
+	// post-initialization stuff
+	//
+	if config.Bool("init.create-default-users") {
+		go func() {
+			err := authService.EnsureAdminUserExists(context.Background())
+			if err != nil {
+				slog.Error("failed to ensure admin user exists", "err", err)
+			}
+		}()
+	}
+
+	if config.Bool("init.import-predefined-tags") {
+		go func() {
+			err := app.ImportPredefinedTags(context.Background(), store.New(db))
+			if err != nil {
+				slog.Error("failed to import predefined tags", "err", err)
+			}
+		}()
+	}
 
 	go func() {
-		err := app.ImportPredefinedTags(context.Background(), store.New(db))
+		err := uploadService.InitBuckets(context.Background())
 		if err != nil {
-			slog.Error("failed to import predefined tags", "err", err)
+			slog.Error("failed to make main bucket", "err", err)
 		}
 	}()
 
 	favoriteRecalculationBackgroundService.Start()
 
-	err = http.ListenAndServe(":8080", r)
+	listenOn := fmt.Sprintf("%s:%d", config.String("server.host"), config.Int("server.port"))
+	slog.Info("server listening", "on", listenOn, "url", fmt.Sprintf("http://%s", listenOn))
+
+	srv := &http.Server{
+		ReadTimeout:    30 * time.Second,
+		WriteTimeout:   60 * time.Second,
+		MaxHeaderBytes: 1 << 20, // 1 MB
+		Addr:           listenOn,
+		Handler:        r,
+	}
+	err = srv.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func connectToDatabase() app.DB {
-	db, err := store.Connect(context.Background(), "postgres://postgres:postgres@localhost:5432/openlibrary?sslmode=disable")
+func connectToDatabase(config *koanf.Koanf) app.DB {
+	connectionString := config.String("database.url")
+	if connectionString == "" {
+		slog.Error("database.url is empty")
+		os.Exit(1)
+	}
+	db, err := store.Connect(context.Background(), connectionString)
 	if err != nil {
 		panic(err)
 	}

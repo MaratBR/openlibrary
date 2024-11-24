@@ -1,11 +1,12 @@
-import { useParams } from 'react-router'
 import './UserProfileInner.css'
 import { useQuery } from '@tanstack/react-query'
-import { httpGetUser } from '../../api'
+import { httpGetUser, UserDetailsDto } from '../../api'
+import exampleCoverUrl from './example-cover.jpg'
 import Timestamp from '@/components/timestamp'
+import { useQueryParam } from '@/lib/router-utils'
 
 export default function UserProfileInner() {
-  const { userId } = useParams<{ userId: string }>()
+  const [userId] = useQueryParam('userId')
 
   const { data } = useQuery({
     queryKey: ['user', userId],
@@ -17,19 +18,7 @@ export default function UserProfileInner() {
 
   return (
     <div className="user-page">
-      <div className="user-layout">
-        <aside className="user-card">
-          <UserAvatar url={data.avatar.lg} />
-          <p className="user-card__joined-at">
-            Joined at <Timestamp value={data.joinedAt} />
-          </p>
-        </aside>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos neque qui molestiae
-          veritatis ratione perferendis quos aliquam ab ex distinctio excepturi, corporis sequi,
-          fuga at fugit a earum ad delectus!
-        </p>
-      </div>
+      <UserHeader user={data} />
     </div>
   )
 }
@@ -39,5 +28,39 @@ function UserAvatar({ url }: { url: string }) {
     <div className="user-avatar">
       <img className="user-avatar__img" src={url} alt="user's avatar" />
     </div>
+  )
+}
+
+function UserHeader({ user }: { user: UserDetailsDto }) {
+  return (
+    <header className="profile-header">
+      <div className="profile-cover" style={{ backgroundImage: `url(${exampleCoverUrl})` }}></div>
+      <div className="profile-avatar">
+        <UserAvatar url={user.avatar.lg} />
+      </div>
+      <div className="profile-info">
+        <h1 className="profile-info__username">{user.name}</h1>
+        <p className="profile-info__joined">
+          Joined <Timestamp value={user.joinedAt} />
+        </p>
+
+        <div className="user-stats">
+          <div className="user-stat">
+            <div className="user-stat__value">{user.booksTotal.toLocaleString()}</div>
+            <div className="user-stat__label">books</div>
+          </div>
+
+          <div className="user-stat">
+            <div className="user-stat__value">{user.followers.toLocaleString()}</div>
+            <div className="user-stat__label">followers</div>
+          </div>
+
+          <div className="user-stat">
+            <div className="user-stat__value">{user.favorites.toLocaleString()}</div>
+            <div className="user-stat__label">favorites</div>
+          </div>
+        </div>
+      </div>
+    </header>
   )
 }

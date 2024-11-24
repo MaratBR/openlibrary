@@ -32,9 +32,24 @@ export const useSearchState = create<SearchState>()((set) => ({
   },
   setExtremes(extremes) {
     set((state) => {
+      function normalizeRange(r: NumberRange): NumberRange {
+        if (r.max === r.min && r.min !== null) {
+          return {
+            min: r.min,
+            max: r.min + 1
+          }
+        }
+        return r
+      }
+
       return {
         ...state,
-        extremes,
+        extremes: {
+          words: normalizeRange(extremes.words),
+          wordsPerChapter: normalizeRange(extremes.wordsPerChapter),
+          favorites: normalizeRange(extremes.favorites),
+          chapters: normalizeRange(extremes.chapters),
+        }
       }
     })
   },

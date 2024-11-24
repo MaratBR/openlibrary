@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"net/http"
@@ -95,6 +95,16 @@ func (c *searchController) SearchPreload(r *http.Request, serverData *serverData
 
 	{
 		key := "/api/search?" + r.URL.RawQuery
+		serverData.AddPreloadedData(key, result)
+
+		for _, book := range result.Books {
+			if book.Cover != "" {
+				serverData.Preloads = append(serverData.Preloads, Preload{
+					As:   "image",
+					Href: book.Cover,
+				})
+			}
+		}
 		serverData.AddPreloadedData(key, result)
 	}
 

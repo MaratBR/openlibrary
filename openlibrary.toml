@@ -1,0 +1,37 @@
+[database]
+url = "postgres://postgres:postgres@localhost:5432/openlibrary?sslmode=disable"
+
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[frontend-proxy]
+target-port = 5173
+target-host = "localhost"
+target-protocol = "http"
+
+[init]
+create-default-users = true
+import-predefined-tags = true
+
+[minio]
+endpoint = "localhost:9000"
+access-key = "openlibrary-server"
+secret-key = "IDsoRiCoNaTIcKLETringRoTA"
+region = "us-east-1"
+bucket = "openlibrary"
+public-bucket = "openlibrary-public"
+secure = false
+
+[cache]
+type = "redis"
+# type = "memory"
+# type = "disabled"
+
+[cache.redis]
+url = "redis://localhost:6379"
+
+[openlibrary]
+url = "http://localhost"
+theme = "light"
+lang = "en"

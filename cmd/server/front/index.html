@@ -6,8 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React + TS</title>
   </head>
-  <body class="m-0 pt-[1px] theme-default font-text">
+  <body class="m-0 theme-default font-text">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if (__server__.iframeAllowed !== true && self !== top) {
+        setTimeout(() => {
+          document.body.innerHTML = `<div style="padding:0 10rem"><h1 style="color:red;font-size:2rem">IFRAME DETECTED</h2><p>This website was opened in <code>iframe</code> tag, but it is not allowed. This means it was either an error or a "clickjacking" attack.</p></div>`
+        })
+        document.body.innerHTML = ''
+      }
+    </script>
   </body>
 </html>

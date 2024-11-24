@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"encoding/json"
@@ -86,6 +86,9 @@ func writeApplicationError(w http.ResponseWriter, err error) {
 
 		if errorx.HasTrait(errx, app.ErrTraitForbidden) {
 			w.WriteHeader(http.StatusForbidden)
+			_, werr = w.Write([]byte(err.Error()))
+		} else if errorx.HasTrait(errx, app.ErrTraitAuthorizationIssue) {
+			w.WriteHeader(http.StatusUnauthorized)
 			_, werr = w.Write([]byte(err.Error()))
 		} else {
 			w.WriteHeader(http.StatusConflict)
@@ -268,4 +271,9 @@ func getInt32RangeFromQuery(query url.Values, queryParam string) app.Int32Range 
 	max := getInt32FromQuery(query, fmt.Sprintf("%s.max", queryParam))
 	min := getInt32FromQuery(query, fmt.Sprintf("%s.min", queryParam))
 	return app.Int32Range{Max: max, Min: min}
+}
+
+func writeTLSRequiredError(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusForbidden)
+	w.Write([]byte("TLS required"))
 }

@@ -1,7 +1,9 @@
-package main
+package server
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/gofrs/uuid"
@@ -31,4 +33,16 @@ func getNullableUserID(r *http.Request) uuid.NullUUID {
 		return uuid.NullUUID{}
 	}
 	return uuid.NullUUID{Valid: true, UUID: session.UserID}
+}
+
+func writeSidCookie(w http.ResponseWriter, cookieName, sid string, expiration time.Duration, secure bool) {
+	httpSecure := "; Secure"
+	if !secure {
+		httpSecure = ""
+	}
+	w.Header().Add("Set-Cookie", fmt.Sprintf("%s=%s; Path=/; Max-Age=%d; HttpOnly%s", cookieName, sid, int(expiration.Seconds()), httpSecure))
+}
+
+func removeSidCookie(w http.ResponseWriter, cookieName string, secure bool) {
+	writeSidCookie(w, cookieName, "", 0, secure)
 }

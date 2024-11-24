@@ -97,6 +97,7 @@ export function httpGetBook(id: string): Promise<GetBookResponse> {
 }
 
 export function preloadBookQuery(queryClient: QueryClient, bookId: string) {
+  if (!__server__.clientPreload) return
   queryClient.prefetchQuery({
     queryKey: ['book', bookId],
     queryFn: () => httpGetBook(bookId),
@@ -161,8 +162,22 @@ export function useBookChapterQuery(bookId: string | undefined, chapterId: strin
     queryKey: ['book', bookId, 'chapter', chapterId],
     enabled: !!bookId && !!chapterId,
     queryFn: () => httpGetBookChapter(bookId!, chapterId!),
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 5000,
+    gcTime: 60000,
+  })
+}
+
+export function preloadBookChapterQuery(
+  queryClient: QueryClient,
+  bookId: string,
+  chapterId: string,
+) {
+  if (!__server__.clientPreload) return
+  queryClient.prefetchQuery({
+    queryKey: ['book', bookId, 'chapter', chapterId],
+    queryFn: () => httpGetBookChapter(bookId, chapterId),
+    staleTime: 60000,
+    gcTime: 60000,
   })
 }
 

@@ -3,6 +3,7 @@ package commonutil
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/binary"
 	"math/big"
 )
 
@@ -47,4 +48,21 @@ func GenerateRandomString(n int) (string, error) {
 func GenerateRandomStringURLSafe(n int) (string, error) {
 	b, err := GenerateRandomBytes(n)
 	return base64.URLEncoding.EncodeToString(b), err
+}
+
+func RandomUint32() uint32 {
+	b, _ := GenerateRandomBytes(4)
+	return binary.BigEndian.Uint32(b)
+}
+
+func RandomInt32() int32 {
+	return int32(RandomUint32())
+}
+
+func RandomPositiveInt32() int32 {
+	v := RandomInt32()
+	if v < 0 {
+		v = -v
+	}
+	return v
 }

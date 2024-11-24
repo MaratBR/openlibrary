@@ -29,3 +29,13 @@
 .badge-alt {
   @apply bg-background flex gap-1 rounded-full border border-border py-1 px-2 text-muted-foreground hover:bg-muted;
 }
+
+.menu-item {
+  @apply flex gap-2 p-2 rounded-sm font-semibold text-muted-foreground
+    hover:bg-muted hover:text-foreground
+    active:bg-muted-2;
+
+  &.active {
+    @apply text-foreground;
+  }
+}

@@ -14,9 +14,10 @@ import (
 )
 
 type searchService struct {
-	db          store.DBTX
-	queries     *store.Queries
-	tagsService TagsService
+	db            store.DBTX
+	queries       *store.Queries
+	tagsService   TagsService
+	uploadService *UploadService
 }
 
 func int32RangeToInt4Range(r Int32Range) store.Int4Range {
@@ -93,6 +94,7 @@ func (s *searchService) performSearch(ctx context.Context, dbReq store.BookSearc
 			WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 			Summary:         book.Summary,
 			Favorites:       book.Favorites,
+			Cover:           getBookCoverURL(s.uploadService, book.ID, book.HasCover),
 		}
 
 		tagsAgg.Add(book.ID, book.TagIds)
@@ -179,11 +181,12 @@ func (s *searchService) constructBookSearchRequest(ctx context.Context, req Book
 	return
 }
 
-func NewSearchService(db store.DBTX, tagsService TagsService) SearchService {
+func NewSearchService(db store.DBTX, tagsService TagsService, uploadService *UploadService) SearchService {
 	return &searchService{
-		db:          db,
-		queries:     store.New(db),
-		tagsService: tagsService,
+		db:            db,
+		queries:       store.New(db),
+		tagsService:   tagsService,
+		uploadService: uploadService,
 	}
 }
 
@@ -193,7 +196,6 @@ func writeInt4Range(w io.Writer, r store.Int4Range) {
 	if r.Max.Valid {
 		bytes[0] = 1
 		binary.BigEndian.PutUint32(bytes[1:], uint32(r.Max.Int32))
-		println("r.Max", r.Max.Int32)
 	} else {
 		bytes[0] = 0
 	}

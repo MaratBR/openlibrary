@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/koding/websocketproxy"
@@ -39,7 +39,7 @@ func (p *devProxy) proxy(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// you can reassign the body if you need to parse it as multipart
-	req.Body = ioutil.NopCloser(bytes.NewReader(body))
+	req.Body = io.NopCloser(bytes.NewReader(body))
 
 	// create a new url from the raw RequestURI sent by the client
 	path := p.target.Path + req.RequestURI
@@ -52,6 +52,13 @@ func (p *devProxy) proxy(w http.ResponseWriter, req *http.Request) {
 	proxyReq.Header = make(http.Header)
 	for h, val := range req.Header {
 		proxyReq.Header[h] = val
+	}
+
+	if !(strings.HasPrefix(path, "/node_modules/") || strings.HasPrefix(path, "/src/")) {
+		// completely kill all cache
+		proxyReq.Header["Cache-Control"] = []string{"no-cache"}
+		proxyReq.Header["Pragma"] = []string{"no-cache"}
+		delete(proxyReq.Header, "If-None-Match")
 	}
 
 	resp, err := p.httpClient.Do(proxyReq)
@@ -152,6 +159,6 @@ type DevServerOptions struct {
 	GetInjectedHTMLSegment func(*http.Request) []byte
 }
 
-func NewDevServerProxy(options DevServerOptions) http.Handler {
-	return newDevProxy("http://localhost:5173", options)
+func NewDevServerProxy(address string, options DevServerOptions) http.Handler {
+	return newDevProxy(address, options)
 }

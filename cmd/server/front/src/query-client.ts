@@ -5,6 +5,7 @@ import { HTTPError } from 'ky'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      refetchOnWindowFocus: false,
       retry: (failureCount, err) => {
         if (failureCount > 5) return false
 

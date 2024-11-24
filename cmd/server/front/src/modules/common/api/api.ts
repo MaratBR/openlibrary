@@ -1,4 +1,5 @@
-import ky from 'ky'
+import ky, { KyResponse } from 'ky'
+import { ZodSchema } from 'zod'
 
 export const httpClient = ky.create({
   timeout: 60000,
@@ -16,6 +17,10 @@ export const httpClient = ky.create({
   },
 })
 
+// setTimeout(() => {
+//   httpClient.post('/api/auth/csrf-check')
+// }, 200)
+
 function getCsrfToken() {
   try {
     return getCookie('csrf')
@@ -28,18 +33,24 @@ function refreshCsrfToken() {
   fetch('/api/auth/csrf', { method: 'GET' })
 }
 
-setTimeout(refreshCsrfToken, 1000)
-
 function getCookie(name: string): string | undefined {
   const value = `; ${document.cookie}`
   const parts = value.split(`; ${name}=`)
   if (parts.length === 2) return parts.pop()!.split(';').shift()
 }
 
+const disableWithPreloadCache =
+  new URLSearchParams(window.location.search).get('debug.disableWithPreloadCache') === 'true' ||
+  !__server__.serverPreload
+
 export async function withPreloadCache<T>(key: string, fn: () => Promise<T>): Promise<T> {
-  if (SERVER_DATA._preload && SERVER_DATA._preload[key]) {
-    const value = SERVER_DATA._preload[key] as T
-    delete SERVER_DATA._preload[key]
+  if (disableWithPreloadCache) {
+    return await fn()
+  }
+
+  if (__server__._preload && __server__._preload[key]) {
+    const value = __server__._preload[key] as T
+    delete __server__._preload[key]
 
     return value
   } else {
@@ -49,7 +60,7 @@ export async function withPreloadCache<T>(key: string, fn: () => Promise<T>): Pr
 }
 
 export function getPreloadedData<T>(key: string): T | undefined {
-  const value = SERVER_DATA._preload?.[key]
+  const value = __server__._preload?.[key]
   if (value === undefined) return undefined
   return value as T
 }
@@ -79,4 +90,13 @@ export function stringArray(arr: string[]): string | undefined {
   const sortedArr = [...arr]
   sortedArr.sort()
   return sortedArr.map((x) => x.replace('|', '\\|')).join('|')
+}
+
+export async function getResponse<T>(resp: KyResponse, schema: ZodSchema<T>): Promise<T> {
+  const json = await resp.json()
+  return schema.parse(json)
+}
+
+export function responseSchema<T>(schema: ZodSchema<T>): (resp: KyResponse) => Promise<T> {
+  return (resp) => getResponse(resp, schema)
 }
