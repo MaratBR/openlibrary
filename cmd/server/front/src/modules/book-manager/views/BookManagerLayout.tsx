@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react'
 import BookIsHiddenIndicator from './common/book-is-hidden-indicator'
 import BookIsBannedIndicator from './common/book-is-banned-indicator'
 import GoToBookPage from './common/go-to-book-page'
+import BookCover from '@/modules/common/components/book-cover'
 
 export default function BookManagerLayout({ children }: React.PropsWithChildren) {
   const { bookId } = useParams<{ bookId: string }>()
@@ -38,10 +39,14 @@ export default function BookManagerLayout({ children }: React.PropsWithChildren)
           </NavLink>
           <h1 className="page-header-text">{data.name}</h1>
 
-          <div className="flex gap-2 mt-5">
-            <GoToBookPage bookId={data.id} />
-            {!data.isPubliclyVisible && <BookIsHiddenIndicator />}
-            {data.isBanned && <BookIsBannedIndicator bookId={data.id} />}
+          <div className="flex mt-5 gap-5">
+            <BookCover url={data.cover} />
+
+            <div className="flex items-start gap-2">
+              <GoToBookPage bookId={data.id} />
+              {!data.isPubliclyVisible && <BookIsHiddenIndicator />}
+              {data.isBanned && <BookIsBannedIndicator bookId={data.id} />}
+            </div>
           </div>
         </header>
       </section>

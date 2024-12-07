@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { httpSignIn } from '../api'
+import { useNavigate } from 'react-router'
 
 const formSchema = z.object({
   username: z.string().min(1).max(50),
@@ -19,6 +20,8 @@ const formSchema = z.object({
 })
 
 export default function LoginForm() {
+  const navigate = useNavigate()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -29,10 +32,14 @@ export default function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await httpSignIn({
+      const response = await httpSignIn({
         username: values.username,
         password: values.password,
       })
+      if (response.status > 299) {
+        throw new Error(response.statusText)
+      }
+      navigate('/')
     } catch {
       alert('failed to log in')
     }

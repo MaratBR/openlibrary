@@ -311,7 +311,8 @@ type Favorite struct {
 }
 
 type Session struct {
-	ID           string
+	ID           int64
+	Sid          string
 	UserID       pgtype.UUID
 	CreatedAt    pgtype.Timestamptz
 	UserAgent    string
@@ -330,7 +331,6 @@ type User struct {
 	AvatarFile            pgtype.Text
 	About                 string
 	Gender                string
-	Status                string
 	ProfileCss            string
 	EnableProfileCss      bool
 	DefaultTheme          string

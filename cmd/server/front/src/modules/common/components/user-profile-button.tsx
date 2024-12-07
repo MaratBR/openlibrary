@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { NavLink } from 'react-router-dom'
 import { LogIn, LogOut, Settings, User } from 'lucide-react'
 import React from 'react'
+import ThemeSwitcherButton from './theme-switcher-button'
 
 export default function UserProfileButton() {
   const user = useAuthState((s) => s.user)
@@ -35,6 +36,7 @@ export default function UserProfileButton() {
           <NavLink to={`/account/settings`} className="menu-item" onClick={closePopover}>
             <Settings /> Account settings
           </NavLink>
+          <ThemeSwitcherButton />
         </div>
         <hr />
         <div className="p-2 space-y-2">

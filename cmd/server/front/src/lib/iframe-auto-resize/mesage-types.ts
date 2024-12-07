@@ -1,18 +1,20 @@
 import { z } from 'zod'
 
-const iframeChildMessage = z.object({
+export const iframeChildMessage = z.object({
   iframeId: z.string(),
   width: z.number(),
   height: z.number(),
-  type: z.literal('iframe-child-message'),
+  type: z.literal('iframeC'),
 })
 
-export type ChildMessage = z.infer<typeof iframeChildMessage>
+export const iframeParentMessage = z.object({
+  type: z.literal('iframePWndSize'),
+  width: z.number(),
+  height: z.number(),
+})
 
-export function parseChildMessage(data: unknown): ChildMessage | null {
-  const result = iframeChildMessage.safeParse(data)
-  return result.success ? result.data : null
-}
+export type IframeParentMessage = z.infer<typeof iframeParentMessage>
+export type IframeChildMessage = z.infer<typeof iframeChildMessage>
 
 export function getIframeId(): string | null {
   if (window.frameElement) {

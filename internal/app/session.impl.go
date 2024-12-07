@@ -23,16 +23,17 @@ func (s *sessionService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]S
 		}
 		return nil, wrapUnexpectedDBError(err)
 	}
-	return mapSlice(sessions, func(user store.GetUserSessionsRow) SessionInfo {
+	return mapSlice(sessions, func(s store.GetUserSessionsRow) SessionInfo {
 		return SessionInfo{
-			SessionID:    user.ID,
-			CreatedAt:    timeDbToDomain(user.CreatedAt),
-			ExpiresAt:    timeDbToDomain(user.ExpiresAt),
-			UserID:       uuidDbToDomain(user.UserID),
-			UserAgent:    user.UserAgent,
-			IpAddress:    user.IpAddress,
-			UserName:     user.UserName,
-			UserJoinedAt: timeDbToDomain(user.UserJoinedAt),
+			ID:           s.ID,
+			SID:          s.Sid,
+			CreatedAt:    timeDbToDomain(s.CreatedAt),
+			ExpiresAt:    timeDbToDomain(s.ExpiresAt),
+			UserID:       uuidDbToDomain(s.UserID),
+			UserAgent:    s.UserAgent,
+			IpAddress:    s.IpAddress,
+			UserName:     s.UserName,
+			UserJoinedAt: timeDbToDomain(s.UserJoinedAt),
 		}
 	}), nil
 }
@@ -45,7 +46,8 @@ func (s *sessionService) Create(ctx context.Context, command CreateSessionComman
 	}
 
 	err = s.queries.InsertSession(ctx, store.InsertSessionParams{
-		ID:        sessionID,
+		ID:        GenID(),
+		Sid:       sessionID,
 		UserID:    uuidDomainToDb(command.UserID),
 		UserAgent: command.UserAgent,
 		IpAddress: command.IpAddress,
@@ -71,7 +73,8 @@ func (s *sessionService) GetBySID(ctx context.Context, sessionID string) (*Sessi
 	}
 
 	return &SessionInfo{
-		SessionID:    result.ID,
+		ID:           result.ID,
+		SID:          result.Sid,
 		CreatedAt:    timeDbToDomain(result.CreatedAt),
 		ExpiresAt:    timeDbToDomain(result.ExpiresAt),
 		UserID:       uuidDbToDomain(result.UserID),
@@ -107,7 +110,8 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 	}
 
 	err = queries.InsertSession(ctx, store.InsertSessionParams{
-		ID:        command.SessionID,
+		ID:        GenID(),
+		Sid:       command.SessionID,
 		UserID:    session.UserID,
 		UserAgent: command.UserAgent,
 		IpAddress: command.IpAddress,

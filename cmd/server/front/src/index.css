@@ -7,6 +7,10 @@
 @tailwind base;
 
 
+strong, b {
+  @apply font-[500];
+}
+
 @layer base {
   * {
     @apply border-border;

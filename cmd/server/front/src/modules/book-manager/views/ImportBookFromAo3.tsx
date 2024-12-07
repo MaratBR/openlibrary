@@ -33,7 +33,7 @@ export default function ImportBookFromAo3() {
 }
 
 const formSchema = z.object({
-  id: z.string().min(1).max(255),
+  id: z.string().min(1),
 })
 
 function ImportBookFromAo3Form() {
@@ -110,6 +110,8 @@ function ImportBookFromAo3Form() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (isMultiple) {
+      const failedIds: string[] = []
+
       const ids = values.id
         .split('\n')
         .map((x) => x.trim())
@@ -117,11 +119,20 @@ function ImportBookFromAo3Form() {
       for (const id of ids) {
         if (Number.isNaN(id)) continue
 
-        await createBook.mutateAsync({
-          id: id + '',
-        })
+        try {
+          await createBook.mutateAsync({
+            id: id + '',
+          })
+        } catch {
+          failedIds.push(id + '')
+        }
+        await new Promise((r) => setTimeout(r, 500))
       }
-      navigate('/manager/books')
+      if (failedIds.length > 0) {
+        form.setValue('id', failedIds.join('\n'))
+      } else {
+        navigate('/manager/books')
+      }
     } else {
       await createBook
         .mutateAsync({

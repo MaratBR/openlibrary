@@ -6,8 +6,13 @@ import { NavLink } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { LayoutDashboard } from 'lucide-react'
 import ChapterCard from './ChapterCard'
-import BookInfoCard from './BookInfoCard'
+import SanitizeHtml from '@/components/sanitizer-html'
 import BookFavoritesCounter from '../../components/book-favorites-counter'
+import React from 'react'
+
+import './BookPage.css'
+import BookInfoCard from './BookInfoCard'
+import BookCover from '@/modules/common/components/book-cover'
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>()
@@ -17,52 +22,65 @@ export default function BookPage() {
   return (
     <>
       {data && (
-        <div className="bg-muted pb-6">
-          <div className="container-default">
+        <div className="book-page-header">
+          <div className="book-page-header__container">
             <header className="page-header relative">
-              <h1 className="page-header-text">
+              <h1 id="book-title" className="page-header-text">
                 {data.isAdult && <BookAdultIndicator />}
                 {data.name}
               </h1>
               <p>
                 by&nbsp;
-                <NavLink className="link" to={`/user/${data.author.id}`}>
+                <NavLink className="link-default" to={`/user/${data.author.id}`}>
                   {data.author.name}
                 </NavLink>
               </p>
 
               {data.permissions.canEdit && <QuickEditSection bookId={data.id} />}
             </header>
-            <BookInfoCard book={data} />
+            <div className="flex items-stretch gap-6">
+              <BookCover url={data.cover} />
+              <BookInfoCard className="min-w-[600px]" book={data} />
+            </div>
           </div>
         </div>
       )}
       <main className="container-default relative">
         {data && (
-          <>
+          <div className="book-page-content">
+            <Aside book={data} />
+            <section className="book-page-summary">
+              <h2 className="text-xl font-semibold">Summary</h2>
+
+              {data.summary ? (
+                <div className="pt-2">
+                  <SanitizeHtml html={data.summary} />
+                </div>
+              ) : (
+                <p>
+                  <span className="text-muted-foreground">No summary</span>{' '}
+                </p>
+              )}
+            </section>
             <ChaptersList book={data} />
-          </>
+          </div>
         )}
       </main>
     </>
   )
 }
 
+function Aside({ book }: { book: BookDetailsDto }) {
+  return (
+    <aside className="book-page-aside">
+      <BookFavoritesCounter bookId={book.id} count={book.favorites} isLiked={book.isFavorite} />
+    </aside>
+  )
+}
+
 function ChaptersList({ book }: { book: BookDetailsDto }) {
   return (
-    <section id="chapters" className="mt-8">
-      <section className="page-section">
-        <BookFavoritesCounter bookId={book.id} count={book.favorites} isLiked={book.isFavorite} />
-      </section>
-
-      <section className="page-section">
-        <h2 className="text-xl font-semibold">Summary</h2>
-
-        <p>
-          {book.summary ? book.summary : <span className="text-muted-foreground">No summary</span>}
-        </p>
-      </section>
-
+    <section id="chapters" className="book-page-chapters">
       <h2 className="text-xl font-semibold">{book.chapters.length} chapters</h2>
 
       {book.chapters.length === 0 && (

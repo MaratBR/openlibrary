@@ -19,12 +19,10 @@
 .expandable-field {
     &__trigger {
         @apply 
-            mt-1 h-14 flex items-center cursor-pointer bg-muted
-            data-[state=closed]:border-b data-[state=open]:font-[500] data-[state=open]:bg-transparent data-[state=closed]:rounded-md
+            mt-1 h-14 flex items-center cursor-pointer bg-muted mx-2 pl-6 py-3 relative rounded-md transition-shadow
+            hover:shadow-md
+            data-[state=closed]:border-b
+            data-[state=open]:font-[500] data-[state=open]:bg-transparent
             md:data-[state=closed]:border-b-0;
-
-        & > span:first-child {
-            @apply md:hover:shadow-[0_2px_0_currentColor];
-        }
     }
 }

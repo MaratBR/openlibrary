@@ -1,0 +1,22 @@
+.book-page-header {
+    @apply bg-muted pb-6;
+    &__container {
+        @apply w-[100%] mx-auto px-[2rem] max-w-screen-2xl;
+    }
+}
+
+.book-page-chapters {
+    @apply mt-8 md:[grid-area:chapters];
+}
+
+.book-page-summary {
+    @apply mt-8 md:[grid-area:summary];
+}
+
+.book-page-content {
+    @apply md:grid md:[grid-template-areas:'summary_aside''chapters_aside']
+}
+
+.book-page-aside {
+    @apply md:[grid-area:aside] md:w-[24rem] md:pl-4 md:pt-8;
+}

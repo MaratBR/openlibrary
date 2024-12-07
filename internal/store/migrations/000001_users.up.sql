@@ -23,7 +23,6 @@ create table users (
     -- about columns
     about text not null default '',
     gender text not null default '',
-    "status" text not null default '',
 
     -- customization columns
     profile_css text not null default '',
@@ -75,7 +74,8 @@ create table user_follower (
 );
 
 create table "sessions" (
-    id text primary key,
+    id int8 primary key,
+    "sid" text not null,
     user_id uuid not null references users(id),
     created_at timestamptz not null default now(),
     user_agent text not null,

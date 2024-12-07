@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"time"
@@ -17,56 +18,56 @@ func (c CacheEntry) copyInto(dest *CacheEntry) {
 }
 
 type CacheBackend interface {
-	Start() error
-	Stop()
-	Get(key string) (CacheEntry, error)
-	Put(entry CacheEntry) error
-	Remove(key string) (bool, error)
+	Start(ctx context.Context) error
+	Stop(ctx context.Context)
+	Get(ctx context.Context, key string) ([]byte, error)
+	Put(ctx context.Context, entry CacheEntry) error
+	Remove(ctx context.Context, key string) (bool, error)
 }
 
 type Cache struct {
 	backend CacheBackend
 }
 
-func New(backend CacheBackend) Cache {
-	return Cache{backend: backend}
+func New(backend CacheBackend) *Cache {
+	return &Cache{backend: backend}
 }
 
-func (c Cache) PutRaw(entry CacheEntry) error {
-	return c.backend.Put(entry)
+func (c Cache) PutRaw(ctx context.Context, entry CacheEntry) error {
+	return c.backend.Put(ctx, entry)
 }
 
-func (c Cache) GetRaw(key string) (CacheEntry, error) {
-	return c.backend.Get(key)
+func (c Cache) Get(ctx context.Context, key string) ([]byte, error) {
+	return c.backend.Get(ctx, key)
 }
 
-func (c Cache) PutJSON(key string, value any, expiration time.Time) error {
+func (c Cache) PutJSON(ctx context.Context, key string, value any, expiration time.Time) error {
 	b, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
-	return c.backend.Put(CacheEntry{
+	return c.backend.Put(ctx, CacheEntry{
 		Key:        key,
 		Expiration: expiration,
 		Value:      b,
 	})
 }
 
-func (c Cache) GetJSON(key string, dest any) error {
-	b, err := c.backend.Get(key)
+func (c Cache) GetJSON(ctx context.Context, key string, dest any) error {
+	b, err := c.backend.Get(ctx, key)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(b.Value, dest)
+	return json.Unmarshal(b, dest)
 }
 
-func (c *Cache) Remove(key string) (bool, error) {
-	return c.backend.Remove(key)
+func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
+	return c.backend.Remove(ctx, key)
 }
 
-func GetOrSet[T any](c Cache, key string, getOrSetFn func(entry *CacheEntry) (T, error)) (T, error) {
+func GetOrSet[T any](ctx context.Context, c *Cache, key string, getOrSetFn func(entry *CacheEntry) (T, error)) (T, error) {
 	var value T
-	err := c.GetJSON(key, &value)
+	err := c.GetJSON(ctx, key, &value)
 	if err != nil {
 		if errors.Is(err, ErrCacheMiss) {
 			entry := CacheEntry{
@@ -76,7 +77,7 @@ func GetOrSet[T any](c Cache, key string, getOrSetFn func(entry *CacheEntry) (T,
 			if err != nil {
 				return value, err
 			}
-			err = c.PutJSON(key, value, entry.Expiration)
+			err = c.PutJSON(ctx, key, value, entry.Expiration)
 			if err != nil {
 				return value, err
 			}

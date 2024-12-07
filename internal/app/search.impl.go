@@ -1,12 +1,9 @@
 package app
 
 import (
+	"cmp"
 	"context"
-	"crypto/sha512"
-	"encoding/base64"
-	"encoding/binary"
-	"fmt"
-	"io"
+	"slices"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -29,14 +26,14 @@ func int32RangeToInt4Range(r Int32Range) store.Int4Range {
 
 // SearchBooks implements SearchService.
 func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*BookSearchResult, error) {
-	dbReq, err := s.constructBookSearchRequest(ctx, req)
+	dbReq, err := constructBookSearchRequest(ctx, s.tagsService, req)
 	if err != nil {
 		return nil, err
 	}
 
 	start := time.Now()
 
-	result, err := s.performSearch(ctx, dbReq)
+	result, err := s.performBookSearch(ctx, dbReq)
 	if err != nil {
 		return nil, err
 	}
@@ -64,15 +61,13 @@ func (s *searchService) GetBookExtremes(ctx context.Context) (*BookExtremes, err
 	}, nil
 }
 
-func (s *searchService) performSearch(ctx context.Context, dbReq store.BookSearchRequest) (*BookSearchResult, error) {
+func (s *searchService) performBookSearch(ctx context.Context, dbReq store.BookSearchRequest) (*BookSearchResult, error) {
 	books, err := store.SearchBooks(ctx, s.db, dbReq)
 	if err != nil {
 		return nil, err
 	}
 
 	result := new(BookSearchResult)
-	result.Cache.Key = getSearchRequestCacheKey(&dbReq)
-	result.Cache.Hit = false
 	result.Books = make([]BookSearchItem, len(books))
 	bookIds := make([]int64, len(books))
 
@@ -95,6 +90,7 @@ func (s *searchService) performSearch(ctx context.Context, dbReq store.BookSearc
 			Summary:         book.Summary,
 			Favorites:       book.Favorites,
 			Cover:           getBookCoverURL(s.uploadService, book.ID, book.HasCover),
+			Tags:            arrInt64ToInt64String(book.TagIds),
 		}
 
 		tagsAgg.Add(book.ID, book.TagIds)
@@ -106,11 +102,18 @@ func (s *searchService) performSearch(ctx context.Context, dbReq store.BookSearc
 			return nil, err
 		}
 
-		for i := 0; i < len(result.Books); i++ {
-			result.Books[i].Tags = mapSlice(books[i].TagIds, func(id int64) DefinedTagDto { return tags[id] })
+		result.Tags = make([]DefinedTagDto, len(tags))
+		i := 0
+		for _, tag := range tags {
+			result.Tags[i] = tag
+			i += 1
 		}
+		slices.SortFunc(result.Tags, func(a, b DefinedTagDto) int {
+			return cmp.Compare[string](a.Name, b.Name)
+		})
 	}
 
+	// collections
 	{
 		bookCollectionsArr, err := s.queries.GetBooksCollections(ctx, bookIds)
 		if err != nil {
@@ -146,10 +149,10 @@ func (s *searchService) performSearch(ctx context.Context, dbReq store.BookSearc
 	return result, nil
 }
 
-func (s *searchService) constructBookSearchRequest(ctx context.Context, req BookSearchQuery) (dbReq store.BookSearchRequest, err error) {
+func constructBookSearchRequest(ctx context.Context, tagsService TagsService, req BookSearchQuery) (dbReq store.BookSearchRequest, err error) {
 	{
 		var includeTags BookTags
-		includeTags, err = s.tagsService.FindBookTags(ctx, req.IncludeTags)
+		includeTags, err = tagsService.FindParentTagIds(ctx, req.IncludeTags)
 		if err != nil {
 			return
 		}
@@ -158,7 +161,7 @@ func (s *searchService) constructBookSearchRequest(ctx context.Context, req Book
 
 	{
 		var excludeTags BookTags
-		excludeTags, err = s.tagsService.FindBookTags(ctx, req.ExcludeTags)
+		excludeTags, err = tagsService.FindParentTagIds(ctx, req.ExcludeTags)
 		if err != nil {
 			return
 		}
@@ -188,86 +191,4 @@ func NewSearchService(db store.DBTX, tagsService TagsService, uploadService *Upl
 		tagsService:   tagsService,
 		uploadService: uploadService,
 	}
-}
-
-func writeInt4Range(w io.Writer, r store.Int4Range) {
-	var bytes [10]byte
-
-	if r.Max.Valid {
-		bytes[0] = 1
-		binary.BigEndian.PutUint32(bytes[1:], uint32(r.Max.Int32))
-	} else {
-		bytes[0] = 0
-	}
-
-	if r.Min.Valid {
-		bytes[5] = 1
-		binary.BigEndian.PutUint32(bytes[6:], uint32(r.Min.Int32))
-	} else {
-		bytes[5] = 0
-	}
-
-	w.Write(bytes[:])
-}
-
-func getSearchRequestCacheKey(req *store.BookSearchRequest) string {
-	h := sha512.New()
-	writeInt4Range(h, req.Words)
-	// writeInt4Range(h, req.WordsPerChapter)
-	// writeInt4Range(h, req.Chapters)
-	// writeInt4Range(h, req.Favorites)
-
-	{
-		var buf [8]byte
-		binary.BigEndian.PutUint64(buf[:], uint64(req.Limit))
-		h.Write(buf[:])
-		binary.BigEndian.PutUint64(buf[:], uint64(req.Offset))
-		h.Write(buf[:])
-
-		binary.BigEndian.PutUint64(buf[:], uint64(len(req.IncludeAuthors)))
-		h.Write(buf[:])
-		for _, id := range req.IncludeAuthors {
-			h.Write(id.Bytes[:])
-		}
-
-		binary.BigEndian.PutUint64(buf[:], uint64(len(req.ExcludeAuthors)))
-		h.Write(buf[:])
-		for _, id := range req.ExcludeAuthors {
-			h.Write(id.Bytes[:])
-		}
-
-		binary.BigEndian.PutUint64(buf[:], uint64(len(req.IncludeParentTags)))
-		h.Write(buf[:])
-		for _, id := range req.IncludeParentTags {
-			var tagIdBuf [8]byte
-			binary.BigEndian.PutUint64(tagIdBuf[:], uint64(id))
-			h.Write(tagIdBuf[:])
-		}
-
-		binary.BigEndian.PutUint64(buf[:], uint64(len(req.ExcludeParentTags)))
-		h.Write(buf[:])
-		for _, id := range req.ExcludeParentTags {
-			var tagIdBuf [8]byte
-			binary.BigEndian.PutUint64(tagIdBuf[:], uint64(id))
-			h.Write(tagIdBuf[:])
-		}
-	}
-
-	{
-		var buf2 [3]byte
-		if req.IncludeEmpty {
-			buf2[0] = 1
-		}
-		if req.IncludeBanned {
-			buf2[1] = 1
-		}
-		if req.IncludeHidden {
-			buf2[2] = 1
-		}
-		h.Write(buf2[:])
-	}
-
-	hash := h.Sum(nil)
-	hashStr := fmt.Sprintf("BookSearchRequest:1:sha512:%s", base64.RawURLEncoding.EncodeToString(hash))
-	return hashStr
 }

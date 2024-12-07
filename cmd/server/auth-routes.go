@@ -45,7 +45,7 @@ func (c authController) SignOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := c.authService.SignOut(r.Context(), session.SessionID)
+	err := c.authService.SignOut(r.Context(), session.SID)
 	if err != nil {
 		writeApplicationError(w, err)
 		return
@@ -87,8 +87,10 @@ func (c authController) signIn(
 	username, password string,
 	w http.ResponseWriter, r *http.Request) {
 	result, err := c.authService.SignIn(r.Context(), app.SignInCommand{
-		Username: username,
-		Password: password,
+		Username:  username,
+		Password:  password,
+		UserAgent: r.UserAgent(),
+		IpAddress: r.RemoteAddr,
 	})
 	if err != nil {
 		writeApplicationError(w, err)

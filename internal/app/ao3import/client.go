@@ -1,9 +1,13 @@
 package ao3import
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
+	"os"
 	"time"
 )
 
@@ -14,7 +18,7 @@ type Client struct {
 func NewClient() *Client {
 	return &Client{
 		httpClient: &http.Client{
-			Timeout: time.Second * 30,
+			Timeout: time.Second * 120,
 		},
 	}
 }
@@ -70,13 +74,99 @@ func (c *Client) GetBook(id string) (*Ao3Book, error) {
 			return nil, err
 		}
 		resp, err = c.httpClient.Do(req)
-		defer resp.Body.Close()
+		if err != nil {
+			return nil, err
+		}
 
-		book, err = parseBook(resp.Body)
+		respBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		resp.Body.Close()
+
+		writeBookTmp(id, respBytes)
+
+		book, err = parseBook(bytes.NewReader(respBytes))
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	return book, nil
+}
+
+func writeBookTmp(id string, b []byte) {
+	err := os.MkdirAll("/tmp/ao3import", os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	f, err := os.Create(fmt.Sprintf("/tmp/ao3import/%s.html", id))
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	_, err = f.Write(b)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (c *Client) ScrapeBookIDs(urlString string, maxPages int, out chan<- string) error {
+
+	var (
+		remainingPages = maxPages
+		u              *url.URL
+	)
+
+	u, err := url.Parse(urlString)
+	if err != nil {
+		return err
+	}
+
+	for remainingPages > 0 {
+		var resp *http.Response
+		req, err := makeGetReq(u.String())
+		if err != nil {
+			return err
+		}
+		slog.Info("fetching", "url", u.String())
+		resp, err = c.httpClient.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == 404 {
+			slog.Error("encountered 404", "url", u.String())
+			break
+		}
+		if resp.StatusCode >= 400 {
+			slog.Error("failed to fetch book", "url", u.String(), "status", resp.Status)
+			break
+		}
+
+		ids, href, err := getBookIds(resp.Body)
+		if err != nil {
+			slog.Error("failed to process page")
+			break
+		}
+
+		for _, id := range ids {
+			out <- id
+		}
+
+		if href == "" {
+			break
+		}
+
+		u, err = url.Parse(fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, href))
+		if err != nil {
+			slog.Error("failed to parse href of next page", "href", href)
+			break
+		}
+
+		remainingPages -= 1
+	}
+
+	return nil
 }

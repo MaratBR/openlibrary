@@ -7,11 +7,7 @@ import (
 func ConvertToJPEG(buf []byte) ([]byte, error) {
 	img := bimg.NewImage(buf)
 
-	if img.Type() == "jpeg" {
-		return buf, nil
-	}
-
-	return img.Convert(bimg.JPEG)
+	return img.Process(bimg.Options{Type: bimg.JPEG, Quality: 50})
 }
 
 func Resize(

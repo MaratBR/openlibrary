@@ -10,14 +10,14 @@ export default function FavoritesCounter({ onClick, count, isLiked }: FavoritesC
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 text-lg font-[500] rounded-md hover:bg-muted p-3"
+      className="flex items-center gap-2 text-lg font-[500] rounded-md hover:bg-highlight p-3 justify-center"
     >
       {isLiked ? (
         <HeartFilledIcon className="text-red-600" width="1.8em" height="1.8em" />
       ) : (
         <HeartIcon width="1.8em" height="1.8em" />
       )}
-      {count}
+      <span>{count === 0 && isLiked ? 1 : count}</span>
     </button>
   )
 }

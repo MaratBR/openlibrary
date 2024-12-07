@@ -7,16 +7,16 @@ import (
 )
 
 func TestUploadURIParsing_Public(t *testing.T) {
-	testUploadURIParsingCase(t, "ol-file://public-minio/book/123123423452345.jpg", app.UploadURITypePublicMinio, "/book/123123423452345.jpg")
+	testUploadURIParsingCase(t, "ol-file://public-minio/book/123123423452345.jpeg", app.UploadURITypePublicMinio, "/book/123123423452345.jpeg")
 
 }
 
 func TestUploadURIParsing_Private(t *testing.T) {
-	testUploadURIParsingCase(t, "ol-file://private-minio/book/123123423452345.jpg", app.UploadURITypePrivateMinio, "/book/123123423452345.jpg")
+	testUploadURIParsingCase(t, "ol-file://private-minio/book/123123423452345.jpeg", app.UploadURITypePrivateMinio, "/book/123123423452345.jpeg")
 }
 
 func TestUploadURIParsing_External(t *testing.T) {
-	testUploadURIParsingCase(t, "ol-file://external/?key=%2Fbook%2F123123423452345.jpg", app.UploadURITypeExternal, "/book/123123423452345.jpg")
+	testUploadURIParsingCase(t, "ol-file://external/?key=%2Fbook%2F123123423452345.jpeg", app.UploadURITypeExternal, "/book/123123423452345.jpeg")
 }
 
 func testUploadURIParsingCase(t *testing.T, uri string, expectedType app.UploadURIType, expectedKey string) {

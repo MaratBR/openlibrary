@@ -77,7 +77,7 @@ type BookDetailsDto struct {
 	ID              int64                 `json:"id,string"`
 	Name            string                `json:"name"`
 	AgeRating       AgeRating             `json:"ageRating"`
-	IsAdult         bool                  `json:"isAdult"`
+	IsAdult         bool                  `json:"adult"`
 	Tags            []DefinedTagDto       `json:"tags"`
 	Words           int                   `json:"words"`
 	WordsPerChapter int                   `json:"wordsPerChapter"`
@@ -90,6 +90,7 @@ type BookDetailsDto struct {
 	Favorites       int32                 `json:"favorites"`
 	IsFavorite      bool                  `json:"isFavorite"`
 	Notifications   []GenericNotification `json:"notifications,omitempty"`
+	Cover           string                `json:"cover"`
 }
 
 func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDetailsDto, error) {
@@ -132,6 +133,7 @@ func (s *BookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 			Name: book.AuthorName,
 		},
 		Permissions: BookUserPermissions{CanEdit: query.ActorUserID.Valid && authorID == query.ActorUserID.UUID},
+		Cover:       getBookCoverURL(s.uploadService, book.ID, book.HasCover),
 	}
 
 	if userPermissionState.IsOwner {
@@ -261,7 +263,7 @@ func (s BookService) GetBookChapter(ctx context.Context, query GetBookChapterQue
 		next = Value(ChapterNextPrevDto{
 			ID:    chapter.NextChapterID.Int64,
 			Name:  chapter.NextChapterName.String,
-			Order: int32(chapter.Order - 1),
+			Order: int32(chapter.Order + 1),
 		})
 	}
 

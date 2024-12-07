@@ -1,5 +1,11 @@
 import { QueryClient, useQuery } from '@tanstack/react-query'
-import { getPreloadedData, httpClient, stringArray, withPreloadCache } from '../common/api'
+import {
+  getPreloadedData,
+  httpClient,
+  parseQueryStringArray,
+  stringArrayToQueryParameterValue,
+  withPreloadCache,
+} from '../common/api'
 import { z } from 'zod'
 import { useNotificationsSlot } from '../notifications/state'
 import { GenericNotification } from '../notifications'
@@ -34,10 +40,10 @@ export type TagsCategory = z.infer<typeof tagCategorySchema>
 export const definedTagDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string(),
-  isAdult: z.boolean(),
-  isSpoiler: z.boolean(),
-  category: tagCategorySchema,
+  desc: z.string(),
+  adult: z.boolean(),
+  spoiler: z.boolean(),
+  cat: tagCategorySchema,
 })
 
 export type DefinedTagDto = z.infer<typeof definedTagDtoSchema>
@@ -88,12 +94,19 @@ export type BookDetailsDto = {
   favorites: number
   isFavorite: boolean
   notifications: GenericNotification[]
+  cover: string
 }
 
 export type GetBookResponse = BookDetailsDto
 
 export function httpGetBook(id: string): Promise<GetBookResponse> {
-  return httpClient.get(`/api/books/${id}`).then((r) => r.json())
+  return withPreloadCache(`/api/books/${id}`, () =>
+    httpClient.get(`/api/books/${id}`).then((r) => r.json()),
+  )
+}
+
+export function getPreloadedBookResult(id: string) {
+  return getPreloadedData<GetBookResponse>(`/api/books/${id}`)
 }
 
 export function preloadBookQuery(queryClient: QueryClient, bookId: string) {
@@ -113,6 +126,7 @@ export function useBookQuery(bookId: string | undefined) {
     queryKey: ['book', bookId],
     enabled: !!bookId,
     queryFn: () => httpGetBook(bookId!),
+    initialData: bookId ? getPreloadedBookResult(bookId) : undefined,
     staleTime: 10000,
     gcTime: 60000,
   })
@@ -198,16 +212,19 @@ export type BookSearchItem = {
   favorites: number
   summary: string
   author: BookDetailsDto['author']
-  tags: DefinedTagDto[]
+  tags: string[]
+  cover: string
 }
 
 export type SearchBooksResponse = {
-  cache: {
-    hit: boolean
-    key: string
+  booksMeta: {
+    cacheHit: boolean
+    cacheKey: string
+    cacheTook: number
   }
-  took: number
+  booksTook: number
   books: BookSearchItem[]
+  tags: DefinedTagDto[]
 }
 
 export type SearchBooksRequest = {
@@ -219,64 +236,56 @@ export type SearchBooksRequest = {
   'wc.max'?: string
   'f.min'?: string
   'f.max'?: string
-  it?: string
-  et?: string
-  iu?: string
-  eu?: string
+  it?: string[]
+  et?: string[]
+  iu?: string[]
+  eu?: string[]
+}
+
+export function isSearchBooksRequestEqual(req1: SearchBooksRequest, req2: SearchBooksRequest) {
+  return (
+    searchBooksRequestToURLSearchParams(req1).toString() ===
+    searchBooksRequestToURLSearchParams(req2).toString()
+  )
 }
 
 export function parseSearchBooksRequest(sp: URLSearchParams): SearchBooksRequest {
-  const set = (key: keyof SearchBooksRequest, into: SearchBooksRequest) => {
-    let v = sp.get(key)
-    if (!v) return
-    v = v.trim()
-    into[key] = v
+  return {
+    'w.min': sp.get('w.min') || undefined,
+    'w.max': sp.get('w.max') || undefined,
+    'c.min': sp.get('c.min') || undefined,
+    'c.max': sp.get('c.max') || undefined,
+    'wc.min': sp.get('wc.min') || undefined,
+    'wc.max': sp.get('wc.max') || undefined,
+    'f.min': sp.get('f.min') || undefined,
+    'f.max': sp.get('f.max') || undefined,
+    it: parseQueryStringArray(sp.get('it')),
+    et: parseQueryStringArray(sp.get('et')),
+    iu: parseQueryStringArray(sp.get('iu')),
   }
-
-  const params: SearchBooksRequest = {}
-  set('w.max', params)
-  set('w.min', params)
-  set('c.max', params)
-  set('c.min', params)
-  set('wc.max', params)
-  set('wc.min', params)
-  set('f.max', params)
-  set('f.min', params)
-  set('it', params)
-  set('et', params)
-  set('iu', params)
-  set('eu', params)
-
-  return params
 }
 
-export function searchBookRequestToURLSearchParams(query: SearchBooksRequest): URLSearchParams {
+export function searchBooksRequestToURLSearchParams(query: SearchBooksRequest): URLSearchParams {
   const urlSp = new URLSearchParams()
 
-  const set = (key: keyof SearchBooksRequest, from: SearchBooksRequest) => {
-    const v = from[key]?.trim()
-    if (!v) return
-    urlSp.set(key, v)
-  }
-
-  set('w.max', query)
-  set('w.min', query)
-  set('c.max', query)
-  set('c.min', query)
-  set('wc.max', query)
-  set('wc.min', query)
-  set('f.max', query)
-  set('f.min', query)
-  set('it', query)
-  set('et', query)
-  set('iu', query)
-  set('eu', query)
+  if (query['w.max']) urlSp.set('w.max', query['w.max'])
+  if (query['w.min']) urlSp.set('w.min', query['w.min'])
+  if (query['c.max']) urlSp.set('c.max', query['c.max'])
+  if (query['c.min']) urlSp.set('c.min', query['c.min'])
+  if (query['wc.max']) urlSp.set('wc.max', query['wc.max'])
+  if (query['wc.min']) urlSp.set('wc.min', query['wc.min'])
+  if (query['f.max']) urlSp.set('f.max', query['f.max'])
+  if (query['f.min']) urlSp.set('f.min', query['f.min'])
+  if (query.it && query.it.length) urlSp.set('it', stringArrayToQueryParameterValue(query.it) || '')
+  if (query.et && query.et.length) urlSp.set('et', stringArrayToQueryParameterValue(query.et) || '')
+  if (query.iu && query.iu.length) urlSp.set('iu', stringArrayToQueryParameterValue(query.iu) || '')
+  if (query.eu && query.eu.length) urlSp.set('eu', stringArrayToQueryParameterValue(query.eu) || '')
 
   return urlSp
 }
 
 export async function httpSearchBooks(query: SearchBooksRequest): Promise<SearchBooksResponse> {
-  const sp = searchBookRequestToURLSearchParams(query)
+  const sp = searchBooksRequestToURLSearchParams(query)
 
   return await withPreloadCache(`/api/search?${sp.toString()}`, () =>
     httpClient
@@ -289,7 +298,7 @@ export async function httpSearchBooks(query: SearchBooksRequest): Promise<Search
 
 export function getPreloadedBookSearchResult(query: SearchBooksRequest) {
   return getPreloadedData<SearchBooksResponse>(
-    `/api/search?${new URLSearchParams(query).toString()}`,
+    `/api/search?${searchBooksRequestToURLSearchParams(query).toString()}`,
   )
 }
 
@@ -318,8 +327,8 @@ export function httpGetBookExtremes(): Promise<BookExtremes> {
   )
 }
 
-export function httpTagsGetByName(tags: string[]): Promise<DefinedTagDto[]> {
-  const q = stringArray(tags)
+export function httpTagsGetByIds(ids: string[]): Promise<DefinedTagDto[]> {
+  const q = stringArrayToQueryParameterValue(ids)
   const searchParams = q ? new URLSearchParams({ q }) : undefined
   return withPreloadCache(
     `/api/tags/lookup` + (searchParams ? `?${searchParams.toString()}` : ''),

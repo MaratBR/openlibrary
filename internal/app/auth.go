@@ -20,8 +20,10 @@ type AuthService interface {
 }
 
 type SignInCommand struct {
-	Username string
-	Password string
+	Username  string
+	Password  string
+	UserAgent string
+	IpAddress string
 }
 
 type SignInResult struct {

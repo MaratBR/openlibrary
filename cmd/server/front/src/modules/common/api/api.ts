@@ -85,7 +85,7 @@ export function isSearchQueryEqual(a: URLSearchParams, b: URLSearchParams): bool
   return true
 }
 
-export function stringArray(arr: string[]): string | undefined {
+export function stringArrayToQueryParameterValue(arr: string[]): string | undefined {
   if (arr.length === 0) return undefined
   const sortedArr = [...arr]
   sortedArr.sort()

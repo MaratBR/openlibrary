@@ -39,14 +39,14 @@ func (t *tagsController) Search(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *tagsController) GetByName(w http.ResponseWriter, r *http.Request) {
-	tagNames := getStringArray(r.URL.Query(), "q")
+	tagIds := getInt64Array(r.URL.Query(), "q")
 
-	if len(tagNames) == 0 {
+	if len(tagIds) == 0 {
 		writeJSON(w, []app.DefinedTagDto{})
 		return
 	}
 
-	bookTags, err := t.tagsService.FindBookTags(r.Context(), tagNames)
+	bookTags, err := t.tagsService.FindParentTagIds(r.Context(), tagIds)
 	if err != nil {
 		writeApplicationError(w, err)
 		return

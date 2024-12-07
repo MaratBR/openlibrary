@@ -1,22 +1,32 @@
 import { BookChapterDto } from '../../api'
 import { NavLink } from 'react-router-dom'
 import { useChapterName } from '../../utils'
+import React from 'react'
+import { cn } from '@/lib/utils'
 
 export default function ChapterCard({
   chapter,
   bookId,
+  onClick,
+  className,
 }: {
   chapter: BookChapterDto
   bookId: string
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>
+  className?: string
 }) {
   const chapterName = useChapterName(chapter.name, chapter.order)
 
   return (
     <NavLink
       to={`/book/${bookId}/chapters/${chapter.id}`}
-      className="p-2 rounded-lg border bg-card text-card-foreground shadow-sm block w-full hover:bg-muted"
+      className={cn(
+        'p-2 bg-card text-card-foreground block w-full hover:bg-muted group',
+        className,
+      )}
+      onClick={onClick}
     >
-      <span className="font-[500]">{chapterName}</span>
+      <span className="font-[500] group-hover:underline underline-offset-4">{chapterName}</span>
       &nbsp;&nbsp;&bull;&nbsp;&nbsp;
       <span className="text-sm text-muted-foreground">
         {chapter.words} words &nbsp;&nbsp;&bull;&nbsp;&nbsp; published{' '}

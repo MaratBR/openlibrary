@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { BroadcastChannel } from 'broadcast-channel'
 import kefir, { Emitter, Observable } from 'kefir'
+import React from 'react'
+import { useForceRender } from '../react-utils'
 
 function subscribeToSystemTheme(callback: (isDark: boolean) => void): () => void {
   if (!window.matchMedia) {
@@ -32,15 +34,15 @@ function createPrefersColorSchemeObservable(): Observable<boolean, never> {
 const themeSchema = z.enum(['light', 'dark', 'system'])
 export type Theme = z.infer<typeof themeSchema>
 
-function createThemeSettingsObservable(): [Observable<Theme, never>, (theme: Theme) => void] {
-  function getSavedThemeOrDefault(): Theme {
-    const theme = localStorage['theme']
-    if (themeSchema.safeParse(theme).success) {
-      return theme
-    }
-    return 'system'
+function getSavedThemeOrDefault(): Theme {
+  const theme = localStorage['theme']
+  if (themeSchema.safeParse(theme).success) {
+    return theme
   }
+  return 'system'
+}
 
+function createThemeSettingsObservable(): [Observable<Theme, never>, (theme: Theme) => void] {
   const themeBroadcastChannel = new BroadcastChannel<Theme>('theme')
   let emitterOuter: Emitter<Theme, never>
   const subject = kefir.stream<Theme, never>((emitter) => {
@@ -70,6 +72,8 @@ function createThemeSettingsObservable(): [Observable<Theme, never>, (theme: The
 const prefersColorScheme = createPrefersColorSchemeObservable()
 const [themeSettings, setTheme] = createThemeSettingsObservable()
 
+export { setTheme }
+
 const theme: Observable<Theme, never> = kefir
   .combine({ theme: themeSettings, isDark: prefersColorScheme })
   .map(({ theme, isDark }) => {
@@ -80,6 +84,28 @@ const theme: Observable<Theme, never> = kefir
     }
   })
   .ignoreErrors()
+
+export function useTheme() {
+  const fr = useForceRender()
+  const ref = React.useRef<Theme>(undefined as unknown as Theme)
+  if (!ref.current) ref.current = getSavedThemeOrDefault()
+
+  React.useEffect(() => {
+    const callback = (value: Theme) => {
+      if (ref.current !== value) {
+        ref.current = value
+        fr()
+      }
+    }
+
+    themeSettings.onValue(callback)
+    return () => {
+      themeSettings.offValue(callback)
+    }
+  }, [fr])
+
+  return ref.current
+}
 
 theme.onValue((theme) => {
   document.body.classList.toggle('dark', theme === 'dark')

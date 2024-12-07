@@ -114,10 +114,10 @@ function DefinedTagListItem({ value }: { value: DefinedTagDto }) {
       <div>
         <span>{value.name}</span>
 
-        <span className="ml-2 inline-block p-1 rounded-sm bg-muted">{value.category}</span>
+        <span className="ml-2 inline-block p-1 rounded-sm bg-muted">{value.cat}</span>
       </div>
 
-      <div className="text-muted-foreground text-sm">{value.description}</div>
+      <div className="text-muted-foreground text-sm">{value.desc}</div>
     </div>
   )
 }

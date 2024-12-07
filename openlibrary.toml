@@ -29,7 +29,7 @@ type = "redis"
 # type = "disabled"
 
 [cache.redis]
-url = "redis://localhost:6379"
+url = "localhost:6379"
 
 [openlibrary]
 url = "http://localhost"

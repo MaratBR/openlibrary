@@ -15,11 +15,11 @@ func newBookManagerController(service app.BookManagerService) *bookManagerContro
 }
 
 type createBookRequest struct {
-	Name              string        `json:"name"`
-	AgeRating         app.AgeRating `json:"ageRating"`
-	Tags              []string      `json:"tags"`
-	Summary           string        `json:"summary"`
-	IsPubliclyVisible bool          `json:"isPubliclyVisible"`
+	Name              string            `json:"name"`
+	AgeRating         app.AgeRating     `json:"ageRating"`
+	Tags              []app.Int64String `json:"tags"`
+	Summary           string            `json:"summary"`
+	IsPubliclyVisible bool              `json:"isPubliclyVisible"`
 }
 
 type createBookResponse struct {
@@ -42,7 +42,7 @@ func (c *bookManagerController) CreateBook(w http.ResponseWriter, r *http.Reques
 	bookID, err := c.service.CreateBook(r.Context(), app.CreateBookCommand{
 		UserID:            session.UserID,
 		Name:              req.Name,
-		Tags:              req.Tags,
+		Tags:              unwrapInt64StringArr(req.Tags),
 		AgeRating:         req.AgeRating,
 		IsPubliclyVisible: req.IsPubliclyVisible,
 	})
@@ -54,11 +54,11 @@ func (c *bookManagerController) CreateBook(w http.ResponseWriter, r *http.Reques
 }
 
 type updateBookRequest struct {
-	Name              string        `json:"name"`
-	AgeRating         app.AgeRating `json:"ageRating"`
-	Tags              []string      `json:"tags"`
-	Summary           string        `json:"summary"`
-	IsPubliclyVisible bool          `json:"isPubliclyVisible"`
+	Name              string            `json:"name"`
+	AgeRating         app.AgeRating     `json:"ageRating"`
+	Tags              []app.Int64String `json:"tags"`
+	Summary           string            `json:"summary"`
+	IsPubliclyVisible bool              `json:"isPubliclyVisible"`
 }
 
 type updateBookResponse struct {
@@ -88,7 +88,7 @@ func (c *bookManagerController) UpdateBook(w http.ResponseWriter, r *http.Reques
 		BookID:            bookID,
 		UserID:            session.UserID,
 		Name:              req.Name,
-		Tags:              req.Tags,
+		Tags:              unwrapInt64StringArr(req.Tags),
 		AgeRating:         req.AgeRating,
 		IsPubliclyVisible: req.IsPubliclyVisible,
 		Summary:           req.Summary,
@@ -248,7 +248,7 @@ func (c *bookManagerController) UpdateChaptersOrder(w http.ResponseWriter, r *ht
 	err = c.service.ReorderChapters(r.Context(), app.ReorderChaptersCommand{
 		UserID:     sessionInfo.UserID,
 		BookID:     bookID,
-		ChapterIDs: int64StringArr(body.Sequence),
+		ChapterIDs: unwrapInt64StringArr(body.Sequence),
 	})
 	if err != nil {
 		writeApplicationError(w, err)
@@ -317,6 +317,10 @@ func (c *bookManagerController) GetMyBooks(w http.ResponseWriter, r *http.Reques
 	})
 }
 
+type uploadBookCoverResponse struct {
+	URL string `json:"url"`
+}
+
 func (c *bookManagerController) UploadBookCover(w http.ResponseWriter, r *http.Request) {
 	bookID, err := urlParamInt64(r, "bookID")
 	if err != nil {
@@ -332,7 +336,7 @@ func (c *bookManagerController) UploadBookCover(w http.ResponseWriter, r *http.R
 	}
 	defer file.Close()
 
-	err = c.service.UploadBookCover(r.Context(), app.UploadBookCoverCommand{
+	result, err := c.service.UploadBookCover(r.Context(), app.UploadBookCoverCommand{
 		UserID: session.UserID,
 		BookID: bookID,
 		File:   file,
@@ -341,5 +345,7 @@ func (c *bookManagerController) UploadBookCover(w http.ResponseWriter, r *http.R
 		writeApplicationError(w, err)
 		return
 	}
-	writeOK(w)
+	writeJSON(w, uploadBookCoverResponse{
+		URL: result.URL,
+	})
 }

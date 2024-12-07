@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -13,7 +12,6 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
-	"github.com/joomcode/errorx"
 )
 
 func readJSON(r *http.Request, v interface{}) error {
@@ -35,96 +33,6 @@ type jsonBodyError struct {
 
 func (err jsonBodyError) Error() string {
 	return err.Error()
-}
-
-func writeRequestError(err error, w http.ResponseWriter) {
-	var werr error
-
-	switch err.(type) {
-	case jsonBodyError:
-		w.WriteHeader(http.StatusBadRequest)
-		_, werr = w.Write([]byte(fmt.Sprintf("json body syntax error: %s", err.Error())))
-		break
-	case *httpError:
-		{
-			httpErr := err.(*httpError)
-			w.WriteHeader(httpErr.StatusCode)
-			_, werr = w.Write([]byte(httpErr.Message))
-		}
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
-		_, werr = w.Write([]byte(fmt.Sprintf("unknown request error: %s", err.Error())))
-
-		break
-	}
-
-	if werr != nil {
-		slog.Error("error while writing to the client", "err", err)
-	}
-}
-
-func writeUnauthorizedError(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusUnauthorized)
-	_, err := w.Write([]byte("unauthorized"))
-	if err != nil {
-		slog.Error("error while writing to the client", "err", err)
-	}
-}
-
-func writeUnprocessableEntity(w http.ResponseWriter, message string) {
-	w.WriteHeader(http.StatusUnprocessableEntity)
-	_, err := w.Write([]byte(message))
-	if err != nil {
-		slog.Error("error while writing to the client", "err", err)
-	}
-}
-
-func writeApplicationError(w http.ResponseWriter, err error) {
-	var werr error
-
-	if errx, ok := err.(*errorx.Error); ok {
-
-		if errorx.HasTrait(errx, app.ErrTraitForbidden) {
-			w.WriteHeader(http.StatusForbidden)
-			_, werr = w.Write([]byte(err.Error()))
-		} else if errorx.HasTrait(errx, app.ErrTraitAuthorizationIssue) {
-			w.WriteHeader(http.StatusUnauthorized)
-			_, werr = w.Write([]byte(err.Error()))
-		} else {
-			w.WriteHeader(http.StatusConflict)
-			_, werr = w.Write([]byte(err.Error()))
-		}
-
-	} else {
-		w.WriteHeader(http.StatusConflict)
-		_, werr = w.Write([]byte(err.Error()))
-	}
-
-	if werr != nil {
-		slog.Error("error while writing to the client", "err", err)
-	}
-
-}
-
-func write404(w http.ResponseWriter, message string) {
-	w.WriteHeader(http.StatusNotFound)
-	_, err := w.Write([]byte(message))
-	if err != nil {
-		slog.Error("error while writing to the client", "err", err)
-	}
-}
-
-func writeJSON(w http.ResponseWriter, v interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(v)
-	if err != nil {
-		slog.Error("error while writing to the client", "err", err)
-	}
-}
-
-func writeOK(w http.ResponseWriter) {
-	w.WriteHeader(200)
-	w.Write([]byte("OK"))
 }
 
 func urlParamInt64(r *http.Request, name string) (int64, error) {
@@ -152,7 +60,15 @@ func urlQueryParamInt64(r *http.Request, name string) (int64, error) {
 	return strconv.ParseInt(value, 10, 64)
 }
 
-func int64StringArr(arr []app.Int64String) []int64 {
+func urlQueryParamUUID(r *http.Request, name string) (uuid.UUID, error) {
+	value := r.URL.Query().Get(name)
+	if len(value) == 0 {
+		return uuid.Nil, nil
+	}
+	return uuid.FromString(value)
+}
+
+func unwrapInt64StringArr(arr []app.Int64String) []int64 {
 	arr2 := make([]int64, len(arr))
 	for i, v := range arr {
 		arr2[i] = int64(v)
@@ -225,6 +141,19 @@ func stringArray(arr []string) string {
 	return strings.Join(arr2, "|")
 }
 
+func i64Array(arr []int64) string {
+	if len(arr) == 0 {
+		return ""
+	}
+
+	arr2 := make([]string, len(arr))
+	for i, v := range arr {
+		arr2[i] = strconv.FormatInt(v, 10)
+	}
+
+	return strings.Join(arr2, "|")
+}
+
 func getStringArray(value url.Values, key string) []string {
 	str := value.Get(key)
 
@@ -233,6 +162,27 @@ func getStringArray(value url.Values, key string) []string {
 	}
 
 	return splitByWithEscape(str, '|')
+}
+
+func getInt64Array(value url.Values, key string) []int64 {
+	strArr := getStringArray(value, key)
+
+	if strArr == nil {
+		return nil
+	}
+
+	i64Arr := []int64{}
+	for _, str := range strArr {
+		id, err := strconv.ParseInt(str, 10, 64)
+		if err != nil {
+			continue
+		}
+
+		i64Arr = append(i64Arr, id)
+	}
+
+	return i64Arr
+
 }
 
 func getUUIDArray(value url.Values, key string) []uuid.UUID {
@@ -276,4 +226,18 @@ func getInt32RangeFromQuery(query url.Values, queryParam string) app.Int32Range 
 func writeTLSRequiredError(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusForbidden)
 	w.Write([]byte("TLS required"))
+}
+
+func getPage(values url.Values, key string) int32 {
+	v := getInt32FromQuery(values, key)
+
+	if !v.Valid {
+		return 1
+	}
+
+	if v.Int32 < 1 {
+		return 1
+	}
+
+	return v.Int32
 }

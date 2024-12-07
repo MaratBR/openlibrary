@@ -1,7 +1,9 @@
 import { httpClient, responseSchema } from '@/modules/common/api'
 import { z } from 'zod'
 
-const censorModeSchema = z.enum(['hide', 'censor', 'none']) // Replace with actual CensorMode values
+export const censorModeSchema = z.enum(['hide', 'censor', 'none'])
+
+export type CensorMode = z.infer<typeof censorModeSchema>
 
 export const userPrivacySettingsSchema = z.object({
   hideStats: z.boolean(),
@@ -23,7 +25,6 @@ export type UserModerationSettings = z.infer<typeof userModerationSettingsSchema
 
 export const userAboutSettingsSchema = z.object({
   about: z.string(),
-  status: z.string(),
   gender: z.string(),
 })
 
@@ -58,17 +59,25 @@ export function httpGetUserModerationSettings() {
 }
 
 export function httpUpdateUserPrivacySettings(settings: UserPrivacySettings) {
-  return httpClient.put('/api/settings/privacy', { json: settings })
+  return httpClient
+    .put('/api/settings/privacy', { json: settings })
+    .then(responseSchema(userPrivacySettingsSchema))
 }
 
 export function httpUpdateUserAboutSettings(settings: UserAboutSettings) {
-  return httpClient.put('/api/settings/about', { json: settings })
+  return httpClient
+    .put('/api/settings/about', { json: settings })
+    .then(responseSchema(userAboutSettingsSchema))
 }
 
 export function httpUpdateUserCustomizationSettings(settings: UserCustomizationSettings) {
-  return httpClient.put('/api/settings/customization', { json: settings })
+  return httpClient
+    .put('/api/settings/customization', { json: settings })
+    .then(responseSchema(userCustomizationSettingSchema))
 }
 
 export function httpUpdateUserModerationSettings(settings: UserModerationSettings) {
-  return httpClient.put('/api/settings/moderation', { json: settings })
+  return httpClient
+    .put('/api/settings/moderation', { json: settings })
+    .then(responseSchema(userModerationSettingsSchema))
 }

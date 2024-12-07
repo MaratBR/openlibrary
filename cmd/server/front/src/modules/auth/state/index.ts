@@ -21,3 +21,7 @@ export const useAuthState = create<AuthState>()((set) => ({
     set({ user: null })
   },
 }))
+
+export function useCurrentUser() {
+  return useAuthState((x) => x.user)
+}

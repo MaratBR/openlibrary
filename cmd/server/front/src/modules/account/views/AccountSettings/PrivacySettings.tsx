@@ -8,6 +8,8 @@ import React from 'react'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { debounce } from '@/lib/utils'
+import { toast } from 'sonner'
+import { CheckCircle2 } from 'lucide-react'
 
 export default function PrivacySettings() {
   const [state, setState] = React.useState<UserPrivacySettings>({
@@ -18,7 +20,7 @@ export default function PrivacySettings() {
     allowSearching: false,
   })
 
-  const { data, isPending, isFetched, refetch } = useQuery({
+  const { data, isFetched } = useQuery({
     staleTime: 0,
     gcTime: Infinity,
     queryKey: ['settings', 'privacy'],
@@ -32,7 +34,14 @@ export default function PrivacySettings() {
   const scheduleUpdate = React.useMemo(
     () =>
       debounce((settings: UserPrivacySettings) => {
-        httpUpdateUserPrivacySettings(settings)
+        httpUpdateUserPrivacySettings(settings).then(() =>
+          toast(
+            <div className="flex gap-3 items-center">
+              <CheckCircle2 />
+              Privacy settings updated
+            </div>,
+          ),
+        )
       }, 1000),
     [],
   )
@@ -43,12 +52,14 @@ export default function PrivacySettings() {
     scheduleUpdate(newState)
   }
 
+  const disabled = !isFetched
+
   return (
-    <div className="px-6 max-w-[600px] space-y-10">
+    <div className="max-w-[600px] space-y-10">
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
           <Label htmlFor="hide-comments">Hide your comments from your profile</Label>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             Hides your comments from your profile. People can still see your comments in
             books/chapter where you posted them.
           </p>
@@ -56,7 +67,7 @@ export default function PrivacySettings() {
 
         <Switch
           id="hide-comments"
-          disabled={isPending}
+          disabled={disabled}
           checked={state.hideComments}
           onCheckedChange={(value) => update({ hideComments: value })}
         />
@@ -65,14 +76,14 @@ export default function PrivacySettings() {
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
           <Label htmlFor="hide-favorites">Hide favorites</Label>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             Hides list and number of your favorite books from your profile.
           </p>
         </div>
 
         <Switch
           id="hide-favorites"
-          disabled={isPending}
+          disabled={disabled}
           checked={state.hideFavorites}
           onCheckedChange={(value) => update({ hideFavorites: value })}
         />
@@ -85,7 +96,7 @@ export default function PrivacySettings() {
 
         <Switch
           id="hide-email"
-          disabled={isPending}
+          disabled={disabled}
           checked={state.hideEmail}
           onCheckedChange={(value) => update({ hideEmail: value })}
         />
@@ -94,14 +105,14 @@ export default function PrivacySettings() {
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
           <Label htmlFor="hide-stats">Hide stats</Label>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             Hides your account stats (number of followers and followed users).
           </p>
         </div>
 
         <Switch
           id="hide-stats"
-          disabled={isPending}
+          disabled={disabled}
           checked={state.hideStats}
           onCheckedChange={(value) => update({ hideStats: value })}
         />
@@ -110,7 +121,7 @@ export default function PrivacySettings() {
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
           <Label htmlFor="allow-searching">Allow to search for your account</Label>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             Allows to search for your account. If this setting is enabled then you can be found
             through search. If disabled, your account can only be found directly.
           </p>
@@ -118,7 +129,7 @@ export default function PrivacySettings() {
 
         <Switch
           id="allow-searching"
-          disabled={isPending}
+          disabled={disabled}
           checked={state.allowSearching}
           onCheckedChange={(value) => update({ allowSearching: value })}
         />

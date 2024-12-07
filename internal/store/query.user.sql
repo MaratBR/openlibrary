@@ -5,12 +5,15 @@ where id = $1
 limit 1;
 
 -- name: GetUserWithDetails :one
-select users.*, 
+select 
+    users.*, 
     (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned) as books_total,
     (select count(*) from favorites where user_id = users.id) as favorites,
     (select count(*) from user_follower where followed_id = users.id) as followers,
-    (select count(*) from user_follower where follower_id = users.id) as "following"
+    (select count(*) from user_follower where follower_id = users.id) as "following",
+    (user_follower.created_at is not null)::bool as is_following
 from users
+left join user_follower on user_follower.followed_id = users.id and user_follower.follower_id = sqlc.narg(actor_user_id)
 where users.id = $1
 limit 1;
 
@@ -32,13 +35,13 @@ values ($1, $2, $3, $4);
 
 -- name: InsertSession :exec
 insert into sessions
-(id, user_id, created_at, user_agent, ip_address, expires_at)
-values ($1, $2, $3, $4, $5, $6);
+(id, sid, user_id, created_at, user_agent, ip_address, expires_at)
+values ($1, $2, $3, $4, $5, $6, $7);
 
 -- name: TerminateSession :exec
 update sessions
 set is_terminated = true
-where id = $1;
+where sid = $1;
 
 
 -- name: TerminateSessionsByUserID :exec
@@ -56,7 +59,7 @@ where s.user_id = $1;
 select s.*, u.name as user_name, u.joined_at as user_joined_at, u."role" as user_role
 from sessions s
 join users u on s.user_id = u.id
-where s.id = $1;
+where s.sid = $1;
 
 
 -- name: GetUserPrivacySettings :one
@@ -96,14 +99,13 @@ where id = $1;
 -- name: GetUserAboutSettings :one
 select 
     about,
-    gender,
-    "status"
+    gender
 from users
 where id = $1;
 
 -- name: UpdateUserAboutSettings :exec
 update users
-set about = $2, gender = $3, "status" = $4
+set about = $2, gender = $3
 where id = $1;
 
 
@@ -129,3 +131,18 @@ where user_id = $1;
 delete
 from user_2fa
 where not initialized and created_at < $1;
+
+-- name: DeleteUserFollow :exec
+delete
+from user_follower
+where follower_id = $1 and followed_id = $2;
+
+-- name: InsertUserFollow :exec
+insert into user_follower
+(follower_id, followed_id)
+values ($1, $2);
+
+-- name: IsFollowing :one
+select exists(select 1
+from user_follower
+where follower_id = $1 and followed_id = $2);

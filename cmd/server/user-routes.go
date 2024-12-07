@@ -57,3 +57,38 @@ func (c *userController) Whoami(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, response)
 }
+
+func (c *userController) Follow(w http.ResponseWriter, r *http.Request) {
+	userID, err := urlQueryParamUUID(r, "userId")
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+	session := requireSession(r)
+	err = c.service.FollowUser(r.Context(), app.FollowUserCommand{
+		UserID:   userID,
+		Follower: session.UserID,
+	})
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+	writeOK(w)
+}
+
+func (c *userController) Unfollow(w http.ResponseWriter, r *http.Request) {
+	userID, err := urlQueryParamUUID(r, "userId")
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+	session := requireSession(r)
+	err = c.service.UnfollowUser(r.Context(), app.UnfollowUserCommand{
+		UserID:   userID,
+		Follower: session.UserID,
+	})
+	if err != nil {
+		writeApplicationError(w, err)
+	}
+	writeOK(w)
+}

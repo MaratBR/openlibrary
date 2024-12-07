@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/mileusna/useragent"
 )
 
 var (
@@ -12,7 +13,8 @@ var (
 )
 
 type SessionInfo struct {
-	SessionID    string
+	ID           int64
+	SID          string
 	CreatedAt    time.Time
 	ExpiresAt    time.Time
 	UserID       uuid.UUID
@@ -35,6 +37,46 @@ type RenewSessionCommand struct {
 	UserAgent string
 	IpAddress string
 	ExpiresAt time.Time
+}
+
+type UserAgentInfo struct {
+	Value   string `json:"value"`
+	Version string `json:"ver"`
+	Name    string `json:"name"`
+	OS      string `json:"os"`
+}
+
+type SessionPublicInfo struct {
+	ID        int64         `json:"id,string"`
+	UserAgent UserAgentInfo `json:"userAgent"`
+	IpAddress string        `json:"ipAddress"`
+	CreatedAt time.Time     `json:"createdAt"`
+	ExpiresAt time.Time     `json:"expiresAt"`
+}
+
+func NewSessionPublicInfo(session SessionInfo) SessionPublicInfo {
+	ua := useragent.Parse(session.UserAgent)
+
+	return SessionPublicInfo{
+		ID: session.ID,
+		UserAgent: UserAgentInfo{
+			Value:   session.UserAgent,
+			OS:      ua.OS,
+			Name:    ua.Name,
+			Version: ua.Version,
+		},
+		IpAddress: session.IpAddress,
+		CreatedAt: session.CreatedAt.UTC(),
+		ExpiresAt: session.ExpiresAt.UTC(),
+	}
+}
+
+func SessionPublicInfoArray(sessions []SessionInfo) []SessionPublicInfo {
+	result := make([]SessionPublicInfo, len(sessions))
+	for i, session := range sessions {
+		result[i] = NewSessionPublicInfo(session)
+	}
+	return result
 }
 
 type SessionService interface {

@@ -5,8 +5,8 @@ type SignInRequest = {
   password: string
 }
 
-export async function httpSignIn(req: SignInRequest): Promise<void> {
-  await httpClient.post('/api/auth/signin', { json: req })
+export async function httpSignIn(req: SignInRequest) {
+  return await httpClient.post('/api/auth/signin', { json: req })
 }
 
 export type SignUpRequest = {

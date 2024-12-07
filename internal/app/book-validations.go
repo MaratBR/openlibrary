@@ -12,7 +12,7 @@ func validateBookName(name string) error {
 	if name == "" {
 		return ErrEmptyBookName
 	}
-	if len(name) > 100 {
+	if len(name) > 500 {
 		return ErrBookNameTooLong
 	}
 	return nil

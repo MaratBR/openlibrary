@@ -5,15 +5,18 @@ import { PenIcon } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { httpGetMyBooks } from '../../api'
 import AuthorBookCard from './AuthorBookCard'
+import { AuthorizationRequiredRedirect } from '@/modules/auth/views/AuthorizationRequired'
 
 export default function MyBooks() {
   return (
-    <main className="container-default">
-      <header className="page-header">
-        <h1 className="page-header-text">My books</h1>
-      </header>
-      <BooksList />
-    </main>
+    <AuthorizationRequiredRedirect>
+      <main className="container-default">
+        <header className="page-header">
+          <h1 className="page-header-text">My books</h1>
+        </header>
+        <BooksList />
+      </main>
+    </AuthorizationRequiredRedirect>
   )
 }
 

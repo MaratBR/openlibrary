@@ -113,3 +113,28 @@ func parseTags(doc *goquery.Document, book *Ao3Book) {
 
 	book.Tags = tags
 }
+
+func getBookIds(r io.Reader) ([]string, string, error) {
+	doc, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		return nil, "", err
+	}
+
+	var (
+		ids     []string
+		nextUrl string
+	)
+
+	doc.Find(".work .heading a").Each(func(i int, s *goquery.Selection) {
+		url := s.AttrOr("href", "")
+
+		if strings.HasPrefix(url, "/works/") {
+			ids = append(ids, strings.TrimPrefix(url, "/works/"))
+		}
+	})
+
+	nextAnchor := doc.Find("[role=navigation] a[rel=next]")
+	nextUrl = nextAnchor.AttrOr("href", "")
+
+	return ids, nextUrl, nil
+}

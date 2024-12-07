@@ -22,8 +22,24 @@ func (q *Queries) DeleteInactive2FADevices(ctx context.Context, createdAt pgtype
 	return err
 }
 
+const deleteUserFollow = `-- name: DeleteUserFollow :exec
+delete
+from user_follower
+where follower_id = $1 and followed_id = $2
+`
+
+type DeleteUserFollowParams struct {
+	FollowerID pgtype.UUID
+	FollowedID pgtype.UUID
+}
+
+func (q *Queries) DeleteUserFollow(ctx context.Context, arg DeleteUserFollowParams) error {
+	_, err := q.db.Exec(ctx, deleteUserFollow, arg.FollowerID, arg.FollowedID)
+	return err
+}
+
 const findUserByUsername = `-- name: FindUserByUsername :one
-select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, status, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_favorites, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
+select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_favorites, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
 from users
 where name = $1
 limit 1
@@ -42,7 +58,6 @@ func (q *Queries) FindUserByUsername(ctx context.Context, name string) (User, er
 		&i.AvatarFile,
 		&i.About,
 		&i.Gender,
-		&i.Status,
 		&i.ProfileCss,
 		&i.EnableProfileCss,
 		&i.DefaultTheme,
@@ -93,14 +108,15 @@ func (q *Queries) Get2FADevices(ctx context.Context, userID pgtype.UUID) ([]User
 }
 
 const getSessionInfo = `-- name: GetSessionInfo :one
-select s.id, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.name as user_name, u.joined_at as user_joined_at, u."role" as user_role
+select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.name as user_name, u.joined_at as user_joined_at, u."role" as user_role
 from sessions s
 join users u on s.user_id = u.id
-where s.id = $1
+where s.sid = $1
 `
 
 type GetSessionInfoRow struct {
-	ID           string
+	ID           int64
+	Sid          string
 	UserID       pgtype.UUID
 	CreatedAt    pgtype.Timestamptz
 	UserAgent    string
@@ -112,11 +128,12 @@ type GetSessionInfoRow struct {
 	UserRole     UserRole
 }
 
-func (q *Queries) GetSessionInfo(ctx context.Context, id string) (GetSessionInfoRow, error) {
-	row := q.db.QueryRow(ctx, getSessionInfo, id)
+func (q *Queries) GetSessionInfo(ctx context.Context, sid string) (GetSessionInfoRow, error) {
+	row := q.db.QueryRow(ctx, getSessionInfo, sid)
 	var i GetSessionInfoRow
 	err := row.Scan(
 		&i.ID,
+		&i.Sid,
 		&i.UserID,
 		&i.CreatedAt,
 		&i.UserAgent,
@@ -131,7 +148,7 @@ func (q *Queries) GetSessionInfo(ctx context.Context, id string) (GetSessionInfo
 }
 
 const getUser = `-- name: GetUser :one
-select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, status, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_favorites, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
+select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_favorites, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
 from users
 where id = $1
 limit 1
@@ -150,7 +167,6 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 		&i.AvatarFile,
 		&i.About,
 		&i.Gender,
-		&i.Status,
 		&i.ProfileCss,
 		&i.EnableProfileCss,
 		&i.DefaultTheme,
@@ -169,8 +185,7 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 const getUserAboutSettings = `-- name: GetUserAboutSettings :one
 select 
     about,
-    gender,
-    "status"
+    gender
 from users
 where id = $1
 `
@@ -178,13 +193,12 @@ where id = $1
 type GetUserAboutSettingsRow struct {
 	About  string
 	Gender string
-	Status string
 }
 
 func (q *Queries) GetUserAboutSettings(ctx context.Context, id pgtype.UUID) (GetUserAboutSettingsRow, error) {
 	row := q.db.QueryRow(ctx, getUserAboutSettings, id)
 	var i GetUserAboutSettingsRow
-	err := row.Scan(&i.About, &i.Gender, &i.Status)
+	err := row.Scan(&i.About, &i.Gender)
 	return i, err
 }
 
@@ -265,14 +279,15 @@ func (q *Queries) GetUserPrivacySettings(ctx context.Context, id pgtype.UUID) (G
 }
 
 const getUserSessions = `-- name: GetUserSessions :many
-select s.id, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.id as user_id, u.name as user_name, u.joined_at as user_joined_at
+select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.id as user_id, u.name as user_name, u.joined_at as user_joined_at
 from sessions s
 join users u on s.user_id = u.id
 where s.user_id = $1
 `
 
 type GetUserSessionsRow struct {
-	ID           string
+	ID           int64
+	Sid          string
 	UserID       pgtype.UUID
 	CreatedAt    pgtype.Timestamptz
 	UserAgent    string
@@ -295,6 +310,7 @@ func (q *Queries) GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]Ge
 		var i GetUserSessionsRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.Sid,
 			&i.UserID,
 			&i.CreatedAt,
 			&i.UserAgent,
@@ -316,15 +332,23 @@ func (q *Queries) GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]Ge
 }
 
 const getUserWithDetails = `-- name: GetUserWithDetails :one
-select users.id, users.name, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.status, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_favorites, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
+select 
+    users.id, users.name, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_favorites, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
     (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned) as books_total,
     (select count(*) from favorites where user_id = users.id) as favorites,
     (select count(*) from user_follower where followed_id = users.id) as followers,
-    (select count(*) from user_follower where follower_id = users.id) as "following"
+    (select count(*) from user_follower where follower_id = users.id) as "following",
+    (user_follower.created_at is not null)::bool as is_following
 from users
+left join user_follower on user_follower.followed_id = users.id and user_follower.follower_id = $2
 where users.id = $1
 limit 1
 `
+
+type GetUserWithDetailsParams struct {
+	ID          pgtype.UUID
+	ActorUserID pgtype.UUID
+}
 
 type GetUserWithDetailsRow struct {
 	ID                    pgtype.UUID
@@ -336,7 +360,6 @@ type GetUserWithDetailsRow struct {
 	AvatarFile            pgtype.Text
 	About                 string
 	Gender                string
-	Status                string
 	ProfileCss            string
 	EnableProfileCss      bool
 	DefaultTheme          string
@@ -352,10 +375,11 @@ type GetUserWithDetailsRow struct {
 	Favorites             int64
 	Followers             int64
 	Following             int64
+	IsFollowing           bool
 }
 
-func (q *Queries) GetUserWithDetails(ctx context.Context, id pgtype.UUID) (GetUserWithDetailsRow, error) {
-	row := q.db.QueryRow(ctx, getUserWithDetails, id)
+func (q *Queries) GetUserWithDetails(ctx context.Context, arg GetUserWithDetailsParams) (GetUserWithDetailsRow, error) {
+	row := q.db.QueryRow(ctx, getUserWithDetails, arg.ID, arg.ActorUserID)
 	var i GetUserWithDetailsRow
 	err := row.Scan(
 		&i.ID,
@@ -367,7 +391,6 @@ func (q *Queries) GetUserWithDetails(ctx context.Context, id pgtype.UUID) (GetUs
 		&i.AvatarFile,
 		&i.About,
 		&i.Gender,
-		&i.Status,
 		&i.ProfileCss,
 		&i.EnableProfileCss,
 		&i.DefaultTheme,
@@ -383,18 +406,20 @@ func (q *Queries) GetUserWithDetails(ctx context.Context, id pgtype.UUID) (GetUs
 		&i.Favorites,
 		&i.Followers,
 		&i.Following,
+		&i.IsFollowing,
 	)
 	return i, err
 }
 
 const insertSession = `-- name: InsertSession :exec
 insert into sessions
-(id, user_id, created_at, user_agent, ip_address, expires_at)
-values ($1, $2, $3, $4, $5, $6)
+(id, sid, user_id, created_at, user_agent, ip_address, expires_at)
+values ($1, $2, $3, $4, $5, $6, $7)
 `
 
 type InsertSessionParams struct {
-	ID        string
+	ID        int64
+	Sid       string
 	UserID    pgtype.UUID
 	CreatedAt pgtype.Timestamptz
 	UserAgent string
@@ -405,6 +430,7 @@ type InsertSessionParams struct {
 func (q *Queries) InsertSession(ctx context.Context, arg InsertSessionParams) error {
 	_, err := q.db.Exec(ctx, insertSession,
 		arg.ID,
+		arg.Sid,
 		arg.UserID,
 		arg.CreatedAt,
 		arg.UserAgent,
@@ -437,14 +463,48 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
 	return err
 }
 
+const insertUserFollow = `-- name: InsertUserFollow :exec
+insert into user_follower
+(follower_id, followed_id)
+values ($1, $2)
+`
+
+type InsertUserFollowParams struct {
+	FollowerID pgtype.UUID
+	FollowedID pgtype.UUID
+}
+
+func (q *Queries) InsertUserFollow(ctx context.Context, arg InsertUserFollowParams) error {
+	_, err := q.db.Exec(ctx, insertUserFollow, arg.FollowerID, arg.FollowedID)
+	return err
+}
+
+const isFollowing = `-- name: IsFollowing :one
+select exists(select 1
+from user_follower
+where follower_id = $1 and followed_id = $2)
+`
+
+type IsFollowingParams struct {
+	FollowerID pgtype.UUID
+	FollowedID pgtype.UUID
+}
+
+func (q *Queries) IsFollowing(ctx context.Context, arg IsFollowingParams) (bool, error) {
+	row := q.db.QueryRow(ctx, isFollowing, arg.FollowerID, arg.FollowedID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const terminateSession = `-- name: TerminateSession :exec
 update sessions
 set is_terminated = true
-where id = $1
+where sid = $1
 `
 
-func (q *Queries) TerminateSession(ctx context.Context, id string) error {
-	_, err := q.db.Exec(ctx, terminateSession, id)
+func (q *Queries) TerminateSession(ctx context.Context, sid string) error {
+	_, err := q.db.Exec(ctx, terminateSession, sid)
 	return err
 }
 
@@ -461,7 +521,7 @@ func (q *Queries) TerminateSessionsByUserID(ctx context.Context, userID pgtype.U
 
 const updateUserAboutSettings = `-- name: UpdateUserAboutSettings :exec
 update users
-set about = $2, gender = $3, "status" = $4
+set about = $2, gender = $3
 where id = $1
 `
 
@@ -469,16 +529,10 @@ type UpdateUserAboutSettingsParams struct {
 	ID     pgtype.UUID
 	About  string
 	Gender string
-	Status string
 }
 
 func (q *Queries) UpdateUserAboutSettings(ctx context.Context, arg UpdateUserAboutSettingsParams) error {
-	_, err := q.db.Exec(ctx, updateUserAboutSettings,
-		arg.ID,
-		arg.About,
-		arg.Gender,
-		arg.Status,
-	)
+	_, err := q.db.Exec(ctx, updateUserAboutSettings, arg.ID, arg.About, arg.Gender)
 	return err
 }
 

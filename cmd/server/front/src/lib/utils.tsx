@@ -70,3 +70,20 @@ export function debounce<Args extends unknown[]>(
     }, ms)
   }
 }
+
+export function isNotFalsy<T>(value: T | null | undefined): value is T {
+  return !!value
+}
+
+export function toDictionaryByProperty<T extends object>(
+  array: T[],
+  key: keyof T,
+): Record<string, T> {
+  return array.reduce(
+    (acc, item) => {
+      acc[item[key] as string] = item
+      return acc
+    },
+    {} as Record<string, T>,
+  )
+}

@@ -7,6 +7,8 @@ import { LoadingBarProvider } from './components/loading-bar-context'
 import React, { Suspense } from 'react'
 import { initIframeAgent } from './lib/iframe-auto-resize'
 import { initScrollbarWidth } from './lib/scrollbar-width'
+import { Toaster } from './components/ui/sonner'
+import { initPageSpark } from './modules/common/components/page-spark'
 
 function App() {
   return (
@@ -18,6 +20,7 @@ function App() {
             <Initialization>
               <RouterProvider router={router} />
             </Initialization>
+            <Toaster />
           </Suspense>
         </LoadingBarProvider>
       </TooltipProvider>
@@ -35,4 +38,5 @@ export function staticInitApp() {
   document.addEventListener('DOMContentLoaded', initIframeAgent)
 
   initScrollbarWidth()
+  initPageSpark()
 }

@@ -11,5 +11,5 @@ func getBookCoverURL(
 		return ""
 	}
 
-	return uploadService.GetPublicURL(fmt.Sprintf("book-covers/%d.jpg", bookID))
+	return uploadService.GetPublicURL(fmt.Sprintf("%s/%d.jpeg", BOOK_COVER_DIRECTORY, bookID))
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/cmd/server/csrf"
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -27,6 +28,7 @@ func Main(
 ) {
 
 	if cliParams.Dev {
+		app.GlobalFeatureFlags.DisableCache = true
 		slog.SetLogLoggerLevel(slog.LevelDebug)
 	}
 
@@ -36,10 +38,20 @@ func Main(
 
 	// infrastructure layer services
 	uploadService := app.NewUploadServiceFromApplicationConfig(config)
-	// cache := cache.New(cache.NewMemoryCacheBackend())
+
+	var cacheInstance *cache.Cache
+
+	{
+		cacheBackend, err := cache.CacheBackendFromConfig(config)
+		if err != nil {
+			panic(err)
+		}
+		cacheInstance = cache.New(cacheBackend)
+	}
 
 	// application layer services
 	sessionService := app.NewSessionService(db)
+	sessionService = app.NewCachedSessionService(sessionService, cacheInstance)
 	authService := app.NewAuthService(db, sessionService)
 	favoriteRecalculationBackgroundService := app.NewFavoriteRecalculationBackgroundService(db)
 	favoritesService := app.NewFavoriteService(db, favoriteRecalculationBackgroundService)
@@ -47,6 +59,7 @@ func Main(
 	bookService := app.NewBookService(db, tagsService, uploadService)
 	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService)
 	searchService := app.NewSearchService(db, tagsService, uploadService)
+	searchService = app.NewCachedSearchService(searchService, cacheInstance)
 	userService := app.NewUserService(db)
 
 	// middlewares
@@ -61,17 +74,15 @@ func Main(
 	userController := newUserController(userService)
 	favoritesController := newFavoritesController(favoritesService)
 	bookManagerController := newBookManagerController(bookManagerService)
-	settingsController := newSettingsController(userService)
+	settingsController := newSettingsController(userService, sessionService)
 
 	// create router
 	r := chi.NewRouter()
 	r.Use(csrfHandler.Middleware)
 	r.Use(authorizationMiddleware)
 
-	if cliParams.Dev {
-		staticHandler := NewDevStaticHandler(config, cliParams.Dev, userService)
-		r.NotFound(staticHandler.ServeHTTP)
-	}
+	spaHandler := newSPAHandler(config, bookService, userService, searchService, tagsService)
+	r.NotFound(spaHandler.ServeHTTP)
 
 	//
 	// init api endpoints
@@ -117,6 +128,9 @@ func Main(
 		r.Group(func(r chi.Router) {
 			r.Use(requiresAuthorization)
 
+			r.Post("/users/follow", userController.Follow)
+			r.Post("/users/unfollow", userController.Unfollow)
+
 			r.Post("/favorite", favoritesController.SetFavorite)
 
 			r.Get("/settings/about", settingsController.GetAboutSettings)
@@ -127,6 +141,7 @@ func Main(
 			r.Put("/settings/moderation", settingsController.UpdateModerationSettings)
 			r.Get("/settings/customization", settingsController.GetCustomizationSettings)
 			r.Put("/settings/customization", settingsController.UpdateCustomizationSettings)
+			r.Get("/settings/sessions", settingsController.GetSessions)
 
 			r.Route("/manager", func(r chi.Router) {
 				r.Post("/books", bookManagerController.CreateBook)

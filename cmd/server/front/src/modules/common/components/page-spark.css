@@ -1,0 +1,40 @@
+.page-spark {
+    @apply pointer-events-none fixed z-50;
+    inset: calc(var(--thickness) / -2);
+
+    &__instance {
+        rect {
+            @apply transition-transform;
+            transition-delay: calc(var(--spark-segment-delay) * var(--index));
+            transform: translate(0px, 0px);
+        }
+
+        &[data-spark=true] {
+            rect {
+                transition-duration: var(--spark-appear-duration);
+            }
+        }
+
+        &[data-spark=false] {
+            rect {
+                transition-duration: var(--spark-disappear-duration);
+            }
+
+            .position-top {
+                transform: translateY(calc(-1 * var(--thickness)));
+            }
+        
+            .position-bottom {
+                transform: translateY(calc(var(--thickness)));
+            }
+        
+            .position-left {
+                transform: translateX(calc(-1 * var(--thickness)));
+            }
+        
+            .position-right {
+                transform: translateX(calc(var(--thickness)));
+            }
+        }
+    }
+}

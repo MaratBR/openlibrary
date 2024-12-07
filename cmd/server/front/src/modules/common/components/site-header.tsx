@@ -11,11 +11,11 @@ export default function SiteHeader({ children }: React.PropsWithChildren) {
           <div id="site-logo" className="mr-8 font-semibold text-4xl self-center">
             OpenLibrary
           </div>
-          <div className="space-x-2 flex items-center">
+          <div className="site-header__links">
             <SiteHeaderLink href="/home">Home</SiteHeaderLink>
             <SiteHeaderLink href="/manager/books">Your stories</SiteHeaderLink>
             <SiteHeaderLink href="/logout">Logout</SiteHeaderLink>
-            <SiteHeaderLink href="/search?it=Gen">Search test</SiteHeaderLink>
+            <SiteHeaderLink href="/search">Search</SiteHeaderLink>
           </div>
 
           <div className="self-center">

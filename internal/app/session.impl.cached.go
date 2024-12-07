@@ -24,7 +24,7 @@ func (c *cachedSessionService) Create(ctx context.Context, command CreateSession
 
 // GetBySID implements SessionService.
 func (c *cachedSessionService) GetBySID(ctx context.Context, sessionID string) (*SessionInfo, error) {
-	return cache.GetOrSet[*SessionInfo](*c.cache, fmt.Sprintf("session:%s", sessionID), func(entry *cache.CacheEntry) (*SessionInfo, error) {
+	return cache.GetOrSet[*SessionInfo](ctx, c.cache, fmt.Sprintf("session:%s", sessionID), func(entry *cache.CacheEntry) (*SessionInfo, error) {
 		session, err := c.inner.GetBySID(ctx, sessionID)
 		if err != nil {
 			return nil, err
@@ -38,7 +38,7 @@ func (c *cachedSessionService) GetBySID(ctx context.Context, sessionID string) (
 // Renew implements SessionService.
 func (c *cachedSessionService) Renew(ctx context.Context, command RenewSessionCommand) (*SessionInfo, error) {
 	session, err := c.inner.Renew(ctx, command)
-	c.invalidate(command.SessionID)
+	c.invalidate(ctx, command.SessionID)
 	return session, err
 }
 
@@ -52,12 +52,12 @@ func (c *cachedSessionService) TerminateAllByUserID(ctx context.Context, userID 
 // TerminateBySID implements SessionService.
 func (c *cachedSessionService) TerminateBySID(ctx context.Context, sessionID string) error {
 	err := c.inner.TerminateBySID(ctx, sessionID)
-	c.invalidate(sessionID)
+	c.invalidate(ctx, sessionID)
 	return err
 }
 
-func (c *cachedSessionService) invalidate(sid string) {
-	c.cache.Remove(fmt.Sprintf("session:%s", sid))
+func (c *cachedSessionService) invalidate(ctx context.Context, sid string) {
+	c.cache.Remove(ctx, fmt.Sprintf("session:%s", sid))
 }
 
 func (c *cachedSessionService) invalidateByUserID(ctx context.Context, userID uuid.UUID) {
@@ -66,7 +66,7 @@ func (c *cachedSessionService) invalidateByUserID(ctx context.Context, userID uu
 		return
 	}
 	for _, session := range sessions {
-		c.invalidate(session.SessionID)
+		c.invalidate(ctx, session.SID)
 	}
 }
 

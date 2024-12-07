@@ -12,7 +12,7 @@ type CreateBookCommand struct {
 	Name              string
 	UserID            uuid.UUID
 	AgeRating         AgeRating
-	Tags              []string
+	Tags              []int64
 	Summary           string
 	IsPubliclyVisible bool
 }
@@ -22,7 +22,7 @@ type UpdateBookCommand struct {
 	UserID            uuid.UUID
 	Name              string
 	AgeRating         AgeRating
-	Tags              []string
+	Tags              []int64
 	Summary           string
 	IsPubliclyVisible bool
 }
@@ -36,7 +36,7 @@ type ManagerBookDetailsDto struct {
 	ID                int64                `json:"id,string"`
 	Name              string               `json:"name"`
 	AgeRating         AgeRating            `json:"ageRating"`
-	IsAdult           bool                 `json:"isAdult"`
+	IsAdult           bool                 `json:"adult"`
 	Tags              []DefinedTagDto      `json:"tags"`
 	Words             int                  `json:"words"`
 	WordsPerChapter   int                  `json:"wordsPerChapter"`
@@ -154,10 +154,14 @@ type UploadBookCoverCommand struct {
 	File   io.Reader
 }
 
+type UploadBookCoverResult struct {
+	URL string
+}
+
 type BookManagerService interface {
 	CreateBook(ctx context.Context, input CreateBookCommand) (int64, error)
 	UpdateBook(ctx context.Context, input UpdateBookCommand) error
-	UploadBookCover(ctx context.Context, input UploadBookCoverCommand) error
+	UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (UploadBookCoverResult, error)
 
 	GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error)
 	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error)

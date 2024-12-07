@@ -3,8 +3,10 @@ package app
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func dbTagTypeToTagsCategory(t store.TagType) TagsCategory {
@@ -90,36 +92,64 @@ type tagsService struct {
 	queries *store.Queries
 }
 
+// CreateTags implements TagsService.
+func (t *tagsService) CreateTags(ctx context.Context, cmd CreateTagsCommand) ([]DefinedTagDto, error) {
+	tags := make([]tagImportRow, len(cmd.Tags))
+	tagNames := make([]string, len(cmd.Tags))
+
+	for i, tag := range cmd.Tags {
+		tagNames[i] = tag.Name
+		tags[i] = tagImportRow{
+			ID:          GenID(),
+			Name:        tag.Name,
+			IsAdult:     tag.IsAdult,
+			IsSpoiler:   tag.IsSpoiler,
+			TagType:     tagsCategoryToDbTagType(tag.Category),
+			Description: "",
+			SynonymOf:   pgtype.Int8{Valid: false},
+			CreatedAt:   time.Now(),
+		}
+	}
+
+	err := importTags(ctx, t.queries, tags)
+	if err != nil {
+		return nil, err
+	}
+
+	tagsDto, err := t.queries.GetTagsByName(ctx, tagNames)
+	return mapSlice(tagsDto, definedTagToTagDto), err
+}
+
 func NewTagsService(db store.DBTX) TagsService {
 	return &tagsService{
 		queries: store.New(db),
 	}
 }
 
-func (t *tagsService) FindBookTags(ctx context.Context, names []string) (BookTags, error) {
-	if len(names) == 0 {
-		return BookTags{TagIds: []int64{}, ParentTagIds: []int64{}}, nil
+func (t *tagsService) FindParentTagIds(ctx context.Context, ids []int64) (r BookTags, err error) {
+	if len(ids) == 0 {
+		r.ParentTagIds = []int64{}
+		r.TagIds = []int64{}
+		return
 	}
 
-	tags, err := t.queries.GetTagsByName(ctx, names)
+	tags, err := t.queries.GetTagsByIds(ctx, ids)
 	if err != nil {
-		return BookTags{}, err
+		return
 	}
-	parentTagIds := make([]int64, len(tags))
+	r.ParentTagIds = make([]int64, len(tags))
+	r.TagIds = make([]int64, len(tags))
+
 	for i, tag := range tags {
+		r.TagIds[i] = tag.ID
 		if tag.SynonymOf.Valid {
-			parentTagIds[i] = tag.SynonymOf.Int64
+			r.ParentTagIds[i] = tag.SynonymOf.Int64
 		} else {
-			parentTagIds[i] = tag.ID
+			r.ParentTagIds[i] = tag.ID
 		}
 	}
 
-	tagIDs := mapSlice(tags, func(tag store.DefinedTag) int64 { return tag.ID })
-
-	return BookTags{
-		TagIds:       tagIDs,
-		ParentTagIds: parentTagIds,
-	}, nil
+	return
 }
 
 func (t *tagsService) GetTagsByIds(ctx context.Context, ids []int64) ([]DefinedTagDto, error) {

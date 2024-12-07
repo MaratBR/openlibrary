@@ -2,8 +2,12 @@
     @apply pt-10 w-[100%] mx-auto px-[2rem] max-w-screen-2xl;
 }
 
+.__iframe-root .user-page {
+    height: calc(var(--iframe-outer-height) - var(--site-header-height));
+}
+
 .user-avatar {
-    @apply rounded-full overflow-hidden inline-block absolute -top-16 left-8 border-background border-4;
+    @apply rounded-full overflow-hidden inline-block absolute top-[calc(-4rem-4px)] left-8 border-background border-4;
 
     &__img {
         @apply w-32 h-32 min-w-32 min-h-32 object-cover;
@@ -11,15 +15,19 @@
 }
 
 .profile-header {
-    @apply border-border border rounded-lg overflow-hidden;
+    @apply border-border border rounded-2xl overflow-hidden;
 
     .profile-cover {
         @apply h-48 bg-cover;
     }
 }
 
-.profile-avatar {
+.profile-top {
     @apply relative h-16;
+
+    &__follow {
+        @apply absolute top-4 right-4;
+    }
 }
 
 .profile-info {
@@ -31,6 +39,10 @@
 
     &__joined {
         @apply text-muted-foreground;
+    }
+
+    &__bio {
+        @apply mt-1 text-foreground;
     }
 }
 

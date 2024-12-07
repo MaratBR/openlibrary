@@ -11,12 +11,14 @@ import (
 type UserRole string
 
 var (
-	ErrUserNotFound = AppErrors.NewType("user_not_found", ErrTraitEntityNotFound).New("user not found")
+	ErrUserNotFound   = AppErrors.NewType("user_not_found", ErrTraitEntityNotFound).New("user not found")
+	ErrFollowYourself = AppErrors.NewType("follow_yourself").New("you can't follow yourself")
 )
 
 type UserDetailsDto struct {
 	ID     uuid.UUID `json:"id"`
 	Name   string    `json:"name"`
+	Email  string    `json:"email"`
 	Avatar struct {
 		LG string `json:"lg"`
 		MD string `json:"md"`
@@ -31,10 +33,13 @@ type UserDetailsDto struct {
 	Following      int32           `json:"following"`
 	Favorites      int32           `json:"favorites"`
 	BooksTotal     int32           `json:"booksTotal"`
+	HideEmail      bool            `json:"hideEmail"`
+	HideStats      bool            `json:"hideStats"`
+	HideFavorites  bool            `json:"hideFavorites"`
+	IsFollowing    bool            `json:"isFollowing"`
 }
 
 type UserAboutDto struct {
-	Status string `json:"status"`
 	Bio    string `json:"bio"`
 	Gender string `json:"gender"`
 }
@@ -47,9 +52,12 @@ type SelfUserDto struct {
 		LG string `json:"lg"`
 		MD string `json:"md"`
 	} `json:"avatar"`
-	JoinedAt       time.Time `json:"joinedAt"`
-	IsBanned       bool      `json:"isBlocked"`
-	PreferredTheme string    `json:"preferredTheme"`
+	JoinedAt          time.Time  `json:"joinedAt"`
+	IsBanned          bool       `json:"isBlocked"`
+	PreferredTheme    string     `json:"preferredTheme"`
+	ShowAdultContent  bool       `json:"showAdultContent"`
+	BookCensoredTags  []string   `json:"bookCensoredTags"`
+	BookCensoringMode CensorMode `json:"bookCensoringMode"`
 }
 
 type GetUserQuery struct {
@@ -85,6 +93,16 @@ type UserCustomizationSetting struct {
 	EnableProfileCSS bool   `json:"enableProfileCss"`
 }
 
+type FollowUserCommand struct {
+	UserID   uuid.UUID
+	Follower uuid.UUID
+}
+
+type UnfollowUserCommand struct {
+	UserID   uuid.UUID
+	Follower uuid.UUID
+}
+
 type UserService interface {
 	GetUserPrivacySettings(ctx context.Context, userID uuid.UUID) (*UserPrivacySettings, error)
 	GetUserModerationSettings(ctx context.Context, userID uuid.UUID) (*UserModerationSettings, error)
@@ -98,4 +116,7 @@ type UserService interface {
 
 	GetUserDetails(ctx context.Context, query GetUserQuery) (*UserDetailsDto, error)
 	GetUserSelfData(ctx context.Context, userID uuid.UUID) (*SelfUserDto, error)
+
+	FollowUser(ctx context.Context, cmd FollowUserCommand) error
+	UnfollowUser(ctx context.Context, cmd UnfollowUserCommand) error
 }

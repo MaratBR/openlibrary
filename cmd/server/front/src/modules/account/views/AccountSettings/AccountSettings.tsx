@@ -15,13 +15,13 @@ import { NavLink } from 'react-router-dom'
 import './AccountSettings.css'
 import React from 'react'
 import clsx from 'clsx'
-import { useQueryParam } from '@/lib/router-utils'
+import { useQueryParam, useQueryParamDefault } from '@/lib/router-utils'
 import AboutMeSettings from './AboutMeSettings'
 import CustomizationSettings from './CustomizationSettings'
 import PrivacySettings from './PrivacySettings'
 import ModerationSettings from './ModerationSettings'
 
-const settingsComponents: Record<string, React.ComponentType<{}>> = {
+const settingsComponents: Record<string, React.ComponentType> = {
   about: AboutMeSettings,
   customization: CustomizationSettings,
   privacy: PrivacySettings,
@@ -31,7 +31,7 @@ const settingsComponents: Record<string, React.ComponentType<{}>> = {
 export default function AccountSettings() {
   const isAuthorized = useAuthState((x) => !!x.user)
 
-  let [activeTab] = useQueryParam('tab')
+  let [activeTab] = useQueryParamDefault('tab', 'about')
   activeTab ??= 'about'
   const SettingsComponent = settingsComponents[activeTab]
 

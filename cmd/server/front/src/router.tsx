@@ -11,6 +11,8 @@ import { NotificationRenderer } from './modules/notifications'
 import SearchPage from './modules/book/views/SearchPage/SearchPage'
 import UserProfile, { UserProfileInner } from './modules/user/views/UserProfile'
 import LogoutPage from './modules/auth/views/LogoutPage'
+import { initIframeRouter, wrapRouter } from './lib/iframe-navigation'
+import TagPage from './modules/book/views/TagPage/TagPage'
 
 const bookManagerChunk = componentsChunk(() => import('./modules/book-manager'))
 const BookManagerLayout = bookManagerChunk.componentType('BookManagerLayout')
@@ -51,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: 'search',
         element: <SearchPage />,
+      },
+      {
+        path: 'tag/:tagName',
+        element: <TagPage />,
       },
       {
         path: 'book/:id',
@@ -123,4 +129,8 @@ const router = createBrowserRouter([
   },
 ])
 
-export default router
+initIframeRouter(router)
+
+const wrappedRouter = wrapRouter(router)
+
+export default wrappedRouter

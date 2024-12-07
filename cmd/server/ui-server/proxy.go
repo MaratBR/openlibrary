@@ -13,7 +13,7 @@ import (
 	"github.com/koding/websocketproxy"
 )
 
-type devProxy struct {
+type proxy struct {
 	target     *url.URL
 	httpClient *http.Client
 	wsProxy    http.Handler
@@ -21,7 +21,7 @@ type devProxy struct {
 }
 
 // ServeHTTP implements http.Handler.
-func (p *devProxy) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (p proxy) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.Header.Get("Upgrade") == "websocket" {
 		p.wsProxy.ServeHTTP(w, req)
 		return
@@ -29,7 +29,7 @@ func (p *devProxy) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	p.proxy(w, req)
 }
 
-func (p *devProxy) proxy(w http.ResponseWriter, req *http.Request) {
+func (p proxy) proxy(w http.ResponseWriter, req *http.Request) {
 	// we need to buffer the body if we want to read it here and send it
 	// in the request.
 	body, err := io.ReadAll(req.Body)
@@ -133,7 +133,7 @@ func injectAtHeadTailOfResponse(statusCode int, w http.ResponseWriter, r io.Read
 	return nil
 }
 
-func newDevProxy(targetHost string, options DevServerOptions) http.Handler {
+func newProxy(targetHost string, options DevServerOptions) proxy {
 	u, err := url.Parse(targetHost)
 	if err != nil {
 		panic(err)
@@ -145,7 +145,7 @@ func newDevProxy(targetHost string, options DevServerOptions) http.Handler {
 	} else {
 		wsUrl.Scheme = "ws"
 	}
-	return &devProxy{
+	return proxy{
 		target: u,
 		httpClient: &http.Client{
 			Timeout: time.Second * 60,
@@ -157,8 +157,4 @@ func newDevProxy(targetHost string, options DevServerOptions) http.Handler {
 
 type DevServerOptions struct {
 	GetInjectedHTMLSegment func(*http.Request) []byte
-}
-
-func NewDevServerProxy(address string, options DevServerOptions) http.Handler {
-	return newDevProxy(address, options)
 }

@@ -50,6 +50,10 @@ export default {
           DEFAULT: 'hsl(var(--muted-2))',
           foreground: 'hsl(var(--muted-2-foreground))',
         },
+        highlight: {
+          DEFAULT: 'rgba(var(--highlight))',
+          foreground: 'hsl(var(--foreground))',
+        },
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',

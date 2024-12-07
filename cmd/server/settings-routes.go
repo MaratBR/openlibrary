@@ -9,7 +9,8 @@ import (
 )
 
 type settingsController struct {
-	userService app.UserService
+	userService    app.UserService
+	sessionService app.SessionService
 }
 
 func (c *settingsController) GetCustomizationSettings(w http.ResponseWriter, r *http.Request) {
@@ -70,8 +71,28 @@ func getUserSettings[T any](w http.ResponseWriter, r *http.Request, fn func(ctx 
 	writeJSON(w, settings)
 }
 
-func newSettingsController(service app.UserService) settingsController {
+type sessionsResponse struct {
+	Sessions        []app.SessionPublicInfo `json:"sessions"`
+	ActiveSessionID int64                   `json:"activeSessionId,string"`
+}
+
+func (c *settingsController) GetSessions(w http.ResponseWriter, r *http.Request) {
+	session := requireSession(r)
+
+	sessions, err := c.sessionService.GetByUserID(r.Context(), session.UserID)
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+	writeJSON(w, sessionsResponse{
+		Sessions:        app.SessionPublicInfoArray(sessions),
+		ActiveSessionID: session.ID,
+	})
+}
+
+func newSettingsController(service app.UserService, sessionService app.SessionService) settingsController {
 	return settingsController{
-		userService: service,
+		userService:    service,
+		sessionService: sessionService,
 	}
 }

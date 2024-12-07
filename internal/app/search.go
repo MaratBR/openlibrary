@@ -49,8 +49,8 @@ type BookSearchQuery struct {
 	WordsPerChapter Int32Range
 	Favorites       Int32Range
 
-	IncludeTags  []string
-	ExcludeTags  []string
+	IncludeTags  []int64
+	ExcludeTags  []int64
 	IncludeUsers []uuid.UUID
 	ExcludeUsers []uuid.UUID
 
@@ -74,17 +74,21 @@ type BookSearchItem struct {
 	Favorites       int32                `json:"favorites"`
 	Author          BookDetailsAuthorDto `json:"author"`
 	Cover           string               `json:"cover"`
-	Tags            []DefinedTagDto      `json:"tags"`
+	Tags            []Int64String        `json:"tags"`
 	Collections     []BookCollectionDto  `json:"collections"`
 }
 
+type BookSearchResultMeta struct {
+	CacheKey    string `json:"cacheKey"`
+	CacheHit    bool   `json:"cacheHit"`
+	CacheTookUS int64  `json:"cacheTook"`
+}
+
 type BookSearchResult struct {
-	TookUS int64 `json:"took"`
-	Cache  struct {
-		Key string `json:"key"`
-		Hit bool   `json:"hit"`
-	} `json:"cache"`
-	Books []BookSearchItem `json:"books"`
+	TookUS int64                `json:"took"`
+	Meta   BookSearchResultMeta `json:"cache"`
+	Books  []BookSearchItem     `json:"books"`
+	Tags   []DefinedTagDto
 }
 
 type BookExtremes struct {
@@ -92,6 +96,27 @@ type BookExtremes struct {
 	Chapters        Int32Range `json:"chapters"`
 	WordsPerChapter Int32Range `json:"wordsPerChapter"`
 	Favorites       Int32Range `json:"favorites"`
+}
+
+type NormalizedSearchRequest struct {
+	UserID uuid.NullUUID
+
+	Words           Int32Range
+	Chapters        Int32Range
+	WordsPerChapter Int32Range
+	Favorites       Int32Range
+
+	IncludeTags  []int64
+	ExcludeTags  []int64
+	IncludeUsers []uuid.UUID
+	ExcludeUsers []uuid.UUID
+
+	IncludeBanned bool
+	IncludeHidden bool
+	IncludeEmpty  bool
+
+	Limit  uint
+	Offset uint
 }
 
 type SearchService interface {

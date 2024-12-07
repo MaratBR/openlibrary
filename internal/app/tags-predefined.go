@@ -17,8 +17,8 @@ import (
 
 type predefinedTag struct {
 	Name        string       `json:"name"`
-	IsAdult     bool         `json:"isAdult"`
-	IsSpoiler   bool         `json:"isSpoiler"`
+	IsAdult     bool         `json:"adult"`
+	IsSpoiler   bool         `json:"spoiler"`
 	Category    TagsCategory `json:"category"`
 	Description string       `json:"description"`
 }
@@ -110,7 +110,11 @@ func ImportPredefinedTags(ctx context.Context, queries *store.Queries) error {
 		slog.Debug("called RemoveUnusedDefaultTags")
 	}
 
-	jsonStr, err := json.Marshal(tagRows)
+	return importTags(ctx, queries, tagRows)
+}
+
+func importTags(ctx context.Context, queries *store.Queries, tags []tagImportRow) error {
+	jsonStr, err := json.Marshal(tags)
 	if err != nil {
 		panic(err)
 	}
@@ -121,4 +125,5 @@ func ImportPredefinedTags(ctx context.Context, queries *store.Queries) error {
 	}
 
 	return nil
+
 }

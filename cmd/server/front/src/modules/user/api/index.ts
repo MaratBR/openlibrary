@@ -1,3 +1,4 @@
+import { censorModeSchema } from '@/modules/account/api'
 import { AgeRating, BookCollectionDto, DefinedTagDto } from '@/modules/book/api'
 import { httpClient, withPreloadCache } from '@/modules/common/api'
 import { QueryClient, useQuery } from '@tanstack/react-query'
@@ -6,6 +7,7 @@ import { z } from 'zod'
 export type UserDetailsDto = {
   id: string
   name: string
+  email: string
   avatar: {
     lg: string
     md: string
@@ -19,11 +21,16 @@ export type UserDetailsDto = {
   isAdmin: boolean
   hasCustomTheme: boolean
   about: {
-    status: string
     bio: string
     gender: string
   }
   books: AuthorBookDto[]
+
+  hideEmail: boolean
+  hideStats: boolean
+  hideFavorites: boolean
+
+  isFollowing: boolean
 }
 
 export type AuthorBookDto = {
@@ -40,7 +47,9 @@ export type AuthorBookDto = {
 }
 
 export function httpGetUser(id: string): Promise<UserDetailsDto> {
-  return httpClient.get(`/api/users/${id}`).then((r) => r.json())
+  return withPreloadCache(`/api/users/${id}`, () =>
+    httpClient.get(`/api/users/${id}`).then((r) => r.json()),
+  )
 }
 
 export const userRoleSchema = z.enum(['user', 'admin', 'moderator', 'system'])
@@ -60,6 +69,9 @@ export const selfUserDtoSchema = z.object({
   joinedAt: z.string(),
   isBlocked: z.boolean(),
   preferredTheme: z.string(),
+  showAdultContent: z.boolean(),
+  bookCensoredTags: z.array(z.string()),
+  bookCensoringMode: censorModeSchema,
 })
 
 export type WhoamiResponse = {
@@ -89,4 +101,12 @@ export function useWhoamiQuery() {
     staleTime: 10000,
     gcTime: 10000,
   })
+}
+
+export function httpFollowUser(userId: string) {
+  return httpClient.post('/api/users/follow', { searchParams: { userId } })
+}
+
+export function httpUnfollowUser(userId: string) {
+  return httpClient.post('/api/users/unfollow', { searchParams: { userId } })
 }

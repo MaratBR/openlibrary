@@ -4,13 +4,17 @@
 
 .site-header {
     height: var(--site-header-height);
-    @apply bg-background overflow-hidden;
+    @apply bg-background overflow-hidden border-b border-b-muted-2;
+}
+
+.site-header__links {
+    @apply flex items-stretch gap-2;
 }
 
 .site-header__nav-link {
-    @apply flex h-7 items-center justify-center rounded-full px-4 text-center text-sm transition-colors hover:text-primary text-muted-foreground active:scale-105;
+    @apply flex flex-col px-2 justify-center hover:bg-muted active:underline active:underline-offset-4;
 }
 
 .site-header__nav-link--active {
-    @apply text-primary font-medium bg-muted;
+    @apply font-semibold text-primary;
 }

@@ -13,6 +13,45 @@ type userService struct {
 	db      DB
 }
 
+// FollowUser implements UserService.
+func (u *userService) FollowUser(ctx context.Context, cmd FollowUserCommand) error {
+	if cmd.Follower == cmd.UserID {
+		return ErrFollowYourself
+	}
+
+	isFollowing, err := u.queries.IsFollowing(ctx, store.IsFollowingParams{
+		FollowerID: uuidDomainToDb(cmd.Follower),
+		FollowedID: uuidDomainToDb(cmd.UserID),
+	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	if isFollowing {
+		return nil
+	}
+
+	err = u.queries.InsertUserFollow(ctx, store.InsertUserFollowParams{
+		FollowerID: uuidDomainToDb(cmd.Follower),
+		FollowedID: uuidDomainToDb(cmd.UserID),
+	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	return nil
+}
+
+// UnfollowUser implements UserService.
+func (u *userService) UnfollowUser(ctx context.Context, cmd UnfollowUserCommand) error {
+	err := u.queries.DeleteUserFollow(ctx, store.DeleteUserFollowParams{
+		FollowerID: uuidDomainToDb(cmd.Follower),
+		FollowedID: uuidDomainToDb(cmd.UserID),
+	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	return nil
+}
+
 // GetUserModerationSettings implements UserService.
 func (u *userService) GetUserModerationSettings(ctx context.Context, userID uuid.UUID) (*UserModerationSettings, error) {
 	user, err := u.queries.GetUserModerationSettings(ctx, uuidDomainToDb(userID))
@@ -49,7 +88,6 @@ func (u *userService) GetUserAboutSettings(ctx context.Context, userID uuid.UUID
 	}
 	return &UserAboutSettings{
 		About:  user.About,
-		Status: user.Status,
 		Gender: user.Gender,
 	}, nil
 }
@@ -71,7 +109,6 @@ func (u *userService) GetUserCustomizationSettings(ctx context.Context, userID u
 func (u *userService) UpdateUserAboutSettings(ctx context.Context, userID uuid.UUID, settings UserAboutSettings) error {
 	err := u.queries.UpdateUserAboutSettings(ctx, store.UpdateUserAboutSettingsParams{
 		About:  settings.About,
-		Status: settings.Status,
 		Gender: settings.Gender,
 		ID:     uuidDomainToDb(userID),
 	})
@@ -133,12 +170,15 @@ func (u *userService) GetUserSelfData(ctx context.Context, userID uuid.UUID) (*S
 	}
 
 	details := &SelfUserDto{
-		ID:             uuidDbToDomain(user.ID),
-		Name:           user.Name,
-		JoinedAt:       timeDbToDomain(user.JoinedAt),
-		IsBanned:       false,
-		PreferredTheme: "dark",
-		Role:           UserRole(user.Role),
+		ID:                uuidDbToDomain(user.ID),
+		Name:              user.Name,
+		JoinedAt:          timeDbToDomain(user.JoinedAt),
+		IsBanned:          false,
+		PreferredTheme:    "dark",
+		Role:              UserRole(user.Role),
+		ShowAdultContent:  user.ShowAdultContent,
+		BookCensoredTags:  user.CensoredTags,
+		BookCensoringMode: CensorMode(user.CensoredTagsMode),
 	}
 
 	details.Avatar.MD = getUserAvatar(user.Name, 84)
@@ -149,7 +189,10 @@ func (u *userService) GetUserSelfData(ctx context.Context, userID uuid.UUID) (*S
 
 // GetUserDetails implements UserService.
 func (u *userService) GetUserDetails(ctx context.Context, query GetUserQuery) (*UserDetailsDto, error) {
-	user, err := u.queries.GetUserWithDetails(ctx, uuidDomainToDb(query.ID))
+	user, err := u.queries.GetUserWithDetails(ctx, store.GetUserWithDetailsParams{
+		ID:          uuidDomainToDb(query.ID),
+		ActorUserID: uuidNullableDomainToDb(query.UserID),
+	})
 	if err != nil {
 		if err == store.ErrNoRows {
 			return nil, ErrUserNotFound
@@ -160,19 +203,38 @@ func (u *userService) GetUserDetails(ctx context.Context, query GetUserQuery) (*
 	details := &UserDetailsDto{
 		ID:             uuidDbToDomain(user.ID),
 		Name:           user.Name,
+		Email:          user.Name,
 		JoinedAt:       timeDbToDomain(user.JoinedAt),
 		IsBanned:       user.IsBanned,
 		Role:           UserRole(user.Role),
 		HasCustomTheme: true,
 		About: UserAboutDto{
-			Status: "Feelin good",
-			Bio:    "lorem ipsum",
-			Gender: "male",
+			Bio:    user.About,
+			Gender: user.Gender,
 		},
-		Following:  int32(user.Following),
-		Followers:  int32(user.Followers),
-		Favorites:  int32(user.Favorites),
-		BooksTotal: int32(user.BooksTotal),
+		Following:     int32(user.Following),
+		Followers:     int32(user.Followers),
+		Favorites:     int32(user.Favorites),
+		BooksTotal:    int32(user.BooksTotal),
+		HideEmail:     user.PrivacyHideEmail,
+		HideStats:     user.PrivacyHideStats,
+		HideFavorites: user.PrivacyHideFavorites,
+		IsFollowing:   user.IsFollowing,
+	}
+
+	if !query.UserID.Valid || details.ID != query.UserID.UUID {
+		if user.PrivacyHideFavorites {
+			details.Favorites = -1
+		}
+
+		if user.PrivacyHideStats {
+			details.Followers = -1
+			details.Following = -1
+		}
+
+		if user.PrivacyHideEmail {
+			details.Email = ""
+		}
 	}
 
 	details.Avatar.MD = getUserAvatar(user.Name, 84)

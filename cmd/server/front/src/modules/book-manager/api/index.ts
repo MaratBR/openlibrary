@@ -8,6 +8,8 @@ import {
 import { httpClient } from '@/modules/common/api'
 import { z } from 'zod'
 
+export * from './cover'
+
 export type CreateBookRequest = {
   name: string
   ageRating: AgeRating
@@ -114,6 +116,7 @@ export type ManagerBookDetailsDto = {
   }
   isPubliclyVisible: boolean
   isBanned: boolean
+  cover: string
 }
 
 export type ManagerGetBookResponse = ManagerBookDetailsDto

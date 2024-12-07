@@ -25,23 +25,23 @@ const (
 )
 
 // UploadBookCover implements BookManagerService.
-func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBookCoverCommand) error {
+func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (result UploadBookCoverResult, err error) {
 	file, err := io.ReadAll(input.File)
 	if err != nil {
-		return err
+		return
 	}
 
 	imgBytes, err := imgconvert.ConvertToJPEG(file)
 	if err != nil {
-		return err
+		return
 	}
 
-	imgBytes, err = imgconvert.Resize(imgBytes, 1024, 1024)
+	imgBytes, err = imgconvert.Resize(imgBytes, 300, 300)
 	if err != nil {
-		return err
+		return
 	}
 
-	path := fmt.Sprintf("%s/%d", BOOK_COVER_DIRECTORY, input.BookID)
+	path := fmt.Sprintf("%s/%d.jpeg", BOOK_COVER_DIRECTORY, input.BookID)
 	_, err = s.uploadService.Client.PutObject(
 		ctx,
 		s.uploadService.PublicBucket,
@@ -51,7 +51,7 @@ func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBo
 		minio.PutObjectOptions{ContentType: "image/jpeg"},
 	)
 	if err != nil {
-		return err
+		return
 	}
 
 	err = s.queries.BookSetHasCover(ctx, store.BookSetHasCoverParams{
@@ -59,10 +59,12 @@ func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBo
 		HasCover: true,
 	})
 	if err != nil {
-		return err
+		return
 	}
 
-	return nil
+	result.URL = getBookCoverURL(s.uploadService, input.BookID, true)
+
+	return
 }
 
 func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCommand) (int64, error) {
@@ -76,7 +78,7 @@ func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 		return 0, err
 	}
 
-	tags, err := s.tagsService.FindBookTags(ctx, input.Tags)
+	tags, err := s.tagsService.FindParentTagIds(ctx, input.Tags)
 	if err != nil {
 		return 0, err
 	}
@@ -107,7 +109,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return err
 	}
 
-	tags, err := s.tagsService.FindBookTags(ctx, input.Tags)
+	tags, err := s.tagsService.FindParentTagIds(ctx, input.Tags)
 	if err != nil {
 		return err
 	}
@@ -156,7 +158,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		IsPubliclyVisible: book.IsPubliclyVisible,
 		IsBanned:          book.IsBanned,
 		Favorites:         book.Favorites,
-		Cover:             s.uploadService.GetPublicURL(fmt.Sprintf("%s/%d", BOOK_COVER_DIRECTORY, book.ID)),
+		Cover:             getBookCoverURL(s.uploadService, book.ID, book.HasCover),
 	}
 
 	{
@@ -242,7 +244,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 				Summary:           row.Summary,
 				IsPubliclyVisible: row.IsPubliclyVisible,
 				IsBanned:          row.IsBanned,
-				Cover:             s.uploadService.GetPublicURL(fmt.Sprintf("%s/%d", BOOK_COVER_DIRECTORY, row.ID)),
+				Cover:             getBookCoverURL(s.uploadService, row.ID, row.HasCover),
 			}
 		}
 

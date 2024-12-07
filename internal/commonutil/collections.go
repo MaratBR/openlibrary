@@ -1,10 +1,13 @@
 package commonutil
 
-import "slices"
+import (
+	"cmp"
+	"slices"
+)
 
-func MergeStringArrays(a, b []string) []string {
-	c := []string{}
-	seen := map[string]struct{}{}
+func MergeArrays[T cmp.Ordered](a, b []T) []T {
+	c := []T{}
+	seen := map[T]struct{}{}
 
 	for _, v := range a {
 		if _, ok := seen[v]; !ok {
@@ -21,5 +24,4 @@ func MergeStringArrays(a, b []string) []string {
 	slices.Sort(c)
 
 	return c
-
 }

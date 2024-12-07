@@ -1,6 +1,5 @@
-import { useSearchState } from './state'
 import './SearchFilters.css'
-import { useBookSearchParams } from './search-params'
+import { useBookSearchParams, useSearchState } from './search-params'
 import { Button } from '@/components/ui/button'
 import { ButtonSpinner } from '@/components/spinner'
 import { httpGetBookExtremes } from '../../api'
@@ -9,13 +8,10 @@ import React from 'react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ChevronDown, Filter } from 'lucide-react'
 import TagsField from '../../components/tags-field'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import { RangeInput } from './RangeInput'
 
 export default function SearchFilters() {
   const [isMobileOpen, setMobileOpen] = React.useState(false)
-  const [autoApply, setAutoApply] = React.useState(false)
 
   const extremes = useSearchState((s) => s.extremes)
   const {
@@ -27,10 +23,7 @@ export default function SearchFilters() {
     setExcludeTags,
     setIncludeTags,
     applyChanges,
-    hasChanges,
   } = useBookSearchParams()
-
-  useFiltersAutoApply(autoApply, applyChanges, hasChanges)
 
   useQuery({
     queryKey: ['search', 'extremes'],
@@ -71,14 +64,7 @@ export default function SearchFilters() {
           >
             Close
           </Button>
-          <div className="mb-3 hidden md:flex">
-            <Label htmlFor="auto-apply-filters-switch">Auto-apply filters once they change</Label>
-            <Switch
-              checked={autoApply}
-              onCheckedChange={setAutoApply}
-              id="auto-apply-filters-switch"
-            />
-          </div>
+
           <SearchButton
             runSearch={() => {
               applyChanges()
@@ -120,25 +106,8 @@ export default function SearchFilters() {
   )
 }
 
-function useFiltersAutoApply(
-  enabled: boolean,
-  applyChanges: () => void,
-  hasChanges: () => boolean,
-) {
-  React.useEffect(() => {
-    if (enabled) {
-      const interval = setInterval(() => {
-        if (hasChanges()) {
-          applyChanges()
-        }
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [enabled, applyChanges, hasChanges])
-}
-
 function SearchButton({ runSearch }: { runSearch: () => void }) {
-  const isLoading = useSearchState((s) => s.loading)
+  const isLoading = useSearchState((s) => s.isLoading)
 
   return (
     <Button className="w-full h-14 md:h-10" onClick={() => runSearch()}>
@@ -151,16 +120,16 @@ function ExpandableField({ children, label }: React.PropsWithChildren<{ label: s
   return (
     <Collapsible defaultOpen={false} className="expandable-field">
       <CollapsibleTrigger asChild>
-        <div className="expandable-field__trigger mx-2 pl-6 py-3 relative">
-          <span className="transition-shadow md:group-hover:shadow-[0_2px_0px_currentColor]">
-            {label}
-          </span>
+        <div className="expandable-field__trigger">
+          <span className="transition-shadow ">{label}</span>
 
           <ChevronDown className="absolute top-0 right-3 h-full flex items-center" />
         </div>
       </CollapsibleTrigger>
 
-      <CollapsibleContent className="px-6 py-3">{children}</CollapsibleContent>
+      <CollapsibleContent>
+        <div className="px-6 py-3">{children}</div>
+      </CollapsibleContent>
     </Collapsible>
   )
 }

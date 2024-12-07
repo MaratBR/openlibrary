@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"net/url"
+	"slices"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
@@ -24,13 +25,39 @@ func newSearchController(searchService app.SearchService, tagsService app.TagsSe
 type searchRequest struct {
 	IncludeUsers    []uuid.UUID
 	ExcludeUsers    []uuid.UUID
-	IncludeTags     []string
-	ExcludeTags     []string
+	IncludeTags     []int64
+	ExcludeTags     []int64
 	Words           app.Int32Range
 	Chapters        app.Int32Range
 	WordsPerChapter app.Int32Range
 	Favorites       app.Int32Range
 	FromBody        bool
+
+	Page  int32
+	Limit int32
+}
+
+type searchResponse struct {
+	Tags        []app.DefinedTagDto      `json:"tags"`
+	BooksTookUS int64                    `json:"booksTook"`
+	BooksMeta   app.BookSearchResultMeta `json:"booksMeta"`
+	Books       []app.BookSearchItem     `json:"books"`
+}
+
+func (c *searchController) Search(w http.ResponseWriter, r *http.Request) {
+	search, err := getSearchRequest(r)
+	if err != nil {
+		writeRequestError(err, w)
+		return
+	}
+
+	response, err := performBookSearch(c.searchService, c.tagsService, r, search)
+	if err != nil {
+		writeApplicationError(w, err)
+		return
+	}
+
+	writeJSON(w, response)
 }
 
 func getSearchRequest(r *http.Request) (search searchRequest, err error) {
@@ -52,99 +79,80 @@ func getSearchRequest(r *http.Request) (search searchRequest, err error) {
 	search.Favorites = getInt32RangeFromQuery(source, "f")
 	search.Chapters = getInt32RangeFromQuery(source, "c")
 	search.WordsPerChapter = getInt32RangeFromQuery(source, "wc")
-	search.IncludeTags = getStringArray(source, "it")
-	search.ExcludeTags = getStringArray(source, "et")
+	search.IncludeTags = getInt64Array(source, "it")
+	search.ExcludeTags = getInt64Array(source, "et")
 	search.IncludeUsers = getUUIDArray(source, "iu")
 	search.ExcludeUsers = getUUIDArray(source, "eu")
+
+	search.Page = getPage(source, "p")
+	search.Limit = 20
 
 	return
 }
 
-func (c *searchController) performSearch(r *http.Request, search searchRequest) (*app.BookSearchResult, error) {
-	return c.searchService.SearchBooks(r.Context(), app.BookSearchQuery{
-		UserID: getNullableUserID(r),
+func performBookSearch(searchService app.SearchService, tagsService app.TagsService, r *http.Request, search searchRequest) (searchResponse, error) {
 
-		IncludeUsers: search.IncludeUsers,
-		ExcludeUsers: search.ExcludeUsers,
+	var (
+		offset uint
+		limit  uint
+	)
 
-		IncludeTags: search.IncludeTags,
-		ExcludeTags: search.ExcludeTags,
+	if search.Limit < 0 {
+		limit = 20
+	} else {
+		limit = uint(search.Limit)
+	}
 
+	if search.Page > 0 {
+		offset = uint(search.Page-1) * limit
+	} else {
+		offset = 0
+	}
+
+	result, err := searchService.SearchBooks(r.Context(), app.BookSearchQuery{
+		UserID:          getNullableUserID(r),
+		IncludeUsers:    search.IncludeUsers,
+		ExcludeUsers:    search.ExcludeUsers,
+		IncludeTags:     search.IncludeTags,
+		ExcludeTags:     search.ExcludeTags,
 		Words:           search.Words,
 		Chapters:        search.Chapters,
 		WordsPerChapter: search.WordsPerChapter,
-
-		IncludeBanned: false,
-		IncludeHidden: false,
-		IncludeEmpty:  false,
-
-		Offset: 0,
-		Limit:  20,
+		IncludeBanned:   false,
+		IncludeHidden:   false,
+		IncludeEmpty:    false,
+		Offset:          offset,
+		Limit:           limit,
 	})
-}
-
-func (c *searchController) SearchPreload(r *http.Request, serverData *serverData) error {
-	search, err := getSearchRequest(r)
-	if err != nil {
-		return err
-	}
-	result, err := c.performSearch(r, search)
-	if err != nil {
-		return err
-	}
 
 	{
-		key := "/api/search?" + r.URL.RawQuery
-		serverData.AddPreloadedData(key, result)
+		allTagIds := commonutil.MergeArrays(search.IncludeTags, search.ExcludeTags)
+		missingTagIds := []int64{}
 
-		for _, book := range result.Books {
-			if book.Cover != "" {
-				serverData.Preloads = append(serverData.Preloads, Preload{
-					As:   "image",
-					Href: book.Cover,
-				})
-			}
-		}
-		serverData.AddPreloadedData(key, result)
-	}
-
-	{
-		bookExtremes, err := c.searchService.GetBookExtremes(r.Context())
-		if err == nil {
-			serverData.AddPreloadedData("/api/search/book-extremes", bookExtremes)
-		}
-	}
-
-	if len(search.ExcludeTags)+len(search.IncludeTags) > 0 {
-		tagNames := commonutil.MergeStringArrays(search.IncludeTags, search.ExcludeTags)
-		tagIds, err := c.tagsService.FindBookTags(r.Context(), tagNames)
-		if err == nil {
-			tags, err := c.tagsService.GetTagsByIds(r.Context(), tagIds.TagIds)
-			if err == nil {
-				key := "/api/tags/lookup?q=" + url.QueryEscape(stringArray(tagNames))
-				serverData.AddPreloadedData(key, tags)
+		for _, tagId := range allTagIds {
+			if !slices.ContainsFunc(result.Tags, func(tag app.DefinedTagDto) bool {
+				return tag.ID == tagId
+			}) {
+				missingTagIds = append(missingTagIds, tagId)
 			}
 		}
 
+		missingTags, err := tagsService.GetTagsByIds(r.Context(), allTagIds)
+		if err != nil {
+			return searchResponse{}, err
+		}
+
+		result.Tags = append(result.Tags, missingTags...)
 	}
 
-	return nil
-}
-
-func (c *searchController) Search(w http.ResponseWriter, r *http.Request) {
-	search, err := getSearchRequest(r)
-	if err != nil {
-		writeRequestError(err, w)
-		return
+	response := searchResponse{
+		Books:       result.Books,
+		BooksMeta:   result.Meta,
+		BooksTookUS: result.TookUS,
+		Tags:        result.Tags,
 	}
 
-	result, err := c.performSearch(r, search)
-	if err != nil {
-		writeApplicationError(w, err)
-		return
-	}
-
-	writeJSON(w, result)
+	return response, err
 }
 
 func (c *searchController) GetBookExtremes(w http.ResponseWriter, r *http.Request) {
