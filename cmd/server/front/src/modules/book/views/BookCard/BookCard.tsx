@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card'
-import { ManagerAuthorBookDto } from '../../api'
+import { ManagerAuthorBookDto } from '../../api/api'
 import { NavLink } from 'react-router-dom'
 
 export type BookCardProps = {

@@ -1,4 +1,4 @@
-import { AgeRating } from '@/modules/book/api'
+import { AgeRating } from '@/modules/book/api/api'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { useAgeRatingsInfo } from './age-rating-util'
 import { cn } from '@/lib/utils'

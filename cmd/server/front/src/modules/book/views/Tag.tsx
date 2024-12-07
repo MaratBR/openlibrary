@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { DefinedTagDto } from '../api'
+import { DefinedTagDto } from '../api/api'
 import { cn } from '@/lib/utils'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import './Tag.css'

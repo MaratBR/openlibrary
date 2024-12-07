@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea'
 import TagsField from '@/modules/book/components/tags-field'
 import { useForm } from 'react-hook-form'
 import { ButtonSpinner } from '@/components/spinner'
-import { definedTagDtoSchema } from '@/modules/book/api'
+import { definedTagDtoSchema } from '@/modules/book/api/api'
 import { Switch } from '@/components/ui/switch'
 
 const formSchema = z.object({

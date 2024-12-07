@@ -1,5 +1,5 @@
 import { censorModeSchema } from '@/modules/account/api'
-import { AgeRating, BookCollectionDto, DefinedTagDto } from '@/modules/book/api'
+import { AgeRating, BookCollectionDto, DefinedTagDto } from '@/modules/book/api/api'
 import { httpClient, withPreloadCache } from '@/modules/common/api'
 import { QueryClient, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'

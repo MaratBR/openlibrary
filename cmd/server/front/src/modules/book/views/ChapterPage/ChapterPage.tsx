@@ -4,7 +4,7 @@ import {
   preloadBookChapterQuery,
   useBookChapterQuery,
   useBookQuery,
-} from '../../api'
+} from '../../api/api'
 import { useParams } from 'react-router'
 import './ChapterPage.css'
 import { Separator } from '@/components/ui/separator'

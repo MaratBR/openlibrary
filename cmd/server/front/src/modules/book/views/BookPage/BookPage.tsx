@@ -1,5 +1,5 @@
 import { useParams } from 'react-router'
-import { BookDetailsDto, useBookQuery } from '../../api'
+import { BookDetailsDto, useBookQuery } from '../../api/api'
 import AdultIndicator from '@/components/adult-indicator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { NavLink } from 'react-router-dom'

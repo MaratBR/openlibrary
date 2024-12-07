@@ -8,6 +8,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/joomcode/errorx"
+	"google.golang.org/protobuf/proto"
 )
 
 func writeRequestError(err error, w http.ResponseWriter) {
@@ -90,6 +91,20 @@ func write404(w http.ResponseWriter, message string) {
 func writeJSON(w http.ResponseWriter, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(v)
+	if err != nil {
+		slog.Error("error while writing to the client", "err", err)
+	}
+}
+
+func writeProtobuf(w http.ResponseWriter, v proto.Message) {
+	w.Header().Set("Content-Type", "application/vnd.google.protobuf")
+	b, err := proto.Marshal(v)
+	if err != nil {
+		slog.Error("error while writing to the client", "err", err)
+		return
+	}
+
+	_, err = w.Write(b)
 	if err != nil {
 		slog.Error("error while writing to the client", "err", err)
 	}

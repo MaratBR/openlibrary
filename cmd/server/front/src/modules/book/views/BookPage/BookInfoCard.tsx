@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator'
 import WordsCount from '@/components/words-count'
 import Tag from '../Tag'
 import AgeRatingBadge from '@/components/age-rating-badge'
-import { BookDetailsDto } from '../../api'
+import { BookDetailsDto } from '../../api/api'
 import React from 'react'
 
 const BookInfoCard = React.memo(

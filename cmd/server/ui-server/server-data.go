@@ -59,7 +59,7 @@ func getInjectedHTMLSegment(serverData *Data) []byte {
 	}
 
 	if len(serverData.ServerMetadata) > 0 {
-		metaJson, err := json.MarshalIndent(serverData.ServerMetadata, "", "\t")
+		metaJson, err := json.Marshal(serverData.ServerMetadata)
 		if err == nil {
 			buffer.WriteString("<script type=\"application/javascript\" id=\"server-data\">\nwindow.__server__=" + string(metaJson) + "\n</script>\n")
 		}

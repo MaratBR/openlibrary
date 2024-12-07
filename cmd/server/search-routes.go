@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"slices"
 
+	"github.com/MaratBR/openlibrary/cmd/server/olproto"
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/gofrs/uuid"
@@ -37,7 +38,7 @@ type searchRequest struct {
 	Limit int32
 }
 
-type searchResponse struct {
+type searchJSONResponse struct {
 	Tags        []app.DefinedTagDto      `json:"tags"`
 	BooksTookUS int64                    `json:"booksTook"`
 	BooksMeta   app.BookSearchResultMeta `json:"booksMeta"`
@@ -51,13 +52,13 @@ func (c *searchController) Search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := performBookSearch(c.searchService, c.tagsService, r, search)
+	pbResponse, err := performBookSearch(c.searchService, c.tagsService, r, search)
 	if err != nil {
 		writeApplicationError(w, err)
 		return
 	}
 
-	writeJSON(w, response)
+	writeProtobuf(w, pbResponse)
 }
 
 func getSearchRequest(r *http.Request) (search searchRequest, err error) {
@@ -90,7 +91,7 @@ func getSearchRequest(r *http.Request) (search searchRequest, err error) {
 	return
 }
 
-func performBookSearch(searchService app.SearchService, tagsService app.TagsService, r *http.Request, search searchRequest) (searchResponse, error) {
+func performBookSearch(searchService app.SearchService, tagsService app.TagsService, r *http.Request, search searchRequest) (*olproto.ProtoSearchResult, error) {
 
 	var (
 		offset uint
@@ -139,20 +140,54 @@ func performBookSearch(searchService app.SearchService, tagsService app.TagsServ
 
 		missingTags, err := tagsService.GetTagsByIds(r.Context(), allTagIds)
 		if err != nil {
-			return searchResponse{}, err
+			return nil, err
 		}
 
 		result.Tags = append(result.Tags, missingTags...)
 	}
 
-	response := searchResponse{
-		Books:       result.Books,
-		BooksMeta:   result.Meta,
-		BooksTookUS: result.TookUS,
-		Tags:        result.Tags,
+	// response := searchJSONResponse{
+	// 	Books:       result.Books,
+	// 	BooksMeta:   result.Meta,
+	// 	BooksTookUS: result.TookUS,
+	// 	Tags:        result.Tags,
+	// }
+
+	pbResponse := &olproto.ProtoSearchResult{
+		Took:       uint32(result.TookUS),
+		Page:       uint32(search.Page),
+		CacheKey:   result.Meta.CacheKey,
+		CacheTook:  uint32(result.Meta.CacheTookUS),
+		CacheHit:   result.Meta.CacheHit,
+		TotalPages: 0,
+		Tags: commonutil.MapSlice(result.Tags, func(tag app.DefinedTagDto) *olproto.ProtoDefinedTag {
+			return &olproto.ProtoDefinedTag{
+				Id:          int64(tag.ID),
+				Name:        tag.Name,
+				Description: tag.Description,
+				IsAdult:     tag.IsAdult,
+				IsSpoiler:   tag.IsSpoiler,
+				Category:    tagCategoryToProto(tag.Category),
+			}
+		}),
+		Items: commonutil.MapSlice(result.Books, func(book app.BookSearchItem) *olproto.ProtoBookSearchItem {
+			return &olproto.ProtoBookSearchItem{
+				Id:         book.ID,
+				Name:       book.Name,
+				Cover:      book.Cover,
+				AuthorId:   book.Author.ID.String(),
+				AuthorName: book.Author.Name,
+				AgeRating:  ageRatingToProto(book.AgeRating),
+				Chapters:   uint32(book.Chapters),
+				Favorites:  uint32(book.Favorites),
+				Words:      uint32(book.Words),
+				Summary:    book.Summary,
+				TagIds:     commonutil.MapSlice(book.Tags, func(id app.Int64String) int64 { return int64(id) }),
+			}
+		}),
 	}
 
-	return response, err
+	return pbResponse, err
 }
 
 func (c *searchController) GetBookExtremes(w http.ResponseWriter, r *http.Request) {

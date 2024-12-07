@@ -38,3 +38,15 @@ templ:
 
 sqlc:
 	sqlc -f internal/store/sqlc.yaml generate
+
+
+proto:
+	mkdir -p ./cmd/server/front/src/proto
+
+	# search protobuf
+	protoc -I=./cmd/server/olproto --go_out=. ./cmd/server/olproto/search.proto
+	protoc -I=./cmd/server/olproto \
+		--plugin=./cmd/server/front/node_modules/ts-proto/protoc-gen-ts_proto \
+		--ts_proto_out=./cmd/server/front/src/proto \
+		--ts_proto_opt=forceLong=string \
+		./cmd/server/olproto/search.proto

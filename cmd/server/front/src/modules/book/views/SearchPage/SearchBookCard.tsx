@@ -1,6 +1,6 @@
 import AgeRatingBadge from '@/components/age-rating-badge'
 import { Card } from '@/components/ui/card'
-import { preloadBookQuery } from '@/modules/book/api'
+import { preloadBookQuery } from '@/modules/book/api/api'
 import { NavLink } from 'react-router-dom'
 import SanitizeHtml from '@/components/sanitizer-html'
 import Tag from '../Tag'

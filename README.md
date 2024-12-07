@@ -17,3 +17,12 @@ apt install \
     libpng16-16 libpng-dev \
     libwebp7 libwebp-dev
 ```
+
+# protobuf
+
+Install protoc.
+
+
+```
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+```

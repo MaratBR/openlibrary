@@ -5,6 +5,7 @@
         "goqu",
         "Koanf",
         "Minio",
+        "olproto",
         "pgconn",
         "pgtype",
         "sqlx",

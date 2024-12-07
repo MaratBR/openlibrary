@@ -2,13 +2,12 @@ import { QueryClient, useQuery } from '@tanstack/react-query'
 import {
   getPreloadedData,
   httpClient,
-  parseQueryStringArray,
   stringArrayToQueryParameterValue,
   withPreloadCache,
-} from '../common/api'
+} from '../../common/api'
 import { z } from 'zod'
-import { useNotificationsSlot } from '../notifications/state'
-import { GenericNotification } from '../notifications'
+import { useNotificationsSlot } from '../../notifications/state'
+import { GenericNotification } from '../../notifications'
 import React from 'react'
 
 export type ManagerAuthorBookDto = {
@@ -199,107 +198,6 @@ export function httpFavoriteBook(id: string, isFavorite: boolean): Promise<GetBo
   return httpClient
     .post(`/api/favorite`, { searchParams: { bookId: id, isFavorite } })
     .then((r) => r.json())
-}
-
-export type BookSearchItem = {
-  id: string
-  name: string
-  createdAt: string
-  ageRating: AgeRating
-  words: number
-  wordsPerChapter: number
-  chapters: number
-  favorites: number
-  summary: string
-  author: BookDetailsDto['author']
-  tags: string[]
-  cover: string
-}
-
-export type SearchBooksResponse = {
-  booksMeta: {
-    cacheHit: boolean
-    cacheKey: string
-    cacheTook: number
-  }
-  booksTook: number
-  books: BookSearchItem[]
-  tags: DefinedTagDto[]
-}
-
-export type SearchBooksRequest = {
-  'w.min'?: string
-  'w.max'?: string
-  'c.min'?: string
-  'c.max'?: string
-  'wc.min'?: string
-  'wc.max'?: string
-  'f.min'?: string
-  'f.max'?: string
-  it?: string[]
-  et?: string[]
-  iu?: string[]
-  eu?: string[]
-}
-
-export function isSearchBooksRequestEqual(req1: SearchBooksRequest, req2: SearchBooksRequest) {
-  return (
-    searchBooksRequestToURLSearchParams(req1).toString() ===
-    searchBooksRequestToURLSearchParams(req2).toString()
-  )
-}
-
-export function parseSearchBooksRequest(sp: URLSearchParams): SearchBooksRequest {
-  return {
-    'w.min': sp.get('w.min') || undefined,
-    'w.max': sp.get('w.max') || undefined,
-    'c.min': sp.get('c.min') || undefined,
-    'c.max': sp.get('c.max') || undefined,
-    'wc.min': sp.get('wc.min') || undefined,
-    'wc.max': sp.get('wc.max') || undefined,
-    'f.min': sp.get('f.min') || undefined,
-    'f.max': sp.get('f.max') || undefined,
-    it: parseQueryStringArray(sp.get('it')),
-    et: parseQueryStringArray(sp.get('et')),
-    iu: parseQueryStringArray(sp.get('iu')),
-  }
-}
-
-export function searchBooksRequestToURLSearchParams(query: SearchBooksRequest): URLSearchParams {
-  const urlSp = new URLSearchParams()
-
-  if (query['w.max']) urlSp.set('w.max', query['w.max'])
-  if (query['w.min']) urlSp.set('w.min', query['w.min'])
-  if (query['c.max']) urlSp.set('c.max', query['c.max'])
-  if (query['c.min']) urlSp.set('c.min', query['c.min'])
-  if (query['wc.max']) urlSp.set('wc.max', query['wc.max'])
-  if (query['wc.min']) urlSp.set('wc.min', query['wc.min'])
-  if (query['f.max']) urlSp.set('f.max', query['f.max'])
-  if (query['f.min']) urlSp.set('f.min', query['f.min'])
-  if (query.it && query.it.length) urlSp.set('it', stringArrayToQueryParameterValue(query.it) || '')
-  if (query.et && query.et.length) urlSp.set('et', stringArrayToQueryParameterValue(query.et) || '')
-  if (query.iu && query.iu.length) urlSp.set('iu', stringArrayToQueryParameterValue(query.iu) || '')
-  if (query.eu && query.eu.length) urlSp.set('eu', stringArrayToQueryParameterValue(query.eu) || '')
-
-  return urlSp
-}
-
-export async function httpSearchBooks(query: SearchBooksRequest): Promise<SearchBooksResponse> {
-  const sp = searchBooksRequestToURLSearchParams(query)
-
-  return await withPreloadCache(`/api/search?${sp.toString()}`, () =>
-    httpClient
-      .get('/api/search', {
-        searchParams: sp,
-      })
-      .then((r) => r.json()),
-  )
-}
-
-export function getPreloadedBookSearchResult(query: SearchBooksRequest) {
-  return getPreloadedData<SearchBooksResponse>(
-    `/api/search?${searchBooksRequestToURLSearchParams(query).toString()}`,
-  )
 }
 
 export type BookExtremes = {

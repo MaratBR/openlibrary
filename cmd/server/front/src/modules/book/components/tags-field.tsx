@@ -1,4 +1,4 @@
-import { DefinedTagDto, httpTagsSearch } from '../api'
+import { DefinedTagDto, httpTagsSearch } from '../api/api'
 import Tag from '../views/Tag'
 import React, { useMemo } from 'react'
 import { AutoComplete } from '@/components/autocomplete'

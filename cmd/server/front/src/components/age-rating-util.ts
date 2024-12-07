@@ -1,4 +1,4 @@
-import { AgeRating } from '@/modules/book/api'
+import { AgeRating } from '@/modules/book/api/api'
 
 type AgeRatingInfo = {
   title: string

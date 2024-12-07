@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,6 +13,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/gofrs/uuid"
 	"github.com/knadh/koanf/v2"
+	"google.golang.org/protobuf/proto"
 )
 
 type serverSessionData struct {
@@ -65,12 +67,15 @@ func newSPAHandler(
 			key := "/api/search?" + strings.ReplaceAll(r.URL.RawQuery, "%20", "+")
 			data.AddPreloadedData(key, result)
 
-			for _, book := range result.Books {
+			for _, book := range result.Items {
 				if book.Cover != "" {
 					data.AddPreloadURL("image", book.Cover)
 				}
 			}
-			data.AddPreloadedData(key, result)
+			b, err := proto.Marshal(result)
+			if err == nil {
+				data.AddPreloadedData(key, base64.StdEncoding.EncodeToString(b))
+			}
 		}
 
 		{

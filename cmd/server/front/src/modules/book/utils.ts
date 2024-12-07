@@ -1,4 +1,4 @@
-import { AgeRating } from './api'
+import { AgeRating } from './api/api'
 
 export function useChapterName(name: string, order: number): string {
   let finalName = `Chapter ${order}`

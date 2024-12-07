@@ -1,4 +1,4 @@
-import { BookChapterDto } from '../../api'
+import { BookChapterDto } from '../../api/api'
 import { NavLink } from 'react-router-dom'
 import { useChapterName } from '../../utils'
 import React from 'react'

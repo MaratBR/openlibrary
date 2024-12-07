@@ -1,6 +1,6 @@
 import AgeRatingBadge from '@/components/age-rating-badge'
 import { Card } from '@/components/ui/card'
-import { ManagerAuthorBookDto } from '@/modules/book/api'
+import { ManagerAuthorBookDto } from '@/modules/book/api/api'
 import { NavLink } from 'react-router-dom'
 import BookIsHiddenIndicator from '../common/book-is-hidden-indicator'
 import BookIsBannedIndicator from '../common/book-is-banned-indicator'

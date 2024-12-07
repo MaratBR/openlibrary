@@ -1,0 +1,55 @@
+syntax = "proto3";
+option go_package = "cmd/server/olproto";
+
+enum ProtoTagsCategory {
+    OTHER = 0;
+    REL = 1;
+    REL_TYPE = 2;
+    FANDOM = 3;
+    WARNING = 4;
+}
+
+enum ProtoAgeRating {
+    UNKNOWN = 0;
+    G = 1;
+    PG = 2;
+    PG13 = 3;
+    R = 4;
+    NC17 = 5;
+}
+
+message ProtoDefinedTag {
+    int64 id = 1;
+    string name = 2;
+    string description = 3;
+    bool is_adult = 4;
+    bool is_spoiler = 5;
+    ProtoTagsCategory category = 6;
+}
+
+message ProtoBookSearchItem {
+    int64 id = 1;
+    string name = 2;
+    repeated int64 tag_ids = 3;
+    string cover = 4;
+    uint32 words = 5;
+    uint32 chapters = 6;
+    uint32 favorites = 7;
+    string author_name = 8;
+    string author_id = 9;
+    ProtoAgeRating age_rating = 10;
+    string summary = 11;
+    uint32 created_at = 12;
+    uint32 updated_at = 13;
+}
+
+message ProtoSearchResult {
+    repeated ProtoBookSearchItem items = 1;
+    repeated ProtoDefinedTag tags = 2;
+    uint32 total_pages = 3;
+    uint32 took = 4;
+    uint32 page = 5;
+    string cache_key = 6;
+    uint32 cache_took = 7;
+    bool cache_hit = 8;
+}

@@ -1,6 +1,6 @@
 import FavoritesCounter from '@/components/favorites-counter'
 import React from 'react'
-import { httpFavoriteBook } from '../api'
+import { httpFavoriteBook } from '../api/api'
 
 export type BookFavoritesCounterProps = {
   count: number

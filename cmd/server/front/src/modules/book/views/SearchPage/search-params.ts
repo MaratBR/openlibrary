@@ -10,6 +10,7 @@ import {
   searchBooksRequestToURLSearchParams,
 } from '../../api'
 import { isNotFalsy, toDictionaryByProperty } from '@/lib/utils'
+import { useQuery } from '@tanstack/react-query'
 
 export type NumberRange = {
   max: number | null
@@ -229,10 +230,16 @@ export function useBookSearchParams() {
 
   const [searchRequest, setSearchRequest] = useSearchBooksRequest()
 
-  React.useEffect(() => {
-    const state = useSearchState.getState()
-    state.search(searchRequest)
-  }, [searchRequest])
+  useQuery({
+    queryKey: ['search', searchRequest],
+    queryFn: async () => {
+      const state = useSearchState.getState()
+      await state.search(searchRequest)
+      return 'OK'
+    },
+    staleTime: 0,
+    gcTime: 0,
+  })
 
   const applyChanges = React.useCallback(
     (params?: SearchFilters.Type) => {

@@ -1,4 +1,4 @@
-import { AGE_RATINGS_LIST, AgeRating } from '@/modules/book/api'
+import { AGE_RATINGS_LIST, AgeRating } from '@/modules/book/api/api'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { useAgeRatingsInfo } from './age-rating-util'
 import AgeRatingBadge from './age-rating-badge'

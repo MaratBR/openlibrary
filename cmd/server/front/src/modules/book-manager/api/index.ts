@@ -4,7 +4,7 @@ import {
   BookChapterDto,
   BookCollectionDto,
   DefinedTagDto,
-} from '@/modules/book/api'
+} from '@/modules/book/api/api'
 import { httpClient } from '@/modules/common/api'
 import { z } from 'zod'
 
