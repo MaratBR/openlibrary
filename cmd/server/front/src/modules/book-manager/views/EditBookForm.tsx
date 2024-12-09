@@ -24,7 +24,7 @@ import { Switch } from '@/components/ui/switch'
 const formSchema = z.object({
   name: z.string().min(1).max(500),
   rating: z.enum(['?', 'G', 'PG', 'PG-13', 'R', 'NC-17']).default('?'),
-  tags: z.array(definedTagDtoSchema).min(0).max(50),
+  tags: z.array(definedTagDtoSchema).min(0).max(100),
   summary: z.string().max(1000).default(''),
   isPubliclyVisible: z.boolean(),
 })
@@ -52,7 +52,7 @@ export default function EditBookForm() {
       .mutateAsync({
         name: values.name,
         ageRating: values.rating,
-        tags: values.tags.map((x) => x.name),
+        tags: values.tags.map((x) => x.id),
         summary: values.summary,
         isPubliclyVisible: values.isPubliclyVisible,
       })

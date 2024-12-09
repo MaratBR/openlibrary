@@ -47,9 +47,10 @@ message ProtoSearchResult {
     repeated ProtoBookSearchItem items = 1;
     repeated ProtoDefinedTag tags = 2;
     uint32 total_pages = 3;
-    uint32 took = 4;
-    uint32 page = 5;
-    string cache_key = 6;
-    uint32 cache_took = 7;
-    bool cache_hit = 8;
+    uint32 page = 4;
+    uint32 page_size = 5;
+    uint32 took = 6;
+    string cache_key = 7;
+    uint32 cache_took = 8;
+    bool cache_hit = 9;
 }

@@ -46,8 +46,8 @@ type BookSearchFilter struct {
 
 type BookSearchRequest struct {
 	BookSearchFilter
-	Limit  uint
-	Offset uint
+	Page     uint
+	PageSize uint
 }
 
 type BookSearchRow struct {
@@ -133,9 +133,59 @@ func createBookSearchSelect(req *BookSearchRequest) *goqu.SelectDataset {
 			goqu.I("books.author_user_id").Eq(goqu.I("author.id"))))
 
 	query = applyWhere(query, &req.BookSearchFilter)
-	query = query.Limit(req.Limit).Offset(req.Offset)
+
+	var (
+		offset uint
+		limit  uint
+	)
+
+	if req.PageSize == 0 {
+		limit = 1
+	} else {
+		limit = req.PageSize
+	}
+
+	if req.Page == 0 {
+		offset = 0
+	} else {
+		offset = (req.Page - 1) * limit
+	}
+
+	query = query.Limit(limit).Offset(offset)
 
 	return query
+}
+
+func CountBooks(ctx context.Context, db DBTX, req BookSearchRequest, limit uint) (int64, error) {
+	query := postgresQuery.
+		Select(
+			goqu.COUNT("*").As("count"),
+		).
+		From("books").
+		Join(goqu.T("users").As("author"), goqu.On(
+			goqu.I("books.author_user_id").Eq(goqu.I("author.id"))))
+	query = applyWhere(query, &req.BookSearchFilter)
+	query = query.Limit(limit)
+
+	query.ToSQL()
+
+	sql, params, err := query.ToSQL()
+	if err != nil {
+		return 0, err
+	}
+
+	rows, err := db.Query(ctx, sql, params...)
+	defer rows.Close()
+
+	if rows.Next() {
+		var count int64
+		if err := rows.Scan(&count); err != nil {
+			return 0, err
+		}
+		return count, nil
+	}
+
+	return 0, nil
 }
 
 func SearchBooks(ctx context.Context, db DBTX, req BookSearchRequest) ([]BookSearchRow, error) {

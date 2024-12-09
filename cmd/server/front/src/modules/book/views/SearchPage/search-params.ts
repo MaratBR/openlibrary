@@ -19,6 +19,7 @@ export type NumberRange = {
 
 export namespace SearchFilters {
   export type Type = {
+    page: number
     words: NumberRange | null
     chapters: NumberRange | null
     wordsPerChapter: NumberRange | null
@@ -45,6 +46,7 @@ export namespace SearchFilters {
       'f.max': numStr(params.favorites?.max ?? undefined),
       it: params.include.tags.map((x) => x.id),
       et: params.exclude.tags.map((x) => x.id),
+      p: params.page,
     }
   }
 }
@@ -58,7 +60,17 @@ export type SearchParamsState = {
   activeFilters: SearchFilters.Type
   ready: boolean
   isLoading: boolean
-  books: BookSearchItemState[]
+  results: {
+    page: number
+    pageSize: number
+    totalPages: number
+    books: BookSearchItemState[]
+  }
+  nerdStuff?: {
+    cacheKey: string
+    cacheHit: boolean
+    cacheTook: number
+  }
   extremes: {
     chapters: NumberRange
     words: NumberRange
@@ -88,6 +100,7 @@ const defaultParams: () => SearchFilters.Type = () => ({
   exclude: {
     tags: [],
   },
+  page: 1,
 })
 
 export const useSearchState = create<SearchParamsState>()((set, get) => ({
@@ -96,7 +109,12 @@ export const useSearchState = create<SearchParamsState>()((set, get) => ({
   ready: false,
   isLoading: false,
 
-  books: [],
+  results: {
+    books: [],
+    page: 1,
+    pageSize: 20,
+    totalPages: -1,
+  },
 
   extremes: {
     chapters: { max: null, min: null },
@@ -172,6 +190,7 @@ export const useSearchState = create<SearchParamsState>()((set, get) => ({
 
     try {
       const response = await httpSearchBooks(req)
+      const tagsById = toDictionaryByProperty(response.tags, 'id')
 
       set((s) => {
         const filters: SearchFilters.Type = {
@@ -179,7 +198,7 @@ export const useSearchState = create<SearchParamsState>()((set, get) => ({
           include: {
             tags: (req.it || [])
               .map((tagId) => {
-                const tag = response.tags.find((t) => t.id === tagId)
+                const tag = tagsById[tagId]
                 if (!tag) return null
                 return tag
               })
@@ -196,15 +215,18 @@ export const useSearchState = create<SearchParamsState>()((set, get) => ({
           },
         }
 
-        const tagsById = toDictionaryByProperty(response.tags, 'id')
-
         return {
-          books: response.books.map((book) => {
-            return {
-              ...book,
-              tags: book.tags.map((tagId) => tagsById[tagId]).filter(isNotFalsy),
-            }
-          }),
+          results: {
+            books: response.books.map((book) => {
+              return {
+                ...book,
+                tags: book.tags.map((tagId) => tagsById[tagId]).filter(isNotFalsy),
+              }
+            }),
+            page: response.page,
+            pageSize: response.pageSize,
+            totalPages: response.totalPages,
+          },
           isLoading: false,
           filters,
           activeFilters: filters,

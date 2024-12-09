@@ -5,7 +5,7 @@ import {
   stringArrayToQueryParameterValue,
 } from '@/modules/common/api'
 import { ProtoAgeRating, ProtoSearchResult, ProtoTagsCategory } from '@/proto/search'
-import { AgeRating, BookDetailsDto, DefinedTagDto } from './api'
+import { AgeRating, DefinedTagDto } from './api'
 import { DateTime } from 'luxon'
 
 export type BookSearchItem = {
@@ -19,17 +19,23 @@ export type BookSearchItem = {
   chapters: number
   favorites: number
   summary: string
-  author: BookDetailsDto['author']
+  author: {
+    id: string
+    name: string
+  }
   tags: string[]
   cover: string
 }
 
 export type SearchBooksResponse = {
-  booksMeta: {
+  meta: {
     cacheHit: boolean
     cacheKey: string
     cacheTook: number
   }
+  page: number
+  pageSize: number
+  totalPages: number
   booksTook: number
   books: BookSearchItem[]
   tags: DefinedTagDto[]
@@ -48,6 +54,7 @@ export type SearchBooksRequest = {
   et?: string[]
   iu?: string[]
   eu?: string[]
+  p: number
 }
 
 export function isSearchBooksRequestEqual(req1: SearchBooksRequest, req2: SearchBooksRequest) {
@@ -58,6 +65,10 @@ export function isSearchBooksRequestEqual(req1: SearchBooksRequest, req2: Search
 }
 
 export function parseSearchBooksRequest(sp: URLSearchParams): SearchBooksRequest {
+  let p = parseInt(sp.get('p') || '1')
+  if (Number.isNaN(p)) p = 1
+  else if (p < 1) p = 1
+
   return {
     'w.min': sp.get('w.min') || undefined,
     'w.max': sp.get('w.max') || undefined,
@@ -70,6 +81,7 @@ export function parseSearchBooksRequest(sp: URLSearchParams): SearchBooksRequest
     it: parseQueryStringArray(sp.get('it')),
     et: parseQueryStringArray(sp.get('et')),
     iu: parseQueryStringArray(sp.get('iu')),
+    p,
   }
 }
 
@@ -88,6 +100,7 @@ export function searchBooksRequestToURLSearchParams(query: SearchBooksRequest): 
   if (query.et && query.et.length) urlSp.set('et', stringArrayToQueryParameterValue(query.et) || '')
   if (query.iu && query.iu.length) urlSp.set('iu', stringArrayToQueryParameterValue(query.iu) || '')
   if (query.eu && query.eu.length) urlSp.set('eu', stringArrayToQueryParameterValue(query.eu) || '')
+  if (query.p > 1) urlSp.set('p', query.p.toString())
 
   return urlSp
 }
@@ -134,7 +147,7 @@ export async function httpSearchBooks(query: SearchBooksRequest): Promise<Search
 
   function pbToDto(pbResult: ProtoSearchResult): SearchBooksResponse {
     const mappedResponse: SearchBooksResponse = {
-      booksMeta: {
+      meta: {
         cacheHit: pbResult.cacheHit,
         cacheKey: pbResult.cacheKey,
         cacheTook: pbResult.cacheTook,
@@ -172,6 +185,9 @@ export async function httpSearchBooks(query: SearchBooksRequest): Promise<Search
           cat: protoTagsCategory(tag.category),
         }
       }),
+      page: pbResult.page,
+      pageSize: pbResult.pageSize,
+      totalPages: pbResult.totalPages,
     }
 
     return mappedResponse

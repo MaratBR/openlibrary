@@ -83,15 +83,15 @@ func writeInt32Range(w io.Writer, r Int32Range) {
 func getSearchRequestCacheKey(req *BookSearchQuery) string {
 	h := sha512.New()
 	writeInt32Range(h, req.Words)
-	// writeInt4Range(h, req.WordsPerChapter)
-	// writeInt4Range(h, req.Chapters)
-	// writeInt4Range(h, req.Favorites)
+	writeInt32Range(h, req.WordsPerChapter)
+	writeInt32Range(h, req.Chapters)
+	writeInt32Range(h, req.Favorites)
 
 	{
 		var buf [8]byte
-		binary.BigEndian.PutUint64(buf[:], uint64(req.Limit))
+		binary.BigEndian.PutUint64(buf[:], uint64(req.Page))
 		h.Write(buf[:])
-		binary.BigEndian.PutUint64(buf[:], uint64(req.Offset))
+		binary.BigEndian.PutUint64(buf[:], uint64(req.PageSize))
 		h.Write(buf[:])
 
 		binary.BigEndian.PutUint64(buf[:], uint64(len(req.IncludeUsers)))

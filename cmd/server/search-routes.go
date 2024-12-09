@@ -34,15 +34,8 @@ type searchRequest struct {
 	Favorites       app.Int32Range
 	FromBody        bool
 
-	Page  int32
-	Limit int32
-}
-
-type searchJSONResponse struct {
-	Tags        []app.DefinedTagDto      `json:"tags"`
-	BooksTookUS int64                    `json:"booksTook"`
-	BooksMeta   app.BookSearchResultMeta `json:"booksMeta"`
-	Books       []app.BookSearchItem     `json:"books"`
+	Page     uint
+	PageSize uint
 }
 
 func (c *searchController) Search(w http.ResponseWriter, r *http.Request) {
@@ -86,29 +79,12 @@ func getSearchRequest(r *http.Request) (search searchRequest, err error) {
 	search.ExcludeUsers = getUUIDArray(source, "eu")
 
 	search.Page = getPage(source, "p")
-	search.Limit = 20
+	search.PageSize = 20
 
 	return
 }
 
 func performBookSearch(searchService app.SearchService, tagsService app.TagsService, r *http.Request, search searchRequest) (*olproto.ProtoSearchResult, error) {
-
-	var (
-		offset uint
-		limit  uint
-	)
-
-	if search.Limit < 0 {
-		limit = 20
-	} else {
-		limit = uint(search.Limit)
-	}
-
-	if search.Page > 0 {
-		offset = uint(search.Page-1) * limit
-	} else {
-		offset = 0
-	}
 
 	result, err := searchService.SearchBooks(r.Context(), app.BookSearchQuery{
 		UserID:          getNullableUserID(r),
@@ -122,9 +98,13 @@ func performBookSearch(searchService app.SearchService, tagsService app.TagsServ
 		IncludeBanned:   false,
 		IncludeHidden:   false,
 		IncludeEmpty:    false,
-		Offset:          offset,
-		Limit:           limit,
+		Page:            search.Page,
+		PageSize:        search.PageSize,
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	{
 		allTagIds := commonutil.MergeArrays(search.IncludeTags, search.ExcludeTags)
@@ -146,30 +126,7 @@ func performBookSearch(searchService app.SearchService, tagsService app.TagsServ
 		result.Tags = append(result.Tags, missingTags...)
 	}
 
-	// response := searchJSONResponse{
-	// 	Books:       result.Books,
-	// 	BooksMeta:   result.Meta,
-	// 	BooksTookUS: result.TookUS,
-	// 	Tags:        result.Tags,
-	// }
-
 	pbResponse := &olproto.ProtoSearchResult{
-		Took:       uint32(result.TookUS),
-		Page:       uint32(search.Page),
-		CacheKey:   result.Meta.CacheKey,
-		CacheTook:  uint32(result.Meta.CacheTookUS),
-		CacheHit:   result.Meta.CacheHit,
-		TotalPages: 0,
-		Tags: commonutil.MapSlice(result.Tags, func(tag app.DefinedTagDto) *olproto.ProtoDefinedTag {
-			return &olproto.ProtoDefinedTag{
-				Id:          int64(tag.ID),
-				Name:        tag.Name,
-				Description: tag.Description,
-				IsAdult:     tag.IsAdult,
-				IsSpoiler:   tag.IsSpoiler,
-				Category:    tagCategoryToProto(tag.Category),
-			}
-		}),
 		Items: commonutil.MapSlice(result.Books, func(book app.BookSearchItem) *olproto.ProtoBookSearchItem {
 			return &olproto.ProtoBookSearchItem{
 				Id:         book.ID,
@@ -185,6 +142,23 @@ func performBookSearch(searchService app.SearchService, tagsService app.TagsServ
 				TagIds:     commonutil.MapSlice(book.Tags, func(id app.Int64String) int64 { return int64(id) }),
 			}
 		}),
+		Tags: commonutil.MapSlice(result.Tags, func(tag app.DefinedTagDto) *olproto.ProtoDefinedTag {
+			return &olproto.ProtoDefinedTag{
+				Id:          int64(tag.ID),
+				Name:        tag.Name,
+				Description: tag.Description,
+				IsAdult:     tag.IsAdult,
+				IsSpoiler:   tag.IsSpoiler,
+				Category:    tagCategoryToProto(tag.Category),
+			}
+		}),
+		TotalPages: result.TotalPages,
+		PageSize:   result.PageSize,
+		Page:       result.Page,
+		Took:       uint32(result.TookUS),
+		CacheKey:   result.Meta.CacheKey,
+		CacheTook:  uint32(result.Meta.CacheTookUS),
+		CacheHit:   result.Meta.CacheHit,
 	}
 
 	return pbResponse, err

@@ -3,6 +3,7 @@ package app
 import (
 	"cmp"
 	"context"
+	"math"
 	"slices"
 	"time"
 
@@ -33,7 +34,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 
 	start := time.Now()
 
-	result, err := s.performBookSearch(ctx, dbReq)
+	result, err := s.searchInternal(ctx, dbReq)
 	if err != nil {
 		return nil, err
 	}
@@ -61,13 +62,21 @@ func (s *searchService) GetBookExtremes(ctx context.Context) (*BookExtremes, err
 	}, nil
 }
 
-func (s *searchService) performBookSearch(ctx context.Context, dbReq store.BookSearchRequest) (*BookSearchResult, error) {
+func (s *searchService) searchInternal(ctx context.Context, dbReq store.BookSearchRequest) (*BookSearchResult, error) {
 	books, err := store.SearchBooks(ctx, s.db, dbReq)
 	if err != nil {
 		return nil, err
 	}
 
+	totalBooks, err := store.CountBooks(ctx, s.db, dbReq, 1_000_000)
+	if err != nil {
+		return nil, err
+	}
+
 	result := new(BookSearchResult)
+	result.Page = uint32(dbReq.Page)
+	result.PageSize = uint32(dbReq.PageSize)
+	result.TotalPages = uint32(math.Ceil(float64(totalBooks) / float64(dbReq.PageSize)))
 	result.Books = make([]BookSearchItem, len(books))
 	bookIds := make([]int64, len(books))
 
@@ -178,8 +187,8 @@ func constructBookSearchRequest(ctx context.Context, tagsService TagsService, re
 	dbReq.IncludeBanned = req.IncludeBanned
 	dbReq.IncludeHidden = req.IncludeHidden
 	dbReq.IncludeEmpty = req.IncludeEmpty
-	dbReq.Limit = req.Limit
-	dbReq.Offset = req.Offset
+	dbReq.Page = req.Page
+	dbReq.PageSize = req.PageSize
 
 	return
 }

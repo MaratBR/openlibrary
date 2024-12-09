@@ -146,8 +146,9 @@ export interface ProtoSearchResult {
   items: ProtoBookSearchItem[];
   tags: ProtoDefinedTag[];
   totalPages: number;
-  took: number;
   page: number;
+  pageSize: number;
+  took: number;
   cacheKey: string;
   cacheTook: number;
   cacheHit: boolean;
@@ -572,7 +573,17 @@ export const ProtoBookSearchItem: MessageFns<ProtoBookSearchItem> = {
 };
 
 function createBaseProtoSearchResult(): ProtoSearchResult {
-  return { items: [], tags: [], totalPages: 0, took: 0, page: 0, cacheKey: "", cacheTook: 0, cacheHit: false };
+  return {
+    items: [],
+    tags: [],
+    totalPages: 0,
+    page: 0,
+    pageSize: 0,
+    took: 0,
+    cacheKey: "",
+    cacheTook: 0,
+    cacheHit: false,
+  };
 }
 
 export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
@@ -586,20 +597,23 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
     if (message.totalPages !== 0) {
       writer.uint32(24).uint32(message.totalPages);
     }
-    if (message.took !== 0) {
-      writer.uint32(32).uint32(message.took);
-    }
     if (message.page !== 0) {
-      writer.uint32(40).uint32(message.page);
+      writer.uint32(32).uint32(message.page);
+    }
+    if (message.pageSize !== 0) {
+      writer.uint32(40).uint32(message.pageSize);
+    }
+    if (message.took !== 0) {
+      writer.uint32(48).uint32(message.took);
     }
     if (message.cacheKey !== "") {
-      writer.uint32(50).string(message.cacheKey);
+      writer.uint32(58).string(message.cacheKey);
     }
     if (message.cacheTook !== 0) {
-      writer.uint32(56).uint32(message.cacheTook);
+      writer.uint32(64).uint32(message.cacheTook);
     }
     if (message.cacheHit !== false) {
-      writer.uint32(64).bool(message.cacheHit);
+      writer.uint32(72).bool(message.cacheHit);
     }
     return writer;
   },
@@ -640,7 +654,7 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
             break;
           }
 
-          message.took = reader.uint32();
+          message.page = reader.uint32();
           continue;
         }
         case 5: {
@@ -648,27 +662,35 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
             break;
           }
 
-          message.page = reader.uint32();
+          message.pageSize = reader.uint32();
           continue;
         }
         case 6: {
-          if (tag !== 50) {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.took = reader.uint32();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
             break;
           }
 
           message.cacheKey = reader.string();
           continue;
         }
-        case 7: {
-          if (tag !== 56) {
+        case 8: {
+          if (tag !== 64) {
             break;
           }
 
           message.cacheTook = reader.uint32();
           continue;
         }
-        case 8: {
-          if (tag !== 64) {
+        case 9: {
+          if (tag !== 72) {
             break;
           }
 
@@ -691,8 +713,9 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
         : [],
       tags: globalThis.Array.isArray(object?.tags) ? object.tags.map((e: any) => ProtoDefinedTag.fromJSON(e)) : [],
       totalPages: isSet(object.totalPages) ? globalThis.Number(object.totalPages) : 0,
-      took: isSet(object.took) ? globalThis.Number(object.took) : 0,
       page: isSet(object.page) ? globalThis.Number(object.page) : 0,
+      pageSize: isSet(object.pageSize) ? globalThis.Number(object.pageSize) : 0,
+      took: isSet(object.took) ? globalThis.Number(object.took) : 0,
       cacheKey: isSet(object.cacheKey) ? globalThis.String(object.cacheKey) : "",
       cacheTook: isSet(object.cacheTook) ? globalThis.Number(object.cacheTook) : 0,
       cacheHit: isSet(object.cacheHit) ? globalThis.Boolean(object.cacheHit) : false,
@@ -710,11 +733,14 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
     if (message.totalPages !== 0) {
       obj.totalPages = Math.round(message.totalPages);
     }
-    if (message.took !== 0) {
-      obj.took = Math.round(message.took);
-    }
     if (message.page !== 0) {
       obj.page = Math.round(message.page);
+    }
+    if (message.pageSize !== 0) {
+      obj.pageSize = Math.round(message.pageSize);
+    }
+    if (message.took !== 0) {
+      obj.took = Math.round(message.took);
     }
     if (message.cacheKey !== "") {
       obj.cacheKey = message.cacheKey;
@@ -736,8 +762,9 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
     message.items = object.items?.map((e) => ProtoBookSearchItem.fromPartial(e)) || [];
     message.tags = object.tags?.map((e) => ProtoDefinedTag.fromPartial(e)) || [];
     message.totalPages = object.totalPages ?? 0;
-    message.took = object.took ?? 0;
     message.page = object.page ?? 0;
+    message.pageSize = object.pageSize ?? 0;
+    message.took = object.took ?? 0;
     message.cacheKey = object.cacheKey ?? "";
     message.cacheTook = object.cacheTook ?? 0;
     message.cacheHit = object.cacheHit ?? false;

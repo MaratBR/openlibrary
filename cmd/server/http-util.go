@@ -32,7 +32,7 @@ type jsonBodyError struct {
 }
 
 func (err jsonBodyError) Error() string {
-	return err.Error()
+	return err.err.Error()
 }
 
 func urlParamInt64(r *http.Request, name string) (int64, error) {
@@ -228,7 +228,7 @@ func writeTLSRequiredError(w http.ResponseWriter) {
 	w.Write([]byte("TLS required"))
 }
 
-func getPage(values url.Values, key string) int32 {
+func getPage(values url.Values, key string) uint {
 	v := getInt32FromQuery(values, key)
 
 	if !v.Valid {
@@ -239,5 +239,5 @@ func getPage(values url.Values, key string) int32 {
 		return 1
 	}
 
-	return v.Int32
+	return uint(v.Int32)
 }

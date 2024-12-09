@@ -79,11 +79,12 @@ export function toDictionaryByProperty<T extends object>(
   array: T[],
   key: keyof T,
 ): Record<string, T> {
-  return array.reduce(
-    (acc, item) => {
-      acc[item[key] as string] = item
-      return acc
-    },
-    {} as Record<string, T>,
-  )
+  const d: Record<string, T> = {}
+
+  for (let i = 0; i < array.length; i++) {
+    const item = array[i]
+    d[item[key] as string] = item
+  }
+
+  return d
 }
