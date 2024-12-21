@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/MaratBR/openlibrary/internal/app/ao3import"
+	"github.com/MaratBR/openlibrary/internal/ao3import"
 	"github.com/gofrs/uuid"
 )
 

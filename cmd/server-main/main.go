@@ -22,6 +22,7 @@ func loadConfigOrPanic() *koanf.Koanf {
 func main() {
 	flag.BoolVar(&cliParam.Dev, "dev-frontend-proxy", false, "enable dev frontend proxy")
 	flag.BoolVar(&cliParam.BypassTLSCheck, "bypass-tls-check", false, "disables TLS check when exchanging sensitive data")
+	flag.StringVar(&cliParam.StaticDir, "static-dir", "", "directory with static files")
 
 	flag.Parse()
 

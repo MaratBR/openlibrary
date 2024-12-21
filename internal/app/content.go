@@ -8,6 +8,8 @@ import (
 	"github.com/k3a/html2text"
 )
 
+// SanitizeHtml takes a string of HTML content and returns a sanitized version of it,
+// free of potentially malicious tags and attributes.
 func SanitizeHtml(html string) string {
 	return htmlsanitizer.Sanitize(html)
 }
@@ -17,6 +19,9 @@ type ProcessedContentData struct {
 	Words     int32
 }
 
+// ProcessContent takes a string of HTML content and returns a ProcessedContentData
+// containing both a sanitized version of the content (i.e. HTML tags removed and
+// unsafe content stripped), and a count of the number of words in the content.
 func ProcessContent(content string) ProcessedContentData {
 	sanitized := SanitizeHtml(content)
 	words := CountWordsHtml(sanitized)

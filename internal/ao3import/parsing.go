@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -25,6 +26,8 @@ func getDownloadUrl(r io.Reader) (string, error) {
 
 	url = strings.Trim(url, " \n\t")
 	if url == "" {
+		println(doc.Html())
+		os.Exit(1)
 		return "", errors.New("could not find download url")
 	}
 

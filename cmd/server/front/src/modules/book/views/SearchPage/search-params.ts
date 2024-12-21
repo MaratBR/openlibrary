@@ -189,7 +189,12 @@ export const useSearchState = create<SearchParamsState>()((set, get) => ({
     set({ isLoading: true })
 
     try {
+      const start = performance.now()
       const response = await httpSearchBooks(req)
+      const took = performance.now() - start
+      if (took < 500) {
+        await new Promise((r) => setTimeout(r, 400 - took))
+      }
       const tagsById = toDictionaryByProperty(response.tags, 'id')
 
       set((s) => {

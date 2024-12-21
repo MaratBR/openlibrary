@@ -66,6 +66,7 @@
     "react-router": "^6.28.0",
     "react-router-dom": "^6.28.0",
     "react-sticky-el": "^2.1.1",
+    "rooks": "^7.14.1",
     "sanitize-html": "^2.13.1",
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.5.4",

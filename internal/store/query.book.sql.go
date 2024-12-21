@@ -7,16 +7,9 @@ package store
 
 import (
 	"context"
-	"net/netip"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
-
-type AddMultipleBookViewsParams struct {
-	IpAddress  netip.Addr
-	BookID     int64
-	RecordedAt pgtype.Timestamptz
-}
 
 const getBook = `-- name: GetBook :one
 select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.favorites, books.has_cover, books.view, users.name as author_name

@@ -101,6 +101,50 @@ func (ns NullCensorMode) Value() (driver.Value, error) {
 	return string(ns.CensorMode), nil
 }
 
+type ReadingListStatus string
+
+const (
+	ReadingListStatusDnf     ReadingListStatus = "dnf"
+	ReadingListStatusReading ReadingListStatus = "reading"
+	ReadingListStatusPaused  ReadingListStatus = "paused"
+	ReadingListStatusRead    ReadingListStatus = "read"
+)
+
+func (e *ReadingListStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReadingListStatus(s)
+	case string:
+		*e = ReadingListStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReadingListStatus: %T", src)
+	}
+	return nil
+}
+
+type NullReadingListStatus struct {
+	ReadingListStatus ReadingListStatus
+	Valid             bool // Valid is true if ReadingListStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReadingListStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReadingListStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReadingListStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReadingListStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReadingListStatus), nil
+}
+
 type TagType string
 
 const (
@@ -290,6 +334,20 @@ type CollectionBook struct {
 	Order        int32
 }
 
+type Comment struct {
+	ID            int64
+	ChapterID     int64
+	UserID        pgtype.UUID
+	Content       string
+	Ts            pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	DeletedAt     pgtype.Timestamptz
+	ParentID      pgtype.Int8
+	NestedLevel   interface{}
+	QuoteContent  pgtype.Text
+	QuoteStartPos pgtype.Int4
+}
+
 type DefinedTag struct {
 	ID             int64
 	Name           string
@@ -308,6 +366,12 @@ type Favorite struct {
 	BookID     int64
 	IsFavorite bool
 	CreatedAt  pgtype.Timestamptz
+}
+
+type ReadingList struct {
+	UserID pgtype.UUID
+	BookID int64
+	Status ReadingListStatus
 }
 
 type Session struct {

@@ -20,6 +20,7 @@ import (
 type CLIParams struct {
 	Dev            bool
 	BypassTLSCheck bool
+	StaticDir      string
 }
 
 func Main(
@@ -81,8 +82,15 @@ func Main(
 	r.Use(csrfHandler.Middleware)
 	r.Use(authorizationMiddleware)
 
-	spaHandler := newSPAHandler(config, bookService, userService, searchService, tagsService)
-	r.NotFound(spaHandler.ServeHTTP)
+	searchUIController := newSearchUIController(searchService, tagsService)
+	r.Get("/search", searchUIController.Search)
+
+	// for spa mode
+	// spaHandler := newSPAHandler(config, bookService, userService, searchService, tagsService)
+	// r.NotFound(spaHandler.ServeHTTP)
+
+	staticFiles := http.FileServer(http.Dir(cliParams.StaticDir))
+	r.Handle("/assets/*", http.StripPrefix("/assets/", staticFiles))
 
 	//
 	// init api endpoints

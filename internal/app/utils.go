@@ -16,7 +16,17 @@ func timeToTimestamptz(t time.Time) pgtype.Timestamptz {
 }
 
 func timeDbToDomain(t pgtype.Timestamptz) time.Time {
+	if !t.Valid {
+		panic("received null timestamptz from database")
+	}
 	return t.Time
+}
+
+func timeNullableDbToDomain(t pgtype.Timestamptz) Nullable[time.Time] {
+	if !t.Valid {
+		return Null[time.Time]()
+	}
+	return Value(t.Time)
 }
 
 func uuidV4() uuid.UUID {
@@ -56,6 +66,10 @@ func arrInt64ToInt64String(v []int64) []Int64String {
 		ints[i] = Int64String(v[i])
 	}
 	return ints
+}
+
+func int64NullableDomainToDb(v Nullable[int64]) pgtype.Int8 {
+	return pgtype.Int8{Valid: v.Valid, Int64: v.Value}
 }
 
 func rollbackTx(ctx context.Context, tx pgx.Tx) {
@@ -113,4 +127,11 @@ func (v *Nullable[T]) UnmarshalJSON(b []byte) error {
 		v.Valid = true
 		return nil
 	}
+}
+
+func (v Nullable[T]) Ptr() *T {
+	if !v.Valid {
+		return nil
+	}
+	return &v.Value
 }

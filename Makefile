@@ -14,7 +14,7 @@ build-server:
 build: sqlc templ build-server
 
 watch-server:
-	gow run ./cmd/server-main --dev-frontend-proxy --bypass-tls-check
+	gow run ./cmd/server-main --dev-frontend-proxy --bypass-tls-check --static-dir ./cmd/server/dist
 
 watch-templ:
 	templ generate --watch
@@ -50,3 +50,6 @@ proto:
 		--ts_proto_out=./cmd/server/front/src/proto \
 		--ts_proto_opt=forceLong=string \
 		./cmd/server/olproto/search.proto
+
+ao3-build-docker:
+	sudo docker build -t openlibrary/ao3-scrapper -f ./cmd/ao3-scrapper/Dockerfile .

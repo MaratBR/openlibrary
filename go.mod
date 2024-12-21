@@ -25,6 +25,7 @@ require (
 )
 
 require (
+	github.com/a-h/templ v0.2.793 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -56,5 +57,6 @@ require (
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.27.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/time v0.8.0 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect
 )

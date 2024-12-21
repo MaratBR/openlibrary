@@ -1,5 +1,5 @@
 .search-book-card {
-    @apply p-3 rounded-lg relative;
+    @apply p-3 rounded-lg relative overflow-hidden;
 
     &__tags {
         @apply mt-3 whitespace-pre-wrap;

@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/sheet'
 import ChapterCard from '../BookPage/ChapterCard'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import ChapterComments from './ChapterComments'
 
 export default function ChapterPage() {
   const { chapterId, bookId } = useParams<{
@@ -70,6 +71,7 @@ export default function ChapterPage() {
             <ChapterControls chapter={chapterData.chapter} bookId={bookId} />
             <ChapterContents chapter={chapterData.chapter} />
             <ChapterControls chapter={chapterData.chapter} bookId={bookId} />
+            <ChapterComments />
           </div>
         </>
       )}

@@ -41,11 +41,6 @@ join books on bc.book_id = books.id
 join users on users.id = books.author_user_id
 where bc.id = $1 and bc.book_id = $2;
 
--- name: AddMultipleBookViews :copyfrom
-insert into book_view (ip_address, book_id, recorded_at)
-values ($1, $2, $3);
-
-
 -- name: GetTopUserBooks :many
 select *
 from books

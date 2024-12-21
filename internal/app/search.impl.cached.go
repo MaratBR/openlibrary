@@ -24,7 +24,7 @@ func (c *cachedSearchService) GetBookExtremes(ctx context.Context) (*BookExtreme
 
 // SearchBooks implements SearchService.
 func (c *cachedSearchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*BookSearchResult, error) {
-	if GlobalFeatureFlags.DisableCache {
+	if !GlobalFeatureFlags.DisableCache {
 		return c.inner.SearchBooks(ctx, req)
 	}
 
