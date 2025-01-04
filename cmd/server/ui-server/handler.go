@@ -32,7 +32,6 @@ func (c *Handler) PreloadData(pattern string, f func(r *http.Request, data *Data
 }
 
 func (c *Handler) DefaultPreloadData(f func(r *http.Request, data *Data)) {
-	println("c.defaultDataLoader = f")
 	c.defaultDataLoader = f
 }
 

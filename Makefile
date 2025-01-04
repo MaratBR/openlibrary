@@ -9,18 +9,16 @@ LOCAL_DB_PORT := 5432
 LOCAL_DB := postgres://$(LOCAL_DB_USER):$(LOCAL_DB_PASSWORD)@$(LOCAL_DB_HOST):$(LOCAL_DB_PORT)/openlibrary?sslmode=disable
 
 build-server:
-	go build -o $(EXE) ./cmd/server-main
+	go build -o $(EXE) ./cmd/server
 
 build: sqlc templ build-server
 
 watch-server:
-	gow run ./cmd/server-main --dev-frontend-proxy --bypass-tls-check --static-dir ./cmd/server/dist
+	gow run ./cmd/server server --dev-frontend-proxy --bypass-tls-check --static-dir ./cmd/server/ui/dist
 
 watch-templ:
 	templ generate --watch
 
-watch-front:
-	cd ./cmd/server/front && pnpm run dev
 
 migration:
 	migrate create -ext sql -dir internal/store/migrations -seq $N
@@ -29,6 +27,7 @@ migrate-db:
 	migrate -source=$(PGX_MIGRATIONS) -database=$(LOCAL_DB) up
 
 reset-db:
+	PGPASSWORD=$(LOCAL_DB_PASSWORD) psql -p $(LOCAL_DB_PORT) -h $(LOCAL_DB_HOST) -U $(LOCAL_DB_USER) -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'openlibrary' AND pid <> pg_backend_pid();"
 	PGPASSWORD=$(LOCAL_DB_PASSWORD) psql -p $(LOCAL_DB_PORT) -h $(LOCAL_DB_HOST) -U $(LOCAL_DB_USER) -c "DROP DATABASE IF EXISTS openlibrary"
 	PGPASSWORD=$(LOCAL_DB_PASSWORD) psql -p $(LOCAL_DB_PORT) -h $(LOCAL_DB_HOST) -U $(LOCAL_DB_USER) -c "CREATE DATABASE openlibrary"
 	migrate -source=$(PGX_MIGRATIONS) -database=$(LOCAL_DB) up
@@ -53,3 +52,13 @@ proto:
 
 ao3-build-docker:
 	sudo docker build -t openlibrary/ao3-scrapper -f ./cmd/ao3-scrapper/Dockerfile .
+
+#
+# FRONT-END
+#
+
+watch-front:
+	cd ./cmd/server/front && pnpm run dev
+
+build-ui:
+	cd ./cmd/server/ui && make build

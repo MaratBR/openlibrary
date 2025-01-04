@@ -82,7 +82,7 @@ export default function SearchBookCard({ book }: { book: BookSearchItemState }) 
           >
             {book.cover && (
               <div className="search-book-card__cover">
-                <BookCover size="sm" url={book.cover} />
+                <BookCover size="sm" name={book.name} url={book.cover} />
               </div>
             )}
 
@@ -112,13 +112,13 @@ export default function SearchBookCard({ book }: { book: BookSearchItemState }) 
             </header>
           </div>
 
-          <p className="pt-3 text-sm search-book-card__summary">
+          <div className="pt-3 text-sm search-book-card__summary">
             {book.summary ? (
               <SanitizeHtml html={book.summary} />
             ) : (
               <span className="text-muted-foreground">No summary</span>
             )}
-          </p>
+          </div>
 
           <p className="mt-3 text-muted-foreground text-sm">
             {book.words} words &bull; {book.chapters} chapters &bull; {book.favorites}{' '}

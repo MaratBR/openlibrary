@@ -11,6 +11,7 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"os"
+	"sync"
 	"time"
 
 	httplim "github.com/MaratBR/openlibrary/internal/http-lim"
@@ -19,12 +20,13 @@ import (
 
 type Client struct {
 	httpClient *httplim.HttpWorker
+	mx         sync.Mutex
 }
 
 func NewClient() *Client {
 	limiter := rate.NewLimiter(rate.Every(time.Second), 8)
 	httpClient := &http.Client{
-		Timeout: time.Second * 120,
+		Timeout: time.Second * 30,
 	}
 	u, err := url.Parse("archiveofourown.org")
 	if err != nil {
@@ -58,6 +60,8 @@ func (c *Client) Close() {
 }
 
 func (c *Client) Run() {
+	c.mx.Lock()
+	defer c.mx.Unlock()
 	c.httpClient.Run()
 }
 
@@ -141,9 +145,8 @@ func (c *Client) DownloadBook(id string) (*http.Response, error) {
 		if err != nil {
 			return nil, err
 		}
-		resp, err = doRequestWithAttempts(c.httpClient, req, 3)
+		resp, err = doRequestWithAttempts(c.httpClient, req, 0)
 		if err != nil {
-
 			return nil, err
 		}
 		defer resp.Body.Close()
@@ -188,7 +191,7 @@ func (c *Client) GetBook(id string) (*Ao3Book, error) {
 
 	writeBookTmp(id, respBytes)
 
-	book, err := parseBook(bytes.NewReader(respBytes))
+	book, err := ParseBook(bytes.NewReader(respBytes))
 	if err != nil {
 		return nil, err
 	}

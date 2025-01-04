@@ -7,7 +7,6 @@ create table comments (
     updated_at timestamptz,
     deleted_at timestamptz,
     parent_id int8 null references comments(id),
-    nested_level uint1 not null default 0,
     quote_content text,
     quote_start_pos int4
 );

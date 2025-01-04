@@ -147,7 +147,21 @@ export const SectionThree: React.FC<SectionThreeProps> = ({ editor, size, varian
     setSelectedColor(color)
   }, [color])
 
-  return (
+  const enabledExtensions = React.useMemo(() => {
+    const value = {
+      color: false,
+    }
+
+    for (const ext of editor.extensionManager.extensions) {
+      if (ext.name === 'color') {
+        value.color = true
+      }
+    }
+
+    return value
+  }, [editor.extensionManager.extensions])
+
+  const colorsNode = enabledExtensions.color ? (
     <Popover>
       <PopoverTrigger asChild>
         <ToolbarButton
@@ -191,7 +205,13 @@ export const SectionThree: React.FC<SectionThreeProps> = ({ editor, size, varian
         </div>
       </PopoverContent>
     </Popover>
-  )
+  ) : null
+
+  const elements = [colorsNode].filter(Boolean)
+  if (elements.length === 0) {
+    return null
+  }
+  return elements
 }
 
 SectionThree.displayName = 'SectionThree'

@@ -53,4 +53,20 @@ message ProtoSearchResult {
     string cache_key = 7;
     uint32 cache_took = 8;
     bool cache_hit = 9;
+    ProtoSearchFilter filter = 10;
+}
+
+message ProtoSearchFilter {
+    optional int32 words_min = 1;
+    optional int32 words_max = 2;
+    optional int32 chapters_min = 3;
+    optional int32 chapters_max = 4;
+    optional int32 words_per_chapter_min = 5;
+    optional int32 words_per_chapter_max = 6;
+    optional int32 favorites_min = 7;
+    optional int32 favorites_max = 8;
+    repeated int64 include_tags = 9;
+    repeated int64 exclude_tags = 10;
+    repeated string include_users = 11;
+    repeated string exclude_users = 12;
 }

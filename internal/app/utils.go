@@ -135,3 +135,19 @@ func (v Nullable[T]) Ptr() *T {
 	}
 	return &v.Value
 }
+
+func int64ToNullable(v pgtype.Int8) Nullable[Int64String] {
+	if v.Valid {
+		return Value(Int64String(v.Int64))
+	} else {
+		return Null[Int64String]()
+	}
+}
+
+func float64ToNullable(v pgtype.Float8) Nullable[float64] {
+	if v.Valid {
+		return Value(v.Float64)
+	} else {
+		return Null[float64]()
+	}
+}

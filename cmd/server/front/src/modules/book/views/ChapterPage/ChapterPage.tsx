@@ -71,7 +71,7 @@ export default function ChapterPage() {
             <ChapterControls chapter={chapterData.chapter} bookId={bookId} />
             <ChapterContents chapter={chapterData.chapter} />
             <ChapterControls chapter={chapterData.chapter} bookId={bookId} />
-            <ChapterComments />
+            <ChapterComments chapterId={chapterData.chapter.id} />
           </div>
         </>
       )}

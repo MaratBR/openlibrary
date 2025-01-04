@@ -108,7 +108,7 @@ export function useTheme() {
 }
 
 theme.onValue((theme) => {
-  document.body.classList.toggle('dark', theme === 'dark')
+  document.documentElement.classList.toggle('dark', theme === 'dark')
 })
 
 if (import.meta.env.DEV) {

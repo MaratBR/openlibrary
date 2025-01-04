@@ -104,10 +104,11 @@ func (ns NullCensorMode) Value() (driver.Value, error) {
 type ReadingListStatus string
 
 const (
-	ReadingListStatusDnf     ReadingListStatus = "dnf"
-	ReadingListStatusReading ReadingListStatus = "reading"
-	ReadingListStatusPaused  ReadingListStatus = "paused"
-	ReadingListStatusRead    ReadingListStatus = "read"
+	ReadingListStatusDnf        ReadingListStatus = "dnf"
+	ReadingListStatusReading    ReadingListStatus = "reading"
+	ReadingListStatusPaused     ReadingListStatus = "paused"
+	ReadingListStatusRead       ReadingListStatus = "read"
+	ReadingListStatusWantToRead ReadingListStatus = "want_to_read"
 )
 
 func (e *ReadingListStatus) Scan(src interface{}) error {
@@ -292,6 +293,9 @@ type Book struct {
 	Favorites          int32
 	HasCover           bool
 	View               int32
+	Rating             pgtype.Float8
+	TotalReviews       int32
+	TotalRatings       int32
 }
 
 type BookBanHistory struct {
@@ -343,7 +347,6 @@ type Comment struct {
 	UpdatedAt     pgtype.Timestamptz
 	DeletedAt     pgtype.Timestamptz
 	ParentID      pgtype.Int8
-	NestedLevel   interface{}
 	QuoteContent  pgtype.Text
 	QuoteStartPos pgtype.Int4
 }
@@ -368,10 +371,36 @@ type Favorite struct {
 	CreatedAt  pgtype.Timestamptz
 }
 
+type Rating struct {
+	UserID    pgtype.UUID
+	BookID    int64
+	Rating    int16
+	UpdatedAt pgtype.Timestamptz
+}
+
 type ReadingList struct {
-	UserID pgtype.UUID
-	BookID int64
-	Status ReadingListStatus
+	UserID                pgtype.UUID
+	BookID                int64
+	Status                ReadingListStatus
+	LastAccessedChapterID pgtype.Int8
+	LastUpdatedAt         pgtype.Timestamptz
+}
+
+type ReadingListHistory struct {
+	UserID          pgtype.UUID
+	BookID          int64
+	ChapterID       int64
+	FinishedReading bool
+	Progress        int32
+}
+
+type Review struct {
+	UserID        pgtype.UUID
+	BookID        int64
+	Content       string
+	CreatedAt     pgtype.Timestamptz
+	LastUpdatedAt pgtype.Timestamptz
+	Likes         int32
 }
 
 type Session struct {

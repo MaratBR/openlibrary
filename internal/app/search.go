@@ -14,6 +14,20 @@ type Int32 struct {
 	Int32 int32
 }
 
+func Int32FromPtr(i *int32) Int32 {
+	if i == nil {
+		return Int32{}
+	}
+	return Int32{Valid: true, Int32: *i}
+}
+
+func (i Int32) Ptr() *int32 {
+	if i.Valid {
+		return &i.Int32
+	}
+	return nil
+}
+
 func (i Int32) MarshalJSON() ([]byte, error) {
 	if !i.Valid {
 		return []byte("null"), nil

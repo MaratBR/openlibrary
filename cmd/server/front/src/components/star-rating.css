@@ -1,0 +1,8 @@
+.star-rating {
+    --star-size: 40px;
+    @apply inline-grid grid-cols-5 w-[calc(var(--star-size)*1.2*5)];
+
+    & > svg {
+        @apply size-[var(--star-size)]
+    }
+}

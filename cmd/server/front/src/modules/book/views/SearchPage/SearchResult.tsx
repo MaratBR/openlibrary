@@ -15,6 +15,14 @@ import { NavLink, useSearchParams } from 'react-router-dom'
 export default function SearchResults() {
   const books = useSearchState((s) => s.results.books)
 
+  if (books.length === 0) {
+    return (
+      <div className="text-lg text-muted-foreground">
+        No results, try to change your search query
+      </div>
+    )
+  }
+
   return (
     <div>
       <div id="search-books" className="space-y-2 relative">

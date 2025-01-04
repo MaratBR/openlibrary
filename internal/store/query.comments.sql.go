@@ -13,7 +13,7 @@ import (
 )
 
 const getChapterComments = `-- name: GetChapterComments :many
-select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.nested_level, comments.quote_content, comments.quote_start_pos, users.name as user_name
+select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.quote_content, comments.quote_start_pos, users.name as user_name
 from comments
 join users on comments.user_id = users.id
 where chapter_id = $1 and parent_id is null
@@ -35,7 +35,6 @@ type GetChapterCommentsRow struct {
 	UpdatedAt     pgtype.Timestamptz
 	DeletedAt     pgtype.Timestamptz
 	ParentID      pgtype.Int8
-	NestedLevel   interface{}
 	QuoteContent  pgtype.Text
 	QuoteStartPos pgtype.Int4
 	UserName      string
@@ -59,7 +58,6 @@ func (q *Queries) GetChapterComments(ctx context.Context, arg GetChapterComments
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ParentID,
-			&i.NestedLevel,
 			&i.QuoteContent,
 			&i.QuoteStartPos,
 			&i.UserName,
@@ -75,7 +73,7 @@ func (q *Queries) GetChapterComments(ctx context.Context, arg GetChapterComments
 }
 
 const getChapterCommentsAfter = `-- name: GetChapterCommentsAfter :many
-select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.nested_level, comments.quote_content, comments.quote_start_pos, users.name as user_name
+select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.quote_content, comments.quote_start_pos, users.name as user_name
 from comments
 join users on comments.user_id = users.id
 where chapter_id = $1 and parent_id is null and ts < $3
@@ -98,7 +96,6 @@ type GetChapterCommentsAfterRow struct {
 	UpdatedAt     pgtype.Timestamptz
 	DeletedAt     pgtype.Timestamptz
 	ParentID      pgtype.Int8
-	NestedLevel   interface{}
 	QuoteContent  pgtype.Text
 	QuoteStartPos pgtype.Int4
 	UserName      string
@@ -122,7 +119,6 @@ func (q *Queries) GetChapterCommentsAfter(ctx context.Context, arg GetChapterCom
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ParentID,
-			&i.NestedLevel,
 			&i.QuoteContent,
 			&i.QuoteStartPos,
 			&i.UserName,
@@ -138,7 +134,7 @@ func (q *Queries) GetChapterCommentsAfter(ctx context.Context, arg GetChapterCom
 }
 
 const getChildComments = `-- name: GetChildComments :many
-select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.nested_level, comments.quote_content, comments.quote_start_pos, users.name as user_name
+select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.quote_content, comments.quote_start_pos, users.name as user_name
 from comments
 join users on comments.user_id = users.id
 where parent_id = $1
@@ -160,7 +156,6 @@ type GetChildCommentsRow struct {
 	UpdatedAt     pgtype.Timestamptz
 	DeletedAt     pgtype.Timestamptz
 	ParentID      pgtype.Int8
-	NestedLevel   interface{}
 	QuoteContent  pgtype.Text
 	QuoteStartPos pgtype.Int4
 	UserName      string
@@ -184,7 +179,6 @@ func (q *Queries) GetChildComments(ctx context.Context, arg GetChildCommentsPara
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ParentID,
-			&i.NestedLevel,
 			&i.QuoteContent,
 			&i.QuoteStartPos,
 			&i.UserName,
@@ -200,7 +194,7 @@ func (q *Queries) GetChildComments(ctx context.Context, arg GetChildCommentsPara
 }
 
 const getChildCommentsAfter = `-- name: GetChildCommentsAfter :many
-select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.nested_level, comments.quote_content, comments.quote_start_pos, users.name as user_name
+select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.quote_content, comments.quote_start_pos, users.name as user_name
 from comments
 join users on comments.user_id = users.id
 where parent_id = $1 and ts < $3
@@ -223,7 +217,6 @@ type GetChildCommentsAfterRow struct {
 	UpdatedAt     pgtype.Timestamptz
 	DeletedAt     pgtype.Timestamptz
 	ParentID      pgtype.Int8
-	NestedLevel   interface{}
 	QuoteContent  pgtype.Text
 	QuoteStartPos pgtype.Int4
 	UserName      string
@@ -247,7 +240,6 @@ func (q *Queries) GetChildCommentsAfter(ctx context.Context, arg GetChildComment
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ParentID,
-			&i.NestedLevel,
 			&i.QuoteContent,
 			&i.QuoteStartPos,
 			&i.UserName,
@@ -263,7 +255,7 @@ func (q *Queries) GetChildCommentsAfter(ctx context.Context, arg GetChildComment
 }
 
 const getCommentByID = `-- name: GetCommentByID :one
-select id, chapter_id, user_id, content, ts, updated_at, deleted_at, parent_id, nested_level, quote_content, quote_start_pos from comments where id = $1
+select id, chapter_id, user_id, content, ts, updated_at, deleted_at, parent_id, quote_content, quote_start_pos from comments where id = $1
 `
 
 func (q *Queries) GetCommentByID(ctx context.Context, id int64) (Comment, error) {
@@ -278,7 +270,6 @@ func (q *Queries) GetCommentByID(ctx context.Context, id int64) (Comment, error)
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.ParentID,
-		&i.NestedLevel,
 		&i.QuoteContent,
 		&i.QuoteStartPos,
 	)
@@ -286,7 +277,7 @@ func (q *Queries) GetCommentByID(ctx context.Context, id int64) (Comment, error)
 }
 
 const getCommentWithUserByID = `-- name: GetCommentWithUserByID :one
-select c.id, c.chapter_id, c.user_id, c.content, c.ts, c.updated_at, c.deleted_at, c.parent_id, c.nested_level, c.quote_content, c.quote_start_pos, u.name as user_name
+select c.id, c.chapter_id, c.user_id, c.content, c.ts, c.updated_at, c.deleted_at, c.parent_id, c.quote_content, c.quote_start_pos, u.name as user_name
 from comments c
 join users u on c.user_id = u.id
 where c.id = $1
@@ -301,7 +292,6 @@ type GetCommentWithUserByIDRow struct {
 	UpdatedAt     pgtype.Timestamptz
 	DeletedAt     pgtype.Timestamptz
 	ParentID      pgtype.Int8
-	NestedLevel   interface{}
 	QuoteContent  pgtype.Text
 	QuoteStartPos pgtype.Int4
 	UserName      string
@@ -319,7 +309,6 @@ func (q *Queries) GetCommentWithUserByID(ctx context.Context, id int64) (GetComm
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.ParentID,
-		&i.NestedLevel,
 		&i.QuoteContent,
 		&i.QuoteStartPos,
 		&i.UserName,

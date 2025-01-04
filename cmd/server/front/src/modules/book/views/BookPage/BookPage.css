@@ -1,11 +1,54 @@
-.book-page-header {
-    @apply bg-muted pb-6;
-    &__container {
-        @apply w-[100%] mx-auto px-[2rem] max-w-screen-2xl;
+.book-page {
+    @apply w-[100%] mx-auto px-[2rem] max-w-screen-2xl mt-8;
+}
+
+.book-page-grid {
+    @apply lg:grid lg:grid-cols-12 lg:gap-4;
+
+    &__lcolumn {
+        @apply flex flex-col items-center lg:block lg:col-span-4 xl:col-span-3;
+    }
+
+    &__rcolumn {
+        @apply mt-8 lg:mt-0 xl:col-span-9 lg:col-span-8;
     }
 }
 
-.book-page-chapters {
+.book-summary {
+    @apply text-sm mt-2;
+}
+
+.book-page-header {
+    @apply mb-8 flex flex-col items-center lg:block lg:mb-0
+}
+
+.book-title {
+    @apply font-title font-semibold text-4xl;
+}
+
+.book-author {
+    @apply font-title text-2xl mt-1;
+}
+
+.book-tags {
+    list-style: none;
+    @apply my-6;
+
+    & > .tag {
+        margin-inline-end: 4px;
+        @apply hover:no-underline hover:shadow-[0_2px_0_currentColor];
+    }
+
+    &__more {
+        @apply inline-block align-super hover:shadow-[0_2px_0_currentColor];
+    }
+}
+
+.book-metadata {
+    @apply text-muted-foreground mt-3;
+}
+
+/* .book-page-chapters {
     @apply mt-8 md:[grid-area:chapters];
 }
 
@@ -19,4 +62,4 @@
 
 .book-page-aside {
     @apply md:[grid-area:aside] md:w-[24rem] md:pl-4 md:pt-8;
-}
+} */

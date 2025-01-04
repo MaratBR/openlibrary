@@ -9,8 +9,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown, Filter } from 'lucide-react'
 import TagsField from '../../components/tags-field'
 import { RangeInput } from './RangeInput'
+import { useTranslation } from 'react-i18next'
 
 export default function SearchFilters() {
+  const { t } = useTranslation()
   const [isMobileOpen, setMobileOpen] = React.useState(false)
 
   const extremes = useSearchState((s) => s.extremes)
@@ -73,27 +75,27 @@ export default function SearchFilters() {
           />
         </div>
         <div className="md:space-y-2">
-          <ExpandableField label="Include tags">
+          <ExpandableField label={t('search.includeTags')}>
             <TagsField value={params.include.tags} onChange={setIncludeTags} />
           </ExpandableField>
-          <ExpandableField label="Exclude tags">
+          <ExpandableField label={t('search.excludeTags')}>
             <TagsField value={params.exclude.tags} onChange={setExcludeTags} />
           </ExpandableField>
 
-          <ExpandableField label="Chapters">
+          <ExpandableField label={t('search.chapters')}>
             <RangeInput value={params.chapters} range={extremes.chapters} onChange={setChapters} />
           </ExpandableField>
-          <ExpandableField label="Words">
+          <ExpandableField label={t('search.words')}>
             <RangeInput value={params.words} range={extremes.words} onChange={setWords} />
           </ExpandableField>
-          <ExpandableField label="Words per chapter">
+          <ExpandableField label={t('search.wordsPerChapter')}>
             <RangeInput
               value={params.wordsPerChapter}
               range={extremes.wordsPerChapter}
               onChange={setWordsPerChapter}
             />
           </ExpandableField>
-          <ExpandableField label="Favorites">
+          <ExpandableField label={t('search.favorites')}>
             <RangeInput
               value={params.favorites}
               range={extremes.favorites}

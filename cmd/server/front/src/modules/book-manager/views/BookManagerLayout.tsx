@@ -40,7 +40,7 @@ export default function BookManagerLayout({ children }: React.PropsWithChildren)
           <h1 className="page-header-text">{data.name}</h1>
 
           <div className="flex mt-5 gap-5">
-            <BookCover url={data.cover} />
+            <BookCover name={data.name} url={data.cover} />
 
             <div className="flex items-start gap-2">
               <GoToBookPage bookId={data.id} />

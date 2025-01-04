@@ -145,7 +145,7 @@ func (q *Queries) InsertBookChapter(ctx context.Context, arg InsertBookChapterPa
 
 const managerGetUserBooks = `-- name: ManagerGetUserBooks :many
 select 
-    books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.favorites, books.has_cover, books.view,
+    books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.favorites, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings,
     collections.id as collection_id,
     collections.name as collection_name,
     collection_books."order" as collection_position,
@@ -180,6 +180,9 @@ type ManagerGetUserBooksRow struct {
 	Favorites          int32
 	HasCover           bool
 	View               int32
+	Rating             pgtype.Float8
+	TotalReviews       int32
+	TotalRatings       int32
 	CollectionID       pgtype.Int8
 	CollectionName     pgtype.Text
 	CollectionPosition pgtype.Int4
@@ -211,6 +214,9 @@ func (q *Queries) ManagerGetUserBooks(ctx context.Context, arg ManagerGetUserBoo
 			&i.Favorites,
 			&i.HasCover,
 			&i.View,
+			&i.Rating,
+			&i.TotalReviews,
+			&i.TotalRatings,
 			&i.CollectionID,
 			&i.CollectionName,
 			&i.CollectionPosition,

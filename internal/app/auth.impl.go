@@ -61,7 +61,7 @@ func (s *authService) SignUp(ctx context.Context, input SignUpCommand) (SignUpRe
 		return SignUpResult{}, err
 	}
 
-	return SignUpResult{SessionID: sessionID}, nil
+	return SignUpResult{SessionID: sessionID, UserID: userID}, nil
 }
 
 func createUser(ctx context.Context, queries *store.Queries, username, password string) (id uuid.UUID, err error) {

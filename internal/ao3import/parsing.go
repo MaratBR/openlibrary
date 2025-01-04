@@ -34,8 +34,7 @@ func getDownloadUrl(r io.Reader) (string, error) {
 	return fmt.Sprintf("https://download.archiveofourown.org%s", url), nil
 }
 
-func parseBook(r io.Reader) (*Ao3Book, error) {
-
+func ParseBook(r io.Reader) (*Ao3Book, error) {
 	doc, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
 		return nil, err

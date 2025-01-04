@@ -1,0 +1,16 @@
+.editor-toolbar {
+    @apply flex w-max items-center gap-2;
+
+    &__section {
+        @apply flex w-max items-center gap-2;
+
+        &::after {
+            content: " ";
+            @apply block border-r h-[1.5em];
+        }
+
+        &:empty {
+            @apply hidden;
+        }
+    }
+}

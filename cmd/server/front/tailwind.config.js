@@ -23,6 +23,11 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      fontFamily: {
+        title: 'var(--font-title)',
+        text: 'var(--font-text)',
+        book: 'var(--font-book)',
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

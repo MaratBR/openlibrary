@@ -13,6 +13,10 @@ const serverDataSchema = z.object({
     .optional()
     .nullable(),
   user: selfUserDtoSchema.optional().nullable(),
+  /**
+   * Base64 encoded protobuf message containing results of the search
+   */
+  search: z.string().optional(),
 })
 
 declare global {

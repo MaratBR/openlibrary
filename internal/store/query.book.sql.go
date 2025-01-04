@@ -12,7 +12,7 @@ import (
 )
 
 const getBook = `-- name: GetBook :one
-select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.favorites, books.has_cover, books.view, users.name as author_name
+select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.favorites, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, users.name as author_name
 from books
 join users on books.author_user_id = users.id
 where books.id = $1
@@ -35,6 +35,9 @@ type GetBookRow struct {
 	Favorites          int32
 	HasCover           bool
 	View               int32
+	Rating             pgtype.Float8
+	TotalReviews       int32
+	TotalRatings       int32
 	AuthorName         string
 }
 
@@ -57,6 +60,9 @@ func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
 		&i.Favorites,
 		&i.HasCover,
 		&i.View,
+		&i.Rating,
+		&i.TotalReviews,
+		&i.TotalRatings,
 		&i.AuthorName,
 	)
 	return i, err
@@ -261,7 +267,7 @@ func (q *Queries) GetBooksCollections(ctx context.Context, dollar_1 []int64) ([]
 }
 
 const getTopUserBooks = `-- name: GetTopUserBooks :many
-select id, name, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, words, chapters, tag_ids, cached_parent_tag_ids, favorites, has_cover, view
+select id, name, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, words, chapters, tag_ids, cached_parent_tag_ids, favorites, has_cover, view, rating, total_reviews, total_ratings
 from books
 where author_user_id = $1 and is_publicly_visible
 order by favorites desc limit $2
@@ -297,6 +303,9 @@ func (q *Queries) GetTopUserBooks(ctx context.Context, arg GetTopUserBooksParams
 			&i.Favorites,
 			&i.HasCover,
 			&i.View,
+			&i.Rating,
+			&i.TotalReviews,
+			&i.TotalRatings,
 		); err != nil {
 			return nil, err
 		}

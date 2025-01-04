@@ -1,99 +1,92 @@
 import { useParams } from 'react-router'
-import { BookDetailsDto, useBookQuery } from '../../api/api'
+import { DefinedTagDto, useBookQuery } from '../../api/api'
 import AdultIndicator from '@/components/adult-indicator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { NavLink } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { LayoutDashboard } from 'lucide-react'
-import ChapterCard from './ChapterCard'
 import SanitizeHtml from '@/components/sanitizer-html'
-import BookFavoritesCounter from '../../components/book-favorites-counter'
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 
 import './BookPage.css'
-import BookInfoCard from './BookInfoCard'
-import BookCover from '@/modules/common/components/book-cover'
+import BookCard from './BookCard'
+import Tag from '../Tag'
+import BookRatingCard from './BookRatingCard'
+import StartReading from './StartReading'
+import { Separator } from '@/components/ui/separator'
+import { useTranslation } from 'react-i18next'
+import BookComments from './BookComments'
 
 export default function BookPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
 
   const { data } = useBookQuery(id)
 
-  return (
-    <>
-      {data && (
-        <div className="book-page-header">
-          <div className="book-page-header__container">
-            <header className="page-header relative">
-              <h1 id="book-title" className="page-header-text">
-                {data.isAdult && <BookAdultIndicator />}
-                {data.name}
-              </h1>
-              <p>
-                by&nbsp;
-                <NavLink className="link-default" to={`/user/${data.author.id}`}>
-                  {data.author.name}
-                </NavLink>
-              </p>
+  if (!data) {
+    return null
+  }
 
-              {data.permissions.canEdit && <QuickEditSection bookId={data.id} />}
-            </header>
-            <div className="flex items-stretch gap-6">
-              <BookCover url={data.cover} />
-              <BookInfoCard className="min-w-[600px]" book={data} />
+  return (
+    <main className="book-page">
+      <div className="book-page-grid">
+        <div className="book-page-grid__lcolumn">
+          <BookCard book={data} />
+        </div>
+        <div className="book-page-grid__rcolumn">
+          <div className="book-page-header">
+            <h1 className="book-title">{data.name}</h1>
+            <div className="book-author">
+              <NavLink className="link-default" to={`/user/${data.author.id}`}>
+                {data.author.name}
+              </NavLink>
+            </div>
+            <BookRatingCard bookId={data.id} rating={data.rating} votes={1234} />
+          </div>
+
+          <div className="book-summary">
+            <div className="pt-2">
+              <SanitizeHtml html={data.summary} />
             </div>
           </div>
-        </div>
-      )}
-      <main className="container-default relative">
-        {data && (
-          <div className="book-page-content">
-            <Aside book={data} />
-            <section className="book-page-summary">
-              <h2 className="text-xl font-semibold">Summary</h2>
 
-              {data.summary ? (
-                <div className="pt-2">
-                  <SanitizeHtml html={data.summary} />
-                </div>
-              ) : (
-                <p>
-                  <span className="text-muted-foreground">No summary</span>{' '}
-                </p>
-              )}
-            </section>
-            <ChaptersList book={data} />
+          <BookTags tags={data.tags} />
+
+          <div className="book-metadata">
+            {t('book.stats.short', {
+              words: data.words + '',
+              wordsPerChapter: data.wordsPerChapter + '',
+              chapters: data.chapters.length + '',
+            })}
           </div>
-        )}
-      </main>
-    </>
-  )
-}
 
-function Aside({ book }: { book: BookDetailsDto }) {
-  return (
-    <aside className="book-page-aside">
-      <BookFavoritesCounter bookId={book.id} count={book.favorites} isLiked={book.isFavorite} />
-    </aside>
-  )
-}
-
-function ChaptersList({ book }: { book: BookDetailsDto }) {
-  return (
-    <section id="chapters" className="book-page-chapters">
-      <h2 className="text-xl font-semibold">{book.chapters.length} chapters</h2>
-
-      {book.chapters.length === 0 && (
-        <div className="text-muted-foreground mt-3">
-          It looks like author did not write anything yet
+          <StartReading book={data} />
+          <Separator className="my-4" />
+          <BookComments bookId={data.id} authorId={data.author.id} />
         </div>
-      )}
-      <div className="space-y-2 mt-4">
-        {book.chapters.map((chapter) => {
-          return <ChapterCard key={chapter.id} bookId={book.id} chapter={chapter} />
-        })}
       </div>
-    </section>
+    </main>
+  )
+}
+
+function BookTags({ tags }: { tags: DefinedTagDto[] }) {
+  const { t } = useTranslation()
+  const [expanded, setExpanded] = useState(false)
+
+  const shownTags = useMemo(() => (expanded ? tags : tags.slice(0, 9)), [expanded, tags])
+  const canExpand = !expanded && shownTags.length < tags.length
+
+  return (
+    <ul className="book-tags">
+      {shownTags.map((tag) => {
+        return <Tag key={tag.id} tag={tag} />
+      })}
+      {canExpand && (
+        <button onClick={() => setExpanded(true)} className="book-tags__more">
+          {t('tags.more')}
+        </button>
+      )}
+    </ul>
   )
 }
 

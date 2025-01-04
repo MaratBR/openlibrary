@@ -1,16 +1,13 @@
-package server
+package main
 
 import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 
 	uiserver "github.com/MaratBR/openlibrary/cmd/server/ui-server"
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/gofrs/uuid"
 	"github.com/knadh/koanf/v2"
 	"google.golang.org/protobuf/proto"
@@ -26,7 +23,8 @@ type spaHandler struct {
 
 func newSPAHandler(
 	config *koanf.Koanf,
-	bookService *app.BookService,
+	bookService app.BookService,
+	reviewsService app.ReviewsService,
 	userService app.UserService,
 	searchService app.SearchService,
 	tagsService app.TagsService,
@@ -64,9 +62,6 @@ func newSPAHandler(
 		}
 
 		{
-			key := "/api/search?" + strings.ReplaceAll(r.URL.RawQuery, "%20", "+")
-			data.AddPreloadedData(key, result)
-
 			for _, book := range result.Items {
 				if book.Cover != "" {
 					data.AddPreloadURL("image", book.Cover)
@@ -74,26 +69,25 @@ func newSPAHandler(
 			}
 			b, err := proto.Marshal(result)
 			if err == nil {
-				data.AddPreloadedData(key, base64.StdEncoding.EncodeToString(b))
+				data.ServerMetadata["search"] = base64.StdEncoding.EncodeToString(b)
 			}
 		}
 
 		{
-			bookExtremes, err := searchService.GetBookExtremes(r.Context())
-			if err == nil {
-				data.AddPreloadedData("/api/search/book-extremes", bookExtremes)
-			}
+			// bookExtremes, err := searchService.GetBookExtremes(r.Context())
+			// if err == nil {
+			// 	data.AddPreloadedData("/api/search/book-extremes", bookExtremes)
+			// }
 		}
 
-		if len(search.ExcludeTags)+len(search.IncludeTags) > 0 {
-			tagIds := commonutil.MergeArrays(search.IncludeTags, search.ExcludeTags)
-			tags, err := tagsService.GetTagsByIds(r.Context(), tagIds)
-			if err == nil {
-				key := "/api/tags/lookup?q=" + url.QueryEscape(i64Array(tagIds))
-				data.AddPreloadedData(key, tags)
-			}
-
-		}
+		// if len(search.ExcludeTags)+len(search.IncludeTags) > 0 {
+		// 	tagIds := commonutil.MergeArrays(search.IncludeTags, search.ExcludeTags)
+		// 	tags, err := tagsService.GetTagsByIds(r.Context(), tagIds)
+		// 	if err == nil {
+		// 		key := "/api/tags/lookup?q=" + url.QueryEscape(i64Array(tagIds))
+		// 		data.AddPreloadedData(key, tags)
+		// 	}
+		// }
 
 	})
 
@@ -127,6 +121,18 @@ func newSPAHandler(
 				if book.Cover != "" {
 					data.AddPreloadURL("image", book.Cover)
 				}
+			}
+
+			reviews, err := reviewsService.GetBookReviews(r.Context(), app.GetBookReviewsQuery{
+				BookID:   bookID,
+				Page:     1,
+				PageSize: 20,
+			})
+			if err == nil {
+				data.AddPreloadedData(fmt.Sprintf("/api/reviews/%d", bookID), reviewsResponse{
+					Reviews:    reviews.Reviews,
+					Pagination: reviews.Pagination,
+				})
 			}
 		}
 	})

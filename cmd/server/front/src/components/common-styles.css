@@ -3,7 +3,7 @@
 }
 
 .page-header-text {
-  @apply text-3xl font-semibold text-foreground;
+  @apply text-3xl font-semibold text-foreground font-title;
 }
 
 .page-header {

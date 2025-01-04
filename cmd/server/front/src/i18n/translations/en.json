@@ -1,0 +1,116 @@
+{
+    "common": {
+        "more": "More",
+        "less": "Less",
+
+        "authorQuill": {
+            "tooltip": "This is the author of this book"
+        }
+    },
+
+    "login": {},
+    "signup": {},
+    "account": {},
+    "book": {
+        "noRatingsYet": "No ratings yet, you can be the first to rate the book!",
+        "startFromFirstChapter": "Start from first chapter",
+        "startFromFirstChapterAgain": "Start from first chapter... again",
+        "saveForLater": "...or save for later",
+        "continueReading": "Continue reading {{chapter}}",
+        "continueReadingWereYouLeftOff": "Continue reading where you left off",
+        "finishedReadingBook": "You finished reading <name>{{bookName}}</name>. You can always come back here to read it again if you like.",
+        
+        "stats": {
+            "short": "{{words}} words, {{wordsPerChapter}} words per chapter, {{chapters}} chapters"
+        },
+
+        "comments": "Comments & Reviews",
+
+        "review": {
+            "yourReview": "Your review",
+            "writeReview": "Write your review"
+        }
+    },
+    "readingList": {
+        "status": {
+            "reading": "Reading",
+            "dnf": "Did not finish",
+            "read": "Read",
+            "paused": "Paused",
+            "want_to_read": "Want to read"
+        }
+    },
+
+    "tags": {
+        "more": "More"
+    },
+
+    "search": {
+        "search": "Search",
+        "doSearch": "Search",
+        "includeTags": "Include tags",
+        "excludeTags": "Exclude tags",
+        "chapters": "Chapters",
+        "words": "Words",
+        "wordsPerChapter": "Words per chapter",
+        "favorites": "Favorites",
+        "noResults": "No results, try to change your search query"
+    },
+
+    "profile": {
+        "joined": "Joined {{time}}",
+        "books": "books",
+        "followers": "followers",
+        "favorites": "favorites"
+    },
+
+    "settings": {
+        "about": {
+            "title": "About me",
+            "gender": "Gender"
+        },
+        "notifications": {
+            "title": "Notifications"
+        },
+        "editor": {
+            "title": "Editor"
+        },
+        "customization": {
+            "title": "Customization"
+        },
+        "security": {
+            "title": "Security"
+        },
+        "moderation": {
+            "title": "Moderation",
+            "showAdultContent": "Show adult content",
+            "showAdultContentDescription": "Show adult content without warnings. \nIf this is set, adult content marked as 18+ will be shown to you without any warnings and prompts for confirmation.",
+            "showAdultContentWarning": "By checking this setting you confirm that you are have reached the age of majority in your country (18 years in most countries).",
+            "blacklistedTags": "Blacklisted tags",
+            "blacklistedTagsDescription": "List of tags that you do not wish to see.",
+            "blacklistedTagsPlaceholder": "Each tag name on the new line",
+
+            "booksCensoring": {
+                "title": "Books censoring mode",
+                "description": "Method of censoring adult books or books that contain blacklisted tags.",
+                "none": "None",
+                "noneDescription": "Do nothing. Keep adult books and books with blacklisted tags visible. But you will still get a warning when opening it.",
+                "censor": "Censor",
+                "censorDescription": "Blurs books that contain blacklisted tags or are adult",
+                "hide": "Hide",
+                "hideDescription": "Hide books from search results if they contain blacklisted tags"
+            }
+        },
+        "privacy": {
+            "hideComments": "Hide your comments from your profile",
+            "hideCommentsDescription": "Hides your comments from your profile. People can still see your comments in books/chapter where you posted them.",
+            "hideFavorites": "Hide favorites",
+            "hideFavoritesDescription": "Hides list and number of your favorite books from your profile.",
+            "hideEmail": "Hide your email from your profile",
+            "hideStats": "Hide stats",
+            "hideStatsDescription": "Hides your account stats (number of followers and followed users).",
+            "allowSearch": "Allow to search for your account",
+            "allowSearchDescription": "Allows to search for your account. If this setting is enabled then you can be found through search. If disabled, your account can only be found directly."
+        }
+    }
+}

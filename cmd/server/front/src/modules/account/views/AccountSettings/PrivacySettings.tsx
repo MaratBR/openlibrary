@@ -10,8 +10,11 @@ import { Label } from '@/components/ui/label'
 import { debounce } from '@/lib/utils'
 import { toast } from 'sonner'
 import { CheckCircle2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export default function PrivacySettings() {
+  const { t } = useTranslation()
+
   const [state, setState] = React.useState<UserPrivacySettings>({
     hideComments: false,
     hideEmail: false,
@@ -58,10 +61,9 @@ export default function PrivacySettings() {
     <div className="max-w-[600px] space-y-10">
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="hide-comments">Hide your comments from your profile</Label>
+          <Label htmlFor="hide-comments">{t('settings.privacy.hideComments')}</Label>
           <p className="text-sm text-muted-foreground">
-            Hides your comments from your profile. People can still see your comments in
-            books/chapter where you posted them.
+            {t('settings.privacy.hideCommentsDescription')}
           </p>
         </div>
 
@@ -75,9 +77,9 @@ export default function PrivacySettings() {
 
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="hide-favorites">Hide favorites</Label>
+          <Label htmlFor="hide-favorites">{t('settings.privacy.hideFavorites')}</Label>
           <p className="text-sm text-muted-foreground">
-            Hides list and number of your favorite books from your profile.
+            {t('settings.privacy.hideFavoritesDescription')}
           </p>
         </div>
 
@@ -91,7 +93,7 @@ export default function PrivacySettings() {
 
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="hide-email">Hide your email from your profile</Label>
+          <Label htmlFor="hide-email">{t('settings.privacy.hideEmail')}</Label>
         </div>
 
         <Switch
@@ -104,9 +106,9 @@ export default function PrivacySettings() {
 
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="hide-stats">Hide stats</Label>
+          <Label htmlFor="hide-stats">{t('settings.privacy.hideStats')}</Label>
           <p className="text-sm text-muted-foreground">
-            Hides your account stats (number of followers and followed users).
+            {t('settings.privacy.hideStatsDescription')}
           </p>
         </div>
 
@@ -120,10 +122,9 @@ export default function PrivacySettings() {
 
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="allow-searching">Allow to search for your account</Label>
+          <Label htmlFor="allow-searching">{t('settings.privacy.allowSearch')}</Label>
           <p className="text-sm text-muted-foreground">
-            Allows to search for your account. If this setting is enabled then you can be found
-            through search. If disabled, your account can only be found directly.
+            {t('settings.privacy.allowSearchDescription')}
           </p>
         </div>
 

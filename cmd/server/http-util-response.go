@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"encoding/json"
@@ -53,11 +53,18 @@ func writeUnprocessableEntity(w http.ResponseWriter, message string) {
 	}
 }
 
+func write500(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusInternalServerError)
+	_, err := w.Write([]byte(message))
+	if err != nil {
+		slog.Error("error while writing to the client", "err", err)
+	}
+}
+
 func writeApplicationError(w http.ResponseWriter, err error) {
 	var werr error
 
 	if errx, ok := err.(*errorx.Error); ok {
-
 		if errorx.HasTrait(errx, app.ErrTraitForbidden) {
 			w.WriteHeader(http.StatusForbidden)
 			_, werr = w.Write([]byte(err.Error()))
@@ -77,7 +84,21 @@ func writeApplicationError(w http.ResponseWriter, err error) {
 	if werr != nil {
 		slog.Error("error while writing to the client", "err", err)
 	}
+}
 
+func writeUnexpectedApplicationError(w http.ResponseWriter, err error) {
+	var werr error
+	w.WriteHeader(http.StatusInternalServerError)
+
+	if errx, ok := err.(*errorx.Error); ok {
+		_, werr = w.Write([]byte(errx.Error()))
+	} else {
+		_, werr = w.Write([]byte(err.Error()))
+	}
+
+	if werr != nil {
+		slog.Error("error while writing to the client", "err", err)
+	}
 }
 
 func write404(w http.ResponseWriter, message string) {

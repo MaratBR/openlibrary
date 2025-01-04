@@ -85,6 +85,11 @@ export const SectionOne: React.FC<SectionOneProps> = React.memo(
       [activeLevels],
     )
 
+    const isActive = React.useMemo(
+      () => editor.extensionManager.extensions.some((x) => x.name === 'heading'),
+      [editor.extensionManager.extensions],
+    )
+
     const handleStyleChange = React.useCallback(
       (level?: Level) => {
         if (level) {
@@ -114,6 +119,10 @@ export const SectionOne: React.FC<SectionOneProps> = React.memo(
       ),
       [editor, handleStyleChange],
     )
+
+    if (!isActive) {
+      return null
+    }
 
     return (
       <DropdownMenu>

@@ -15,14 +15,19 @@ type ManagerCreateBookFromAo3Command struct {
 	UserID uuid.UUID
 }
 
+var (
+	ao3Client = ao3import.NewClient()
+)
+
 func (s *bookManagerService) ImportFromBookAo3(ctx context.Context, command ManagerCreateBookFromAo3Command) (int64, error) {
-	client := ao3import.NewClient()
+	ao3Client.Run()
+	defer ao3Client.Close()
 
 	if strings.Trim(command.Ao3ID, " \n\t") == "" {
 		return 0, errors.New("ao3 is is empty")
 	}
 
-	book, err := client.GetBook(command.Ao3ID)
+	book, err := ao3Client.GetBook(command.Ao3ID)
 	if err != nil {
 		return 0, err
 	}

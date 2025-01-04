@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+
+	"github.com/gofrs/uuid"
 )
 
 var (
@@ -39,4 +41,5 @@ type SignUpCommand struct {
 
 type SignUpResult struct {
 	SessionID string
+	UserID    uuid.UUID
 }

@@ -152,6 +152,22 @@ export interface ProtoSearchResult {
   cacheKey: string;
   cacheTook: number;
   cacheHit: boolean;
+  filter: ProtoSearchFilter | undefined;
+}
+
+export interface ProtoSearchFilter {
+  wordsMin?: number | undefined;
+  wordsMax?: number | undefined;
+  chaptersMin?: number | undefined;
+  chaptersMax?: number | undefined;
+  wordsPerChapterMin?: number | undefined;
+  wordsPerChapterMax?: number | undefined;
+  favoritesMin?: number | undefined;
+  favoritesMax?: number | undefined;
+  includeTags: string[];
+  excludeTags: string[];
+  includeUsers: string[];
+  excludeUsers: string[];
 }
 
 function createBaseProtoDefinedTag(): ProtoDefinedTag {
@@ -583,6 +599,7 @@ function createBaseProtoSearchResult(): ProtoSearchResult {
     cacheKey: "",
     cacheTook: 0,
     cacheHit: false,
+    filter: undefined,
   };
 }
 
@@ -614,6 +631,9 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
     }
     if (message.cacheHit !== false) {
       writer.uint32(72).bool(message.cacheHit);
+    }
+    if (message.filter !== undefined) {
+      ProtoSearchFilter.encode(message.filter, writer.uint32(82).fork()).join();
     }
     return writer;
   },
@@ -697,6 +717,14 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
           message.cacheHit = reader.bool();
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.filter = ProtoSearchFilter.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -719,6 +747,7 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
       cacheKey: isSet(object.cacheKey) ? globalThis.String(object.cacheKey) : "",
       cacheTook: isSet(object.cacheTook) ? globalThis.Number(object.cacheTook) : 0,
       cacheHit: isSet(object.cacheHit) ? globalThis.Boolean(object.cacheHit) : false,
+      filter: isSet(object.filter) ? ProtoSearchFilter.fromJSON(object.filter) : undefined,
     };
   },
 
@@ -751,6 +780,9 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
     if (message.cacheHit !== false) {
       obj.cacheHit = message.cacheHit;
     }
+    if (message.filter !== undefined) {
+      obj.filter = ProtoSearchFilter.toJSON(message.filter);
+    }
     return obj;
   },
 
@@ -768,6 +800,290 @@ export const ProtoSearchResult: MessageFns<ProtoSearchResult> = {
     message.cacheKey = object.cacheKey ?? "";
     message.cacheTook = object.cacheTook ?? 0;
     message.cacheHit = object.cacheHit ?? false;
+    message.filter = (object.filter !== undefined && object.filter !== null)
+      ? ProtoSearchFilter.fromPartial(object.filter)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseProtoSearchFilter(): ProtoSearchFilter {
+  return {
+    wordsMin: undefined,
+    wordsMax: undefined,
+    chaptersMin: undefined,
+    chaptersMax: undefined,
+    wordsPerChapterMin: undefined,
+    wordsPerChapterMax: undefined,
+    favoritesMin: undefined,
+    favoritesMax: undefined,
+    includeTags: [],
+    excludeTags: [],
+    includeUsers: [],
+    excludeUsers: [],
+  };
+}
+
+export const ProtoSearchFilter: MessageFns<ProtoSearchFilter> = {
+  encode(message: ProtoSearchFilter, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.wordsMin !== undefined) {
+      writer.uint32(8).int32(message.wordsMin);
+    }
+    if (message.wordsMax !== undefined) {
+      writer.uint32(16).int32(message.wordsMax);
+    }
+    if (message.chaptersMin !== undefined) {
+      writer.uint32(24).int32(message.chaptersMin);
+    }
+    if (message.chaptersMax !== undefined) {
+      writer.uint32(32).int32(message.chaptersMax);
+    }
+    if (message.wordsPerChapterMin !== undefined) {
+      writer.uint32(40).int32(message.wordsPerChapterMin);
+    }
+    if (message.wordsPerChapterMax !== undefined) {
+      writer.uint32(48).int32(message.wordsPerChapterMax);
+    }
+    if (message.favoritesMin !== undefined) {
+      writer.uint32(56).int32(message.favoritesMin);
+    }
+    if (message.favoritesMax !== undefined) {
+      writer.uint32(64).int32(message.favoritesMax);
+    }
+    writer.uint32(74).fork();
+    for (const v of message.includeTags) {
+      writer.int64(v);
+    }
+    writer.join();
+    writer.uint32(82).fork();
+    for (const v of message.excludeTags) {
+      writer.int64(v);
+    }
+    writer.join();
+    for (const v of message.includeUsers) {
+      writer.uint32(90).string(v!);
+    }
+    for (const v of message.excludeUsers) {
+      writer.uint32(98).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ProtoSearchFilter {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseProtoSearchFilter();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.wordsMin = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.wordsMax = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.chaptersMin = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.chaptersMax = reader.int32();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.wordsPerChapterMin = reader.int32();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.wordsPerChapterMax = reader.int32();
+          continue;
+        }
+        case 7: {
+          if (tag !== 56) {
+            break;
+          }
+
+          message.favoritesMin = reader.int32();
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.favoritesMax = reader.int32();
+          continue;
+        }
+        case 9: {
+          if (tag === 72) {
+            message.includeTags.push(reader.int64().toString());
+
+            continue;
+          }
+
+          if (tag === 74) {
+            const end2 = reader.uint32() + reader.pos;
+            while (reader.pos < end2) {
+              message.includeTags.push(reader.int64().toString());
+            }
+
+            continue;
+          }
+
+          break;
+        }
+        case 10: {
+          if (tag === 80) {
+            message.excludeTags.push(reader.int64().toString());
+
+            continue;
+          }
+
+          if (tag === 82) {
+            const end2 = reader.uint32() + reader.pos;
+            while (reader.pos < end2) {
+              message.excludeTags.push(reader.int64().toString());
+            }
+
+            continue;
+          }
+
+          break;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.includeUsers.push(reader.string());
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.excludeUsers.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ProtoSearchFilter {
+    return {
+      wordsMin: isSet(object.wordsMin) ? globalThis.Number(object.wordsMin) : undefined,
+      wordsMax: isSet(object.wordsMax) ? globalThis.Number(object.wordsMax) : undefined,
+      chaptersMin: isSet(object.chaptersMin) ? globalThis.Number(object.chaptersMin) : undefined,
+      chaptersMax: isSet(object.chaptersMax) ? globalThis.Number(object.chaptersMax) : undefined,
+      wordsPerChapterMin: isSet(object.wordsPerChapterMin) ? globalThis.Number(object.wordsPerChapterMin) : undefined,
+      wordsPerChapterMax: isSet(object.wordsPerChapterMax) ? globalThis.Number(object.wordsPerChapterMax) : undefined,
+      favoritesMin: isSet(object.favoritesMin) ? globalThis.Number(object.favoritesMin) : undefined,
+      favoritesMax: isSet(object.favoritesMax) ? globalThis.Number(object.favoritesMax) : undefined,
+      includeTags: globalThis.Array.isArray(object?.includeTags)
+        ? object.includeTags.map((e: any) => globalThis.String(e))
+        : [],
+      excludeTags: globalThis.Array.isArray(object?.excludeTags)
+        ? object.excludeTags.map((e: any) => globalThis.String(e))
+        : [],
+      includeUsers: globalThis.Array.isArray(object?.includeUsers)
+        ? object.includeUsers.map((e: any) => globalThis.String(e))
+        : [],
+      excludeUsers: globalThis.Array.isArray(object?.excludeUsers)
+        ? object.excludeUsers.map((e: any) => globalThis.String(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ProtoSearchFilter): unknown {
+    const obj: any = {};
+    if (message.wordsMin !== undefined) {
+      obj.wordsMin = Math.round(message.wordsMin);
+    }
+    if (message.wordsMax !== undefined) {
+      obj.wordsMax = Math.round(message.wordsMax);
+    }
+    if (message.chaptersMin !== undefined) {
+      obj.chaptersMin = Math.round(message.chaptersMin);
+    }
+    if (message.chaptersMax !== undefined) {
+      obj.chaptersMax = Math.round(message.chaptersMax);
+    }
+    if (message.wordsPerChapterMin !== undefined) {
+      obj.wordsPerChapterMin = Math.round(message.wordsPerChapterMin);
+    }
+    if (message.wordsPerChapterMax !== undefined) {
+      obj.wordsPerChapterMax = Math.round(message.wordsPerChapterMax);
+    }
+    if (message.favoritesMin !== undefined) {
+      obj.favoritesMin = Math.round(message.favoritesMin);
+    }
+    if (message.favoritesMax !== undefined) {
+      obj.favoritesMax = Math.round(message.favoritesMax);
+    }
+    if (message.includeTags?.length) {
+      obj.includeTags = message.includeTags;
+    }
+    if (message.excludeTags?.length) {
+      obj.excludeTags = message.excludeTags;
+    }
+    if (message.includeUsers?.length) {
+      obj.includeUsers = message.includeUsers;
+    }
+    if (message.excludeUsers?.length) {
+      obj.excludeUsers = message.excludeUsers;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ProtoSearchFilter>, I>>(base?: I): ProtoSearchFilter {
+    return ProtoSearchFilter.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ProtoSearchFilter>, I>>(object: I): ProtoSearchFilter {
+    const message = createBaseProtoSearchFilter();
+    message.wordsMin = object.wordsMin ?? undefined;
+    message.wordsMax = object.wordsMax ?? undefined;
+    message.chaptersMin = object.chaptersMin ?? undefined;
+    message.chaptersMax = object.chaptersMax ?? undefined;
+    message.wordsPerChapterMin = object.wordsPerChapterMin ?? undefined;
+    message.wordsPerChapterMax = object.wordsPerChapterMax ?? undefined;
+    message.favoritesMin = object.favoritesMin ?? undefined;
+    message.favoritesMax = object.favoritesMax ?? undefined;
+    message.includeTags = object.includeTags?.map((e) => e) || [];
+    message.excludeTags = object.excludeTags?.map((e) => e) || [];
+    message.includeUsers = object.includeUsers?.map((e) => e) || [];
+    message.excludeUsers = object.excludeUsers?.map((e) => e) || [];
     return message;
   },
 };

@@ -4,4 +4,4 @@ create table favorites (
     is_favorite bool not null default true,
     created_at timestamptz not null default now(),
     primary key (user_id, book_id)
-)
+);

@@ -7,7 +7,7 @@ import {
 } from '../../common/api'
 import { z } from 'zod'
 import { useNotificationsSlot } from '../../notifications/state'
-import { GenericNotification } from '../../notifications'
+import { genericNotificationSchema } from '../../notifications'
 import React from 'react'
 
 export type ManagerAuthorBookDto = {
@@ -25,12 +25,14 @@ export type ManagerAuthorBookDto = {
   summary: string
 }
 
-export type BookCollectionDto = {
-  id: string
-  name: string
-  position: number
-  size: number
-}
+export const bookCollectionDtoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  position: z.number(),
+  size: z.number(),
+})
+
+export type BookCollectionDto = z.infer<typeof bookCollectionDtoSchema>
 
 const tagCategorySchema = z.enum(['other', 'warning', 'fandom', 'rel', 'reltype', 'unknown'])
 
@@ -58,54 +60,72 @@ export function httpTagsSearch(q: string): Promise<SearchTagsResponse> {
     .then((r) => r.json())
 }
 
-export type AgeRating = '?' | 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17'
+export const ageRatingSchema = z.enum(['?', 'G', 'PG', 'PG-13', 'R', 'NC-17'])
+
+export type AgeRating = z.infer<typeof ageRatingSchema>
 
 export const AGE_RATINGS_LIST: AgeRating[] = ['?', 'G', 'PG', 'PG-13', 'R', 'NC-17']
 
-export type BookChapterDto = {
-  id: string
-  order: number
-  name: string
-  words: number
-  createdAt: string
-  summary: string
-}
+export const bookChapterDtoSchema = z.object({
+  id: z.string(),
+  order: z.number().min(0).int(),
+  name: z.string(),
+  words: z.number(),
+  createdAt: z.string(),
+  summary: z.string(),
+})
 
-export type BookDetailsDto = {
-  id: string
-  name: string
-  ageRating: AgeRating
-  isAdult: boolean
-  tags: DefinedTagDto[]
-  words: number
-  wordsPerChapter: number
-  collections: BookCollectionDto[]
-  chapters: BookChapterDto[]
-  createdAt: string
-  author: {
-    id: string
-    name: string
-  }
-  permissions: {
-    canEdit: boolean
-  }
-  summary: string
-  favorites: number
-  isFavorite: boolean
-  notifications: GenericNotification[]
-  cover: string
-}
+export type BookChapterDto = z.infer<typeof bookChapterDtoSchema>
 
-export type GetBookResponse = BookDetailsDto
+export const readingListStatusSchema = z.enum(['dnf', 'paused', 'read', 'reading', 'want_to_read'])
 
-export function httpGetBook(id: string): Promise<GetBookResponse> {
-  return withPreloadCache(`/api/books/${id}`, () =>
+export type ReadingListStatus = z.infer<typeof readingListStatusSchema>
+
+export const readingListDtoSchema = z.object({
+  lastUpdatedAt: z.string(),
+  chapterId: z.string().nullable(),
+  status: readingListStatusSchema,
+})
+
+export type ReadingListDto = z.infer<typeof readingListDtoSchema>
+
+export const bookDetailsDtoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  ageRating: ageRatingSchema,
+  tags: z.array(definedTagDtoSchema),
+  words: z.number(),
+  wordsPerChapter: z.number(),
+  collections: z.array(bookCollectionDtoSchema),
+  chapters: z.array(bookChapterDtoSchema),
+  createdAt: z.string(),
+  author: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+  permissions: z.object({
+    canEdit: z.boolean(),
+  }),
+  summary: z.string(),
+  favorites: z.number(),
+  isFavorite: z.boolean(),
+  notifications: z.array(genericNotificationSchema).optional(),
+  cover: z.string(),
+  rating: z.number().nullable(),
+  readingList: readingListDtoSchema.nullable(),
+})
+
+export type BookDetailsDto = z.infer<typeof bookDetailsDtoSchema>
+
+export async function httpGetBook(id: string): Promise<BookDetailsDto> {
+  const result = await withPreloadCache(`/api/books/${id}`, () =>
     httpClient.get(`/api/books/${id}`).then((r) => r.json()),
   )
+  return bookDetailsDtoSchema.parse(result)
 }
 
 export function getPreloadedBookResult(id: string) {
-  return getPreloadedData<GetBookResponse>(`/api/books/${id}`)
+  return getPreloadedData<BookDetailsDto>(`/api/books/${id}`)
 }
 
 export function preloadBookQuery(queryClient: QueryClient, bookId: string) {
@@ -194,10 +214,11 @@ export function preloadBookChapterQuery(
   })
 }
 
-export function httpFavoriteBook(id: string, isFavorite: boolean): Promise<GetBookResponse> {
+export function httpFavoriteBook(id: string, isFavorite: boolean): Promise<BookDetailsDto> {
   return httpClient
     .post(`/api/favorite`, { searchParams: { bookId: id, isFavorite } })
     .then((r) => r.json())
+    .then((r) => bookDetailsDtoSchema.parse(r))
 }
 
 export type BookExtremes = {

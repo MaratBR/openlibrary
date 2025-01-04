@@ -6,6 +6,8 @@ export default function ChapterComments({ chapterId }: { chapterId: string }) {
     queryKey: ['comments', 'chapter', chapterId],
   })
 
+  console.log(chapterId)
+
   function handleAppear() {}
 
   return (

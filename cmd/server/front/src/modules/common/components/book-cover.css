@@ -1,13 +1,13 @@
 .book-cover {
     @apply 
-        overflow-hidden rounded-xl min-w-[300px] w-[clamp(100px,15vw,300px)] 
-        h-[300px] flex items-center justify-center bg-highlight;
+        overflow-hidden rounded-xl
+        flex items-center justify-center;
 
     &__img {
-        @apply object-contain h-full w-full;
+        @apply object-contain max-w-[300px] max-h-[300px];
     }
 
     &--sm {
-        @apply w-[clamp(50px,15vw,150px)] h-[150px];
+        /* @apply w-[clamp(50px,15vw,150px)] h-[150px]; */
     }
 }

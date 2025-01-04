@@ -1,5 +1,5 @@
 import { SliderMulti } from '@/components/slider-dual'
-import { NumberRange } from './state'
+import { NumberRange } from './search-params'
 
 export function RangeInput({
   value,

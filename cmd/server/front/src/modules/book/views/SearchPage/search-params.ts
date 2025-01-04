@@ -6,11 +6,12 @@ import {
   DefinedTagDto,
   httpSearchBooks,
   parseSearchBooksRequest,
-  SearchBooksRequest,
-  searchBooksRequestToURLSearchParams,
+  SearchBooksResponse,
+  tryGetPreloadedSearchResult,
 } from '../../api'
 import { isNotFalsy, toDictionaryByProperty } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
+import { SearchBooksRequest, searchBooksRequestToURLSearchParams } from '../../api/search-request'
 
 export type NumberRange = {
   max: number | null
@@ -87,6 +88,7 @@ export type SearchParamsState = {
   setExcludeTags(tags: DefinedTagDto[]): void
   applyChanges(params?: SearchFilters.Type): void
   search(sp: SearchBooksRequest): Promise<void>
+  setResponse(response: SearchBooksResponse): void
 }
 
 const defaultParams: () => SearchFilters.Type = () => ({
@@ -185,6 +187,51 @@ export const useSearchState = create<SearchParamsState>()((set, get) => ({
     }))
   },
 
+  setResponse(response) {
+    const tagsById = toDictionaryByProperty(response.tags, 'id')
+
+    set((s) => {
+      const filters: SearchFilters.Type = {
+        ...s.activeFilters,
+        include: {
+          tags: (response.filter?.includeTags || [])
+            .map((tagId) => {
+              const tag = tagsById[tagId]
+              if (!tag) return null
+              return tag
+            })
+            .filter(isNotFalsy),
+        },
+        exclude: {
+          tags: (response.filter?.excludeTags || [])
+            .map((tagId) => {
+              const tag = response.tags.find((t) => t.id === tagId)
+              if (!tag) return null
+              return tag
+            })
+            .filter(isNotFalsy),
+        },
+      }
+
+      return {
+        results: {
+          books: response.books.map((book) => {
+            return {
+              ...book,
+              tags: book.tags.map((tagId) => tagsById[tagId]).filter(isNotFalsy),
+            }
+          }),
+          page: response.page,
+          pageSize: response.pageSize,
+          totalPages: response.totalPages,
+        },
+        isLoading: false,
+        filters,
+        activeFilters: filters,
+      }
+    })
+  },
+
   async search(req) {
     set({ isLoading: true })
 
@@ -195,48 +242,7 @@ export const useSearchState = create<SearchParamsState>()((set, get) => ({
       if (took < 500) {
         await new Promise((r) => setTimeout(r, 400 - took))
       }
-      const tagsById = toDictionaryByProperty(response.tags, 'id')
-
-      set((s) => {
-        const filters: SearchFilters.Type = {
-          ...s.activeFilters,
-          include: {
-            tags: (req.it || [])
-              .map((tagId) => {
-                const tag = tagsById[tagId]
-                if (!tag) return null
-                return tag
-              })
-              .filter(isNotFalsy),
-          },
-          exclude: {
-            tags: (req.et || [])
-              .map((tagId) => {
-                const tag = response.tags.find((t) => t.id === tagId)
-                if (!tag) return null
-                return tag
-              })
-              .filter(isNotFalsy),
-          },
-        }
-
-        return {
-          results: {
-            books: response.books.map((book) => {
-              return {
-                ...book,
-                tags: book.tags.map((tagId) => tagsById[tagId]).filter(isNotFalsy),
-              }
-            }),
-            page: response.page,
-            pageSize: response.pageSize,
-            totalPages: response.totalPages,
-          },
-          isLoading: false,
-          filters,
-          activeFilters: filters,
-        }
-      })
+      this.setResponse(response)
     } catch {
       set({ isLoading: false })
     }
@@ -261,7 +267,12 @@ export function useBookSearchParams() {
     queryKey: ['search', searchRequest],
     queryFn: async () => {
       const state = useSearchState.getState()
-      await state.search(searchRequest)
+      const preloadedResult = tryGetPreloadedSearchResult()
+      if (preloadedResult) {
+        state.setResponse(preloadedResult)
+      } else {
+        await state.search(searchRequest)
+      }
       return 'OK'
     },
     staleTime: 0,

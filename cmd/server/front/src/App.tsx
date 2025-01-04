@@ -9,6 +9,8 @@ import { initIframeAgent } from './lib/iframe-auto-resize'
 import { initScrollbarWidth } from './lib/scrollbar-width'
 import { Toaster } from './components/ui/sonner'
 import { initPageSpark } from './modules/common/components/page-spark'
+import 'overlayscrollbars/overlayscrollbars.css'
+import { initI18n } from './i18n'
 
 function App() {
   return (
@@ -39,4 +41,5 @@ export function staticInitApp() {
 
   initScrollbarWidth()
   initPageSpark()
+  initI18n()
 }

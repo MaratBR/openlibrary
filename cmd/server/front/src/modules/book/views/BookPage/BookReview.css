@@ -1,0 +1,11 @@
+.book-review {
+    @apply grid grid-cols-[auto_1fr] gap-6 my-4;
+
+    &__username {
+        @apply mb-2 flex items-center gap-1;
+    }
+
+    &__content {
+        
+    }
+}

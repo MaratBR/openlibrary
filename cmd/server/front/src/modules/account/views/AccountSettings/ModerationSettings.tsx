@@ -19,8 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useTranslation } from 'react-i18next'
 
 export default function ModerationSettings() {
+  const { t } = useTranslation()
+
   const [state, setState] = React.useState<UserModerationSettings>({
     showAdultContent: false,
     censoredTags: [],
@@ -65,14 +68,14 @@ export default function ModerationSettings() {
     <div className="max-w-[600px] space-y-10">
       <div className="flex flex-row items-start justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="show-adult-content">Show adult content</Label>
+          <Label htmlFor="show-adult-content">{t('settings.moderation.showAdultContent')}</Label>
           <p className="text-sm text-muted-foreground">
-            Show adult content without warnings. <br />
-            If this is set, adult content marked as 18+ will be shown to you without any warnings
-            and prompts for confirmation. <br /> <br />
+            <span className="whitespace-pre-wrap">
+              {t('settings.moderation.showAdultContentDescription')}
+            </span>{' '}
+            <br /> <br />
             <strong className="font-semibold text-foreground">
-              By checking this setting you confirm that you are have reached the age of majority in
-              your country (18 years in most countries).
+              {t('settings.moderation.showAdultContentWarning')}
             </strong>
           </p>
         </div>
@@ -87,12 +90,14 @@ export default function ModerationSettings() {
 
       <div className="space-y-2">
         <div className="space-y-0.5">
-          <Label htmlFor="hide-favorites">Blacklisted tags</Label>
-          <p className="text-sm text-muted-foreground">List of tags that you do not wish to see.</p>
+          <Label htmlFor="hide-favorites">{t('settings.moderation.blacklistedTags')}</Label>
+          <p className="text-sm text-muted-foreground">
+            {t('settings.moderation.blacklistedTagsDescription')}
+          </p>
         </div>
 
         <Textarea
-          placeholder="Each tag name on the new line"
+          placeholder={t('settings.moderation.blacklistedTagsPlaceholder')}
           rows={10}
           value={state.censoredTags.join('\n')}
           onChange={(e) => update({ censoredTags: e.target.value.split('\n') })}
@@ -101,9 +106,9 @@ export default function ModerationSettings() {
 
       <div className="space-y-4">
         <div className="space-y-0.5">
-          <Label htmlFor="hide-email">Books censoring mode</Label>
+          <Label htmlFor="hide-email">{t('settings.moderation.booksCensoring.title')}</Label>
           <p className="text-sm text-muted-foreground">
-            Method of censoring adult books or books that contain blacklisted tags.
+            {t('settings.moderation.booksCensoring.description')}
           </p>
         </div>
 
@@ -113,25 +118,22 @@ export default function ModerationSettings() {
         >
           <SelectTrigger className="max-w-64">
             <SelectValue placeholder="Censoring mode">
-              {getCensorModeLabel(state.censoredTagsMode)}
+              {t(`settings.moderation.booksCensoring.${state.censoredTagsMode}`)}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="censor">
-              Censor
-              <p className="text-sm">Blurs books that contain blacklisted tags or are adult</p>
+              {t('settings.moderation.booksCensoring.censor')}
+              <p className="text-sm">{t('settings.moderation.booksCensoring.censorDescription')}</p>
             </SelectItem>
             <SelectItem value="hide">
-              Hide
-              <p className="text-sm">
-                Hide books from search results if they contain blacklisted tags
-              </p>
+              {t('settings.moderation.booksCensoring.hide')}
+              <p className="text-sm">{t('settings.moderation.booksCensoring.hideDescription')}</p>
             </SelectItem>
             <SelectItem value="none">
-              None
+              {t('settings.moderation.booksCensoring.none')}
               <p className="text-sm max-w-[32rem]">
-                Do nothing. Keep adult books and books with blacklisted tags visible. But you will
-                still get a warning when opening it.
+                {t('settings.moderation.booksCensoring.noneDescription')}
               </p>
             </SelectItem>
           </SelectContent>
@@ -139,15 +141,4 @@ export default function ModerationSettings() {
       </div>
     </div>
   )
-}
-
-function getCensorModeLabel(mode: UserModerationSettings['censoredTagsMode']) {
-  switch (mode) {
-    case 'censor':
-      return 'Censor'
-    case 'hide':
-      return 'Hide'
-    case 'none':
-      return 'None'
-  }
 }

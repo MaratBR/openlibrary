@@ -8,8 +8,8 @@ export default function SiteHeader({ children }: React.PropsWithChildren) {
     <>
       <header id="site-header" className="sticky top-0 w-full z-50 border-border/40 site-header">
         <div className="container-default h-full grid grid-cols-[auto_1fr_auto] items-stretch">
-          <div id="site-logo" className="mr-8 font-semibold text-4xl self-center">
-            OpenLibrary
+          <div id="site-logo" className="mr-8 font-semibold text-4xl self-center font-title">
+            <span className="text-[1.2em]">O</span>pen<span className="text-[1.2em]">L</span>ibrary
           </div>
           <div className="site-header__links">
             <SiteHeaderLink href="/home">Home</SiteHeaderLink>

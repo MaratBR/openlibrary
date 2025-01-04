@@ -5,12 +5,13 @@ export type SpinnerProps = {
   className?: string
   style?: React.CSSProperties
   size?: number
+  thickness?: number
 }
 
-export default function Spinner({ style, className, size = 24 }: SpinnerProps) {
+export default function Spinner({ style, className, size = 24, thickness }: SpinnerProps) {
   return (
     <div
-      style={{ borderWidth: size / 8, height: size, width: size, ...style }}
+      style={{ borderWidth: thickness ?? size / 8, height: size, width: size, ...style }}
       className={cn(
         'animate-spin inline-block  border-[0px] border-current border-t-transparent text-primary rounded-full',
         className,

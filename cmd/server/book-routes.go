@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"net/http"
@@ -8,10 +8,10 @@ import (
 )
 
 type bookController struct {
-	bookService *app.BookService
+	bookService app.BookService
 }
 
-func newBookController(bookService *app.BookService) *bookController {
+func newBookController(bookService app.BookService) *bookController {
 	return &bookController{
 		bookService: bookService,
 	}

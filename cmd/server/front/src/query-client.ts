@@ -24,7 +24,9 @@ const queryClient = new QueryClient({
 export default queryClient
 
 export function QueryClientLoadingBar() {
-  const fetchingCount = useIsFetching()
+  const fetchingCount = useIsFetching({
+    predicate: (q) => !q.meta || q.meta.disableLoader !== true,
+  })
   useHeaderLoading(fetchingCount > 0)
   return null
 }

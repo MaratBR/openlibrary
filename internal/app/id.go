@@ -3,8 +3,6 @@ package app
 import (
 	"encoding/json"
 	"strconv"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Int64String int64
@@ -25,12 +23,4 @@ func (i *Int64String) UnmarshalJSON(b []byte) error {
 	}
 	*i = Int64String(v)
 	return nil
-}
-
-func int64ToNullable(v pgtype.Int8) Nullable[Int64String] {
-	if v.Valid {
-		return Value(Int64String(v.Int64))
-	} else {
-		return Null[Int64String]()
-	}
 }
