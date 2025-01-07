@@ -1,4 +1,4 @@
-import { useDebounce, useForceRender } from '@/lib/react-utils'
+import { useForceRender } from '@/lib/react-utils'
 import React, { useRef } from 'react'
 import LoadingBar from './loading-bar'
 import ReactDOM from 'react-dom'
@@ -39,14 +39,12 @@ class LoadingBarContextImpl implements ILoadingBarContext {
 export function useHeaderLoading(loading: boolean) {
   const ctx = React.useContext(LoadingBarContext)
 
-  const loadingDebounced = useDebounce(loading, 300)
-
   React.useEffect(() => {
-    if (!loadingDebounced) return
+    if (!loading) return
 
     ctx.set()
     return () => ctx.release()
-  }, [loadingDebounced, ctx])
+  }, [loading, ctx])
 }
 
 export function LoadingBarProvider({ children }: React.PropsWithChildren) {

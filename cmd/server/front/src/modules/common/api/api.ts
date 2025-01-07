@@ -1,8 +1,15 @@
 import ky, { KyResponse } from 'ky'
 import { ZodSchema } from 'zod'
 
+const delayedFetch: typeof window.fetch = async (...args): Promise<Response> => {
+  const delay = 0 // delay in milliseconds
+  await new Promise((resolve) => setTimeout(resolve, delay))
+  return window.fetch(...args)
+}
+
 export const httpClient = ky.create({
   timeout: 60000,
+  fetch: delayedFetch,
   hooks: {
     beforeRequest: [
       (req) => {
@@ -16,10 +23,6 @@ export const httpClient = ky.create({
     ],
   },
 })
-
-// setTimeout(() => {
-//   httpClient.post('/api/auth/csrf-check')
-// }, 200)
 
 function getCsrfToken() {
   try {
@@ -59,9 +62,12 @@ export async function withPreloadCache<T>(key: string, fn: () => Promise<T>): Pr
   }
 }
 
-export function getPreloadedData<T>(key: string): T | undefined {
+export function pullPreloadedData<T>(key: string): T | undefined {
   const value = __server__._preload?.[key]
   if (value === undefined) return undefined
+  if (__server__._preload) {
+    delete __server__._preload[key]
+  }
   return value as T
 }
 

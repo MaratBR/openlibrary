@@ -1,8 +1,8 @@
 .book-write-review {
-    @apply relative transition-[margin] my-4 pr-4 rounded-2xl border border-transparent;
+    @apply my-4 pr-4 border border-transparent;
 
-    &__active {
-        @apply pl-4 py-4 shadow-gray-300 shadow-[0_2px_16px_var(--tw-shadow-color)] border-none my-10 border-border;
+    &__form {
+        @apply rounded-2xl relative pl-4 py-4 shadow-gray-300 shadow-[0_2px_16px_var(--tw-shadow-color)] border-none my-10 border-border;
     }
 
     &__close {

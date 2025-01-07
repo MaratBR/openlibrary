@@ -11,6 +11,7 @@ import { Toaster } from './components/ui/sonner'
 import { initPageSpark } from './modules/common/components/page-spark'
 import 'overlayscrollbars/overlayscrollbars.css'
 import { initI18n } from './i18n'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Suspense>
             <Initialization>
               <RouterProvider router={router} />
+              <ReactQueryDevtools initialIsOpen={false} />
             </Initialization>
             <Toaster />
           </Suspense>

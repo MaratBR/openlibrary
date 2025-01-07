@@ -67,6 +67,10 @@ function SearchPagination() {
   const MAX_PAGES = 7
 
   const links = React.useMemo(() => {
+    if (pagination.totalPages === 1) {
+      return []
+    }
+
     function getHref(page: number) {
       const params = new URLSearchParams(sp)
       params.set('p', page.toString())
@@ -115,6 +119,8 @@ function SearchPagination() {
 
     return links
   }, [pagination.page, pagination.totalPages, sp])
+
+  if (links.length === 0) return null
 
   return (
     <Pagination className="justify-start mt-4 mb-6">

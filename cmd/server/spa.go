@@ -126,13 +126,23 @@ func newSPAHandler(
 			reviews, err := reviewsService.GetBookReviews(r.Context(), app.GetBookReviewsQuery{
 				BookID:   bookID,
 				Page:     1,
-				PageSize: 20,
+				PageSize: 5,
 			})
 			if err == nil {
 				data.AddPreloadedData(fmt.Sprintf("/api/reviews/%d", bookID), reviewsResponse{
 					Reviews:    reviews.Reviews,
 					Pagination: reviews.Pagination,
 				})
+			}
+
+			if userID.Valid {
+				review, err := reviewsService.GetReview(r.Context(), app.GetReviewQuery{
+					BookID: bookID,
+					UserID: userID.UUID,
+				})
+				if err == nil {
+					data.AddPreloadedData(fmt.Sprintf("/api/reviews/%d/my", bookID), review)
+				}
 			}
 		}
 	})

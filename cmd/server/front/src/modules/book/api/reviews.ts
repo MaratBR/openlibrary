@@ -1,4 +1,5 @@
-import { httpClient } from '@/modules/common/api'
+import { httpClient, withPreloadCache } from '@/modules/common/api'
+import { KyResponse } from 'ky'
 import { z } from 'zod'
 
 export const ratingSchema = z.union([
@@ -62,14 +63,24 @@ export type CreateReviewRequest = {
   content: string
 }
 
-export async function httpUpdateReview(
-  bookId: string,
-  request: CreateReviewRequest,
-): Promise<ReviewDto> {
+export function httpUpdateReview(bookId: string, request: CreateReviewRequest): Promise<ReviewDto> {
   return httpClient
     .post(`/api/reviews/${bookId}`, {
       json: request,
     })
     .then((r) => r.json())
     .then((r) => reviewDtoSchema.parse(r))
+}
+
+export async function httpDeleteReview(bookId: string): Promise<KyResponse> {
+  return await httpClient.delete(`/api/reviews/${bookId}`)
+}
+
+export async function httpGetMyReview(bookId: string): Promise<ReviewDto | null> {
+  return withPreloadCache(`/api/reviews/${bookId}/my`, () =>
+    httpClient
+      .get(`/api/reviews/${bookId}/my`)
+      .then((r) => r.json())
+      .then((r) => (r === null ? null : reviewDtoSchema.parse(r))),
+  )
 }

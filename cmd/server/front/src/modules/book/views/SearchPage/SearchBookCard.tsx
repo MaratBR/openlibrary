@@ -114,7 +114,9 @@ export default function SearchBookCard({ book }: { book: BookSearchItemState }) 
 
           <div className="pt-3 text-sm search-book-card__summary">
             {book.summary ? (
-              <SanitizeHtml html={book.summary} />
+              <div className="user-content">
+                <SanitizeHtml html={book.summary} />
+              </div>
             ) : (
               <span className="text-muted-foreground">No summary</span>
             )}

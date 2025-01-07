@@ -74,7 +74,7 @@ export default function SearchFilters() {
             }}
           />
         </div>
-        <div className="md:space-y-2">
+        <div className="md:space-y-2 pb-4 md:pb-0">
           <ExpandableField label={t('search.includeTags')}>
             <TagsField value={params.include.tags} onChange={setIncludeTags} />
           </ExpandableField>
@@ -129,7 +129,7 @@ function ExpandableField({ children, label }: React.PropsWithChildren<{ label: s
         </div>
       </CollapsibleTrigger>
 
-      <CollapsibleContent>
+      <CollapsibleContent className="expandable-field__content">
         <div className="px-6 py-3">{children}</div>
       </CollapsibleContent>
     </Collapsible>

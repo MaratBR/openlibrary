@@ -1,33 +1,34 @@
 package cache
 
-type disabledCacheImpl struct {
-	cache map[string]CacheEntry
-}
+import "context"
 
-// Remove implements CacheBackend.
-func (m *disabledCacheImpl) Remove(key string) (bool, error) {
-	return false, nil
+type disabledCacheImpl struct {
 }
 
 // Get implements CacheBackend.
-func (m *disabledCacheImpl) Get(key string) (CacheEntry, error) {
-	return CacheEntry{}, ErrCacheMiss
+func (d *disabledCacheImpl) Get(ctx context.Context, key string) ([]byte, error) {
+	return nil, ErrCacheMiss
 }
 
-// Set implements CacheBackend.
-func (m *disabledCacheImpl) Put(entry CacheEntry) error {
+// Put implements CacheBackend.
+func (d *disabledCacheImpl) Put(ctx context.Context, entry CacheEntry) error {
 	return nil
 }
 
+// Remove implements CacheBackend.
+func (d *disabledCacheImpl) Remove(ctx context.Context, key string) (bool, error) {
+	return false, nil
+}
+
 // Start implements CacheBackend.
-func (m *disabledCacheImpl) Start() error {
+func (d *disabledCacheImpl) Start(ctx context.Context) error {
 	return nil
 }
 
 // Stop implements CacheBackend.
-func (m *disabledCacheImpl) Stop() {
+func (d *disabledCacheImpl) Stop(ctx context.Context) {
 }
 
 func NewDisabledCacheBackend() CacheBackend {
-	return &memoryCacheImpl{}
+	return &disabledCacheImpl{}
 }

@@ -10,6 +10,8 @@ import (
 func CacheBackendFromConfig(cfg *koanf.Koanf) (CacheBackend, error) {
 	backend := cfg.String("cache.type")
 	switch backend {
+	case "disabled":
+		return NewDisabledCacheBackend(), nil
 	case "memory":
 		return NewMemoryCacheBackend(), nil
 	case "redis":

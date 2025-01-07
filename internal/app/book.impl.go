@@ -16,6 +16,7 @@ type bookService struct {
 	tagsService        TagsService
 	uploadService      *UploadService
 	readingListService ReadingListService
+	reviewService      ReviewsService
 }
 
 func NewBookService(
@@ -23,12 +24,14 @@ func NewBookService(
 	tagsService TagsService,
 	uploadService *UploadService,
 	readingListService ReadingListService,
+	reviewService ReviewsService,
 ) BookService {
 	return &bookService{
 		queries:            store.New(db),
 		tagsService:        tagsService,
 		uploadService:      uploadService,
 		readingListService: readingListService,
+		reviewService:      reviewService,
 	}
 }
 
@@ -83,7 +86,9 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 		return BookDetailsDto{}, err
 	}
 
-	var readingList Nullable[BookReadingListDto]
+	var (
+		readingList Nullable[BookReadingListDto]
+	)
 
 	if query.ActorUserID.Valid {
 		readingList, err = s.readingListService.GetStatus(ctx, query.ActorUserID.UUID, query.ID)

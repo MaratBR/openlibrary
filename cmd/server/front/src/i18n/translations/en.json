@@ -24,11 +24,19 @@
             "short": "{{words}} words, {{wordsPerChapter}} words per chapter, {{chapters}} chapters"
         },
 
-        "comments": "Comments & Reviews",
+        "reviews": "Reviews",
 
         "review": {
             "yourReview": "Your review",
-            "writeReview": "Write your review"
+            "submit": "Submit your review",
+            "writeReview": "Write your review",
+            "delete": {
+                "title": "Delete review",
+                "description": "Are you sure you want to delete your review?",
+                "delete": "Delete",
+                "deleting": "Deleting...",
+                "deleted": "Your review was deleted"
+            }
         }
     },
     "readingList": {

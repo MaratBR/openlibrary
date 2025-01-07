@@ -1,5 +1,5 @@
 .book-rating-card {
-    @apply inline-block p-2 rounded-md transition-colors hover:bg-highlight mt-2 text-muted-foreground active:ring-2 ring-offset-2 ring-black dark:ring-white;
+    @apply inline-block p-2 rounded-md transition-shadow hover:bg-highlight mt-2 text-muted-foreground;
 
     &__info {
         @apply text-xs ml-1 -translate-y-1 inline-block;

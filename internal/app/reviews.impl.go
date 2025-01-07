@@ -8,8 +8,74 @@ import (
 )
 
 type reviewsService struct {
-	db          DB
-	userService UserService
+	db                DB
+	userService       UserService
+	backgroundService BookBackgroundService
+}
+
+// GetBookReviewsDistribution implements ReviewsService.
+func (r *reviewsService) GetBookReviewsDistribution(ctx context.Context, bookID int64) (GetBookReviewsDistributionResult, error) {
+	queries := store.New(r.db)
+	rows, err := queries.GetBookReviewsDistribution(ctx, bookID)
+	if err != nil {
+		return GetBookReviewsDistributionResult{}, wrapUnexpectedDBError(err)
+	}
+
+	result := GetBookReviewsDistributionResult{}
+
+	for _, row := range rows {
+		result.Distribution[row.Rating-1] = int32(row.Count)
+	}
+
+	return result, nil
+}
+
+// DeleteReview implements ReviewsService.
+func (r *reviewsService) DeleteReview(ctx context.Context, cmd DeleteReviewCommand) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	queries := store.New(r.db).WithTx(tx)
+	err = queries.DeleteRate(ctx, store.DeleteRateParams{
+		UserID: uuidDomainToDb(cmd.UserID),
+		BookID: cmd.BookID,
+	})
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return wrapUnexpectedDBError(err)
+	}
+
+	err = queries.DeleteReview(ctx, store.DeleteReviewParams{
+		UserID: uuidDomainToDb(cmd.UserID),
+		BookID: cmd.BookID,
+	})
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return wrapUnexpectedDBError(err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	r.backgroundService.ScheduleBookRecalculation(cmd.BookID)
+
+	return nil
+}
+
+// GetReview implements ReviewsService.
+func (r *reviewsService) GetReview(ctx context.Context, query GetReviewQuery) (Nullable[ReviewDto], error) {
+	review, err := r.getDtoFromRow(ctx, query.UserID, query.BookID)
+	if err != nil {
+		if err == store.ErrNoRows {
+			return Null[ReviewDto](), nil
+		}
+		return Null[ReviewDto](), wrapUnexpectedDBError(err)
+	}
+
+	return Value(review), nil
 }
 
 func (r *reviewsService) getDtoFromRow(ctx context.Context, userID uuid.UUID, bookID int64) (ReviewDto, error) {
@@ -19,6 +85,9 @@ func (r *reviewsService) getDtoFromRow(ctx context.Context, userID uuid.UUID, bo
 		BookID: bookID,
 	})
 	if err != nil {
+		if err == store.ErrNoRows {
+			return ReviewDto{}, err
+		}
 		return ReviewDto{}, wrapUnexpectedDBError(err)
 	}
 
@@ -111,10 +180,12 @@ func (r *reviewsService) UpdateReview(ctx context.Context, cmd UpdateReviewComma
 		return ReviewDto{}, wrapUnexpectedDBError(err)
 	}
 
+	r.backgroundService.ScheduleBookRecalculation(cmd.BookID)
+
 	reviewDto, err := r.getDtoFromRow(ctx, cmd.UserID, cmd.BookID)
 	return reviewDto, err
 }
 
-func NewReviewsService(db DB, userService UserService) ReviewsService {
-	return &reviewsService{db: db, userService: userService}
+func NewReviewsService(db DB, userService UserService, backgroundService BookBackgroundService) ReviewsService {
+	return &reviewsService{db: db, userService: userService, backgroundService: backgroundService}
 }

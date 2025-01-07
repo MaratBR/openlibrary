@@ -36,7 +36,6 @@
 
     & > .tag {
         margin-inline-end: 4px;
-        @apply hover:no-underline hover:shadow-[0_2px_0_currentColor];
     }
 
     &__more {

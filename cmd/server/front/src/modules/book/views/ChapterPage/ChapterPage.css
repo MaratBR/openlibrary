@@ -1,6 +1,6 @@
 .chapter-content {
     font-family: charter, serif;
-    @apply text-xl max-w-[70em] mx-auto;
+    @apply text-xl max-w-[min(70em,1500px)] mx-auto;
 
     & hr {
         margin: 1.8em 0;

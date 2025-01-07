@@ -6,22 +6,24 @@ export default function BookRatingCard({
   bookId,
   rating,
   votes,
+  reviews,
 }: {
   bookId: string
   rating: number | null
   votes: number
+  reviews: number
 }) {
   const { t } = useTranslation()
 
   return (
-    <a href="#reviews" className="book-rating-card">
+    <a href="#reviews" className="book-rating-card focus-outline">
       {rating ? (
         <>
           <StarRating value={rating} />
 
           <div className="book-rating-card__info">
             {votes} votes <br />
-            {123} reviews
+            {reviews} reviews
           </div>
         </>
       ) : (

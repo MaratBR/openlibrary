@@ -97,7 +97,7 @@ function ChapterContents({ chapter }: { chapter: ChapterDto }) {
           </>
         )}
       </header>
-      <div dangerouslySetInnerHTML={{ __html: chapter.content }}></div>
+      <div className="user-content" dangerouslySetInnerHTML={{ __html: chapter.content }}></div>
     </div>
   )
 }

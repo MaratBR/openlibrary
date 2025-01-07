@@ -24,9 +24,9 @@ public-bucket = "openlibrary-public"
 secure = false
 
 [cache]
-type = "redis"
+# type = "redis"
 # type = "memory"
-# type = "disabled"
+type = "disabled"
 
 [cache.redis]
 url = "localhost:6379"

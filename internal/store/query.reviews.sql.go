@@ -25,13 +25,27 @@ func (q *Queries) DeleteRate(ctx context.Context, arg DeleteRateParams) error {
 	return err
 }
 
+const deleteReview = `-- name: DeleteReview :exec
+delete from reviews where user_id = $1 and book_id = $2
+`
+
+type DeleteReviewParams struct {
+	UserID pgtype.UUID
+	BookID int64
+}
+
+func (q *Queries) DeleteReview(ctx context.Context, arg DeleteReviewParams) error {
+	_, err := q.db.Exec(ctx, deleteReview, arg.UserID, arg.BookID)
+	return err
+}
+
 const getBookReviews = `-- name: GetBookReviews :many
 select reviews.user_id, reviews.book_id, reviews.content, reviews.created_at, reviews.last_updated_at, reviews.likes, ratings.rating, ratings.updated_at as rating_updated_at, users.name as user_name
 from reviews
 join ratings on ratings.book_id = reviews.book_id and ratings.user_id = reviews.user_id
 join users on users.id = reviews.user_id
 where reviews.book_id = $1
-order by reviews.created_at
+order by reviews.created_at desc
 limit $3 offset $2
 `
 
@@ -73,6 +87,40 @@ func (q *Queries) GetBookReviews(ctx context.Context, arg GetBookReviewsParams) 
 			&i.RatingUpdatedAt,
 			&i.UserName,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getBookReviewsDistribution = `-- name: GetBookReviewsDistribution :many
+select rating, count(*) as count
+from reviews
+join ratings on ratings.book_id = reviews.book_id and ratings.user_id = reviews.user_id
+where reviews.book_id = $1
+group by rating
+order by rating
+`
+
+type GetBookReviewsDistributionRow struct {
+	Rating int16
+	Count  int64
+}
+
+func (q *Queries) GetBookReviewsDistribution(ctx context.Context, bookID int64) ([]GetBookReviewsDistributionRow, error) {
+	rows, err := q.db.Query(ctx, getBookReviewsDistribution, bookID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBookReviewsDistributionRow
+	for rows.Next() {
+		var i GetBookReviewsDistributionRow
+		if err := rows.Scan(&i.Rating, &i.Count); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -185,9 +233,10 @@ func (q *Queries) InsertOrUpdateReview(ctx context.Context, arg InsertOrUpdateRe
 
 const recalculateBookRating = `-- name: RecalculateBookRating :exec
 UPDATE books
-SET rating = (
-    SELECT avg(rating::float8) FROM ratings WHERE book_id = $1
-)
+SET 
+    rating = (SELECT avg(rating::float8) FROM ratings WHERE ratings.book_id = $1), 
+    total_ratings = (SELECT COUNT(*) FROM ratings WHERE ratings.book_id = $1), 
+    total_reviews = (SELECT COUNT(*) FROM reviews WHERE reviews.book_id = $1)
 WHERE id = $1
 `
 

@@ -41,13 +41,16 @@ export default function BookPage() {
                 {data.author.name}
               </NavLink>
             </div>
-            <BookRatingCard bookId={data.id} rating={data.rating} votes={1234} />
+            <BookRatingCard
+              bookId={data.id}
+              rating={data.rating ? data.rating / 2 : null}
+              votes={data.votes}
+              reviews={data.reviews}
+            />
           </div>
 
-          <div className="book-summary">
-            <div className="pt-2">
-              <SanitizeHtml html={data.summary} />
-            </div>
+          <div className="book-summary user-content">
+            <SanitizeHtml html={data.summary} />
           </div>
 
           <BookTags tags={data.tags} />
@@ -62,7 +65,7 @@ export default function BookPage() {
 
           <StartReading book={data} />
           <Separator className="my-4" />
-          <BookComments bookId={data.id} authorId={data.author.id} />
+          <BookComments book={data} />
         </div>
       </div>
     </main>

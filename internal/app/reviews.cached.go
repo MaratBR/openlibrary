@@ -13,6 +13,27 @@ type cachedReviewsService struct {
 	cache *cache.Cache
 }
 
+// GetBookReviewsDistribution implements ReviewsService.
+func (c *cachedReviewsService) GetBookReviewsDistribution(ctx context.Context, bookID int64) (GetBookReviewsDistributionResult, error) {
+	queryKey := fmt.Sprintf("GetBookReviewsDistribution:%d", bookID)
+	return cache.GetOrSet(ctx, c.cache, queryKey, func(entry *cache.CacheEntry) (GetBookReviewsDistributionResult, error) {
+		result, err := c.inner.GetBookReviewsDistribution(ctx, bookID)
+		return result, err
+	})
+
+}
+
+// DeleteReview implements ReviewsService.
+func (c *cachedReviewsService) DeleteReview(ctx context.Context, cmd DeleteReviewCommand) error {
+	return c.inner.DeleteReview(ctx, cmd)
+}
+
+// GetReview implements ReviewsService.
+func (c *cachedReviewsService) GetReview(ctx context.Context, query GetReviewQuery) (Nullable[ReviewDto], error) {
+	review, err := c.inner.GetReview(ctx, query)
+	return review, err
+}
+
 // GetBookReviews implements ReviewsService.
 func (c *cachedReviewsService) GetBookReviews(ctx context.Context, query GetBookReviewsQuery) (GetBookReviewsResult, error) {
 	if query.Page == 1 && query.PageSize == 20 {

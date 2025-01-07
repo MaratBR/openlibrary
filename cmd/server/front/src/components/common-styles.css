@@ -39,3 +39,33 @@
     @apply text-foreground;
   }
 }
+
+.user-content {
+  p {
+    margin-bottom: 0.4em;
+  }
+
+  strong, b {
+    @apply font-semibold;
+  }
+
+  h1, h2, h3, h4, h5, h6 {}
+
+  ul {
+    list-style: disc;
+    @apply ml-5;
+  
+    ul {
+      list-style: circle;
+    }
+  }
+
+  ol {
+    @apply ml-5;
+    list-style: decimal;
+  }
+}
+
+.focus-outline {
+  @apply active:ring-2 ring-offset-2 ring-black dark:ring-white;
+}

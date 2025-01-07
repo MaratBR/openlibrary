@@ -26,7 +26,7 @@ export default function Tag({ tag, disableInteractive = false }: TagProps) {
     >
       {tag.spoiler && <ExclamationTriangleIcon className="inline mx-1" />}
 
-      <span className="mx-0.5 inline whitespace-nowrap">{tag.name}</span>
+      <span className="mx-0.5 inline">{tag.name}</span>
       {tag.adult && <span className="bg-red-900/50 px-1">18+</span>}
     </NavLink>
   )

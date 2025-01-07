@@ -71,7 +71,26 @@ type UpdateReviewCommand struct {
 	Content string
 }
 
+type GetReviewQuery struct {
+	UserID uuid.UUID
+	BookID int64
+}
+
+type DeleteReviewCommand struct {
+	UserID uuid.UUID
+	BookID int64
+}
+
+type BookReviewsDistribution [10]int32
+
+type GetBookReviewsDistributionResult struct {
+	Distribution BookReviewsDistribution
+}
+
 type ReviewsService interface {
+	GetBookReviewsDistribution(ctx context.Context, bookID int64) (GetBookReviewsDistributionResult, error)
 	GetBookReviews(ctx context.Context, query GetBookReviewsQuery) (GetBookReviewsResult, error)
 	UpdateReview(ctx context.Context, cmd UpdateReviewCommand) (ReviewDto, error)
+	GetReview(ctx context.Context, query GetReviewQuery) (Nullable[ReviewDto], error)
+	DeleteReview(ctx context.Context, cmd DeleteReviewCommand) error
 }

@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 export default function BookCard({ book }: { book: BookDetailsDto }) {
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4 md:sticky md:top-24">
       <BookCover name={book.name} url={book.cover} />
       <ReadingListStatusSection readingList={book.readingList} bookId={book.id} />
     </div>

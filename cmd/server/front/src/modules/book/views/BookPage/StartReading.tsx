@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { BookDetailsDto } from '../../api'
+import { BookDetailsDto, bookDetailsDtoSchema } from '../../api'
 import './StartReading.css'
 import { NavLink } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -7,9 +7,34 @@ import { httpUpdateReadingListStartReading } from '../../api/reading-list'
 import { useMemo } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { DateTime } from 'luxon'
 
 export default function StartReading({ book }: { book: BookDetailsDto }) {
   const { t } = useTranslation()
+
+  const queryClient = useQueryClient()
+
+  const startReading = useMutation({
+    mutationFn: async (chapterId: string) => {
+      const data = queryClient.getQueryData(['book', book.id])
+      if (data) {
+        const parseResult = bookDetailsDtoSchema.safeParse(data)
+        if (parseResult.success) {
+          const newData: BookDetailsDto = {
+            ...parseResult.data,
+            readingList: {
+              status: 'reading',
+              chapterId,
+              lastUpdatedAt: DateTime.now().toISO(),
+            },
+          }
+          queryClient.setQueryData(['book', book.id], newData)
+        }
+      }
+      await httpUpdateReadingListStartReading(book.id, chapterId)
+    },
+  })
 
   const memoizedChildren = useMemo(() => {
     if (book.chapters.length === 0) return undefined
@@ -19,18 +44,20 @@ export default function StartReading({ book }: { book: BookDetailsDto }) {
         <>
           <NavLink to={`/book/${book.id}/chapters/${book.chapters[0].id}#chapter`}>
             <Button
-              onClick={() => httpUpdateReadingListStartReading(book.id, book.chapters[0].id)}
+              onClick={() => startReading.mutate(book.chapters[0].id)}
               size="lg"
-              variant="outline"
+              variant="outline3"
               className="rounded-full text-md"
             >
               {t('book.startFromFirstChapter')}
             </Button>
           </NavLink>
 
-          <Button variant="ghost" size="lg" className="ml-2 pl-2 rounded-full text-md">
-            {t('book.saveForLater')}
-          </Button>
+          {!book.readingList && (
+            <Button variant="ghost" size="lg" className="ml-2 pl-2 rounded-full text-md">
+              {t('book.saveForLater')}
+            </Button>
+          )}
         </>
       )
     } else if (book.readingList.status === 'reading' || book.readingList.status === 'paused') {

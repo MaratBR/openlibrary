@@ -1,5 +1,5 @@
 import './BookReview.css'
-import { ReviewDto } from '../../api'
+import { httpDeleteReview, ReviewDto } from '../../api'
 import { NavLink } from 'react-router-dom'
 import SanitizeHtml from '@/components/sanitizer-html'
 import { useRef, useState } from 'react'
@@ -8,16 +8,64 @@ import { useTranslation } from 'react-i18next'
 import clsx from 'clsx'
 import StarRating from '@/components/star-rating'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { CheckCircle, PenBox, Trash2 } from 'lucide-react'
+import { useCurrentUser } from '@/modules/auth/state'
+import ReviewEditor, { ReviewData } from './ReviewEditor'
+import { useUpdateReviewMutation } from './WriteReview'
+import { cn, delayMs } from '@/lib/utils'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { getErrorMessage } from '@/lib/errors'
 
-export default function BookReview({ review, isAuthor }: { review: ReviewDto; isAuthor: boolean }) {
+type BookReviewProps = {
+  review: ReviewDto
+  isAuthor: boolean
+  bookId: string
+  isEditable?: boolean
+}
+
+export default function BookReview({ review, isAuthor, isEditable, bookId }: BookReviewProps) {
+  const [isEditing, setIsEditing] = useState(false)
+
+  const isEditableDefault = useCurrentUser()?.id === review.user.id
+  if (isEditable === undefined) isEditable = isEditableDefault
+
+  const updateReview = useUpdateReviewMutation(bookId)
+
+  function handleStartEditing() {
+    if (!isEditable) return
+    setIsEditing(true)
+  }
+
+  function handleDelete() {}
+
+  function handleStopEditing() {
+    setIsEditing(false)
+  }
+
+  async function handleUpdate(_reviewData: ReviewData, review: ReviewDto | null) {
+    if (!review) return
+    await updateReview.mutateAsync({
+      content: review.content,
+      rating: review.rating,
+    })
+    setIsEditing(false)
+  }
+
   return (
-    <div className="book-review">
+    <div
+      className={cn('book-review', {
+        'book-review--editing': isEditing,
+      })}
+    >
       <div className="book-review__user">
-        <div className="book-review__user__avatar">
+        <NavLink to={`/user/${review.user.id}`} className="size-[84px]">
           <div className="inline-block overflow-hidden rounded-full bg-muted">
             <img className="w-21 h-21" src={review.user.avatar} aria-hidden="true" />
           </div>
-        </div>
+        </NavLink>
       </div>
 
       <div className="book-review__content">
@@ -27,9 +75,28 @@ export default function BookReview({ review, isAuthor }: { review: ReviewDto; is
           </NavLink>
           {isAuthor && <AuthorQuill />}
         </div>
-        <StarRating className="mb-2" value={review.rating / 2} />
-        <ReviewContent content={review.content} />
+        {isEditing ? (
+          <ReviewEditor onClose={handleStopEditing} onUpdated={handleUpdate} review={review} />
+        ) : (
+          <>
+            <StarRating className="mb-2" size="2rem" value={review.rating / 2} />
+            <ReviewContent content={review.content} />
+          </>
+        )}
       </div>
+
+      {!isEditing && (
+        <div className="book-review__actions">
+          {isEditable && (
+            <>
+              <button onClick={handleStartEditing} className="book-review__action">
+                <PenBox size={16} />
+              </button>
+              <DeleteReview bookId={bookId} />
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -73,9 +140,9 @@ function ReviewContent({ content }: { content: string }) {
   })
 
   return (
-    <div>
+    <div className="text-sm">
       <div
-        className={clsx({
+        className={clsx('user-content', {
           contents: expanded,
           'overflow-hidden max-h-[100px]': !expanded,
         })}
@@ -85,11 +152,72 @@ function ReviewContent({ content }: { content: string }) {
       {canBeExpanded && (
         <button
           onClick={() => setExpanded((x) => !x)}
-          className="font-[500] hover:underline underline-offset-2"
+          className="font-[500] underline-offset-2 block hover:underline relative after:bg-highlight after:inset-[-8px] after:rounded-lg after:absolute after:hidden hover:after:block"
         >
           {expanded ? t('common.less') : t('common.more')}
         </button>
       )}
     </div>
+  )
+}
+
+function DeleteReview({ bookId }: { bookId: string }) {
+  const [open, setOpen] = useState(false)
+  const { t } = useTranslation()
+
+  const queryClient = useQueryClient()
+
+  const deleteReview = useMutation({
+    mutationFn: async () => {
+      const delayPromise = delayMs(350)
+      try {
+        await Promise.all([httpDeleteReview(bookId), delayPromise])
+        toast(
+          <div className="flex items-center gap-2">
+            <CheckCircle size={16} />
+            <span>{t('book.review.delete.deleted')}</span>
+          </div>,
+        )
+        queryClient.setQueryData(['book', bookId, 'reviews', 'my'], null)
+      } catch (e: unknown) {
+        await delayPromise
+        throw e
+      }
+    },
+    onError(error) {
+      toast(
+        <div className="flex items-center gap-2">
+          <span>{getErrorMessage(error)}</span>
+        </div>,
+      )
+    },
+  })
+
+  return (
+    <Popover modal open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          onClick={() => setOpen(true)}
+          className="book-review__action book-review__action--delete"
+        >
+          <Trash2 size={16} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="border-destructive/50 border-2 pt-3">
+        <h3 className="text-lg font-[500]">{t('book.review.delete.title')}</h3>
+        <p className="text-sm">{t('book.review.delete.description')}</p>
+        <Button
+          disabled={deleteReview.isPending}
+          onClick={() => deleteReview.mutate()}
+          variant="ghost"
+          className="rounded-lg -ml-1 mt-3 p-1 h-auto bg-destructive/10 hover:text-destructive hover:bg-destructive/20"
+        >
+          <Trash2 />
+          {deleteReview.isPending
+            ? t('book.review.delete.deleting')
+            : t('book.review.delete.delete')}
+        </Button>
+      </PopoverContent>
+    </Popover>
   )
 }

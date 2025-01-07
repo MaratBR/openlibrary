@@ -1,7 +1,7 @@
 .tag {
     @apply 
         inline-block overflow-hidden transition-shadow shadow-[0_0_0_currentColor]
-        hover:underline hover:underline-offset-4 active:text-muted-foreground;
+        hover:shadow-[0_2px_0_currentColor] hover:bg-highlight active:text-muted-foreground;
 
 
     &--adult {

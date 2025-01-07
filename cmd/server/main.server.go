@@ -52,13 +52,19 @@ func mainServer(
 
 	tagsService := app.NewTagsService(db)
 	readingListService := app.NewReadingListService(db)
-	bookService := app.NewBookService(db, tagsService, uploadService, readingListService)
+
+	userService := app.NewUserService(db)
+
 	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService)
+	bookBackgroundService := app.NewBookBackgroundService(db)
+
+	reviewsService := app.NewReviewsService(db, userService, bookBackgroundService)
+	reviewsService = app.NewCachedReviewsService(reviewsService, cacheInstance)
+
+	bookService := app.NewBookService(db, tagsService, uploadService, readingListService, reviewsService)
+
 	searchService := app.NewSearchService(db, tagsService, uploadService)
 	searchService = app.NewCachedSearchService(searchService, cacheInstance)
-	userService := app.NewUserService(db)
-	reviewsService := app.NewReviewsService(db, userService)
-	// reviewsService = app.NewCachedReviewsService(reviewsService, cacheInstance)
 
 	// middlewares
 	authorizationMiddleware := newAuthorizationMiddleware(sessionService)
@@ -86,11 +92,6 @@ func mainServer(
 	//
 	spaHandler := newSPAHandler(config, bookService, reviewsService, userService, searchService, tagsService)
 	r.NotFound(spaHandler.ServeHTTP)
-	{
-		// initialize front-end data preload
-		// searchUIController := newSearchUIController(searchService, tagsService)
-		// r.Get("/search", searchUIController.Search)
-	}
 
 	//
 	// init api endpoints
@@ -131,8 +132,10 @@ func mainServer(
 
 		r.Route("/reviews", func(r chi.Router) {
 			r.Get("/{bookID}", reviewsController.GetReviews)
+			r.Get("/{bookID}/distribution", reviewsController.GetReviewsDistribution)
+			r.Get("/{bookID}/my", reviewsController.GetMyReview)
 			r.Post("/{bookID}", reviewsController.UpdateOrCreateReview)
-
+			r.Delete("/{bookID}", reviewsController.DeleteReview)
 		})
 
 		//
@@ -187,6 +190,13 @@ func mainServer(
 	})
 
 	//
+	// start background services
+	//
+
+	favoriteRecalculationBackgroundService.Start()
+	bookBackgroundService.Start()
+
+	//
 	// post-initialization stuff
 	//
 	if config.Bool("init.create-default-users") {
@@ -222,8 +232,6 @@ func mainServer(
 			slog.Error("failed to get public ip", "err", err)
 		}
 	}()
-
-	favoriteRecalculationBackgroundService.Start()
 
 	listenOn := fmt.Sprintf("%s:%d", config.String("server.host"), config.Int("server.port"))
 	slog.Info("server listening", "on", listenOn, "url", fmt.Sprintf("http://%s", listenOn))

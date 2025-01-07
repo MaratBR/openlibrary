@@ -1,6 +1,6 @@
 import { QueryClient, useQuery } from '@tanstack/react-query'
 import {
-  getPreloadedData,
+  pullPreloadedData,
   httpClient,
   stringArrayToQueryParameterValue,
   withPreloadCache,
@@ -112,6 +112,8 @@ export const bookDetailsDtoSchema = z.object({
   notifications: z.array(genericNotificationSchema).optional(),
   cover: z.string(),
   rating: z.number().nullable(),
+  votes: z.number(),
+  reviews: z.number(),
   readingList: readingListDtoSchema.nullable(),
 })
 
@@ -124,8 +126,8 @@ export async function httpGetBook(id: string): Promise<BookDetailsDto> {
   return bookDetailsDtoSchema.parse(result)
 }
 
-export function getPreloadedBookResult(id: string) {
-  return getPreloadedData<BookDetailsDto>(`/api/books/${id}`)
+export function pullPreloadedBookResult(id: string) {
+  return pullPreloadedData<BookDetailsDto>(`/api/books/${id}`)
 }
 
 export function preloadBookQuery(queryClient: QueryClient, bookId: string) {
@@ -145,8 +147,8 @@ export function useBookQuery(bookId: string | undefined) {
     queryKey: ['book', bookId],
     enabled: !!bookId,
     queryFn: () => httpGetBook(bookId!),
-    initialData: bookId ? getPreloadedBookResult(bookId) : undefined,
-    staleTime: 10000,
+    initialData: bookId ? pullPreloadedBookResult(bookId) : undefined,
+    staleTime: 100,
     gcTime: 60000,
   })
 

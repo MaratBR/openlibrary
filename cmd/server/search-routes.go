@@ -55,12 +55,14 @@ func performBookSearch(searchService app.SearchService, tagsService app.TagsServ
 		ExcludeTags:     search.ExcludeTags,
 		Words:           search.Words,
 		Chapters:        search.Chapters,
+		Favorites:       search.Favorites,
 		WordsPerChapter: search.WordsPerChapter,
-		IncludeBanned:   false,
-		IncludeHidden:   false,
-		IncludeEmpty:    false,
-		Page:            search.Page,
-		PageSize:        search.PageSize,
+
+		IncludeBanned: false,
+		IncludeHidden: false,
+		IncludeEmpty:  false,
+		Page:          search.Page,
+		PageSize:      search.PageSize,
 	})
 
 	if err != nil {
