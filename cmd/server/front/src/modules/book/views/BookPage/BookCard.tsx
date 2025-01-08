@@ -12,12 +12,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { httpUpdateReadingListStatus } from '../../api/reading-list'
 import { ButtonSpinner } from '@/components/spinner'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Download, Heart } from 'lucide-react'
 
 export default function BookCard({ book }: { book: BookDetailsDto }) {
   return (
     <div className="flex flex-col items-center gap-4 md:sticky md:top-24">
       <BookCover name={book.name} url={book.cover} />
       <ReadingListStatusSection readingList={book.readingList} bookId={book.id} />
+      <div className="flex gap-4 content-center">
+        <FavoriteBook bookId={book.id} isFavorite={book.isFavorite} />
+        <DownloadBook bookId={book.id} />
+      </div>
     </div>
   )
 }
@@ -85,5 +90,24 @@ function ReadingListStatusSection({
         </div>
       </PopoverContent>
     </Popover>
+  )
+}
+
+function FavoriteBook({ bookId, isFavorite }: { bookId: string; isFavorite: boolean }) {
+  return (
+    <Button
+      variant="outline"
+      className="rounded-full h-16 w-16 hover:text-rose-600 hover:bg-transparent focus:ring-4 focus:border-rose-500 focus:ring-rose-600/30 !outline-none "
+    >
+      <Heart className="!h-8 !w-8 transition-transform" />
+    </Button>
+  )
+}
+
+function DownloadBook({ bookId }: { bookId: string }) {
+  return (
+    <Button variant="outline" className="rounded-full h-16 w-16">
+      <Download className="!h-8 !w-8 transition-transform" />
+    </Button>
   )
 }

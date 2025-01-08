@@ -55,7 +55,7 @@ export default function SearchFilters() {
       <div
         className="
         inset-0 fixed bg-background z-50 overflow-auto data-[mobile-open=false]:invisible 
-        md:!visible md:static md:z-auto"
+        md:!visible md:static md:z-auto "
         data-mobile-open={isMobileOpen}
       >
         <div className="flex flex-col gap-2 my-3 px-3">

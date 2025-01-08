@@ -15,7 +15,13 @@
         "Unfollow",
         "vite"
     ],
+    "tailwindCSS.includeLanguages": {
+        "templ": "html"  
+    },
     "eslint.useFlatConfig": true,
+    "[templ]": {
+        "editor.defaultFormatter": "a-h.templ"
+    },
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },

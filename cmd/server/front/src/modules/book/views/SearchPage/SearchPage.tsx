@@ -18,15 +18,11 @@ export default function SearchPage() {
           </span>
         </h1>
       </header>
-      <div className="md:relative">
-        <div
-          className="
-            search-filters mb-5 
-            md:absolute md:top-0 md:right-0 md:w-[300px]"
-        >
+      <div className="search-page-grid">
+        <div className="search-filters">
           <SearchFilters />
         </div>
-        <div className="search-results md:pr-[316px]">
+        <div className="search-results">
           <SearchResults />
         </div>
       </div>

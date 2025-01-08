@@ -1,0 +1,5 @@
+<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>404 - Not Found</title><style>\n            a {\n                color: #1143EE;\n                text-decoration: none;\n            }\n\n            a:hover {\n                color: black;\n                text-decoration: underline;\n            }\n        </style></head>
+<body class=\"
+\">
+<main class=\"
+\"><h1>Not found</h1><p>Page you were looking for cannot be found</p><a href=\"/admin\">Go back to home page</a></main></body></html>

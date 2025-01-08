@@ -13,11 +13,10 @@ import UserProfile, { UserProfileInner } from './modules/user/views/UserProfile'
 import LogoutPage from './modules/auth/views/LogoutPage'
 import { initIframeRouter, wrapRouter } from './lib/iframe-navigation'
 import TagPage from './modules/book/views/TagPage/TagPage'
+import { AccountSettings } from './modules/account'
 
 const bookManagerChunk = componentsChunk(() => import('./modules/book-manager'))
 const BookManagerLayout = bookManagerChunk.componentType('BookManagerLayout')
-
-const accountChunk = componentsChunk(() => import('./modules/account'))
 
 const router = createBrowserRouter([
   {
@@ -87,7 +86,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: 'settings',
-            element: accountChunk.element('AccountSettings'),
+            element: <AccountSettings />,
           },
         ],
       },

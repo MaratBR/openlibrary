@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/cmd/server/csrf"
+	"github.com/MaratBR/openlibrary/internal/admin"
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -92,6 +93,8 @@ func mainServer(
 	//
 	spaHandler := newSPAHandler(config, bookService, reviewsService, userService, searchService, tagsService)
 	r.NotFound(spaHandler.ServeHTTP)
+
+	r.Mount("/admin", admin.NewHandler(db, config))
 
 	//
 	// init api endpoints

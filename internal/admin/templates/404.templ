@@ -1,0 +1,43 @@
+package templates
+
+css notFoundBody() {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+css mainClass() {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 100px;
+}
+
+templ NotFound() {
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>404 - Not Found</title>
+        <style>
+            a {
+                color: #1143EE;
+                text-decoration: none;
+            }
+
+            a:hover {
+                color: black;
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body class={notFoundBody()}>
+        <main class={mainClass()}>
+            <h1>Not found</h1>
+            <p>Page you were looking for cannot be found</p>
+            <a href="/admin">Go back to home page</a>
+        </main>
+    </body>
+    </html>
+}
