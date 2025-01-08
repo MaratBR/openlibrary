@@ -1,3 +1,7 @@
 **/dist
 /ao3-books
 **/node_modules
+
+
+.nx/cache
+.nx/workspace-data

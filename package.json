@@ -1,0 +1,22 @@
+{
+  "name": "openlibrary",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nx/eslint": "20.3.1",
+    "@nx/react": "^20.3.1",
+    "@nx/vite": "20.3.1",
+    "eslint": "~8.57.0",
+    "nx": "20.3.1"
+  },
+  "nx": {},
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}
