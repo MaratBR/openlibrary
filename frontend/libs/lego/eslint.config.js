@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
-import baseConfig from '../../../eslint.config.mjs'
+import baseConfig from '../../../eslint.config.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,15 +12,21 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-export default [{
+const config = [
+...baseConfig,
+...compat.extends("plugin:@nx/react"),
+{
     ignores: ["!**/*"],
-}, ...compat.extends("plugin:@nx/react"), ...baseConfig, {
-    files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs"],
+},
+{
+    files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
     rules: {},
 }, {
     files: ["**/*.ts", "**/*.tsx"],
     rules: {},
 }, {
-    files: ["**/*.js", "**/*.jsx", "**/.*.mjs"],
+    files: ["**/*.js", "**/*.jsx"],
     rules: {},
 }];
+
+export default config;

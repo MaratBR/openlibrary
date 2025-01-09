@@ -13,7 +13,7 @@ const compat = new FlatCompat({
 });
 
 export default [{
-    // ignores: ["**/*", "**/node_modules"],
+    ignores: ["**/*", "**/node_modules"],
 }, {
     plugins: {
         "@nx": nx,
