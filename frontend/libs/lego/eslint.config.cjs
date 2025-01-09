@@ -1,18 +1,14 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
-import baseConfig from '../../../eslint.config.js'
+const js = require("@eslint/js");
+const { FlatCompat } = require("@eslint/eslintrc");
+const baseConfig = require('../../../eslint.config.cjs')
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
     baseDirectory: __dirname,
     recommendedConfig: js.configs.recommended,
     allConfig: js.configs.all
 });
 
-const config = [
+module.exports = [
 ...baseConfig,
 ...compat.extends("plugin:@nx/react"),
 {
@@ -28,5 +24,3 @@ const config = [
     files: ["**/*.js", "**/*.jsx"],
     rules: {},
 }];
-
-export default config;

@@ -3,9 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "lego": [
-        "frontend/libs/lego/src/index.ts"
-      ]
+      "lego": ["frontend/libs/lego/src/index.ts"]
     }
   }
 }
