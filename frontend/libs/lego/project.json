@@ -1,0 +1,9 @@
+{
+  "name": "lego",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "frontend/libs/lego/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project lego --web",
+  "targets": {}
+}

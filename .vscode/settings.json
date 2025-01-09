@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "Buildable",
         "denormalized",
         "Dexie",
         "favourite",
@@ -19,10 +20,13 @@
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },
+    "eslint.enable": true,
+    "eslint.format.enable": true,
     "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
     "eslint.workingDirectories": [
        {"mode": "auto"}
     ],
+    "eslint.debug": true,
     "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
     "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
     "[typescriptreact]": {
