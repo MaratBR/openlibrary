@@ -10,7 +10,9 @@
             "request": "launch",
             "mode": "auto",
             "program": "./cmd/server",
-            "args": ["server"],
+            "args": [
+                "server"
+            ],
             "cwd": "${workspaceFolder}"
         },
         {
@@ -19,7 +21,9 @@
             "request": "launch",
             "mode": "auto",
             "program": "./cmd/server",
-            "args": ["populate"],
+            "args": [
+                "populate"
+            ],
             "cwd": "${workspaceFolder}"
         }
     ]
