@@ -1,0 +1,115 @@
+package templates
+
+import "context"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/nicksnyder/go-i18n/v2/i18n"
+import "github.com/MaratBR/openlibrary/internal/commonutil"
+import "fmt"
+import "strconv"
+
+type ReaderSettings struct {
+    FontSize int
+}
+
+templ Chapter(
+    ctx context.Context,
+    chapterWithDetails app.ChapterWithDetails,
+    book app.BookDetailsDto,
+    readerSettings ReaderSettings,
+) {
+    {{
+        _ = i18nprovider.GetLocalizer(ctx)
+        chapter := chapterWithDetails.Chapter
+    }}
+
+    @htmlLayout(ctx, chapter.Name) {
+        
+        @siteHeaderLayout() {
+            <div class="h-full items-center flex gap-2">
+                <a class="ol-link !font-[600]" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
+                    { book.Name }
+                </a>
+
+                <span class="material-symbols-outlined w-6 overflow-hidden select-none">chevron_right</span>
+
+                <span class="font-semibold">
+                    { chapter.Name }
+                </span>
+            </div>
+        }
+
+        <div
+            x-data="bookReader"
+            data-font-size={ strconv.Itoa(readerSettings.FontSize) }
+            class="ol-book-reader grid grid-cols-[1fr_auto]">
+            <div class="relative pb-10">
+                <aside class="absolute top-0 bottom-0 right-0">
+                    <div class="flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2">
+                        <button x-bind="toggleButton" class="ol-btn ol-btn--icon ol-btn--ghost">
+                            <span class="material-symbols-outlined">settings</span>
+                        </button>
+                    </div>
+                </aside>
+                <div x-bind="chapter" class="ol-book-reader__chapter relative">
+                    @ChapterContentSection(ctx, chapter, readerSettings)
+                </div>
+            </div>
+
+            <div class="w-[400px] border-l" x-cloak x-bind="settings">
+                <div class="sticky top-[var(--header-height)] h-[100%-var(--header-height)]">
+                    @readerSettingsUI(readerSettings)
+                </div>
+            </div>
+        </div>
+
+        @siteFooter(ctx)
+    }
+}
+
+templ readerSettingsUI(settings ReaderSettings) {
+    <div class="p-3 space-y-4">
+        <section>
+            <span>Font size</span>
+
+            <div class="max-w-[250px] grid grid-cols-3 border border-border rounded-sm h-16">
+                <button x-bind="decreaseFont" class="flex items-center justify-center hover:bg-secondary rounded-sm m-2">
+                    <span class="material-symbols-outlined">text_decrease</span>
+                </button>
+                <div x-text="fontSize" class="flex items-center justify-center text-xl">
+                    { strconv.Itoa(settings.FontSize) }
+                </div>
+                <button x-bind="increaseFont" class="flex items-center justify-center hover:bg-secondary rounded-sm m-2">
+                    <span class="material-symbols-outlined">text_increase</span>
+                </button>
+            </div>
+        </section>
+    </div>
+}
+
+templ ChapterContentSection(ctx context.Context, chapter app.ChapterDto, readerSettings ReaderSettings) {
+    {{
+        l := i18nprovider.GetLocalizer(ctx)
+    }}
+
+    <header class="ol-book-reader__header">
+        <h1 class="text-3xl font-title">{ chapter.Name }</h1>
+    
+        <p class="mt-2 text-muted-foreground">
+            { l.MustLocalize(&i18n.LocalizeConfig{
+                MessageID: "book.words",
+                TemplateData: map[string]string{
+                    "count": commonutil.FormatInt(int(chapter.Words)),
+                },
+            }) }
+        </p>
+    </header>
+
+    <article class="__user-content ol-book-reader__content" { templ.Attributes{
+        "style": fmt.Sprintf("--book-font-size:%dpx", readerSettings.FontSize),
+    }... } :style="`--book-font-size:${fontSize}px`">
+        <div class="contents" x-ignore>
+            @templ.Raw(chapter.Content)
+        </div>
+    </article>
+}

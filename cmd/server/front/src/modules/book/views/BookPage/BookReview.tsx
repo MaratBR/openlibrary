@@ -142,7 +142,7 @@ function ReviewContent({ content }: { content: string }) {
   return (
     <div className="text-sm">
       <div
-        className={clsx('user-content', {
+        className={clsx('__user-content', {
           contents: expanded,
           'overflow-hidden max-h-[100px]': !expanded,
         })}

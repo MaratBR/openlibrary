@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/store"
 )
 
@@ -32,7 +33,7 @@ func (c *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nullableUserID := getNullableUserID(r)
+	nullableUserID := auth.GetNullableUserID(r.Context())
 	if err == nil {
 	}
 	book, err := c.bookService.GetBook(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: nullableUserID})

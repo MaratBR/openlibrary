@@ -1,0 +1,72 @@
+package templates
+
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "context"
+import "github.com/nicksnyder/go-i18n/v2/i18n"
+
+templ bookReadingList(ctx context.Context, l *i18n.Localizer, book *app.BookDetailsDto) {
+    @i18nExtractKeys(l, []string {
+        "readingList.want_to_read",
+        "readingList.reading",
+        "readingList.read",
+        "readingList.paused",
+        "readingList.dnf",
+    })
+    <section id="reading-list" class="w-[80%] my-4 relative" x-data="{ 
+        open: false,
+        toggle() { this.open = !this.open },
+        status(s) { bookAPI.httpUpdateReadingListStatus(bookId, s).then(r => { this.rl = r; this.open = false; }) }
+    }">
+        <button
+            if !book.ReadingList.Valid {
+                x-cloak
+            }
+            x-show="rl !== null" 
+            class="ol-btn ol-btn--outline ol-btn--lg rounded-full w-full"
+            @click="open=true">
+            <span class="material-symbols-outlined">edit</span> 
+            <span x-text="i18n['readingList.' + rl.status] ?? rl.status">
+                if book.ReadingList.Valid {
+                    {l.MustLocalize(&i18n.LocalizeConfig{
+                        MessageID: fmt.Sprintf("readingList.%s", book.ReadingList.Value.Status),
+                    })}
+                }
+            </span>
+        </button>
+        <button
+            if book.ReadingList.Valid {
+                x-cloak
+            }
+            @click="status('want_to_read')" x-show="rl === null" class="ol-btn ol-btn--primary ol-btn--lg rounded-full w-full">
+            {l.MustLocalize(&i18n.LocalizeConfig{
+                MessageID: "readingList.want_to_read",
+            })}
+        </button>
+
+        <ul x-cloak x-show="open" class="flex flex-col gap-2 absolute left-0 right-0 top-16 shadow-lg p-2 rounded-xl" @click.outside="open=false">
+            for _, status := range displayableReadingListStatuses() {
+                <li>
+                    <button 
+                        :disabled={ fmt.Sprintf("rl !== null && rl.status === '%s'", status) }
+                        @click={ fmt.Sprintf("status('%s')", status) }
+                        x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }
+                        class="ol-btn ol-btn--outline rounded-full w-full border border-border" />
+                </li>
+            }
+        </ul>
+    </section>
+}
+
+func displayableReadingListStatuses() []app.ReadingListStatus {
+    return []app.ReadingListStatus{ 
+        app.ReadingListStatusWantToRead,
+        app.ReadingListStatusReading,
+        app.ReadingListStatusRead,
+        app.ReadingListStatusPaused,
+        app.ReadingListStatusDnf,
+    }
+}
+
+
+

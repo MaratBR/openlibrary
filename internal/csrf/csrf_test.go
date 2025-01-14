@@ -3,7 +3,7 @@ package csrf_test
 import (
 	"testing"
 
-	"github.com/MaratBR/openlibrary/cmd/server/csrf"
+	"github.com/MaratBR/openlibrary/internal/csrf"
 )
 
 func TestHMACCsrfToken(t *testing.T) {

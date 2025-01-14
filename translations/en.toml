@@ -1,0 +1,37 @@
+[common]
+more = "More"
+less = "Less"
+save = "Save"
+saveChanges = "Save changes"
+
+[account]
+profile = "Profile"
+settings = "Settings"
+
+[readingList]
+want_to_read = "Want to read"
+reading = "Reading"
+read = "Read"
+paused = "Paused"
+dnf = "Did not finish"
+
+
+[reviews]
+title = "Reviews"
+
+
+[nav]
+home = "Home"
+library = "Library"
+search = "Search"
+logIn = "Log in"
+signUp = "Sign up"
+
+[book]
+words = "{{.count}} words"
+chapters = "%s chapters"
+nextChapter = "Next chapter"
+prevChapter = "Previous chapter"
+bookPage = "Book page"
+toc = "Table of contents"
+tocShort = "ToC"

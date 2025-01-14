@@ -7,6 +7,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/cmd/server/olproto"
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/gofrs/uuid"
 )
@@ -48,7 +49,7 @@ func getSearchRequest(r *http.Request) (searchRequest, error) {
 func performBookSearch(searchService app.SearchService, tagsService app.TagsService, r *http.Request, search searchRequest) (*olproto.ProtoSearchResult, error) {
 
 	result, err := searchService.SearchBooks(r.Context(), app.BookSearchQuery{
-		UserID:          getNullableUserID(r),
+		UserID:          auth.GetNullableUserID(r.Context()),
 		IncludeUsers:    search.IncludeUsers,
 		ExcludeUsers:    search.ExcludeUsers,
 		IncludeTags:     search.IncludeTags,

@@ -1,6 +1,7 @@
 package csrf
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -13,16 +14,32 @@ import (
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 )
 
+type csrfTokenKeyType struct{}
+
+var (
+	csrfTokenKey csrfTokenKeyType
+)
+
 type Handler struct {
 	secret       string
 	cookie       string
 	header       string
+	paramName    string
 	sidCookie    string
 	anonymousSid string
 }
 
 func (h Handler) SIDCookie() string {
 	return h.sidCookie
+}
+
+func (h *Handler) getCSRF(r *http.Request) string {
+	cookie, err := r.Cookie(h.cookie)
+	if err != nil {
+		return ""
+	}
+
+	return cookie.Value
 }
 
 func (h *Handler) Verify(r *http.Request) bool {
@@ -86,6 +103,10 @@ func (h *Handler) CheckEndpoint(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		csrfToken := h.getCSRF(r)
+		newContext := context.WithValue(r.Context(), csrfTokenKey, csrfToken)
+		r = r.WithContext(newContext)
+
 		if r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodOptions {
 			if r.Method == http.MethodGet {
 				_, err := r.Cookie(h.cookie)
@@ -108,6 +129,7 @@ func NewHandler(secret string) *Handler {
 		secret:    secret,
 		cookie:    "csrf",
 		header:    "x-csrf-token",
+		paramName: "__csrf",
 		sidCookie: "sid",
 	}
 }

@@ -8,6 +8,7 @@ import (
 
 	uiserver "github.com/MaratBR/openlibrary/cmd/server/ui-server"
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/gofrs/uuid"
 	"github.com/knadh/koanf/v2"
 	"google.golang.org/protobuf/proto"
@@ -38,7 +39,7 @@ func newSPAHandler(
 		data.ServerMetadata["clientPreload"] = true
 		data.ServerMetadata["serverPreload"] = true
 
-		session, ok := getSession(r)
+		session, ok := auth.GetSession(r.Context())
 
 		if ok {
 			user, err := userService.GetUserSelfData(r.Context(), session.UserID)
@@ -98,7 +99,7 @@ func newSPAHandler(
 		if err == nil && userID != uuid.Nil {
 			user, err := userService.GetUserDetails(r.Context(), app.GetUserQuery{
 				ID:     userID,
-				UserID: getNullableUserID(r),
+				UserID: auth.GetNullableUserID(r.Context()),
 			})
 			if err == nil {
 				data.AddPreloadedData(fmt.Sprintf("/api/users/%s", user.ID.String()), user)
@@ -113,7 +114,7 @@ func newSPAHandler(
 
 	devHandler.PreloadData("/book/{bookID}", func(r *http.Request, data *uiserver.Data) {
 		bookID, err := urlParamInt64(r, "bookID")
-		userID := getNullableUserID(r)
+		userID := auth.GetNullableUserID(r.Context())
 		if err == nil {
 			book, err := bookService.GetBook(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
 			if err == nil {

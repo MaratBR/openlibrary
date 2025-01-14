@@ -49,7 +49,7 @@ export default function BookPage() {
             />
           </div>
 
-          <div className="book-summary user-content">
+          <div className="book-summary __user-content">
             <SanitizeHtml html={data.summary} />
           </div>
 

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 )
 
 type ao3ImportRequest struct {
@@ -15,7 +16,7 @@ type ao3ImportResponse struct {
 }
 
 func (b *bookManagerController) ImportAO3(w http.ResponseWriter, r *http.Request) {
-	sessionInfo := requireSession(r)
+	sessionInfo := auth.RequireSession(r.Context())
 	req, err := getJSON[ao3ImportRequest](r)
 	if err != nil {
 		writeRequestError(err, w)

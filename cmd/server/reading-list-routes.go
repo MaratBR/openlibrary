@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/gofrs/uuid"
 )
 
@@ -17,7 +18,7 @@ func newReadingListController(service app.ReadingListService) *readingListContro
 }
 
 func (c *readingListController) GetStatus(w http.ResponseWriter, r *http.Request) {
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 
 	bookID, err := urlQueryParamInt64(r, "bookId")
 	if err != nil {
@@ -38,7 +39,7 @@ func (c *readingListController) GetStatus(w http.ResponseWriter, r *http.Request
 }
 
 func (c *readingListController) UpdateStatus(w http.ResponseWriter, r *http.Request) {
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 
 	bookID, err := urlQueryParamInt64(r, "bookId")
 	if err != nil {
@@ -130,7 +131,7 @@ func (c *readingListController) StartReading(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 	err = c.service.MarkAsReadingWithChapterID(r.Context(), session.UserID, bookID, chapterID)
 	if err != nil {
 		writeApplicationError(w, err)

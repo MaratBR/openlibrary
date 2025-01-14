@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/MaratBR/openlibrary/cmd/server/csrf"
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/csrf"
 )
 
 type authController struct {
@@ -38,7 +38,7 @@ func (c authController) SignOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, ok := getSession(r)
+	session, ok := auth.GetSession(r.Context())
 
 	if !ok {
 		writeOK(w)
@@ -52,7 +52,7 @@ func (c authController) SignOut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c.csrfHandler.WriteAnonymousCSRFToken(w)
-	removeSidCookie(w, "sid", r.URL.Scheme == "https")
+	auth.RemoveSIDCookie(w, "sid", r.URL.Scheme == "https")
 
 	writeOK(w)
 }
@@ -96,7 +96,7 @@ func (c authController) signIn(
 		writeApplicationError(w, err)
 		return
 	}
-	writeSidCookie(w, c.csrfHandler.SIDCookie(), result.SessionID, time.Hour*24*30, r.URL.Scheme == "https")
+	auth.WriteSIDCookie(w, c.csrfHandler.SIDCookie(), result.SessionID, time.Hour*24*30, r.URL.Scheme == "https")
 	c.csrfHandler.WriteCSRFToken(w, result.SessionID)
 	w.Write([]byte("OK"))
 }
@@ -138,7 +138,7 @@ func (c authController) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeSidCookie(w, "sid", result.SessionID, time.Hour*24*30, r.URL.Scheme == "https")
+	auth.WriteSIDCookie(w, "sid", result.SessionID, time.Hour*24*30, r.URL.Scheme == "https")
 	c.csrfHandler.WriteCSRFToken(w, result.SessionID)
 
 	writeOK(w)
@@ -177,8 +177,7 @@ func newAuthorizationMiddlewareConditional(service app.SessionService, when func
 				return
 			}
 
-			newContext := context.WithValue(r.Context(), sessionInfoKey, sessionInfo)
-			r = r.WithContext(newContext)
+			r = auth.AttachSessionInfo(r, sessionInfo)
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -191,7 +190,7 @@ func newAuthorizationMiddleware(service app.SessionService) func(http.Handler) h
 func newRequireAuthorizationMiddleware() func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, ok := getSession(r)
+			_, ok := auth.GetSession(r.Context())
 			if !ok {
 				writeUnauthorizedError(w)
 				return
@@ -200,7 +199,3 @@ func newRequireAuthorizationMiddleware() func(http.Handler) http.Handler {
 		})
 	}
 }
-
-type sessionInfoKeyType struct{}
-
-var sessionInfoKey sessionInfoKeyType = sessionInfoKeyType{}

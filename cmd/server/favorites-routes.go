@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 )
 
 type favoritesController struct {
@@ -15,7 +16,7 @@ func newFavoritesController(favoritesService *app.FavoriteService) *favoritesCon
 }
 
 func (c *favoritesController) SetFavorite(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, ok := getSession(r)
+	sessionInfo, ok := auth.GetSession(r.Context())
 	if !ok {
 		// todo implement anonymous favorites
 		writeUnauthorizedError(w)

@@ -8,10 +8,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/MaratBR/openlibrary/cmd/server/csrf"
 	"github.com/MaratBR/openlibrary/internal/admin"
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
+	"github.com/MaratBR/openlibrary/internal/csrf"
+	i18nprovider "github.com/MaratBR/openlibrary/internal/i18n-provider"
+	publicui "github.com/MaratBR/openlibrary/internal/public-ui"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -22,6 +24,7 @@ type cliParams struct {
 	Dev            bool
 	BypassTLSCheck bool
 	StaticDir      string
+	AppVersion     string
 }
 
 func mainServer(
@@ -35,6 +38,8 @@ func mainServer(
 	}
 
 	var err error
+
+	localizerProvider := i18nprovider.NewLocaleProvider()
 
 	db := connectToDatabase(config)
 
@@ -87,13 +92,15 @@ func mainServer(
 	r := chi.NewRouter()
 	r.Use(csrfHandler.Middleware)
 	r.Use(authorizationMiddleware)
+	r.Use(localizerProvider.Middleware)
 
 	//
 	// init spa and data preload
 	//
-	spaHandler := newSPAHandler(config, bookService, reviewsService, userService, searchService, tagsService)
-	r.NotFound(spaHandler.ServeHTTP)
+	// spaHandler := newSPAHandler(config, bookService, reviewsService, userService, searchService, tagsService)
+	// r.NotFound(spaHandler.ServeHTTP)
 
+	r.Mount("/", publicui.NewHandler(db, config, cliParams.AppVersion))
 	r.Mount("/admin", admin.NewHandler(db, config))
 
 	//

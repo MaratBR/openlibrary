@@ -56,7 +56,7 @@ strong, b {
 }
 
 :root {
-  --font-book: charter, serif;
+  --font-book: Merriweather, serif;
   --font-title: Literata, serif;
   --font-text: Poppins, sans-serif;
 }

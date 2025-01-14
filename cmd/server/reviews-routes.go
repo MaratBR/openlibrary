@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 )
 
 type reviewsController struct {
@@ -21,7 +22,7 @@ func (c *reviewsController) GetMyReview(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	session, ok := getSession(r)
+	session, ok := auth.GetSession(r.Context())
 	if !ok {
 		writeUnauthorizedError(w)
 		return
@@ -97,7 +98,7 @@ func (c *reviewsController) UpdateOrCreateReview(w http.ResponseWriter, r *http.
 	}
 	review, err := c.service.UpdateReview(r.Context(), app.UpdateReviewCommand{
 		BookID:  bookID,
-		UserID:  requireSession(r).UserID,
+		UserID:  auth.RequireSession(r.Context()).UserID,
 		Content: request.Content,
 		Rating:  request.Rate,
 	})
@@ -116,7 +117,7 @@ func (c *reviewsController) DeleteReview(w http.ResponseWriter, r *http.Request)
 	}
 	err = c.service.DeleteReview(r.Context(), app.DeleteReviewCommand{
 		BookID: bookID,
-		UserID: requireSession(r).UserID,
+		UserID: auth.RequireSession(r.Context()).UserID,
 	})
 	if err != nil {
 		writeApplicationError(w, err)

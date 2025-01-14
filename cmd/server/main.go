@@ -7,6 +7,8 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+var version = "development"
+
 func main() {
 	command := &cli.Command{
 		Commands: []*cli.Command{
@@ -42,6 +44,7 @@ func main() {
 					cliParam.BypassTLSCheck = c.Bool("bypass-tls-check")
 					cliParam.Dev = c.Bool("dev-frontend-proxy")
 					cliParam.StaticDir = c.String("static-dir")
+					cliParam.AppVersion = version
 					mainServer(cliParam, cfg)
 					return nil
 				},

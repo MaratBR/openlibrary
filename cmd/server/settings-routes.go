@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/gofrs/uuid"
 )
 
@@ -46,7 +47,7 @@ func (c *settingsController) UpdateAboutSettings(w http.ResponseWriter, r *http.
 }
 
 func updateUserSettings[T any](w http.ResponseWriter, r *http.Request, fn func(ctx context.Context, userID uuid.UUID, settings T) error) {
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 	settings, err := getJSON[T](r)
 	if err != nil {
 		writeRequestError(err, w)
@@ -62,7 +63,7 @@ func updateUserSettings[T any](w http.ResponseWriter, r *http.Request, fn func(c
 }
 
 func getUserSettings[T any](w http.ResponseWriter, r *http.Request, fn func(ctx context.Context, userID uuid.UUID) (*T, error)) {
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 	settings, err := fn(r.Context(), session.UserID)
 	if err != nil {
 		writeApplicationError(w, err)
@@ -77,7 +78,7 @@ type sessionsResponse struct {
 }
 
 func (c *settingsController) GetSessions(w http.ResponseWriter, r *http.Request) {
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 
 	sessions, err := c.sessionService.GetByUserID(r.Context(), session.UserID)
 	if err != nil {

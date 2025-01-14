@@ -1,0 +1,12 @@
+<section id=\"reading-list\" class=\"w-[80%] my-4 relative\" x-data=\"{ \n        open: false,\n        toggle() { this.open = !this.open },\n        status(s) { bookAPI.httpUpdateReadingListStatus(bookId, s).then(r =&gt; { this.rl = r; this.open = false; }) }\n    }\"><button
+ x-cloak
+ x-show=\"rl !== null\" class=\"ol-btn ol-btn--outline ol-btn--lg rounded-full w-full\" @click=\"open=true\"><span class=\"material-symbols-outlined\">edit</span> <span x-text=\"i18n[&#39;readingList.&#39; + rl.status] ?? rl.status\">
+</span></button> <button
+ x-cloak
+ @click=\"status(&#39;want_to_read&#39;)\" x-show=\"rl === null\" class=\"ol-btn ol-btn--primary ol-btn--lg rounded-full w-full\">
+</button><ul x-cloak x-show=\"open\" class=\"flex flex-col gap-2 absolute left-0 right-0 top-16 shadow-lg p-2 rounded-xl\" @click.outside=\"open=false\">
+<li><button :disabled=\"
+\" @click=\"
+\" x-text=\"
+\" class=\"ol-btn ol-btn--outline rounded-full w-full border border-border\"></button></li>
+</ul></section>

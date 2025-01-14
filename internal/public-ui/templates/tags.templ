@@ -1,0 +1,10 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+
+templ tag(t app.DefinedTagDto) {
+    <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", t.ID)) } class="ol-tag">
+        { t.Name }
+    </a>
+}

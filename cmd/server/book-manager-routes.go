@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 )
 
 type bookManagerController struct {
@@ -27,7 +28,7 @@ type createBookResponse struct {
 }
 
 func (c *bookManagerController) CreateBook(w http.ResponseWriter, r *http.Request) {
-	session, ok := getSession(r)
+	session, ok := auth.GetSession(r.Context())
 	if !ok {
 		writeUnauthorizedError(w)
 		return
@@ -72,7 +73,7 @@ func (c *bookManagerController) UpdateBook(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	session, ok := getSession(r)
+	session, ok := auth.GetSession(r.Context())
 	if !ok {
 		writeUnauthorizedError(w)
 		return
@@ -117,7 +118,7 @@ func (c *bookManagerController) GetBook(w http.ResponseWriter, r *http.Request) 
 		writeRequestError(err, w)
 		return
 	}
-	session, ok := getSession(r)
+	session, ok := auth.GetSession(r.Context())
 	if !ok {
 		writeUnauthorizedError(w)
 		return
@@ -237,7 +238,7 @@ func (c *bookManagerController) UpdateChaptersOrder(w http.ResponseWriter, r *ht
 		writeRequestError(err, w)
 		return
 	}
-	sessionInfo := requireSession(r)
+	sessionInfo := auth.RequireSession(r.Context())
 
 	body, err := getJSON[reorderChapterRequest](r)
 	if err != nil {
@@ -263,7 +264,7 @@ func (c *bookManagerController) GetChapters(w http.ResponseWriter, r *http.Reque
 		writeRequestError(err, w)
 		return
 	}
-	sessionInfo := requireSession(r)
+	sessionInfo := auth.RequireSession(r.Context())
 
 	chapters, err := c.service.GetBookChapters(r.Context(), app.ManagerGetBookChaptersQuery{
 		UserID: sessionInfo.UserID,
@@ -286,7 +287,7 @@ func (c *bookManagerController) GetChapter(w http.ResponseWriter, r *http.Reques
 		writeRequestError(err, w)
 		return
 	}
-	sessionInfo := requireSession(r)
+	sessionInfo := auth.RequireSession(r.Context())
 
 	result, err := c.service.GetChapter(r.Context(), app.ManagerGetChapterQuery{
 		UserID:    sessionInfo.UserID,
@@ -301,7 +302,7 @@ func (c *bookManagerController) GetChapter(w http.ResponseWriter, r *http.Reques
 }
 
 func (c *bookManagerController) GetMyBooks(w http.ResponseWriter, r *http.Request) {
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 
 	books, err := c.service.GetUserBooks(r.Context(), app.GetUserBooksQuery{
 		UserID: session.UserID,
@@ -327,7 +328,7 @@ func (c *bookManagerController) UploadBookCover(w http.ResponseWriter, r *http.R
 		writeRequestError(err, w)
 		return
 	}
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 
 	file, _, err := r.FormFile("file")
 	if err != nil {

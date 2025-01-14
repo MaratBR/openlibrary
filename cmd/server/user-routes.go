@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 )
 
 type userController struct {
@@ -17,7 +18,7 @@ func newUserController(service app.UserService) userController {
 }
 
 func (c *userController) GetUser(w http.ResponseWriter, r *http.Request) {
-	currentUserID := getNullableUserID(r)
+	currentUserID := auth.GetNullableUserID(r.Context())
 	userID, err := urlParamUUID(r, "userID")
 	if err != nil {
 		writeRequestError(err, w)
@@ -42,7 +43,7 @@ type whoamiResponse struct {
 func (c *userController) Whoami(w http.ResponseWriter, r *http.Request) {
 	var response whoamiResponse
 
-	currentUserID := getNullableUserID(r)
+	currentUserID := auth.GetNullableUserID(r.Context())
 	if !currentUserID.Valid {
 		writeJSON(w, response)
 		return
@@ -64,7 +65,7 @@ func (c *userController) Follow(w http.ResponseWriter, r *http.Request) {
 		writeRequestError(err, w)
 		return
 	}
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 	err = c.service.FollowUser(r.Context(), app.FollowUserCommand{
 		UserID:   userID,
 		Follower: session.UserID,
@@ -82,7 +83,7 @@ func (c *userController) Unfollow(w http.ResponseWriter, r *http.Request) {
 		writeRequestError(err, w)
 		return
 	}
-	session := requireSession(r)
+	session := auth.RequireSession(r.Context())
 	err = c.service.UnfollowUser(r.Context(), app.UnfollowUserCommand{
 		UserID:   userID,
 		Follower: session.UserID,

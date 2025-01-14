@@ -1,0 +1,16 @@
+<section><header><h2 class=\"font-title text-2xl my-2\">
+</h2></header><ul class=\"space-y-2\">
+</ul></section>
+<div x-data=\"bookReview\" class=\"group grid grid-cols-[auto_1fr] gap-6 rounded-2xl border p-4 relative\" :class=\"state === &#39;editing&#39; ? &#39;border-2&#39; : &#39;&#39;\" id=\"
+\"><div><img class=\"ol-avatar\" src=\"
+\"></div><div><span class=\"mb-2 flex gap-1\"><a class=\"ol-link text-lg\" href=\"
+\">
+</a> 
+<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" color=\"currentColor\"><path d=\"M5.076 17C4.089 4.545 12.912 1.012 19.973 2.224c.286 4.128-1.734 5.673-5.58 6.387c.742.776 2.055 1.753 1.913 2.974c-.1.868-.69 1.295-1.87 2.147C11.85 15.6 8.854 16.78 5.076 17\"></path> <path d=\"M4 22c0-6.5 3.848-9.818 6.5-12\"></path></g></svg>
+</span><div x-bind=\"content\"><div class=\"mb-2\">
+</div><article x-ignore class=\"__user-content text-sm\">
+</article></div>
+<template x-bind=\"islandTemplate\"><ol-island x-bind=\"island\" name=\"review-editor\" data-source=\"
+\"></ol-island></template></div><div x-bind=\"actions\" class=\"text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2\">
+<button x-bind=\"editButton\" class=\"ol-btn ol-btn--icon ol-btn--ghost\"><span class=\"material-symbols-outlined\">edit</span></button> 
+<button class=\"ol-btn ol-btn--icon ol-btn--ghost\"><span class=\"material-symbols-outlined\">flag</span></button></div></div>

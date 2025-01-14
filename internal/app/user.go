@@ -11,6 +11,13 @@ import (
 type UserRole string
 
 var (
+	RoleUser      = UserRole("user")
+	RoleAdmin     = UserRole("admin")
+	RoleSystem    = UserRole("system")
+	RoleModerator = UserRole("moderator")
+)
+
+var (
 	ErrUserNotFound   = AppErrors.NewType("user_not_found", ErrTraitEntityNotFound).New("user not found")
 	ErrFollowYourself = AppErrors.NewType("follow_yourself").New("you can't follow yourself")
 )

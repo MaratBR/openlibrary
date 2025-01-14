@@ -1,0 +1,6 @@
+<a class=\"ol-nav-link\" href=\"/\">
+</a> <a class=\"ol-nav-link\" href=\"/library\">
+</a> <a class=\"ol-nav-link\" href=\"/search\">
+</a>
+<nav class=\"z-10 bg-background sticky top-0 w-full h-[var(--header-height)] border-b\" id=\"site-header\"><div class=\"ol-container h-full flex gap-6\">
+</div></nav>

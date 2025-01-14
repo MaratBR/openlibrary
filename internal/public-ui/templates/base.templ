@@ -1,0 +1,62 @@
+package templates
+
+import "context"
+
+templ baseLayout(ctx context.Context, title string) {
+    @htmlLayout(ctx, title) {
+        @siteHeader(ctx)
+        { children... }
+        @siteFooter(ctx)
+    }
+}
+
+templ htmlLayout(ctx context.Context, title string) {
+    <!doctype html>
+    <html lang="en" class="theme-default">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{title}</title>
+        <script defer type="module" src="/_/assets/common.js"></script>
+        <script defer type="module" src="/_/assets/alpinejs.js"></script>
+        <link rel="stylesheet" href="/_/assets/common.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">     
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+        <link 
+        rel="stylesheet" 
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <style>
+        .mso {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+        }
+        [x-cloak]{ display: none !important; }
+        </style>
+        @userSessionData(ctx)
+        <noscript><style>.nojs-hidden{display: none;}</style></noscript>
+    </head>
+    <body class="m-0 font-text theme-default bg-background text-foreground">
+    { children... }
+    </body>
+    </html>
+}
+
+templ siteFooter(ctx context.Context) {
+    {{ 
+        version := ctx.Value("version").(string)
+    }}
+
+    <footer id="site-footer" class="bg-secondary p-10">
+        <div class="ol-container">
+            <a href="https://github.com/MaratBR/openlibrary" class="text-muted-foreground hover:text-foreground" target="_blank">
+                Powered by <span class="font-[500] font-title">OpenLibrary</span> <br />
+                <span class="text-sm">v:{ version }</span>
+            </a>
+        </div>
+    </footer>
+}

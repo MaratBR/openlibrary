@@ -25,7 +25,7 @@ export default function WriteReview({ book }: { book: BookDetailsDto }) {
   const { data: myReview } = useQuery({
     queryKey: ['book', book.id, 'reviews', 'my'],
     queryFn: () => httpGetMyReview(book.id),
-    initialData: pullPreloadedData<ReviewDto>(`/api/reviews/${book.id}/my`),
+    initialData: pullPreloadedData<ReviewDto>(`/api/reviews/${book.id}/my`) ?? null,
     staleTime: 100,
     enabled: !!user,
   })
@@ -60,7 +60,7 @@ export default function WriteReview({ book }: { book: BookDetailsDto }) {
         </Button>
       )}
 
-      {active && myReview && (
+      {active && (
         <div className="book-write-review__form">
           <ReviewEditor review={myReview} onUpdated={onUpdated} onClose={() => setActive(false)} />
         </div>
