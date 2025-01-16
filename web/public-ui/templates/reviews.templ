@@ -1,0 +1,172 @@
+package templates
+
+import "context"
+import "github.com/nicksnyder/go-i18n/v2/i18n"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+import "github.com/gofrs/uuid"
+import "github.com/MaratBR/openlibrary/internal/auth"
+import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "strconv"
+
+templ bookTopReviews(
+    ctx context.Context, 
+    bookID int64, 
+    ratingAndReview app.RatingAndReview,
+    reviews []app.ReviewDto, 
+    authorID uuid.UUID,
+) {
+    {{
+        _, authorized := auth.GetSession(ctx)
+        l := i18nProvider.GetLocalizer(ctx)
+    }}
+    
+    <section>
+        <header>
+            <h2 class="font-title text-3xl my-2 font-medium">{ l.MustLocalize(&i18n.LocalizeConfig{
+                MessageID: "reviews.title",
+            }) }</h2>
+        </header>
+
+        <section class="my-2">
+            <div class="pt-6 pb-8 rounded-xl items-start gap-4 my-8">
+                if authorized {
+                    <div class="flex flex-col items-center">
+                        <span class="mt-3 block text-3xl font-title font-semibold">
+                            @templ.Raw(l.MustLocalize(&i18n.LocalizeConfig{
+                                MessageID: "book.whatDoYouThink",
+                            }))
+                        </span>
+                        <div class="flex gap-6 items-center mt-4">
+                            {{
+                                var (
+                                    initialValue float64
+                                    text string
+                                )
+                                if ratingAndReview.Rating.Valid {
+                                    initialValue = float64(ratingAndReview.Rating.Value)
+                                    text = l.MustLocalize(&i18n.LocalizeConfig{
+                                        MessageID: "book.youRated",
+                                        TemplateData: map[string]string{
+                                            "rating": strconv.FormatFloat(initialValue/2, 'f', -1, 32),
+                                        },
+                                    })
+                                } else {
+                                    initialValue = 0.0
+                                    text = l.MustLocalize(&i18n.LocalizeConfig{
+                                        MessageID: "book.rateBook",
+                                    })
+                                }
+                            }}
+                            <div class="flex flex-col items-center" x-data={ fmt.Sprintf("{rating:%f}", initialValue) }>
+                                @starRatingInput(0.3, initialValue, fmt.Sprintf("rating=$event.detail;OL.api.reviews.updateRating('%d', rating)", bookID))
+                                @i18nKeys(map[string]string{
+                                    "book.rateBook": l.MustLocalize(&i18n.LocalizeConfig{
+                                        MessageID: "book.rateBook",
+                                    }),
+                                    "book.youRated": l.MustLocalize(&i18n.LocalizeConfig{
+                                        MessageID: "book.youRated",
+                                        TemplateData: map[string]string{
+                                            "rating": "$",
+                                        },
+                                    }),
+                                })
+                                <span
+                                    x-text="!rating?i18n['book.rateBook']:i18n['book.youRated'].replaceAll('$',rating/2)"
+                                    class="font-light">
+                                    { text }
+                                </span>
+                            </div>
+                            <a class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full" href={ templ.SafeURL(fmt.Sprintf("/book/%d/my-review", bookID)) }>
+                                { l.MustLocalize(&i18n.LocalizeConfig{
+                                    MessageID: "book.writeReview",
+                                }) }
+                            </a>
+                        </div>
+                    </div>
+                } else {
+                    <span class="mt-3 block text-3xl font-title font-semibold">
+                        @templ.Raw(l.MustLocalize(&i18n.LocalizeConfig{
+                            MessageID: "book.whatDoYouThink",
+                        }))
+                    </span>
+                    <a class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full mt-4" href="/login">
+                        { l.MustLocalize(&i18n.LocalizeConfig{
+                            MessageID: "book.writeReviewLogin",
+                        }) }
+                    </a>
+                }
+            </div>
+
+        </section>
+
+        <h2 class="text-xl font-title">
+            { l.MustLocalize(&i18n.LocalizeConfig{
+                MessageID: "reviews.title",
+            }) }
+        </h2>
+
+        <ul class="space-y-2">
+            for _, review := range reviews {
+                @bookReview(ctx, l, review, review.User.ID == authorID)
+            }
+        </ul>
+    </section>
+}
+
+templ bookReview(
+    ctx context.Context, 
+    l *i18n.Localizer, 
+    review app.ReviewDto, 
+    isAuthor bool,
+) {
+    {{
+        // userSession, authorized := auth.GetSession(ctx)
+        // reviewID := fmt.Sprintf("review%s", review.User.ID.String())
+        // yourReview := authorized && userSession.UserID == review.User.ID
+        // canEdit := yourReview || userSession.UserRole == app.RoleAdmin || userSession.UserRole == app.RoleModerator || userSession.UserRole == app.RoleSystem // TODO change to admin/mod
+    }}
+    <div
+        class="group grid grid-cols-[auto_1fr] gap-6 p-4 relative border-b last:border-b-0"
+        id={fmt.Sprintf("review-%s", review.User.ID.String())}>
+
+        <div>
+            <img class="ol-avatar" src={ review.User.Avatar } />
+        </div>
+
+
+        <div>
+            <span class="mb-2 flex gap-1">
+                <a class="ol-link text-lg" href={ templ.SafeURL(fmt.Sprintf("/user/%s", review.User.ID)) }>{ review.User.Name }</a>
+                if isAuthor {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <g
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            color="currentColor"
+                        >
+                            <path d="M5.076 17C4.089 4.545 12.912 1.012 19.973 2.224c.286 4.128-1.734 5.673-5.58 6.387c.742.776 2.055 1.753 1.913 2.974c-.1.868-.69 1.295-1.87 2.147C11.85 15.6 8.854 16.78 5.076 17" />
+                            <path d="M4 22c0-6.5 3.848-9.818 6.5-12" />
+                        </g>
+                    </svg>
+                }
+            </span>
+
+            <div class="mb-2">
+                @starRating(float64(review.Rating), 0.4)
+            </div>
+            <article x-ignore class="__user-content text-sm">
+                @templ.Raw(review.Content)
+            </article>
+        </div>
+
+        <div class="text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2">
+            <button class="ol-btn ol-btn--icon ol-btn--ghost">
+                <span class="material-symbols-outlined">flag</span>
+            </button>
+        </div>
+    </div>
+}

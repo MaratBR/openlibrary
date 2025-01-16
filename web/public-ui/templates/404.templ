@@ -1,0 +1,12 @@
+package templates
+
+import "context"
+
+templ NotFoundPage(ctx context.Context) {
+    @baseLayout(ctx, "404") {
+        <div class="ol-container my-12">
+            <span class="font-title text-4xl">404</span>
+            <p>Page not found</p>
+        </div>
+    }
+}

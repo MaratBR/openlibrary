@@ -1,0 +1,152 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+import "encoding/json"
+import "context"
+import "github.com/nicksnyder/go-i18n/v2/i18n"
+import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+
+templ BookPage(
+    ctx context.Context, 
+    book app.BookDetailsDto,
+    ratingAndReview app.RatingAndReview,
+    readingListStatus app.Nullable[app.BookReadingListDto],
+    topReviews []app.ReviewDto,
+) {
+    @bookPageLayout(ctx, book, readingListStatus) {
+        <div x-ignore class="mt-4 __user-content">@templ.Raw(book.Summary)</div>
+        @bookTags(ctx, book.Tags)
+        @bookRating(&book)
+        @bookTopReviews(ctx, book.ID, ratingAndReview, topReviews, book.Author.ID)
+    }
+}
+
+func convertBookDetailsToAlpineState(book *app.BookDetailsDto, readingList app.Nullable[app.BookReadingListDto]) string {
+    var state struct {
+        ReadingList app.Nullable[app.BookReadingListDto] `json:"rl"`
+        BookID int64 `json:"bookId,string"`
+    }
+    state.ReadingList = readingList
+    state.BookID = book.ID
+    bytes, _ := json.Marshal(state)
+    return string(bytes)
+}
+
+templ bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList app.Nullable[app.BookReadingListDto]) {
+    @baseLayout(ctx, book.Name) {
+        <div 
+            id="book" 
+            class="md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[1300px] py-4" 
+            x-data={ convertBookDetailsToAlpineState(&book, readingList) }>
+            <div class="md:col-span-3 flex flex-col items-center">
+                @bookCover(book.Cover, book.Name)
+                @bookReadingList(ctx, book.ID, readingList)
+            </div>
+            <div class="md:col-span-9">
+                <header>
+                    <h1 class="font-[500] text-3xl font-title">{book.Name}</h1>
+                    <p>
+                        <a class="ol-link" href={templ.SafeURL(fmt.Sprintf("/user/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
+                    </p>
+                </header>
+
+                <main class="contents" id="slot-book-page">
+                    { children... }
+                </main>
+            </div>
+        </div>
+    }
+}
+
+templ bookChapters(book *app.BookDetailsDto) {
+    <section id="chapters">
+        for _, chapter := range book.Chapters {
+            <div>
+                <a class="ol-link" href={templ.SafeURL(fmt.Sprintf("/books/%d/c/%d", book.ID, chapter.ID))}>{ chapter.Name }</a>
+            </div>
+        }
+    </section>
+}
+
+templ bookRating(book *app.BookDetailsDto) {
+    <a id="rating-card" href="#reviews" class="inline-flex gap-2 items-center p-4 rounded-md transition-shadow hover:bg-highlight mt-2 text-muted-foreground">
+        if book.Rating.Valid {
+            @starRating(book.Rating.Value, 0.5)
+        } else {
+            Nope
+        }
+        <div class="text-xs inline-block">
+            {formatInt32(book.Votes)} votes <br />
+            {formatInt32(book.Reviews)} reviews
+        </div>
+    </a>
+}
+
+templ bookCover(cover, bookName string) {
+    if cover == "" {
+        <div>
+            <svg height="296" width="210" xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297">
+                <defs>
+                    <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#b3e5fc" />
+                    <stop offset="100%" stop-color="#ffffff" />
+                    </linearGradient>
+                </defs>
+                <!-- Background Gradient -->
+                <rect stroke-with="2" stroke="#444" width="210" height="297" fill="url(#gradient)" />
+                
+                <!-- Subtle Geometric Pattern -->
+                <g fill-opacity="0.1" transform="translate(10,10)">
+                    <circle cx="20" cy="20" r="10" fill="#000" />
+                    <circle cx="60" cy="60" r="10" fill="#000" />
+                    <circle cx="100" cy="100" r="10" fill="#000" />
+                    <circle cx="140" cy="140" r="10" fill="#000" />
+                    <circle cx="180" cy="180" r="10" fill="#000" />
+                </g>
+                
+                <!-- Placeholder for Title -->
+                <foreignObject x="0" y="70" width="100%" height="140" anchor="middle">
+                <p xmlns="http://www.w3.org/1999/xhtml" class="text-center font-title">
+                    { bookName }
+                </p>
+                </foreignObject>
+            </svg>
+
+        </div>
+    } else {
+        <div>
+            <img src={ cover } />
+        </div>
+    }
+} 
+
+templ bookTags(ctx context.Context, tags []app.DefinedTagDto) {
+    {{ l := i18nProvider.GetLocalizer(ctx) }}
+    @i18nExtractKeys(l, []string{ "common.more", "common.less" })
+    <ul 
+        if len(tags) > 10 {
+            data-hidden
+        }
+        :data-hidden="!open" 
+        x-data={ fmt.Sprintf("{len:%d,open:false}", len(tags)) } 
+        class="mt-6 [&>li]:inline [&>li]:me-2 [&[data-hidden]>li:not(:last-child):nth-child(n+11)]:hidden">
+        for _, t := range tags {
+            <li>
+                @tag(t)
+            </li>
+        }
+        <li 
+            if len(tags) <= 10 {
+                x-cloak
+            }
+            class="nojs-hidden" role="button" x-show="len>10" @click="open=!open">
+            <span class="ol-tag font-semibold" x-text="i18n[open?'common.less':'common.more']">
+                {l.MustLocalize(&i18n.LocalizeConfig{
+                    MessageID: "common.more",
+                })}
+            </span>
+        </li>
+    </ul>
+}
+

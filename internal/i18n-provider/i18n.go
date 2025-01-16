@@ -1,4 +1,4 @@
-package i18nprovider
+package i18nProvider
 
 import (
 	"net/http"

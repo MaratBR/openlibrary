@@ -147,6 +147,54 @@ func (q *Queries) GetRate(ctx context.Context, arg GetRateParams) (int16, error)
 	return rating, err
 }
 
+const getRating = `-- name: GetRating :one
+select ratings.user_id, ratings.book_id, ratings.rating, ratings.updated_at
+from ratings
+where ratings.user_id = $1 and ratings.book_id = $2
+`
+
+type GetRatingParams struct {
+	UserID pgtype.UUID
+	BookID int64
+}
+
+func (q *Queries) GetRating(ctx context.Context, arg GetRatingParams) (Rating, error) {
+	row := q.db.QueryRow(ctx, getRating, arg.UserID, arg.BookID)
+	var i Rating
+	err := row.Scan(
+		&i.UserID,
+		&i.BookID,
+		&i.Rating,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getReview = `-- name: GetReview :one
+select reviews.user_id, reviews.book_id, reviews.content, reviews.created_at, reviews.last_updated_at, reviews.likes
+from reviews
+where reviews.user_id = $1 and reviews.book_id = $2
+`
+
+type GetReviewParams struct {
+	UserID pgtype.UUID
+	BookID int64
+}
+
+func (q *Queries) GetReview(ctx context.Context, arg GetReviewParams) (Review, error) {
+	row := q.db.QueryRow(ctx, getReview, arg.UserID, arg.BookID)
+	var i Review
+	err := row.Scan(
+		&i.UserID,
+		&i.BookID,
+		&i.Content,
+		&i.CreatedAt,
+		&i.LastUpdatedAt,
+		&i.Likes,
+	)
+	return i, err
+}
+
 const getReviewAndRating = `-- name: GetReviewAndRating :one
 select reviews.user_id, reviews.book_id, reviews.content, reviews.created_at, reviews.last_updated_at, reviews.likes, ratings.rating, ratings.updated_at as rating_updated_at
 from reviews

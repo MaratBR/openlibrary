@@ -1,7 +1,7 @@
 import { httpClient } from '@/modules/common/api'
 import { ReadingListDto, readingListDtoSchema, ReadingListStatus } from './api'
 
-export async function httpUpdateReadingListStatus(
+export async function updateReadingListStatus(
   bookId: string,
   status: ReadingListStatus,
 ): Promise<ReadingListDto> {
@@ -15,7 +15,7 @@ export async function httpUpdateReadingListStatus(
   return readingListDtoSchema.parse(json)
 }
 
-export async function httpUpdateReadingListStartReading(
+export async function updateReadingListStartReading(
   bookId: string,
   chapterId: string,
 ): Promise<ReadingListDto> {

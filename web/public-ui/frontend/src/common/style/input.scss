@@ -1,0 +1,14 @@
+.ol-input {
+    @apply 
+        border rounded-md h-10 px-3 w-full bg-background
+        focus:outline focus:outline-2
+        hover:border-black dark:hover:border-white;
+
+    &--primary {
+
+    }
+}
+
+.ol-label {
+    @apply block text-sm text-foreground;
+}

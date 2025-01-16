@@ -86,17 +86,6 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 		return BookDetailsDto{}, err
 	}
 
-	var (
-		readingList Nullable[BookReadingListDto]
-	)
-
-	if query.ActorUserID.Valid {
-		readingList, err = s.readingListService.GetStatus(ctx, query.ActorUserID.UUID, query.ID)
-		if err != nil {
-			return BookDetailsDto{}, err
-		}
-	}
-
 	bookDto := BookDetailsDto{
 		ID:              book.ID,
 		Name:            book.Name,
@@ -119,7 +108,6 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 		Rating:      float64ToNullable(book.Rating),
 		Reviews:     book.TotalReviews,
 		Votes:       book.TotalRatings,
-		ReadingList: readingList,
 	}
 
 	if userPermissionState.IsOwner {

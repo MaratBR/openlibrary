@@ -8,27 +8,26 @@ import (
 )
 
 type BookDetailsDto struct {
-	ID              int64                        `json:"id,string"`
-	Name            string                       `json:"name"`
-	AgeRating       AgeRating                    `json:"ageRating"`
-	IsAdult         bool                         `json:"adult"`
-	Tags            []DefinedTagDto              `json:"tags"`
-	Words           int                          `json:"words"`
-	WordsPerChapter int                          `json:"wordsPerChapter"`
-	CreatedAt       time.Time                    `json:"createdAt"`
-	Collections     []BookCollectionDto          `json:"collections"`
-	Chapters        []BookChapterDto             `json:"chapters"`
-	Author          BookDetailsAuthorDto         `json:"author"`
-	Permissions     BookUserPermissions          `json:"permissions"`
-	Summary         string                       `json:"summary"`
-	Favorites       int32                        `json:"favorites"`
-	IsFavorite      bool                         `json:"isFavorite"`
-	Notifications   []GenericNotification        `json:"notifications,omitempty"`
-	Cover           string                       `json:"cover"`
-	Rating          Nullable[float64]            `json:"rating"`
-	Votes           int32                        `json:"votes"`
-	Reviews         int32                        `json:"reviews"`
-	ReadingList     Nullable[BookReadingListDto] `json:"readingList"`
+	ID              int64                 `json:"id,string"`
+	Name            string                `json:"name"`
+	AgeRating       AgeRating             `json:"ageRating"`
+	IsAdult         bool                  `json:"adult"`
+	Tags            []DefinedTagDto       `json:"tags"`
+	Words           int                   `json:"words"`
+	WordsPerChapter int                   `json:"wordsPerChapter"`
+	CreatedAt       time.Time             `json:"createdAt"`
+	Collections     []BookCollectionDto   `json:"collections"`
+	Chapters        []BookChapterDto      `json:"chapters"`
+	Author          BookDetailsAuthorDto  `json:"author"`
+	Permissions     BookUserPermissions   `json:"permissions"`
+	Summary         string                `json:"summary"`
+	Favorites       int32                 `json:"favorites"`
+	IsFavorite      bool                  `json:"isFavorite"`
+	Notifications   []GenericNotification `json:"notifications,omitempty"`
+	Cover           string                `json:"cover"`
+	Rating          Nullable[float64]     `json:"rating"`
+	Votes           int32                 `json:"votes"`
+	Reviews         int32                 `json:"reviews"`
 }
 
 type GetBookQuery struct {

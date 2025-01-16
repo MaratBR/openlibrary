@@ -1,0 +1,30 @@
+package templates
+
+import "fmt"
+import "strconv"
+
+
+templ starRating(value, scale float64) {
+    <div class="relative" { templ.Attributes{
+        "style": fmt.Sprintf("width:%fpx;height:%fpx", scale * 540.0, scale * 100.0),
+    }... }>
+        <div class="ol-star-background h-full w-full opacity-15"></div>
+        <div class="absolute left-0 top-0 ol-star-background ol-star-background--filled h-full" { templ.Attributes{
+            "style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", value * 10, scale * 100.0),
+        }... }></div>
+    </div>
+}
+
+templ starRatingInput(scale, initialValue float64, onInput string) {
+    <div x-data="bookRatingInput" data-value={ strconv.FormatFloat(initialValue, 'f', -1, 32) } @input={ onInput } class="relative cursor-pointer" { templ.Attributes{
+        "style": fmt.Sprintf("width:%fpx;height:%fpx", scale * 540.0, scale * 100.0),
+    }... }>
+        <div x-bind="trigger" class="ol-star-background h-full w-full opacity-15"></div>
+        <div 
+            { templ.Attributes{
+                "style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", initialValue * 10, scale * 100.0),
+            }... }
+            :style={ fmt.Sprintf("`width:${value*10}%%;background-size:auto %fpx`", scale * 100.0) }
+            class="absolute pointer-events-none left-0 top-0 ol-star-background ol-star-background--filled h-full"></div>
+    </div>
+}

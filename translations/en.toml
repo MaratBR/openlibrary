@@ -4,6 +4,11 @@ less = "Less"
 save = "Save"
 saveChanges = "Save changes"
 
+[login]
+username = "Username"
+password = "Password"
+login = "Log In"
+
 [account]
 profile = "Profile"
 settings = "Settings"
@@ -35,3 +40,10 @@ prevChapter = "Previous chapter"
 bookPage = "Book page"
 toc = "Table of contents"
 tocShort = "ToC"
+reviews = "Reviews"
+whatDoYouThink = "What do <em>you</em> think?"
+writeReview = "Write review"
+writeReviewLogin = "Log in to write review"
+rateBook = "Rate this book"
+youRated = "You rated this book {{.rating}}"
+myReview = "My review"

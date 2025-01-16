@@ -59,6 +59,11 @@ type ReviewDto struct {
 	Likes     int32               `json:"likes"`
 }
 
+type RatingAndReview struct {
+	Rating Nullable[RatingValue]
+	Review Nullable[ReviewDto]
+}
+
 type GetBookReviewsResult struct {
 	Reviews    []ReviewDto
 	Pagination PaginationOptions
@@ -69,6 +74,12 @@ type UpdateReviewCommand struct {
 	UserID  uuid.UUID
 	Rating  RatingValue
 	Content string
+}
+
+type UpdateRatingCommand struct {
+	BookID int64
+	UserID uuid.UUID
+	Rating RatingValue
 }
 
 type GetReviewQuery struct {
@@ -90,7 +101,10 @@ type GetBookReviewsDistributionResult struct {
 type ReviewsService interface {
 	GetBookReviewsDistribution(ctx context.Context, bookID int64) (GetBookReviewsDistributionResult, error)
 	GetBookReviews(ctx context.Context, query GetBookReviewsQuery) (GetBookReviewsResult, error)
+
 	UpdateReview(ctx context.Context, cmd UpdateReviewCommand) (ReviewDto, error)
-	GetReview(ctx context.Context, query GetReviewQuery) (Nullable[ReviewDto], error)
+	UpdateRating(ctx context.Context, cmd UpdateRatingCommand) error
+
+	GetReview(ctx context.Context, query GetReviewQuery) (RatingAndReview, error)
 	DeleteReview(ctx context.Context, cmd DeleteReviewCommand) error
 }

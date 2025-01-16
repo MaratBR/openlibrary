@@ -35,44 +35,74 @@ func (h Handler) SIDCookie() string {
 
 func (h *Handler) getCSRF(r *http.Request) string {
 	cookie, err := r.Cookie(h.cookie)
-	if err != nil {
-		return ""
+	if err == nil && cookie.Value != "" {
+		return cookie.Value
 	}
 
-	return cookie.Value
+	return ""
+}
+
+func (h *Handler) getSubmittedCSRF(r *http.Request) string {
+	var dsValue string // double submitted value
+
+	dsValue = r.Header.Get(h.header)
+	if dsValue != "" {
+		return dsValue
+	}
+
+	err := r.ParseForm()
+	if err == nil {
+		dsValue = r.Form.Get(h.paramName)
+		if dsValue != "" {
+			return dsValue
+		}
+	}
+
+	return ""
 }
 
 func (h *Handler) Verify(r *http.Request) bool {
-	cookie, err := r.Cookie(h.cookie)
-	if err != nil {
+	var (
+		sid            string
+		csrfFromCookie string
+	)
+
+	{
+		cookie, err := r.Cookie(h.cookie)
+		if err != nil {
+			return false
+		}
+		csrfFromCookie = cookie.Value
+	}
+
+	{
+		sidCookie, err := r.Cookie(h.sidCookie)
+		if err != nil {
+			sid = h.anonymousSid
+		} else {
+			sid = sidCookie.Value
+		}
+	}
+
+	dsValue := h.getSubmittedCSRF(r)
+	if dsValue == "" || dsValue != csrfFromCookie {
 		return false
 	}
 
-	headerValue := r.Header.Get(h.header)
-	if headerValue != cookie.Value || headerValue == "" {
-		return false
-	}
-
-	var sid string
-	sidCookie, err := r.Cookie(h.sidCookie)
-	if err != nil {
-		sid = h.anonymousSid
-	} else {
-		sid = sidCookie.Value
-	}
-
-	isValidToken := VerifyHMACCsrfToken(cookie.Value, sid, h.secret)
+	isValidToken := VerifyHMACCsrfToken(csrfFromCookie, sid, h.secret)
 	return isValidToken
 }
 
-func (h *Handler) WriteCSRFFromSid(r *http.Request, w http.ResponseWriter) {
-	h.WriteCSRFToken(w, h.getSID(r))
+func (h *Handler) WriteCSRFFromSid(r *http.Request, w http.ResponseWriter) string {
+	return h.WriteCSRFToken(w, h.getSID(r))
 }
 
 func (h *Handler) WriteCSRFToken(
 	w http.ResponseWriter, sid string,
-) {
-	w.Header().Add("Set-Cookie", fmt.Sprintf("%s=%s; Path=/; Max-Age=%f", h.cookie, GenerateHMACCsrfToken(sid, h.secret), (time.Hour*24).Seconds()))
+) string {
+	token := GenerateHMACCsrfToken(sid, h.secret)
+	w.Header().Add("Set-Cookie", fmt.Sprintf("%s=%s; Path=/; Max-Age=%f", h.cookie, token, (time.Hour*24).Seconds()))
+	return token
 }
 
 func (h *Handler) WriteAnonymousCSRFToken(
@@ -104,14 +134,12 @@ func (h *Handler) CheckEndpoint(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		csrfToken := h.getCSRF(r)
-		newContext := context.WithValue(r.Context(), csrfTokenKey, csrfToken)
-		r = r.WithContext(newContext)
 
 		if r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodOptions {
 			if r.Method == http.MethodGet {
 				_, err := r.Cookie(h.cookie)
 				if err == http.ErrNoCookie {
-					h.WriteCSRFFromSid(r, w)
+					csrfToken = h.WriteCSRFFromSid(r, w)
 				}
 			}
 		} else {
@@ -120,6 +148,10 @@ func (h *Handler) Middleware(next http.Handler) http.Handler {
 				return
 			}
 		}
+
+		newContext := context.WithValue(r.Context(), csrfTokenKey, csrfToken)
+		r = r.WithContext(newContext)
+
 		next.ServeHTTP(w, r)
 	})
 }

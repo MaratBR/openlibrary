@@ -66,16 +66,54 @@ func (r *reviewsService) DeleteReview(ctx context.Context, cmd DeleteReviewComma
 }
 
 // GetReview implements ReviewsService.
-func (r *reviewsService) GetReview(ctx context.Context, query GetReviewQuery) (Nullable[ReviewDto], error) {
-	review, err := r.getDtoFromRow(ctx, query.UserID, query.BookID)
+func (r *reviewsService) GetReview(ctx context.Context, query GetReviewQuery) (RatingAndReview, error) {
+	queries := store.New(r.db)
+
+	rating, err := queries.GetRating(ctx, store.GetRatingParams{
+		UserID: uuidDomainToDb(query.UserID),
+		BookID: query.BookID,
+	})
 	if err != nil {
 		if err == store.ErrNoRows {
-			return Null[ReviewDto](), nil
+			return RatingAndReview{}, nil
 		}
-		return Null[ReviewDto](), wrapUnexpectedDBError(err)
+		return RatingAndReview{}, wrapUnexpectedDBError(err)
 	}
 
-	return Value(review), nil
+	review, err := queries.GetReview(ctx, store.GetReviewParams{
+		UserID: uuidDomainToDb(query.UserID),
+		BookID: query.BookID,
+	})
+	if err != nil {
+		if err == store.ErrNoRows {
+			return RatingAndReview{
+				Rating: Value(CreateRatingValue(rating.Rating)),
+			}, nil
+		}
+		return RatingAndReview{}, wrapUnexpectedDBError(err)
+	}
+
+	user, err := r.userService.GetUserSelfData(ctx, query.UserID)
+	if err != nil {
+		return RatingAndReview{}, wrapUnexpectedAppError(err)
+	}
+
+	reviewDto := ReviewDto{
+		User: ReviewUserDto{
+			ID:     uuidDbToDomain(review.UserID),
+			Name:   user.Name,
+			Avatar: getUserAvatar(user.Name, 84),
+		},
+		Rating:    CreateRatingValue(rating.Rating),
+		Content:   review.Content,
+		CreatedAt: review.CreatedAt.Time,
+		UpdatedAt: timeNullableDbToDomain(review.LastUpdatedAt),
+		Likes:     review.Likes,
+	}
+	return RatingAndReview{
+		Rating: Value(CreateRatingValue(rating.Rating)),
+		Review: Value(reviewDto),
+	}, nil
 }
 
 func (r *reviewsService) getDtoFromRow(ctx context.Context, userID uuid.UUID, bookID int64) (ReviewDto, error) {
@@ -184,6 +222,20 @@ func (r *reviewsService) UpdateReview(ctx context.Context, cmd UpdateReviewComma
 
 	reviewDto, err := r.getDtoFromRow(ctx, cmd.UserID, cmd.BookID)
 	return reviewDto, err
+}
+
+// UpdateRating implements ReviewsService.
+func (r *reviewsService) UpdateRating(ctx context.Context, cmd UpdateRatingCommand) error {
+	queries := store.New(r.db)
+	err := queries.InsertOrUpdateRate(ctx, store.InsertOrUpdateRateParams{
+		UserID: uuidDomainToDb(cmd.UserID),
+		BookID: cmd.BookID,
+		Rating: cmd.Rating.ToUint16(),
+	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	return nil
 }
 
 func NewReviewsService(db DB, userService UserService, backgroundService BookBackgroundService) ReviewsService {

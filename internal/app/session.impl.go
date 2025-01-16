@@ -34,6 +34,7 @@ func (s *sessionService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]S
 			IpAddress:    s.IpAddress,
 			UserName:     s.UserName,
 			UserJoinedAt: timeDbToDomain(s.UserJoinedAt),
+			UserAvatar:   getUserAvatar(s.UserName, 84),
 		}
 	}), nil
 }

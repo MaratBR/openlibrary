@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Pencil1Icon } from '@radix-ui/react-icons'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { httpUpdateReadingListStatus } from '../../api/reading-list'
+import { updateReadingListStatus } from '../../api/reading-list'
 import { ButtonSpinner } from '@/components/spinner'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Download, Heart } from 'lucide-react'
@@ -39,7 +39,7 @@ function ReadingListStatusSection({
 
   const updateState = useMutation({
     mutationFn: async (status: ReadingListStatus) => {
-      const readingList = await httpUpdateReadingListStatus(bookId, status)
+      const readingList = await updateReadingListStatus(bookId, status)
       const bookDetails = queryClient.getQueryData(['book', bookId])
       const parseResult = bookDetailsDtoSchema.safeParse(bookDetails)
       if (parseResult.success) {

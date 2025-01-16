@@ -3,7 +3,7 @@ import { BookDetailsDto, bookDetailsDtoSchema } from '../../api'
 import './StartReading.css'
 import { NavLink } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
-import { httpUpdateReadingListStartReading } from '../../api/reading-list'
+import { updateReadingListStartReading } from '../../api/reading-list'
 import { useMemo } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
@@ -32,7 +32,7 @@ export default function StartReading({ book }: { book: BookDetailsDto }) {
           queryClient.setQueryData(['book', book.id], newData)
         }
       }
-      await httpUpdateReadingListStartReading(book.id, chapterId)
+      await updateReadingListStartReading(book.id, chapterId)
     },
   })
 
@@ -80,7 +80,7 @@ export default function StartReading({ book }: { book: BookDetailsDto }) {
         return (
           <NavLink to={`/book/${book.id}/chapters/${book.chapters[0].id}#chapter`}>
             <Button
-              onClick={() => httpUpdateReadingListStartReading(book.id, book.chapters[0].id)}
+              onClick={() => updateReadingListStartReading(book.id, book.chapters[0].id)}
               size="lg"
               variant="outline"
               className="rounded-full text-md"

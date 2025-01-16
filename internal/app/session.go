@@ -23,6 +23,7 @@ type SessionInfo struct {
 	UserName     string
 	UserJoinedAt time.Time
 	UserRole     UserRole
+	UserAvatar   string
 }
 
 type CreateSessionCommand struct {

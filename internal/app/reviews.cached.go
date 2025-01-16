@@ -13,6 +13,12 @@ type cachedReviewsService struct {
 	cache *cache.Cache
 }
 
+// UpdateRating implements ReviewsService.
+func (c *cachedReviewsService) UpdateRating(ctx context.Context, cmd UpdateRatingCommand) error {
+	c.invalidate(ctx, cmd.BookID)
+	return c.inner.UpdateRating(ctx, cmd)
+}
+
 // GetBookReviewsDistribution implements ReviewsService.
 func (c *cachedReviewsService) GetBookReviewsDistribution(ctx context.Context, bookID int64) (GetBookReviewsDistributionResult, error) {
 	queryKey := fmt.Sprintf("GetBookReviewsDistribution:%d", bookID)
@@ -29,9 +35,8 @@ func (c *cachedReviewsService) DeleteReview(ctx context.Context, cmd DeleteRevie
 }
 
 // GetReview implements ReviewsService.
-func (c *cachedReviewsService) GetReview(ctx context.Context, query GetReviewQuery) (Nullable[ReviewDto], error) {
-	review, err := c.inner.GetReview(ctx, query)
-	return review, err
+func (c *cachedReviewsService) GetReview(ctx context.Context, query GetReviewQuery) (RatingAndReview, error) {
+	return c.inner.GetReview(ctx, query)
 }
 
 // GetBookReviews implements ReviewsService.

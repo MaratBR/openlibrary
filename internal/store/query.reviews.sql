@@ -33,6 +33,16 @@ from reviews
 join ratings on ratings.book_id = reviews.book_id and ratings.user_id = reviews.user_id
 where reviews.user_id = $1 and reviews.book_id = $2;
 
+-- name: GetReview :one
+select reviews.*
+from reviews
+where reviews.user_id = $1 and reviews.book_id = $2;
+
+-- name: GetRating :one
+select ratings.*
+from ratings
+where ratings.user_id = $1 and ratings.book_id = $2;
+
 -- name: GetBookReviews :many
 select reviews.*, ratings.rating, ratings.updated_at as rating_updated_at, users.name as user_name
 from reviews
