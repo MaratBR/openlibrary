@@ -17,7 +17,6 @@ type BookDetailsDto struct {
 	WordsPerChapter int                   `json:"wordsPerChapter"`
 	CreatedAt       time.Time             `json:"createdAt"`
 	Collections     []BookCollectionDto   `json:"collections"`
-	Chapters        []BookChapterDto      `json:"chapters"`
 	Author          BookDetailsAuthorDto  `json:"author"`
 	Permissions     BookUserPermissions   `json:"permissions"`
 	Summary         string                `json:"summary"`
@@ -33,6 +32,10 @@ type BookDetailsDto struct {
 type GetBookQuery struct {
 	ID          int64
 	ActorUserID uuid.NullUUID
+}
+
+type GetBookChaptersQuery struct {
+	ID int64
 }
 
 type BookChapterDto struct {
@@ -55,5 +58,6 @@ type BookUserPermissions struct {
 
 type BookService interface {
 	GetBook(ctx context.Context, query GetBookQuery) (BookDetailsDto, error)
+	GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]BookChapterDto, error)
 	GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error)
 }

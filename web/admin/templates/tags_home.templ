@@ -1,0 +1,12 @@
+package templates
+
+import "context"
+
+templ TagsHome(ctx context.Context) {
+    @DashboardLayout(ctx, "Tags") {
+        <header class="mt-10">
+            <h1 class="text-4xl font-title mb-3">Tags</h1>
+            <p>View list of tags and create new tags or edit existing ones.</p>
+        </header>
+    }
+}

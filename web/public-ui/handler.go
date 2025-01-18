@@ -61,8 +61,6 @@ func (h *Handler) createRouter() {
 		})
 	})
 
-	h.r.Mount("/_/embed-assets/", http.StripPrefix("/_/embed-assets/", newAssetsHandler()))
-
 	if Dev {
 		h.r.Mount("/_/assets/", http.StripPrefix("/_/assets/", http.FileServer(http.Dir("web/public-ui/frontend/dist"))))
 	} else {
@@ -99,6 +97,8 @@ func (h *Handler) createRouter() {
 		r.HandleFunc("/login", authController.LogIn)
 
 		r.Get("/book/{bookID}", bookController.GetBook)
+		r.Get("/book/{bookID}/toc", bookController.GetBookTOC)
+		r.Get("/book/{bookID}/my-review", bookController.WriteReview)
 
 		r.Get("/book/{bookID}/chapters/{chapterID}", chapterController.GetChapter)
 	})

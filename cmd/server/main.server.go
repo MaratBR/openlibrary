@@ -8,15 +8,17 @@ import (
 	"os"
 	"time"
 
-	"github.com/MaratBR/openlibrary/internal/admin"
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	i18nProvider "github.com/MaratBR/openlibrary/internal/i18n-provider"
 	"github.com/MaratBR/openlibrary/internal/store"
+	"github.com/MaratBR/openlibrary/web/admin"
+	"github.com/MaratBR/openlibrary/web/frontend"
 	publicui "github.com/MaratBR/openlibrary/web/public-ui"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
+	"golang.org/x/text/language"
 )
 
 type cliParams struct {
@@ -38,7 +40,13 @@ func mainServer(
 
 	var err error
 
-	localizerProvider := i18nProvider.NewLocaleProvider()
+	localizerProvider := i18nProvider.NewLocaleProvider(
+		language.English,
+		cliParams.Dev,
+		[]string{
+			"translations/en.toml",
+		},
+	)
 
 	db := connectToDatabase(config)
 
@@ -98,6 +106,9 @@ func mainServer(
 	//
 	// spaHandler := newSPAHandler(config, bookService, reviewsService, userService, searchService, tagsService)
 	// r.NotFound(spaHandler.ServeHTTP)
+
+	r.Mount("/_/embed-assets/", http.StripPrefix("/_/embed-assets/", frontend.EmbedAssets()))
+	r.Mount("/_/assets/", http.StripPrefix("/_/assets/", frontend.Assets(frontend.AssetsConfig{Dev: cliParams.Dev})))
 
 	r.Mount("/", publicui.NewHandler(db, config, cliParams.AppVersion, cacheInstance, csrfHandler))
 	r.Mount("/admin", admin.NewHandler(db, config))

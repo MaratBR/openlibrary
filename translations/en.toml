@@ -4,6 +4,21 @@ less = "Less"
 save = "Save"
 saveChanges = "Save changes"
 
+[time]
+justNow = "Just now"
+
+[time.minutes]
+one = "1 minute ago"
+other = "{{.count}} minutes ago"
+
+[time.hours]
+one = "1 hour ago"
+other = "{{.count}} hours ago"
+
+[time.days]
+one = "1 day ago"
+other = "{{.count}} days ago"
+
 [login]
 username = "Username"
 password = "Password"
@@ -23,7 +38,9 @@ dnf = "Did not finish"
 
 [reviews]
 title = "Reviews"
-
+myReview = "My review"
+updated = "Your review of \"{{.name}}\" was updated"
+editReview = "Edit my review"
 
 [nav]
 home = "Home"

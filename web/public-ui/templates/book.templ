@@ -14,11 +14,58 @@ templ BookPage(
     readingListStatus app.Nullable[app.BookReadingListDto],
     topReviews []app.ReviewDto,
 ) {
+    {{
+        l := i18nProvider.GetLocalizer(ctx)
+    }}
+    
     @bookPageLayout(ctx, book, readingListStatus) {
+        @i18nExtractKeys(l, []string{ "common.more", "common.less", "common.save" })
+
+
         <div x-ignore class="mt-4 __user-content">@templ.Raw(book.Summary)</div>
         @bookTags(ctx, book.Tags)
         @bookRating(&book)
-        @bookTopReviews(ctx, book.ID, ratingAndReview, topReviews, book.Author.ID)
+
+        <section x-data="{ tab: 'reviews', once: false }">
+            <header class="flex gap-4 items-baseline">
+                <span 
+                    role="button"
+                    @click="tab='reviews'"
+                    data-active="true"
+                    :data-active="tab==='reviews'"
+                    class="font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
+                    { l.MustLocalize(&i18n.LocalizeConfig{
+                        MessageID: "reviews.title",
+                    }) }
+                </span>
+                <form 
+                    @submit="once?$event.preventDefault():once=true"
+                    x-target="slot-book-toc" 
+                    action={ templ.SafeURL(fmt.Sprintf("/book/%d/toc", book.ID)) } 
+                    method="get">
+                    <button
+                        type="submit"
+                        @click="tab='toc'"
+                        :data-active="tab==='toc'"
+                        class="font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
+                        { l.MustLocalize(&i18n.LocalizeConfig{
+                            MessageID: "book.toc",
+                        }) }
+                    </button>
+                </form>
+            </header>
+
+            <div class="contents" x-show="tab==='reviews'">
+                @bookMyReview(ctx, book.ID, ratingAndReview)
+                @bookTopReviews(ctx, topReviews, book.Author.ID)
+            </div>
+
+            <div class="contents" id="slot-book-toc" x-cloak x-show="tab==='toc'">
+                <span class="loader mt-4"></span>
+            </div>
+        </section>
+
+
     }
 }
 
@@ -57,16 +104,6 @@ templ bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList a
             </div>
         </div>
     }
-}
-
-templ bookChapters(book *app.BookDetailsDto) {
-    <section id="chapters">
-        for _, chapter := range book.Chapters {
-            <div>
-                <a class="ol-link" href={templ.SafeURL(fmt.Sprintf("/books/%d/c/%d", book.ID, chapter.ID))}>{ chapter.Name }</a>
-            </div>
-        }
-    </section>
 }
 
 templ bookRating(book *app.BookDetailsDto) {
@@ -123,7 +160,6 @@ templ bookCover(cover, bookName string) {
 
 templ bookTags(ctx context.Context, tags []app.DefinedTagDto) {
     {{ l := i18nProvider.GetLocalizer(ctx) }}
-    @i18nExtractKeys(l, []string{ "common.more", "common.less" })
     <ul 
         if len(tags) > 10 {
             data-hidden

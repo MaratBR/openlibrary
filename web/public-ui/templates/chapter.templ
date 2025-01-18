@@ -24,7 +24,6 @@ templ Chapter(
     }}
 
     @htmlLayout(ctx, chapter.Name) {
-        
         @siteHeaderLayout() {
             <div class="h-full items-center flex gap-2">
                 <a class="ol-link !font-[600]" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
@@ -44,7 +43,7 @@ templ Chapter(
             data-font-size={ strconv.Itoa(readerSettings.FontSize) }
             class="ol-book-reader grid grid-cols-[1fr_auto]">
             <div class="relative pb-10">
-                <aside class="absolute top-0 bottom-0 right-0">
+                <aside class="z-10 absolute top-0 bottom-0 right-0">
                     <div class="flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2">
                         <button x-bind="toggleButton" class="ol-btn ol-btn--icon ol-btn--ghost">
                             <span class="material-symbols-outlined">settings</span>
@@ -52,7 +51,30 @@ templ Chapter(
                     </div>
                 </aside>
                 <div x-bind="chapter" class="ol-book-reader__chapter relative">
-                    @ChapterContentSection(ctx, chapter, readerSettings)
+                    @ChapterContentSection(ctx, &chapter, readerSettings)
+
+                    <section class="grid grid-cols-2 mt-4 bg-background sticky bottom-0 py-1">
+                        if chapter.PrevChapter.Valid {
+                            <a class="text-lg p-4 flex items-center gap-4 focus:outline focus:outline-2 hover:bg-secondary justify-end"
+                                href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.PrevChapter.Value.ID)) }>
+                                <span class="material-symbols-outlined">arrow_back</span>
+                                <span>{ chapter.PrevChapter.Value.Name }</span>
+                            </a>
+                        } else {
+                            <span />
+                        }
+
+                        if chapter.NextChapter.Valid {
+                            <a class="text-lg p-4 flex items-center gap-4 focus:outline focus:outline-2 hover:bg-secondary justify-start"
+                                href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.NextChapter.Value.ID)) }>
+                                <span>{ chapter.NextChapter.Value.Name }</span>
+                                <span class="material-symbols-outlined">arrow_forward</span>
+                            </a>
+                        } else {
+                            <span />
+                        }
+                    </section>
+
                 </div>
             </div>
 
@@ -87,7 +109,7 @@ templ readerSettingsUI(settings ReaderSettings) {
     </div>
 }
 
-templ ChapterContentSection(ctx context.Context, chapter app.ChapterDto, readerSettings ReaderSettings) {
+templ ChapterContentSection(ctx context.Context, chapter *app.ChapterDto, readerSettings ReaderSettings) {
     {{
         l := i18nProvider.GetLocalizer(ctx)
     }}

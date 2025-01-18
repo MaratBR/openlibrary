@@ -1,0 +1,27 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/web/common-templates"
+import "context"
+
+templ logo() {
+    <a href="/admin" class="font-literata text-3xl font-semibold select-none">
+        OpenLibrary
+    </a>
+}
+
+
+templ DashboardLayout(ctx context.Context, title string) {
+    @commonTemplates.Doc(ctx, commonTemplates.DocSettings{
+        Title: title,
+        Scripts: []string{ "/_/assets/common.js", "/_/assets/admin.common.js", "/_/assets/admin.alpinejs.js" },
+        CSS: []string{ "/_/assets/common.css", "/_/embed-assets/fonts.css" },
+        InstantClick: false,
+    }) {
+        @sidebar()
+
+        <main class="ml-[300px] p-4">
+            { children... }
+        </main>
+    }
+
+}

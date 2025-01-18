@@ -77,5 +77,49 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates.BookPage(r.Context(), book, ratingAndReview, readingListStatus, reviews).Render(r.Context(), w)
+}
 
+func (b *bookController) GetBookTOC(w http.ResponseWriter, r *http.Request) {
+	bookID, err := commonutil.URLParamInt64(r, "bookID")
+	if err != nil {
+		w.WriteHeader(404)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	chapters, err := b.service.GetBookChapters(r.Context(), app.GetBookChaptersQuery{
+		ID: bookID,
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	templates.BookTOC(r.Context(), bookID, chapters).Render(r.Context(), w)
+}
+
+func (b *bookController) WriteReview(w http.ResponseWriter, r *http.Request) {
+	bookID, err := commonutil.URLParamInt64(r, "bookID")
+	if err != nil {
+		w.WriteHeader(404)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	session, ok := auth.GetSession(r.Context())
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	review, err := b.reviewService.GetReview(r.Context(), app.GetReviewQuery{
+		BookID: bookID,
+		UserID: session.UserID,
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	templates.WriteReview(r.Context(), review).Render(r.Context(), w)
 }

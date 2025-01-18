@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "fmt"
 import "strconv"
+import "math"
 
 func starRating(value, scale float64) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -47,7 +48,7 @@ func starRating(value, scale float64) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = templ.RenderAttributes(ctx, templ_7745c5c3_Buffer, templ.Attributes{
-			"style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", value*10, scale*100.0),
+			"style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", (500*(value/10)+math.Floor(value/2)*10)/540*100, scale*100.0),
 		})
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -88,7 +89,7 @@ func starRatingInput(scale, initialValue float64, onInput string) templ.Componen
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.FormatFloat(initialValue, 'f', -1, 32))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/component-star-rating.templ`, Line: 19, Col: 93}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/component-star-rating.templ`, Line: 20, Col: 93}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -101,7 +102,7 @@ func starRatingInput(scale, initialValue float64, onInput string) templ.Componen
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(onInput)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/component-star-rating.templ`, Line: 19, Col: 112}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/component-star-rating.templ`, Line: 20, Col: 112}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -122,7 +123,7 @@ func starRatingInput(scale, initialValue float64, onInput string) templ.Componen
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = templ.RenderAttributes(ctx, templ_7745c5c3_Buffer, templ.Attributes{
-			"style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", initialValue*10, scale*100.0),
+			"style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", (500*(initialValue/10)+math.Floor(initialValue/2)*10)/540*100, scale*100.0),
 		})
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -132,9 +133,9 @@ func starRatingInput(scale, initialValue float64, onInput string) templ.Componen
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("`width:${value*10}%%;background-size:auto %fpx`", scale*100.0))
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("`width:${(500 * (value / 10) + Math.floor(value / 2) * 10) / 540 * 100}%%;background-size:auto %fpx`", scale*100.0))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/component-star-rating.templ`, Line: 27, Col: 98}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/component-star-rating.templ`, Line: 28, Col: 151}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {

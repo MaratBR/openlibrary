@@ -89,7 +89,7 @@ func Chapter(
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(book.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 31, Col: 31}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 30, Col: 31}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -102,7 +102,7 @@ func Chapter(
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(chapter.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 37, Col: 34}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 36, Col: 34}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -125,21 +125,91 @@ func Chapter(
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(readerSettings.FontSize))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 44, Col: 66}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 43, Col: 66}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" class=\"ol-book-reader grid grid-cols-[1fr_auto]\"><div class=\"relative pb-10\"><aside class=\"absolute top-0 bottom-0 right-0\"><div class=\"flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2\"><button x-bind=\"toggleButton\" class=\"ol-btn ol-btn--icon ol-btn--ghost\"><span class=\"material-symbols-outlined\">settings</span></button></div></aside><div x-bind=\"chapter\" class=\"ol-book-reader__chapter relative\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" class=\"ol-book-reader grid grid-cols-[1fr_auto]\"><div class=\"relative pb-10\"><aside class=\"z-10 absolute top-0 bottom-0 right-0\"><div class=\"flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2\"><button x-bind=\"toggleButton\" class=\"ol-btn ol-btn--icon ol-btn--ghost\"><span class=\"material-symbols-outlined\">settings</span></button></div></aside><div x-bind=\"chapter\" class=\"ol-book-reader__chapter relative\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = ChapterContentSection(ctx, chapter, readerSettings).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = ChapterContentSection(ctx, &chapter, readerSettings).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div><div class=\"w-[400px] border-l\" x-cloak x-bind=\"settings\"><div class=\"sticky top-[var(--header-height)] h-[100%-var(--header-height)]\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<section class=\"grid grid-cols-2 mt-4 bg-background sticky bottom-0 py-1\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if chapter.PrevChapter.Valid {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<a class=\"text-lg p-4 flex items-center gap-4 focus:outline focus:outline-2 hover:bg-secondary justify-end\" href=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var8 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.PrevChapter.Value.ID))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var8)))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"><span class=\"material-symbols-outlined\">arrow_back</span> <span>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var9 string
+				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(chapter.PrevChapter.Value.Name)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 61, Col: 70}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span></a> ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<span></span> ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			if chapter.NextChapter.Valid {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<a class=\"text-lg p-4 flex items-center gap-4 focus:outline focus:outline-2 hover:bg-secondary justify-start\" href=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var10 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.NextChapter.Value.ID))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var10)))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"><span>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var11 string
+				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(chapter.NextChapter.Value.Name)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 70, Col: 70}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span> <span class=\"material-symbols-outlined\">arrow_forward</span></a>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<span></span>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</section></div></div><div class=\"w-[400px] border-l\" x-cloak x-bind=\"settings\"><div class=\"sticky top-[var(--header-height)] h-[100%-var(--header-height)]\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -147,7 +217,7 @@ func Chapter(
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -181,25 +251,25 @@ func readerSettingsUI(settings ReaderSettings) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var8 == nil {
-			templ_7745c5c3_Var8 = templ.NopComponent
+		templ_7745c5c3_Var12 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var12 == nil {
+			templ_7745c5c3_Var12 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"p-3 space-y-4\"><section><span>Font size</span><div class=\"max-w-[250px] grid grid-cols-3 border border-border rounded-sm h-16\"><button x-bind=\"decreaseFont\" class=\"flex items-center justify-center hover:bg-secondary rounded-sm m-2\"><span class=\"material-symbols-outlined\">text_decrease</span></button><div x-text=\"fontSize\" class=\"flex items-center justify-center text-xl\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<div class=\"p-3 space-y-4\"><section><span>Font size</span><div class=\"max-w-[250px] grid grid-cols-3 border border-border rounded-sm h-16\"><button x-bind=\"decreaseFont\" class=\"flex items-center justify-center hover:bg-secondary rounded-sm m-2\"><span class=\"material-symbols-outlined\">text_decrease</span></button><div x-text=\"fontSize\" class=\"flex items-center justify-center text-xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var9 string
-		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(settings.FontSize))
+		var templ_7745c5c3_Var13 string
+		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(settings.FontSize))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 80, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 102, Col: 53}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><button x-bind=\"increaseFont\" class=\"flex items-center justify-center hover:bg-secondary rounded-sm m-2\"><span class=\"material-symbols-outlined\">text_increase</span></button></div></section></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</div><button x-bind=\"increaseFont\" class=\"flex items-center justify-center hover:bg-secondary rounded-sm m-2\"><span class=\"material-symbols-outlined\">text_increase</span></button></div></section></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -207,7 +277,7 @@ func readerSettingsUI(settings ReaderSettings) templ.Component {
 	})
 }
 
-func ChapterContentSection(ctx context.Context, chapter app.ChapterDto, readerSettings ReaderSettings) templ.Component {
+func ChapterContentSection(ctx context.Context, chapter *app.ChapterDto, readerSettings ReaderSettings) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -223,45 +293,45 @@ func ChapterContentSection(ctx context.Context, chapter app.ChapterDto, readerSe
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var10 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var10 == nil {
-			templ_7745c5c3_Var10 = templ.NopComponent
+		templ_7745c5c3_Var14 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var14 == nil {
+			templ_7745c5c3_Var14 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 
 		l := i18nProvider.GetLocalizer(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<header class=\"ol-book-reader__header\"><h1 class=\"text-3xl font-title\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<header class=\"ol-book-reader__header\"><h1 class=\"text-3xl font-title\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var11 string
-		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(chapter.Name)
+		var templ_7745c5c3_Var15 string
+		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(chapter.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 96, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 118, Col: 54}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</h1><p class=\"mt-2 text-muted-foreground\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var12 string
-		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(l.MustLocalize(&i18n.LocalizeConfig{
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</h1><p class=\"mt-2 text-muted-foreground\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var16 string
+		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(l.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "book.words",
 			TemplateData: map[string]string{
 				"count": commonutil.FormatInt(int(chapter.Words)),
 			},
 		}))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 104, Col: 14}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/chapter.templ`, Line: 126, Col: 14}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</p></header><article class=\"__user-content ol-book-reader__content\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</p></header><article class=\"__user-content ol-book-reader__content\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -271,7 +341,7 @@ func ChapterContentSection(ctx context.Context, chapter app.ChapterDto, readerSe
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, " :style=\"`--book-font-size:${fontSize}px`\"><div class=\"contents\" x-ignore>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, " :style=\"`--book-font-size:${fontSize}px`\"><div class=\"contents\" x-ignore>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -279,7 +349,7 @@ func ChapterContentSection(ctx context.Context, chapter app.ChapterDto, readerSe
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div></article>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</div></article>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

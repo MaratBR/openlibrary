@@ -1,0 +1,33 @@
+@import "./style/theme.css";
+@import "./style/button.scss";
+@import "./style/input.scss";
+@import "./style/tag.scss";
+@import "./style/avatar.scss";
+@import "./style/book-reader.scss";
+@import "./style/user-content.scss";
+@import "./style/nav.scss";
+@import "./style/util.scss";
+@import "./style/loader.css";
+
+
+@tailwind components;
+@tailwind utilities;
+@tailwind base;
+
+* {
+    @apply border-border;
+}
+
+.ol-link {
+    @apply text-foreground/80 underline-offset-4 hover:text-foreground hover:underline focus:underline;
+}
+
+.ol-star-background {
+    background-repeat: repeat-x;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 110 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon points='50,5 35,40 0,40 30,60 20,95 50,75 80,95 70,60 100,40 65,40' /%3E%3C/svg%3E");
+}
+
+.ol-star-background--filled {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 110 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon fill='rgb(250 204 21)' points='50,5 35,40 0,40 30,60 20,95 50,75 80,95 70,60 100,40 65,40' /%3E%3C/svg%3E");
+    /* background-image: url("data:image/svg+xml,%3Csvg viewBox='-3 0 110 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon%0Afill='rgb(250 204 21)' stroke='rgb(250 204 21)' stroke-width='2' points='50,5 35,40 0,40 30,60 20,95 50,75 80,95 70,60 100,40 65,40' /%3E%3C/svg%3E"); */
+}

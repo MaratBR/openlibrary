@@ -1,8 +1,0 @@
-<aside id=\"sidebar\" class=\"h-screen w-[300px] fixed left-0 top-0 bg-slate-900 text-gray-100\"><div class=\"flex justify-center my-4\">
-</div><ul class=\"flex flex-col items-stretch px-2\">
-<span class=\"material-symbols-outlined\">person</span> <span>Users</span>
-<span class=\"material-symbols-outlined\">tag</span> <span>Tags</span>
-</ul></aside>
-<a href=\"
-\" class=\"flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-white/10\">
-</a>

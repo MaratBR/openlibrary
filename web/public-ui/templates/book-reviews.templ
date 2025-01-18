@@ -1,0 +1,273 @@
+package templates
+
+import "context"
+import "github.com/nicksnyder/go-i18n/v2/i18n"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+import "github.com/gofrs/uuid"
+import "github.com/MaratBR/openlibrary/internal/auth"
+import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "strconv"
+
+templ WriteReview(ctx context.Context, review app.RatingAndReview) {
+    {{ l := i18nProvider.GetLocalizer(ctx) }}
+
+    @baseLayout(ctx, _t(l, "reviews.myReview")) {
+        <div
+            x-data={ fmt.Sprintf("{ editing: %t }", !review.Review.Valid) }
+            class="ol-container mt-8 mb-4">
+            @i18nExtractKeys(l, []string{
+                "common.save",
+                "reviews.updated",
+                "reviews.myReview",
+            })
+            if review.Review.Valid {
+                @jsonTemplate("island-review-editor-data", review.Review.Value)
+            }
+
+            if review.Review.Valid {
+                <div x-show="!editing">
+                    <div class="flex mb-4">
+                        <button @click="editing=true" class="ol-btn ol-btn--lg ol-btn--outline rounded-full">
+                            { _t(l, "reviews.editReview") }
+                        </button>
+                    </div>
+
+                    @starRating(float64(review.Review.Value.Rating), 0.5)
+
+                    <div class="__user-content mt-4 text-sm">
+                        @templ.Raw(review.Review.Value.Content)
+                    </div>
+                </div>
+            }
+
+            <ol-island-from-chunk :active="editing" src="/_/assets/islands/review-editor.js" name="review-editor">
+                <template data-type="loader">
+                    <div class="h-[300px]">
+                        <span class="loader"></span>
+                    </div>
+                </template>
+            </ol-island-from-chunk>
+        </div>
+    }
+}
+
+templ bookTopReviews(
+    ctx context.Context,  
+    reviews []app.ReviewDto, 
+    authorID uuid.UUID,
+) {
+    <ul class="space-y-2">
+        for _, review := range reviews {
+            @bookReview(ctx, review, review.User.ID == authorID)
+        }
+    </ul>
+}
+
+templ bookReview(
+    ctx context.Context, 
+    review app.ReviewDto, 
+    isAuthor bool,
+) {
+    <div
+        class="group grid grid-cols-[auto_1fr] gap-6 p-4 relative border-b last:border-b-0"
+        id={fmt.Sprintf("review-%s", review.User.ID.String())}>
+
+        <div>
+            <img class="ol-avatar" src={ review.User.Avatar } />
+        </div>
+
+
+        <div>
+            <span class="mb-2 flex gap-1">
+                <a class="ol-link text-lg" href={ templ.SafeURL(fmt.Sprintf("/user/%s", review.User.ID)) }>{ review.User.Name }</a>
+                if isAuthor {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <g
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            color="currentColor"
+                        >
+                            <path d="M5.076 17C4.089 4.545 12.912 1.012 19.973 2.224c.286 4.128-1.734 5.673-5.58 6.387c.742.776 2.055 1.753 1.913 2.974c-.1.868-.69 1.295-1.87 2.147C11.85 15.6 8.854 16.78 5.076 17" />
+                            <path d="M4 22c0-6.5 3.848-9.818 6.5-12" />
+                        </g>
+                    </svg>
+                }
+            </span>
+
+            <div class="mb-2">
+                @starRating(float64(review.Rating), 0.4)
+            </div>
+            <article x-ignore class="__user-content text-sm">
+                @templ.Raw(review.Content)
+            </article>
+        </div>
+
+        <div class="text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2">
+            <button class="ol-btn ol-btn--icon ol-btn--ghost">
+                <span class="material-symbols-outlined">flag</span>
+            </button>
+        </div>
+    </div>
+}
+
+templ bookMyReview(
+    ctx context.Context,
+    bookID int64,
+    ratingAndReview app.RatingAndReview,
+) {
+    {{
+        _, authorized := auth.GetSession(ctx)
+        l := i18nProvider.GetLocalizer(ctx)
+    }}
+
+    <section class="my-2" x-data="{
+        edit:false,
+        loading:false,
+        start:0,
+        requestEditing() {
+            this.loading = true;
+            this.start = Date.now();
+            this.$refs.myReview.style.height=`${this.$refs.myReview.clientHeight}px`;
+        },
+        onEditorReady() {
+            window.delay(Math.max(0, 300-(Date.now()-this.start))).then(() => {
+                this.loading = false;
+                this.edit = true;
+                this.$refs.myReview.style.removeProperty('height');
+            })
+        }
+    }">
+        if ratingAndReview.Review.Valid {
+            {{ review := ratingAndReview.Review.Value }}
+            <div x-ref="myReview" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4">
+                <div class="grid grid-cols-[110px_auto]" x-show="!edit&&!loading">
+                    <div>
+                        <img class="ol-avatar" src={ review.User.Avatar } />
+                    </div>
+
+                    <div>
+                        <div class="flex gap-4 items-center">
+                            @starRating(float64(review.Rating), 0.5)
+                            <button @click="requestEditing()" class="ol-btn ol-btn--lg ol-btn--outline rounded-full">
+                                <span class="material-symbols-outlined">edit</span>
+                                { _t(l, "reviews.editReview") }
+                            </button>
+                        </div>
+                        <article class="__user-content mt-4 text-sm">
+                            @collapsibleRawHtml(ctx, review.Content)
+                        </article>
+                    </div>
+                </div>
+
+                <div x-cloak x-show="loading" class="flex items-center justify-center h-full">
+                    <span class="loader m-0"></span>
+                </div>
+                
+                <ol-island 
+                    load-method="script" 
+                    name="review-editor" 
+                    src="/_/assets/islands/review-editor.js" 
+                    x-show="edit"
+                    :active="loading||edit"
+                    @island-mount="onEditorReady()" />
+            </div>
+        }
+        
+        if !ratingAndReview.Review.Valid {
+            <div class="pt-6 pb-8 rounded-xl items-start gap-4 my-8">
+                if authorized {
+                    <div class="flex flex-col items-center">
+                        <span class="mt-3 block text-3xl font-title font-semibold">
+                            @templ.Raw(l.MustLocalize(&i18n.LocalizeConfig{
+                                MessageID: "book.whatDoYouThink",
+                            }))
+                        </span>
+                        <div class="flex gap-6 items-center mt-4">
+                            {{
+                                var (
+                                    initialValue float64
+                                    text string
+                                )
+                                if ratingAndReview.Rating.Valid {
+                                    initialValue = float64(ratingAndReview.Rating.Value)
+                                    text = l.MustLocalize(&i18n.LocalizeConfig{
+                                        MessageID: "book.youRated",
+                                        TemplateData: map[string]string{
+                                            "rating": strconv.FormatFloat(initialValue/2, 'f', -1, 32),
+                                        },
+                                    })
+                                } else {
+                                    initialValue = 0.0
+                                    text = l.MustLocalize(&i18n.LocalizeConfig{
+                                        MessageID: "book.rateBook",
+                                    })
+                                }
+                            }}
+                            <div class="flex flex-col items-center" x-data={ fmt.Sprintf("{rating:%f}", initialValue) }>
+                                @starRatingInput(0.3, initialValue, fmt.Sprintf("rating=$event.detail;OL.api.reviews.updateRating('%d', rating)", bookID))
+                                @i18nKeys(map[string]string{
+                                    "book.rateBook": l.MustLocalize(&i18n.LocalizeConfig{
+                                        MessageID: "book.rateBook",
+                                    }),
+                                    "book.youRated": l.MustLocalize(&i18n.LocalizeConfig{
+                                        MessageID: "book.youRated",
+                                        TemplateData: map[string]string{
+                                            "rating": "$",
+                                        },
+                                    }),
+                                })
+                                <span
+                                    x-text="!rating?i18n['book.rateBook']:i18n['book.youRated'].replaceAll('$',rating/2)"
+                                    class="font-light">
+                                    { text }
+                                </span>
+                            </div>
+                            <a class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full" href={ templ.SafeURL(fmt.Sprintf("/book/%d/my-review", bookID)) }>
+                                { l.MustLocalize(&i18n.LocalizeConfig{
+                                    MessageID: "book.writeReview",
+                                }) }
+                            </a>
+                        </div>
+                    </div>
+                } else {
+                    <span class="mt-3 block text-3xl font-title font-semibold">
+                        @templ.Raw(l.MustLocalize(&i18n.LocalizeConfig{
+                            MessageID: "book.whatDoYouThink",
+                        }))
+                    </span>
+                    <a class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full mt-4" href="/login">
+                        { l.MustLocalize(&i18n.LocalizeConfig{
+                            MessageID: "book.writeReviewLogin",
+                        }) }
+                    </a>
+                }
+            </div>
+        } 
+    </section>
+}
+
+templ collapsibleRawHtml(ctx context.Context, html string) {
+    {{ l := i18nProvider.GetLocalizer(ctx) }}
+    
+    <div 
+        x-data="{expand:false}"
+        :data-expanded="expand"
+        :style="expand?'max-height:10000px':''"
+        class="max-h-[250px] mb-4 relative overflow-y-hidden 
+        data-[expanded=true]:after:hidden data-[expanded=true]:pb-10
+        after:block after:absolute after:h-32 after:left-0 after:right-0 after:bottom-0 
+        after:bg-gradient-to-t after:from-background after:via-background/90 after:to-transparent">
+        @templ.Raw(html)
+
+        <button 
+            @click="expand=!expand" 
+            class="absolute flex items-center left-1 bottom-1 z-20 text-lg font-[500] hover:shadow-[0_2px_0_currentColor]">
+            <span x-text="i18n[expand?'common.less':'common.more']">{ _t(l, "common.more") }</span>
+            <span x-text="!expand?'expand_all':'collapse_all'" class="material-symbols-outlined !text-[18px]">expand_all</span>
+        </button>
+    </div>
+}

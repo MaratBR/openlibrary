@@ -2,6 +2,7 @@ package templates
 
 import "fmt"
 import "strconv"
+import "math"
 
 
 templ starRating(value, scale float64) {
@@ -10,7 +11,7 @@ templ starRating(value, scale float64) {
     }... }>
         <div class="ol-star-background h-full w-full opacity-15"></div>
         <div class="absolute left-0 top-0 ol-star-background ol-star-background--filled h-full" { templ.Attributes{
-            "style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", value * 10, scale * 100.0),
+            "style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", (500 * (value / 10) + math.Floor(value / 2) * 10) / 540 * 100, scale * 100.0),
         }... }></div>
     </div>
 }
@@ -22,9 +23,9 @@ templ starRatingInput(scale, initialValue float64, onInput string) {
         <div x-bind="trigger" class="ol-star-background h-full w-full opacity-15"></div>
         <div 
             { templ.Attributes{
-                "style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", initialValue * 10, scale * 100.0),
+                "style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", (500 * (initialValue / 10) + math.Floor(initialValue / 2) * 10) / 540 * 100, scale * 100.0),
             }... }
-            :style={ fmt.Sprintf("`width:${value*10}%%;background-size:auto %fpx`", scale * 100.0) }
+            :style={ fmt.Sprintf("`width:${(500 * (value / 10) + Math.floor(value / 2) * 10) / 540 * 100}%%;background-size:auto %fpx`", scale * 100.0) }
             class="absolute pointer-events-none left-0 top-0 ol-star-background ol-star-background--filled h-full"></div>
     </div>
 }

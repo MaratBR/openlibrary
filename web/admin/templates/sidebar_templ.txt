@@ -1,0 +1,9 @@
+<aside id=\"sidebar\" class=\"h-screen w-[300px] fixed left-0 top-0 bg-slate-900 text-gray-100\"><div class=\"flex justify-center my-4\">
+</div><ul class=\"flex flex-col items-stretch\">
+<span class=\"material-symbols-outlined\">person</span> <span>Users</span>
+<span class=\"material-symbols-outlined\">tag</span> <span>Tags</span>
+<span class=\"material-symbols-outlined\">discover_tune</span> <span>Site settings</span>
+</ul></aside>
+<a href=\"
+\" class=\"flex items-center gap-2 p-2 transition-colors hover:bg-white/10 data-[active=true]:text-cyan-300 data-[active=true]:bg-white/20\">
+</a>

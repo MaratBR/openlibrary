@@ -1,0 +1,7 @@
+.ol-toasts {
+    @apply flex flex-col gap-2 fixed bottom-2 left-2 z-50;
+}
+
+.ol-toast {
+    @apply p-5 bg-slate-900 text-white shadow-md rounded-sm min-w-[200px];
+}

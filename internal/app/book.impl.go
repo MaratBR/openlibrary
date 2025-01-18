@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
@@ -97,7 +96,6 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 		WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 		CreatedAt:       book.CreatedAt.Time,
 		Collections:     []BookCollectionDto{},
-		Chapters:        []BookChapterDto{},
 		Favorites:       book.Favorites,
 		Author: BookDetailsAuthorDto{
 			ID:   authorID,
@@ -143,23 +141,6 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 	}
 
 	{
-		chapters, err := s.queries.GetBookChapters(ctx, query.ID)
-		if err != nil {
-			return BookDetailsDto{}, err
-		}
-		bookDto.Chapters = mapSlice(chapters, func(chapter store.GetBookChaptersRow) BookChapterDto {
-			return BookChapterDto{
-				ID:        chapter.ID,
-				Order:     int(chapter.Order),
-				Name:      chapter.Name,
-				Words:     int(chapter.Words),
-				CreatedAt: chapter.CreatedAt.Time,
-				Summary:   chapter.Summary,
-			}
-		})
-	}
-
-	{
 		collections, err := s.queries.GetBookCollections(ctx, query.ID)
 		if err != nil {
 			return BookDetailsDto{}, err
@@ -177,9 +158,24 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 	return bookDto, nil
 }
 
-type embedTagsObjectEnvelope struct {
-	Version int             `json:"v"`
-	Data    json.RawMessage `json:"d"`
+// GetBookChapters implements BookService.
+func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]BookChapterDto, error) {
+	chapters, err := s.queries.GetBookChapters(ctx, query.ID)
+	if err != nil {
+		return nil, err
+	}
+	chapterDtos := mapSlice(chapters, func(chapter store.GetBookChaptersRow) BookChapterDto {
+		return BookChapterDto{
+			ID:        chapter.ID,
+			Order:     int(chapter.Order),
+			Name:      chapter.Name,
+			Words:     int(chapter.Words),
+			CreatedAt: chapter.CreatedAt.Time,
+			Summary:   chapter.Summary,
+		}
+	})
+
+	return chapterDtos, nil
 }
 
 type ChapterNextPrevDto struct {

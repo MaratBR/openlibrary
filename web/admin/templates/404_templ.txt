@@ -1,0 +1,1 @@
+<h1 class=\"text-4xl font-title mt-4\">404</h1><p class=\"mt-2 text-lg\">Page not found</p>

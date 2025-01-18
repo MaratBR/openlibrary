@@ -1,7 +1,11 @@
-<div x-ignore class=\"mt-4 __user-content\">
+ <div x-ignore class=\"mt-4 __user-content\">
 </div>
  
- 
+ <section x-data=\"{ tab: &#39;reviews&#39;, once: false }\"><header class=\"flex gap-4 items-baseline\"><span role=\"button\" @click=\"tab=&#39;reviews&#39;\" data-active=\"true\" :data-active=\"tab===&#39;reviews&#39;\" class=\"font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground\">
+</span><form @submit=\"once?$event.preventDefault():once=true\" x-target=\"slot-book-toc\" action=\"
+\" method=\"get\"><button type=\"submit\" @click=\"tab=&#39;toc&#39;\" :data-active=\"tab===&#39;toc&#39;\" class=\"font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground\">
+</button></form></header><div class=\"contents\" x-show=\"tab===&#39;reviews&#39;\">
+</div><div class=\"contents\" id=\"slot-book-toc\" x-cloak x-show=\"tab===&#39;toc&#39;\"><span class=\"loader mt-4\"></span></div></section>
 <div id=\"book\" class=\"md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[1300px] py-4\" x-data=\"
 \"><div class=\"md:col-span-3 flex flex-col items-center\">
 </div><div class=\"md:col-span-9\"><header><h1 class=\"font-[500] text-3xl font-title\">
@@ -9,11 +13,6 @@
 \">
 </a></p></header><main class=\"contents\" id=\"slot-book-page\">
 </main></div></div>
-<section id=\"chapters\">
-<div><a class=\"ol-link\" href=\"
-\">
-</a></div>
-</section>
 <a id=\"rating-card\" href=\"#reviews\" class=\"inline-flex gap-2 items-center p-4 rounded-md transition-shadow hover:bg-highlight mt-2 text-muted-foreground\">
 Nope
 <div class=\"text-xs inline-block\">
