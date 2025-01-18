@@ -1,0 +1,6 @@
+package templates
+
+script serverData(data map[string]interface{}) {
+	window.__server__ = window.__server__ || {};
+	Object.assign(window.__server__, data);
+}

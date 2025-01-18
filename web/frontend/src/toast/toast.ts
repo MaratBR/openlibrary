@@ -1,5 +1,5 @@
 import Toastify from 'toastify-js'
-import "toastify-js/src/toastify.css"
+import 'toastify-js/src/toastify.css'
 
 function toast(message: string) {
   Toastify({
@@ -20,5 +20,5 @@ declare global {
   }
 }
 
-window.Toastify = Toastify;
-window.toast = toast;
+window.Toastify = Toastify
+window.toast = toast

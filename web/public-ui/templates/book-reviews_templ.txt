@@ -14,14 +14,15 @@
 </a> 
 <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" color=\"currentColor\"><path d=\"M5.076 17C4.089 4.545 12.912 1.012 19.973 2.224c.286 4.128-1.734 5.673-5.58 6.387c.742.776 2.055 1.753 1.913 2.974c-.1.868-.69 1.295-1.87 2.147C11.85 15.6 8.854 16.78 5.076 17\"></path> <path d=\"M4 22c0-6.5 3.848-9.818 6.5-12\"></path></g></svg>
 </span><div class=\"mb-2\">
-</div><article x-ignore class=\"__user-content text-sm\">
-</article></div><div class=\"text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2\"><button class=\"ol-btn ol-btn--icon ol-btn--ghost\"><span class=\"material-symbols-outlined\">flag</span></button></div></div>
-<section class=\"my-2\" x-data=\"{\n        edit:false,\n        loading:false,\n        start:0,\n        requestEditing() {\n            this.loading = true;\n            this.start = Date.now();\n            this.$refs.myReview.style.height=`${this.$refs.myReview.clientHeight}px`;\n        },\n        onEditorReady() {\n            window.delay(Math.max(0, 300-(Date.now()-this.start))).then(() =&gt; {\n                this.loading = false;\n                this.edit = true;\n                this.$refs.myReview.style.removeProperty(&#39;height&#39;);\n            })\n        }\n    }\">
-<div x-ref=\"myReview\" class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4\"><div class=\"grid grid-cols-[110px_auto]\" x-show=\"!edit&amp;&amp;!loading\"><div><img class=\"ol-avatar\" src=\"
+</div>
+</div><div class=\"text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2\"><button class=\"ol-btn ol-btn--icon ol-btn--ghost\"><span class=\"material-symbols-outlined\">flag</span></button></div></div>
+<section class=\"my-2\" x-data=\"{\n        edit:false,\n        loading:false,\n        start:0,\n        requestEditing() {\n            this.loading = true;\n            this.start = Date.now();\n            this.$refs.myReview.style.height=`${this.$refs.myReview.clientHeight}px`;\n        },\n        onEditorReady() {\n            window.delay(Math.max(0, 300-(Date.now()-this.start))).then(() =&gt; {\n                this.loading = false;\n                this.edit = true;\n                this.$refs.myReview.style.removeProperty(&#39;height&#39;);\n            })\n        },\n        onUpdated(review) {\n            this.loading = false;\n            this.edit = false;\n            document.getElementById(&#39;current-review-content&#39;).innerHTML = review.content;\n        }\n    }\">
+<div x-ref=\"myReview\" class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4\">
+<div class=\"grid grid-cols-[110px_auto]\" x-show=\"!edit&amp;&amp;!loading\"><div><img class=\"ol-avatar\" src=\"
 \"></div><div><div class=\"flex gap-4 items-center\">
 <button @click=\"requestEditing()\" class=\"ol-btn ol-btn--lg ol-btn--outline rounded-full\"><span class=\"material-symbols-outlined\">edit</span> 
 </button></div><article class=\"__user-content mt-4 text-sm\">
-</article></div></div><div x-cloak x-show=\"loading\" class=\"flex items-center justify-center h-full\"><span class=\"loader m-0\"></span></div><ol-island load-method=\"script\" name=\"review-editor\" src=\"/_/assets/islands/review-editor.js\" x-show=\"edit\" :active=\"loading||edit\" @island-mount=\"onEditorReady()\"></ol-island></div>
+</article></div></div><div x-cloak x-show=\"loading\" class=\"flex items-center justify-center h-full\"><span class=\"loader m-0\"></span></div><ol-island load-method=\"script\" name=\"review-editor\" src=\"/_/assets/islands/review-editor.js\" x-show=\"edit\" :active=\"loading||edit\" @review:updated=\"onUpdated($event.detail)\" @island-mount=\"onEditorReady()\"></ol-island></div>
 <div class=\"pt-6 pb-8 rounded-xl items-start gap-4 my-8\">
 <div class=\"flex flex-col items-center\"><span class=\"mt-3 block text-3xl font-title font-semibold\">
 </span><div class=\"flex gap-6 items-center mt-4\">
@@ -36,6 +37,11 @@
 </a>
 </div>
 </section>
-<div x-data=\"{expand:false}\" :data-expanded=\"expand\" :style=\"expand?&#39;max-height:10000px&#39;:&#39;&#39;\" class=\"max-h-[250px] mb-4 relative overflow-y-hidden \n        data-[expanded=true]:after:hidden data-[expanded=true]:pb-10\n        after:block after:absolute after:h-32 after:left-0 after:right-0 after:bottom-0 \n        after:bg-gradient-to-t after:from-background after:via-background/90 after:to-transparent\">
-<button @click=\"expand=!expand\" class=\"absolute flex items-center left-1 bottom-1 z-20 text-lg font-[500] hover:shadow-[0_2px_0_currentColor]\"><span x-text=\"i18n[expand?&#39;common.less&#39;:&#39;common.more&#39;]\">
-</span> <span x-text=\"!expand?&#39;expand_all&#39;:&#39;collapse_all&#39;\" class=\"material-symbols-outlined !text-[18px]\">expand_all</span></button></div>
+<div x-data=\"collapseContent\" :data-expanded=\"expand\"
+ data-collapsible-init data-collapsible=\"true\"
+ :data-collapsible=\"can\" :style=\"expand?&#39;max-height:10000px&#39;:&#39;&#39;\" class=\"max-h-[250px] mb-4 relative overflow-y-hidden \n        data-[expanded=true]:pb-10\n        after:hidden data-[collapsible=true]:after:block data-[expanded=true]:after:hidden\n        after:absolute after:h-32 after:left-0 after:right-0 after:bottom-0 \n        after:bg-gradient-to-t after:from-background after:via-background/90 after:to-transparent\"><div x-bind=\"content\"><div id=\"
+\" class=\"contents __user-content\" x-ignore>
+</div></div><button x-bind=\"button\"
+ x-cloak
+ class=\"absolute flex items-center left-1 bottom-1 z-20 text-lg font-[500] hover:shadow-[0_2px_0_currentColor]\"><span x-bind=\"buttonLabel\">
+</span> <span x-bind=\"buttonIcon\" class=\"material-symbols-outlined !text-[18px]\">expand_all</span></button></div>

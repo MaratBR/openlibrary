@@ -61,7 +61,9 @@ templ BookPage(
             </div>
 
             <div class="contents" id="slot-book-toc" x-cloak x-show="tab==='toc'">
-                <span class="loader mt-4"></span>
+                <div class="h-[500px] mt-4">
+                    <span class="loader mt-4"></span>
+                </div>
             </div>
         </section>
 
@@ -86,6 +88,9 @@ templ bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList a
             id="book" 
             class="md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[1300px] py-4" 
             x-data={ convertBookDetailsToAlpineState(&book, readingList) }>
+            @serverData(map[string]any{
+                "bookId": fmt.Sprintf("%d", book.ID),
+            })
             <div class="md:col-span-3 flex flex-col items-center">
                 @bookCover(book.Cover, book.Name)
                 @bookReadingList(ctx, book.ID, readingList)

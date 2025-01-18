@@ -1,4 +1,4 @@
-import twConfig from '../tailwind.config.js';
+import twConfig from '../tailwind.config.js'
 
 export default {
   plugins: {

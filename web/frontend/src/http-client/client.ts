@@ -1,4 +1,4 @@
-import ky from 'ky';
+import ky from 'ky'
 
 const originalFetch = window.fetch
 

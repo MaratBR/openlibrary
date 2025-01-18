@@ -1,5 +1,5 @@
 function init() {
-  const links = document.querySelectorAll('a');
+  const links = document.querySelectorAll('a')
 
   const activeLinks = []
 
@@ -19,10 +19,10 @@ function isActive(link: HTMLAnchorElement): boolean {
     const href = new URL(link.href)
     const currentUrl = new URL(window.location.href)
     const currentPath = currentUrl.pathname
-  
-    return href.pathname === currentPath && href.host === currentUrl.host  
+
+    return href.pathname === currentPath && href.host === currentUrl.host
   } catch {
-    return false;
+    return false
   }
 }
 

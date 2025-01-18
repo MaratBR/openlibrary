@@ -1,13 +1,13 @@
 declare global {
   interface OLLogger {
-    debug: typeof console.debug;
-    info: typeof console.log;
-    warn: typeof console.warn;
-    error: typeof console.error;
+    debug: typeof console.debug
+    info: typeof console.log
+    warn: typeof console.warn
+    error: typeof console.error
   }
 
   interface Window {
-    createLogger(name: string): OLLogger;
+    createLogger(name: string): OLLogger
   }
 }
 
@@ -26,5 +26,4 @@ function createLogger(name: string): OLLogger {
   }
 }
 
-
-window.createLogger = createLogger;
+window.createLogger = createLogger

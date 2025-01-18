@@ -1,6 +1,6 @@
-import { z } from "zod"
-import { KyResponse } from "ky"
-import { httpClient } from "@/http-client"
+import { z } from 'zod'
+import { KyResponse } from 'ky'
+import { httpClient } from '@/http-client'
 
 export const ratingSchema = z.union([
   z.literal(1),
@@ -37,9 +37,8 @@ export type CreateReviewRequest = {
 }
 
 export function httpUpdateReview(bookId: string, request: CreateReviewRequest): Promise<ReviewDto> {
-
   return httpClient
-    .post(`/api/reviews/${bookId}`, {
+    .post(`/_api/reviews/${bookId}`, {
       json: request,
     })
     .then((r) => r.json())
@@ -47,5 +46,5 @@ export function httpUpdateReview(bookId: string, request: CreateReviewRequest): 
 }
 
 export async function httpDeleteReview(bookId: string): Promise<KyResponse> {
-  return await httpClient.delete(`/api/reviews/${bookId}`)
+  return await httpClient.delete(`/_api/reviews/${bookId}`)
 }

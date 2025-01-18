@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
 
 declare module '*.svelte' {
-  export { SvelteComponent as default };
+  export { SvelteComponent as default }
 }

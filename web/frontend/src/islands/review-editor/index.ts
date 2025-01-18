@@ -1,5 +1,5 @@
-import { SvelteIsland } from '../common'
-import ReviewEditor from './ReviewEditor.svelte'
-import './ReviewEditor.scss';
+import { PreactIsland } from '../common'
+import ReviewEditor from './ReviewEditor.tsx'
+import './ReviewEditor.scss'
 
-window.OLIslandsRegistry.instance.register('review-editor', new SvelteIsland(ReviewEditor))
+window.OLIslandsRegistry.instance.register('review-editor', new PreactIsland(ReviewEditor))

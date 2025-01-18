@@ -1,7 +1,7 @@
 import * as ratingAPI from './rating'
 
 const reviewsAPI = {
-  ...ratingAPI
+  ...ratingAPI,
 }
 
 export { reviewsAPI }

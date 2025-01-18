@@ -108,9 +108,13 @@ func (h *Handler) createRouter() {
 		apiReadingListController := newAPIReadingListController(readingListService)
 
 		r.Post("/reviews/rating", apiBookController.RateBook)
+		r.Post("/reviews/{bookID}", apiBookController.UpdateOrCreateReview)
+		r.Delete("/reviews/{bookID}", apiBookController.DeleteReview)
 
 		r.Post("/reading-list/status", apiReadingListController.UpdateStatus)
 	})
+
+	bookBackgroundService.Start()
 
 }
 

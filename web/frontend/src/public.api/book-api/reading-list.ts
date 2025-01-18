@@ -1,5 +1,5 @@
-import { httpClient } from '@/http-client';
-import { z } from 'zod';
+import { httpClient } from '@/http-client'
+import { z } from 'zod'
 
 export const readingListStatusSchema = z.enum(['dnf', 'paused', 'read', 'reading', 'want_to_read'])
 
@@ -13,7 +13,6 @@ export const readingListDtoSchema = z.object({
 
 export type ReadingListDto = z.infer<typeof readingListDtoSchema>
 
-
 export async function updateReadingListStatus(
   bookId: string,
   status: ReadingListStatus,
@@ -22,7 +21,7 @@ export async function updateReadingListStatus(
     searchParams: { bookId, status },
   })
   if (!response.ok) {
-    throw new Error('unexpected non-ok status code ' + response.status)
+    throw new Error(`unexpected non-ok status code ${response.status}`)
   }
   const json = await response.json()
   return readingListDtoSchema.parse(json)
@@ -36,7 +35,7 @@ export async function updateReadingListStartReading(
     searchParams: { bookId, chapterId },
   })
   if (!response.ok) {
-    throw new Error('unexpected non-ok status code ' + response.status)
+    throw new Error(`unexpected non-ok status code ${response.status}`)
   }
   const json = await response.json()
   return readingListDtoSchema.parse(json)
