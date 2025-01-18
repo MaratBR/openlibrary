@@ -98,7 +98,6 @@ func (h *Handler) createRouter() {
 
 		r.Get("/book/{bookID}", bookController.GetBook)
 		r.Get("/book/{bookID}/toc", bookController.GetBookTOC)
-		r.Get("/book/{bookID}/my-review", bookController.WriteReview)
 
 		r.Get("/book/{bookID}/chapters/{chapterID}", chapterController.GetChapter)
 	})

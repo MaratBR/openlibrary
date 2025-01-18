@@ -16,6 +16,22 @@ templ starRating(value, scale float64) {
     </div>
 }
 
+templ starRatingControllable(value, scale float64, attrs templ.Attributes) {
+    <div x-data={ fmt.Sprintf("{value:%f}", value) } class="relative" { templ.Attributes{
+        "style": fmt.Sprintf("width:%fpx;height:%fpx", scale * 540.0, scale * 100.0),
+    }... } { attrs... }>
+        <div 
+            class="ol-star-background h-full w-full opacity-15"></div>
+        <div 
+            class="absolute left-0 top-0 ol-star-background ol-star-background--filled h-full"
+            :style={ fmt.Sprintf("`width:${(500*(value/10)+Math.floor(value/2)*10)/540*100}%%;background-size:auto %fpx`", scale * 100.0) }
+            { templ.Attributes{
+                "style": fmt.Sprintf("width:%f%%;background-size:auto %fpx", (500 * (value / 10) + math.Floor(value / 2) * 10) / 540 * 100, scale * 100.0),
+            }... }></div>
+    </div>
+}
+
+
 templ starRatingInput(scale, initialValue float64, onInput string) {
     <div x-data="bookRatingInput" data-value={ strconv.FormatFloat(initialValue, 'f', -1, 32) } @input={ onInput } class="relative cursor-pointer" { templ.Attributes{
         "style": fmt.Sprintf("width:%fpx;height:%fpx", scale * 540.0, scale * 100.0),

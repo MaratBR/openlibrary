@@ -44,6 +44,7 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
     })
       .then((review) => {
         rootElement.dispatchEvent(new CustomEvent('review:updated', { detail: review }))
+        window.toast(_('reviews.updated'))
       })
       .finally(() => {
         setSaving(false)

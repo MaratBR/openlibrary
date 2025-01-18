@@ -8,5 +8,5 @@ import '../toast/toast'
 import '@/http-client'
 import './common.css'
 
-import { initAfterDOMReady } from './active-link'
+import { initAfterDOMReady } from './links'
 initAfterDOMReady()

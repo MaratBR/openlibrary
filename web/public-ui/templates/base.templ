@@ -17,7 +17,7 @@ templ htmlLayout(ctx context.Context, title string) {
         Title: title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
         CSS: []string{ "/_/assets/common.css", "/_/embed-assets/fonts.css" },
-        InstantClick: true,
+        InstantClick: false,
     }) {
         { children... }
     }

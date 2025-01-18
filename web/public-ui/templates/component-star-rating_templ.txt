@@ -1,6 +1,11 @@
 <div class=\"relative\"
 ><div class=\"ol-star-background h-full w-full opacity-15\"></div><div class=\"absolute left-0 top-0 ol-star-background ol-star-background--filled h-full\"
 ></div></div>
+<div x-data=\"
+\" class=\"relative\"
+><div class=\"ol-star-background h-full w-full opacity-15\"></div><div class=\"absolute left-0 top-0 ol-star-background ol-star-background--filled h-full\" :style=\"
+\"
+></div></div>
 <div x-data=\"bookRatingInput\" data-value=\"
 \" @input=\"
 \" class=\"relative cursor-pointer\"

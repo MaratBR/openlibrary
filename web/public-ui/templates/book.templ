@@ -16,52 +16,55 @@ templ BookPage(
 ) {
     {{
         l := i18nProvider.GetLocalizer(ctx)
+        tab := "reviews"
     }}
     
     @bookPageLayout(ctx, book, readingListStatus) {
         @i18nExtractKeys(l, []string{ "common.more", "common.less", "common.save" })
 
-
         <div x-ignore class="mt-4 __user-content">@templ.Raw(book.Summary)</div>
         @bookTags(ctx, book.Tags)
         @bookRating(&book)
 
-        <section x-data="{ tab: 'reviews', once: false }">
-            <header class="flex gap-4 items-baseline">
-                <span 
-                    role="button"
-                    @click="tab='reviews'"
-                    data-active="true"
+        <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) }>
+            <header role="tablist" class="flex gap-4 items-baseline">
+                <span role="tab"
+                    @click.prevent="tab='reviews'"
+                    if tab == "reviews" {
+                        data-active="true"
+                    }
                     :data-active="tab==='reviews'"
-                    class="font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
+                    class="cursor-pointer font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
                     { l.MustLocalize(&i18n.LocalizeConfig{
                         MessageID: "reviews.title",
                     }) }
                 </span>
-                <form 
-                    @submit="once?$event.preventDefault():once=true"
-                    x-target="slot-book-toc" 
-                    action={ templ.SafeURL(fmt.Sprintf("/book/%d/toc", book.ID)) } 
-                    method="get">
-                    <button
-                        type="submit"
-                        @click="tab='toc'"
-                        :data-active="tab==='toc'"
-                        class="font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
-                        { l.MustLocalize(&i18n.LocalizeConfig{
-                            MessageID: "book.toc",
-                        }) }
-                    </button>
-                </form>
+                <span role="tab" data-no-instant
+                    @click.prevent="tab='toc'"
+                    if tab == "toc" {
+                        data-active="true"
+                    }
+                    :data-active="tab==='toc'"
+                    class="cursor-pointer font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
+                    { l.MustLocalize(&i18n.LocalizeConfig{
+                        MessageID: "book.toc",
+                    }) }
+                </span>
             </header>
 
-            <div class="contents" x-show="tab==='reviews'">
+            <div
+                role="tabpanel"
+                if tab != "reviews" {
+                    x-cloak
+                } 
+                class="contents" 
+                x-show="tab==='reviews'">
                 @bookMyReview(ctx, book.ID, ratingAndReview)
                 @bookTopReviews(ctx, topReviews, book.Author.ID)
             </div>
 
-            <div class="contents" id="slot-book-toc" x-cloak x-show="tab==='toc'">
-                <div class="h-[500px] mt-4">
+            <div role="tabpanel" class="contents" id="slot-book-toc" x-merge="replace" x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
+                <div class="h-[600px] mt-4">
                     <span class="loader mt-4"></span>
                 </div>
             </div>

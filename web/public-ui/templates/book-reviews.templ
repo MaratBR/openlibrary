@@ -9,49 +9,6 @@ import "github.com/MaratBR/openlibrary/internal/auth"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 import "strconv"
 
-templ WriteReview(ctx context.Context, review app.RatingAndReview) {
-    {{ l := i18nProvider.GetLocalizer(ctx) }}
-
-    @baseLayout(ctx, _t(l, "reviews.myReview")) {
-        <div
-            x-data={ fmt.Sprintf("{ editing: %t }", !review.Review.Valid) }
-            class="ol-container mt-8 mb-4">
-            @i18nExtractKeys(l, []string{
-                "common.save",
-                "reviews.updated",
-                "reviews.myReview",
-            })
-            if review.Review.Valid {
-                @jsonTemplate("island-review-editor-data", review.Review.Value)
-            }
-
-            if review.Review.Valid {
-                <div x-show="!editing">
-                    <div class="flex mb-4">
-                        <button @click="editing=true" class="ol-btn ol-btn--lg ol-btn--outline rounded-full">
-                            { _t(l, "reviews.editReview") }
-                        </button>
-                    </div>
-
-                    @starRating(float64(review.Review.Value.Rating), 0.5)
-
-                    <div class="__user-content mt-4 text-sm">
-                        @templ.Raw(review.Review.Value.Content)
-                    </div>
-                </div>
-            }
-
-            <ol-island-from-chunk :active="editing" src="/_/assets/islands/review-editor.js" name="review-editor">
-                <template data-type="loader">
-                    <div class="h-[300px]">
-                        <span class="loader"></span>
-                    </div>
-                </template>
-            </ol-island-from-chunk>
-        </div>
-    }
-}
-
 templ bookTopReviews(
     ctx context.Context,  
     reviews []app.ReviewDto, 
@@ -141,9 +98,16 @@ templ bookMyReview(
         onUpdated(review) {
             this.loading = false;
             this.edit = false;
+            Alpine.$data(document.getElementById('current-review-rating')).value = review.rating;
             document.getElementById('current-review-content').innerHTML = review.content;
         }
     }">
+        @i18nExtractKeys(l, []string{
+            "common.save",
+            "reviews.updated",
+            "reviews.myReview",
+        })
+
         if ratingAndReview.Review.Valid {
             {{ review := ratingAndReview.Review.Value }}
             <div x-ref="myReview" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4">
@@ -155,7 +119,9 @@ templ bookMyReview(
 
                     <div>
                         <div class="flex gap-4 items-center">
-                            @starRating(float64(review.Rating), 0.5)
+                            @starRatingControllable(float64(review.Rating), 0.5, templ.Attributes{
+                                "id": "current-review-rating",
+                            })
                             <button @click="requestEditing()" class="ol-btn ol-btn--lg ol-btn--outline rounded-full">
                                 <span class="material-symbols-outlined">edit</span>
                                 { _t(l, "reviews.editReview") }

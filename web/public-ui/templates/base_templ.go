@@ -121,7 +121,7 @@ func htmlLayout(ctx context.Context, title string) templ.Component {
 			Title:        title,
 			Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js"},
 			CSS:          []string{"/_/assets/common.css", "/_/embed-assets/fonts.css"},
-			InstantClick: true,
+			InstantClick: false,
 		}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

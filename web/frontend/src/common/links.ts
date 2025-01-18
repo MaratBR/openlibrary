@@ -1,4 +1,4 @@
-function init() {
+function initActiveLinks() {
   const links = document.querySelectorAll('a')
 
   const activeLinks = []
@@ -10,7 +10,7 @@ function init() {
   }
 
   for (const activeLink of activeLinks) {
-    activeLink.dataset.active = 'true'
+    activeLink.dataset.linkActive = 'true'
   }
 }
 
@@ -24,6 +24,10 @@ function isActive(link: HTMLAnchorElement): boolean {
   } catch {
     return false
   }
+}
+
+function init() {
+  initActiveLinks()
 }
 
 export function initAfterDOMReady() {

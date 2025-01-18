@@ -1,6 +1,7 @@
 import './ol-island.scss'
 
 export interface OLIsland {
+  // eslint-disable-next-line no-unused-vars
   mount(el: HTMLElement, data: unknown): () => void
 }
 
@@ -112,6 +113,7 @@ abstract class OLIslandElementBase extends HTMLElement {
       console.debug('[ol-island] mount', island)
       this._unmount = island.mount(this, undefined)
       this.dispatchEvent(new CustomEvent('island-mount'))
+      this._isCreating = false
     })
   }
 
@@ -166,7 +168,8 @@ abstract class OLIslandElementBase extends HTMLElement {
 
   abstract getIsland(): Promise<OLIsland>
 
-  protected onActiveChanged(active: boolean) {
+  // eslint-disable-next-line no-unused-vars
+  protected onActiveChanged(_active: boolean) {
     // no-op
   }
 }
