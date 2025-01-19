@@ -7,7 +7,9 @@ import (
 	"slices"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
+	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -16,6 +18,92 @@ type searchService struct {
 	queries       *store.Queries
 	tagsService   TagsService
 	uploadService *UploadService
+	userService   UserService
+}
+
+// ExplainSearchQuery implements SearchService.
+func (s *searchService) ExplainSearchQuery(ctx context.Context, req BookSearchQuery) (DetailedBookSearchQuery, error) {
+	detailed := DetailedBookSearchQuery{
+		Words:           req.Words,
+		WordsPerChapter: req.WordsPerChapter,
+		Chapters:        req.Chapters,
+		Favorites:       req.Favorites,
+		IncludeBanned:   req.IncludeBanned,
+		IncludeHidden:   req.IncludeHidden,
+		IncludeEmpty:    req.IncludeEmpty,
+		Page:            req.Page,
+		PageSize:        req.PageSize,
+	}
+
+	tagIds := commonutil.MergeArrays(req.IncludeTags, req.ExcludeTags)
+
+	if len(tagIds) == 0 {
+		detailed.IncludeTags = []DefinedTagDto{}
+		detailed.ExcludeTags = []DefinedTagDto{}
+	} else {
+		tags, err := s.tagsService.GetTagsByIds(ctx, tagIds)
+		if err != nil {
+			return DetailedBookSearchQuery{}, err
+		}
+		tagMap := make(map[int64]DefinedTagDto, len(tags))
+		for _, t := range tags {
+			tagMap[t.ID] = t
+		}
+
+		detailed.IncludeTags = []DefinedTagDto{}
+		detailed.ExcludeTags = []DefinedTagDto{}
+
+		for _, tagId := range req.IncludeTags {
+			if t, ok := tagMap[tagId]; ok {
+				detailed.IncludeTags = append(detailed.IncludeTags, t)
+			}
+		}
+
+		for _, tagId := range req.ExcludeTags {
+			if t, ok := tagMap[tagId]; ok {
+				detailed.ExcludeTags = append(detailed.IncludeTags, t)
+			}
+		}
+	}
+
+	userIds := commonutil.MergeArraysNoSort(req.IncludeUsers, req.ExcludeUsers)
+
+	if len(userIds) == 0 {
+		detailed.IncludeUsers = []UserFromSearchRequestDto{}
+		detailed.ExcludeUsers = []UserFromSearchRequestDto{}
+	} else {
+		userMap := map[uuid.UUID]UserFromSearchRequestDto{}
+
+		for _, userId := range userIds {
+			user, err := s.userService.GetUserSelfData(ctx, userId)
+			if err != nil {
+				return DetailedBookSearchQuery{}, err
+			}
+
+			userMap[user.ID] = UserFromSearchRequestDto{
+				ID:     user.ID,
+				Name:   user.Name,
+				Avatar: getUserAvatar(user.Name, 84),
+			}
+		}
+
+		detailed.IncludeUsers = []UserFromSearchRequestDto{}
+		detailed.ExcludeUsers = []UserFromSearchRequestDto{}
+
+		for _, userId := range req.IncludeUsers {
+			if u, ok := userMap[userId]; ok {
+				detailed.IncludeUsers = append(detailed.IncludeUsers, u)
+			}
+		}
+
+		for _, userId := range req.ExcludeUsers {
+			if u, ok := userMap[userId]; ok {
+				detailed.ExcludeUsers = append(detailed.ExcludeUsers, u)
+			}
+		}
+	}
+
+	return detailed, nil
 }
 
 func int32RangeToInt4Range(r Int32Range) store.Int4Range {
@@ -193,11 +281,12 @@ func constructBookSearchRequest(ctx context.Context, tagsService TagsService, re
 	return
 }
 
-func NewSearchService(db store.DBTX, tagsService TagsService, uploadService *UploadService) SearchService {
+func NewSearchService(db store.DBTX, tagsService TagsService, uploadService *UploadService, userService UserService) SearchService {
 	return &searchService{
 		db:            db,
 		queries:       store.New(db),
 		tagsService:   tagsService,
 		uploadService: uploadService,
+		userService:   userService,
 	}
 }

@@ -1,0 +1,54 @@
+.ol-book-search-results {
+}
+
+.ol-book-search-card {
+    @apply md:grid md:grid-cols-[165px_1fr] border-b-2 md:border-b md:pb-2 md:pt-4;
+
+    &__left {
+        @apply bg-secondary md:bg-transparent py-2 mb-4 md:mb-0 flex flex-col items-center justify-start;
+    }
+
+    &__right {
+        @apply px-4 md:px-0;
+    }
+
+    &__link {
+        @apply text-2xl font-title;
+    }
+
+    &__author {
+    }
+
+    &__imglink {
+        @apply rounded-r-xl transition-shadow focus:ring focus:ring-foreground focus:ring-offset-4 inline-block h-[200px];
+    }
+
+    &:hover &__imglink {
+        @apply scale-[1.02] transition-transform [&>img]:transition-shadow [&>img]:shadow-lg inline-block;
+    }
+
+    &__summary {
+        @apply text-sm mt-4;
+    }
+
+    &__tags {
+        @apply flex gap-1 flex-wrap text-sm mt-2;
+    
+        .ol-tag {
+            @apply p-2 !shadow-none bg-secondary active:bg-slate-800 active:text-primary-foreground hover:outline hover:-outline-offset-1 hover:outline-1 hover:outline-slate-900;
+        }
+
+        &__more {
+            @apply cursor-pointer p-2 active:bg-slate-800 active:text-primary-foreground
+        }
+    }
+}
+
+
+.ol-book-cover {
+    @apply overflow-hidden h-[calc(200px*var(--cover-scale,1))] inline-block rounded-r-xl;
+
+    img {
+        @apply object-contain h-full w-full;
+    }
+}

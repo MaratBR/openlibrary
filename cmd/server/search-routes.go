@@ -168,7 +168,6 @@ type searchRequest struct {
 }
 
 func parseSearchRequest(source url.Values) (search searchRequest) {
-
 	search.Words = getInt32RangeFromQuery(source, "w")
 	search.Favorites = getInt32RangeFromQuery(source, "f")
 	search.Chapters = getInt32RangeFromQuery(source, "c")

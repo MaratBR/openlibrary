@@ -86,20 +86,24 @@ func (h *Handler) createRouter() {
 	reviewsService := app.NewReviewsService(db, userService, bookBackgroundService)
 	reviewsService = app.NewCachedReviewsService(reviewsService, h.cache)
 	bookService := app.NewBookService(db, tagsService, uploadService, readingListService, reviewsService)
-	searchService := app.NewSearchService(db, tagsService, uploadService)
+	searchService := app.NewSearchService(db, tagsService, uploadService, userService)
 	searchService = app.NewCachedSearchService(searchService, h.cache)
 
 	h.r.Group(func(r chi.Router) {
 		authController := newAuthController(authService, h.csrfHandler)
 		bookController := newBookController(bookService, reviewsService, readingListService)
 		chapterController := newChaptersController(bookService)
+		searchController := newSearchController(searchService)
 
 		r.HandleFunc("/login", authController.LogIn)
 
 		r.Get("/book/{bookID}", bookController.GetBook)
 		r.Get("/book/{bookID}/toc", bookController.GetBookTOC)
+		r.Get("/book/{bookID}/__fragment/review", bookController.GetBookReview)
 
 		r.Get("/book/{bookID}/chapters/{chapterID}", chapterController.GetChapter)
+
+		r.Get("/search", searchController.Search)
 	})
 
 	h.r.Route("/_api", func(r chi.Router) {

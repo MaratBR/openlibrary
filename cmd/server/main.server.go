@@ -76,7 +76,7 @@ func mainServer(
 
 	// bookService := app.NewBookService(db, tagsService, uploadService, readingListService, reviewsService)
 
-	searchService := app.NewSearchService(db, tagsService, uploadService)
+	searchService := app.NewSearchService(db, tagsService, uploadService, userService)
 	searchService = app.NewCachedSearchService(searchService, cacheInstance)
 
 	// middlewares

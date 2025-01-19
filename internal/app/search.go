@@ -136,7 +136,33 @@ type NormalizedSearchRequest struct {
 	Offset uint
 }
 
+type UserFromSearchRequestDto struct {
+	ID     uuid.UUID `json:"id"`
+	Name   string    `json:"name"`
+	Avatar string    `json:"avatar"`
+}
+
+type DetailedBookSearchQuery struct {
+	Words           Int32Range
+	Chapters        Int32Range
+	WordsPerChapter Int32Range
+	Favorites       Int32Range
+
+	IncludeTags  []DefinedTagDto
+	ExcludeTags  []DefinedTagDto
+	IncludeUsers []UserFromSearchRequestDto
+	ExcludeUsers []UserFromSearchRequestDto
+
+	IncludeBanned bool
+	IncludeHidden bool
+	IncludeEmpty  bool
+
+	Page     uint
+	PageSize uint
+}
+
 type SearchService interface {
 	SearchBooks(ctx context.Context, req BookSearchQuery) (*BookSearchResult, error)
 	GetBookExtremes(ctx context.Context) (*BookExtremes, error)
+	ExplainSearchQuery(ctx context.Context, req BookSearchQuery) (DetailedBookSearchQuery, error)
 }

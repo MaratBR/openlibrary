@@ -1,3 +1,4 @@
+import { _ } from '@/common/i18n'
 import Alpine from 'alpinejs'
 
 Alpine.data('collapseContent', () => ({
@@ -23,9 +24,8 @@ Alpine.data('collapseContent', () => ({
 
   recalculate() {
     const el = this.$refs.content
-    const width = el.clientWidth
-    const textSize = 18 // just hard code it what can possible go wrong
-    this.can = approximateLines(width, textSize, el.innerHTML) >= 8
+    const maxHeight = +(this.$root.dataset.collapsibleHeight || '')
+    this.can = el.clientHeight > maxHeight
   },
 
   content: {
@@ -44,7 +44,7 @@ Alpine.data('collapseContent', () => ({
 
   buttonLabel: {
     'x-text'() {
-      return this.expand ? window.i18n!['common.less'] : window.i18n!['common.more']
+      return this.expand ? _('common.less') : _('common.more')
     },
   },
 
@@ -54,42 +54,3 @@ Alpine.data('collapseContent', () => ({
     },
   },
 }))
-
-/**
- * Calculates the approximate number of lines a given HTML text will take in an element.
- * @param width - The width of the element in pixels.
- * @param textSize - The text size in pixels.
- * @param html - The HTML string containing text and supported tags.
- * @returns The approximate number of lines.
- */
-function approximateLines(width: number, textSize: number, html: string): number {
-  // Remove HTML tags to get the raw text
-  const text: string = stripHTMLTags(html)
-
-  // Estimate the average character width based on the text size (pixels)
-  // Assuming 0.6 of text size per character
-  const avgCharWidth: number = textSize * 0.6
-
-  // Calculate the total width of the text in pixels
-  const totalTextWidth: number = Math.ceil(text.length * avgCharWidth)
-
-  // Calculate the approximate number of lines
-  const numLines: number = Math.ceil(totalTextWidth / width)
-
-  return numLines
-}
-
-/**
- * Removes supported HTML tags from the input string.
- * @param input - The HTML string to process.
- * @returns The plain text string.
- */
-function stripHTMLTags(input: string): string {
-  const tagRegex: RegExp = /<\/?(p|b|strong|em|i|span|br)[^>]*?>/gi
-  let output: string = input.replace(tagRegex, '')
-
-  // Replace <br> tags with newlines
-  output = output.replace(/<br\s*\/?>/gi, '\n')
-
-  return output
-}

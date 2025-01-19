@@ -41,6 +41,8 @@ title = "Reviews"
 myReview = "My review"
 updated = "Your review of \"{{.name}}\" was updated"
 editReview = "Edit my review"
+noReviewsTitle = "Hm, it's empty out here"
+noReviewsText = "There are no reviews for this book yet. Be the first to write one! :)"
 
 [nav]
 home = "Home"

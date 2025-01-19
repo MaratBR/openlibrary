@@ -21,6 +21,10 @@
             dark:border-zinc-300 dark:focus:outline-white dark:focus:border-white;
     }
 
+    &--secondary {
+        @apply bg-secondary text-secondary-foreground active:outline;
+    }
+
     &--ghost {
         @apply text-muted-foreground hover:bg-accent hover:text-accent-foreground;
     }

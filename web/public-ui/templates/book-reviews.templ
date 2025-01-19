@@ -14,9 +14,15 @@ templ bookTopReviews(
     reviews []app.ReviewDto, 
     authorID uuid.UUID,
 ) {
+    {{
+        userId := auth.GetNullableUserID(ctx)
+    }}
+
     <ul class="space-y-2">
         for _, review := range reviews {
-            @bookReview(ctx, review, review.User.ID == authorID)
+            if !userId.Valid || userId.UUID != review.User.ID {
+                @bookReview(ctx, review, review.User.ID == authorID)
+            }
         }
     </ul>
 }
@@ -69,7 +75,7 @@ templ bookReview(
     </div>
 }
 
-templ bookMyReview(
+templ BookMyReview(
     ctx context.Context,
     bookID int64,
     ratingAndReview app.RatingAndReview,
@@ -78,8 +84,8 @@ templ bookMyReview(
         _, authorized := auth.GetSession(ctx)
         l := i18nProvider.GetLocalizer(ctx)
     }}
-
-    <section class="my-2" x-data="{
+    
+    <section id={ fmt.Sprintf("book-%d-my-review", bookID) } data-book-id={ fmt.Sprintf("%d", bookID) } class="my-2" x-data="{
         edit:false,
         loading:false,
         start:0,
@@ -98,8 +104,7 @@ templ bookMyReview(
         onUpdated(review) {
             this.loading = false;
             this.edit = false;
-            Alpine.$data(document.getElementById('current-review-rating')).value = review.rating;
-            document.getElementById('current-review-content').innerHTML = review.content;
+            $ajax(`/book/${this.$root.dataset.bookId}/__fragment/review`);
         }
     }">
         @i18nExtractKeys(l, []string{
@@ -149,6 +154,17 @@ templ bookMyReview(
         }
         
         if !ratingAndReview.Review.Valid {
+            <div x-show="edit" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4">
+                <ol-island 
+                    load-method="script" 
+                    name="review-editor" 
+                    src="/_/assets/islands/review-editor.js" 
+                    :active="loading||edit"
+                    @review:updated="onUpdated($event.detail)"
+                    @island-mount="onEditorReady()" />
+            </div>
+
+
             <div class="pt-6 pb-8 rounded-xl items-start gap-4 my-8">
                 if authorized {
                     <div class="flex flex-col items-center">
@@ -197,11 +213,14 @@ templ bookMyReview(
                                     { text }
                                 </span>
                             </div>
-                            <a class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full" href={ templ.SafeURL(fmt.Sprintf("/book/%d/my-review", bookID)) }>
-                                { l.MustLocalize(&i18n.LocalizeConfig{
-                                    MessageID: "book.writeReview",
-                                }) }
-                            </a>
+                            <button class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full" @click="requestEditing()">
+                                <span x-show="!loading">
+                                    { l.MustLocalize(&i18n.LocalizeConfig{
+                                        MessageID: "book.writeReview",
+                                    }) }
+                                </span>
+                                <span x-cloak x-show="loading" class="loader mx-8"></span>
+                            </button>
                         </div>
                     </div>
                 } else {
@@ -223,28 +242,41 @@ templ bookMyReview(
 
 templ collapsibleRawHtml(ctx context.Context, id, html string) {
     {{ 
-        l := i18nProvider.GetLocalizer(ctx)
         canBeCollapsed := approximateLines(831, 18, html) >= 8
+    }}
+
+   @collapsible(ctx, 250, canBeCollapsed) {
+    <div id={id} class="contents __user-content" x-ignore>
+        @templ.Raw(html)
+    </div>
+   }
+}
+
+templ collapsible(ctx context.Context, height int, canBeCollapsed bool) {
+    {{ 
+        l := i18nProvider.GetLocalizer(ctx)
     }}
 
     <div 
         x-data="collapseContent"
+        data-collapsible-height={ fmt.Sprintf("%d", height) }
         :data-expanded="expand"
         if canBeCollapsed {
             data-collapsible-init
             data-collapsible="true"
         }
         :data-collapsible="can"
-        :style="expand?'max-height:10000px':''"
-        class="max-h-[250px] mb-4 relative overflow-y-hidden 
+        :style={ fmt.Sprintf("`max-height:${expand?10000:%d}px;`", height) }
+        { templ.Attributes{
+            "style": fmt.Sprintf("max-height:%dpx", height),
+        }... }
+        class="mb-4 relative overflow-y-hidden 
         data-[expanded=true]:pb-10
         after:hidden data-[collapsible=true]:after:block data-[expanded=true]:after:hidden
-        after:absolute after:h-32 after:left-0 after:right-0 after:bottom-0 
-        after:bg-gradient-to-t after:from-background after:via-background/90 after:to-transparent">
+        after:absolute after:h-16 after:left-0 after:right-0 after:bottom-0 
+        after:bg-gradient-to-t after:from-background after:via-background/95 after:to-transparent">
         <div x-bind="content">
-            <div id={id} class="contents __user-content" x-ignore>
-                @templ.Raw(html)
-            </div>
+            { children... }
         </div>
 
         <button 
@@ -252,7 +284,7 @@ templ collapsibleRawHtml(ctx context.Context, id, html string) {
             if !canBeCollapsed {
                 x-cloak
             }
-            class="absolute flex items-center left-1 bottom-1 z-20 text-lg font-[500] hover:shadow-[0_2px_0_currentColor]">
+            class="absolute flex items-center left-0 right-0 bottom-0 p-1 z-20 text-lg font-[500] hover:text-primary focus:outline focus:outline-2 outline-offset-[-2px]">
             <span x-bind="buttonLabel">{ _t(l, "common.more") }</span>
             <span x-bind="buttonIcon" class="material-symbols-outlined !text-[18px]">expand_all</span>
         </button>

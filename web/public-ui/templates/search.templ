@@ -1,0 +1,92 @@
+package templates 
+
+import "context"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+
+
+templ SearchPage(
+    ctx context.Context,
+    result *app.BookSearchResult,
+    explainedQuery app.DetailedBookSearchQuery,
+) {
+    {{
+        l := i18nProvider.GetLocalizer(ctx)
+        tags := make(map[int64]app.DefinedTagDto, len(result.Tags))
+        for _, tag := range result.Tags {
+            tags[tag.ID] = tag
+        }
+    }}
+
+    @baseLayout(ctx, "Search") {
+        @jsonTemplate("explainedQuery", explainedQuery)
+
+        @i18nExtractKeys(l, []string{
+            "common.more",
+            "common.less",
+        })
+
+        <div class="ol-container my-12">
+            <h1 class="font-title text-3xl">Search</h1>
+
+            <button class="ol-btn ol-btn--lg ol-btn--secondary rounded-full my-4">
+                <span class="material-symbols-outlined">filter</span>
+                Filters
+            </button>
+
+            @jsonTemplate("search-results", result)
+
+            <ul role="listbox" id="results" class="ol-book-search-results">
+                for _, book := range result.Books {
+                    <li role="listitem" id={ fmt.Sprintf("book-%d", book.ID) } class="ol-book-search-card">
+                        <div class="ol-book-search-card__left">
+                            <a class="ol-book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
+                                @bookCover(book.Cover, book.Name, 1)
+                            </a>
+                        </div>
+                        
+                        <div class="ol-book-search-card__right">
+                            <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="ol-link ol-book-search-card__link">{ book.Name }</a>                    
+                            <br />
+                            by
+                            <a class="ol-link ol-book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/user/%s", book.Author.ID.String())) }>
+                                { book.Author.Name }
+                            </a>
+
+                            @collapsible(ctx, 160, false) {
+                                <ul class="ol-book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
+                                    data-expand="false"
+                                    :data-expand="expand"
+                                    x-data="{expand:false}">
+                                    for _, tagId := range book.Tags {
+                                        {{ tag := tags[int64(tagId)] }}
+                                        <li class="ol-tag">
+                                            <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", tagId)) }>
+                                                { tag.Name }
+                                            </a>
+                                        </li>
+                                    }
+
+                                    <li 
+                                        if len(book.Tags) <= 6 {
+                                            x-show="false" x-cloak
+                                        }
+                                        @click="expand=!expand" class="ol-book-search-card__tags__more">
+                                        <span x-text="i18n[expand?'common.less':'common.more']">{ _t(l, "common.more") }</span>
+                                    </li>
+                                </ul>
+
+                                if book.Summary != "" {
+                                    <div class="ol-book-search-card__summary __user-content" x-ignore>
+                                        @templ.Raw(book.Summary)
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+}

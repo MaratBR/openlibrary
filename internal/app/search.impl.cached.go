@@ -17,6 +17,11 @@ type cachedSearchService struct {
 	cache *cache.Cache
 }
 
+// ExplainSearchQuery implements SearchService.
+func (c *cachedSearchService) ExplainSearchQuery(ctx context.Context, req BookSearchQuery) (DetailedBookSearchQuery, error) {
+	return c.inner.ExplainSearchQuery(ctx, req)
+}
+
 // GetBookExtremes implements SearchService.
 func (c *cachedSearchService) GetBookExtremes(ctx context.Context) (*BookExtremes, error) {
 	return c.inner.GetBookExtremes(ctx)

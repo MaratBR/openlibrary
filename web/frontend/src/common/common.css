@@ -8,6 +8,7 @@
 @import "./style/nav.scss";
 @import "./style/util.scss";
 @import "./style/loader.css";
+@import "./style/book.scss";
 
 
 @tailwind components;
