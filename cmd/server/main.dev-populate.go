@@ -25,7 +25,7 @@ func mainPopulate(config *koanf.Koanf) {
 	setup := mockeddata.NewSetup(tagsService, reviewsService, bookManagerService, authService)
 	if err := setup.Run(mockeddata.SetupOptions{
 		Users:         100,
-		BooksLocation: "./ao3-books",
+		BooksLocation: "./rr-books",
 	}); err != nil {
 		panic(err)
 	}

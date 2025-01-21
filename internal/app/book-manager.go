@@ -170,9 +170,4 @@ type BookManagerService interface {
 	ReorderChapters(ctx context.Context, input ReorderChaptersCommand) error
 	GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChapterResult, error)
 	GetChapter(ctx context.Context, query ManagerGetChapterQuery) (ManagerGetChapterResult, error)
-
-	// AO3 import
-	//
-	// Deprecated: this should be moved to mocked_data package
-	ImportFromBookAo3(ctx context.Context, command ManagerCreateBookFromAo3Command) (int64, error)
 }

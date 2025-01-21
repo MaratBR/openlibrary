@@ -26,7 +26,7 @@
  votes <br>
  reviews</div></a>
 <div class=\"ol-book-cover\"
-><img src=\"
+><img loading=\"lazy\" src=\"
 \"></div>
 <ul
  data-hidden
@@ -36,5 +36,5 @@
 </li>
 <li
  x-cloak
- class=\"nojs-hidden\" role=\"button\" x-show=\"len&gt;10\" @click=\"open=!open\"><span class=\"ol-tag font-semibold\" x-text=\"i18n[open?&#39;common.less&#39;:&#39;common.more&#39;]\">
+ class=\"nojs-hidden\" role=\"button\" x-show=\"len&gt;10\" @click=\"open=!open\"><span class=\"ol-tag font-semibold nojs-hidden\" x-text=\"i18n[open?&#39;common.less&#39;:&#39;common.more&#39;]\">
 </span></li></ul>

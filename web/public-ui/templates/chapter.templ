@@ -24,7 +24,7 @@ templ Chapter(
     }}
 
     @htmlLayout(ctx, chapter.Name) {
-        @siteHeaderLayout() {
+        @siteHeaderLayout(ctx) {
             <div class="h-full items-center flex gap-2">
                 <a class="ol-link !font-[600]" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
                     { book.Name }

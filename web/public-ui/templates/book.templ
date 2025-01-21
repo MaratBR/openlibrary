@@ -6,6 +6,7 @@ import "encoding/json"
 import "context"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "crypto/md5"
 
 templ BookPage(
     ctx context.Context, 
@@ -63,7 +64,7 @@ templ BookPage(
                 @bookTopReviews(ctx, topReviews, book.Author.ID)
             </div>
 
-            <div role="tabpanel" class="contents" id="slot-book-toc" x-merge="replace" x-cloak x-show="tab==='toc'" x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
+            <div role="tabpanel" class="contents" id="slot-book-toc" x-merge="replace" x-cloak x-show="tab==='toc'" x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/__fragment/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
                 <div class="h-[600px] mt-4">
                     <span class="loader mt-4"></span>
                 </div>
@@ -85,6 +86,25 @@ func convertBookDetailsToAlpineState(book *app.BookDetailsDto, readingList app.N
     return string(bytes)
 }
 
+func getBookCoverURL(name string, height int) string {
+    h := md5.New()
+    h.Write([]byte(name))
+    hash := h.Sum(nil)
+    
+
+    id := (hash[2] % 5) + 1
+
+    if height <= 200 {
+        return fmt.Sprintf("/_/embed-assets/cover/%d.h200.webp", id)
+    }
+
+    if height <= 300 {
+        return fmt.Sprintf("/_/embed-assets/cover/%d.h300.webp", id)
+    }
+
+    return fmt.Sprintf("/_/embed-assets/cover/%d.jpg", id)
+}
+
 templ bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList app.Nullable[app.BookReadingListDto]) {
     @baseLayout(ctx, book.Name) {
         <div 
@@ -95,7 +115,7 @@ templ bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList a
                 "bookId": fmt.Sprintf("%d", book.ID),
             })
             <div class="md:col-span-3 flex flex-col items-center">
-                @bookCover(book.Cover, book.Name, 1.5)
+                @bookCover(book.Cover, book.Name, 300)
                 @bookReadingList(ctx, book.ID, readingList)
             </div>
             <div class="md:col-span-9">
@@ -124,17 +144,17 @@ templ bookRating(book *app.BookDetailsDto) {
     </a>
 }
 
-templ bookCover(cover, bookName string, scale float32) {
+templ bookCover(cover, bookName string, height int) {
     {{
         if cover == "" {
-            cover = "/_/embed-assets/cover.jpg"
+            cover = getBookCoverURL(bookName, height)
         }
     }}
 
     <div class="ol-book-cover" { templ.Attributes{
-            "style": fmt.Sprintf("--cover-scale:%f", scale),
+            "style": fmt.Sprintf("height:%dpx", height),
         }... }>
-        <img src={ cover } />
+        <img loading="lazy" src={ cover } />
     </div>
 } 
 
@@ -157,7 +177,7 @@ templ bookTags(ctx context.Context, tags []app.DefinedTagDto) {
                 x-cloak
             }
             class="nojs-hidden" role="button" x-show="len>10" @click="open=!open">
-            <span class="ol-tag font-semibold" x-text="i18n[open?'common.less':'common.more']">
+            <span class="ol-tag font-semibold nojs-hidden" x-text="i18n[open?'common.less':'common.more']">
                 {l.MustLocalize(&i18n.LocalizeConfig{
                     MessageID: "common.more",
                 })}

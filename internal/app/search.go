@@ -143,22 +143,54 @@ type UserFromSearchRequestDto struct {
 }
 
 type DetailedBookSearchQuery struct {
-	Words           Int32Range
-	Chapters        Int32Range
-	WordsPerChapter Int32Range
-	Favorites       Int32Range
+	Words           Int32Range `json:"words"`
+	Chapters        Int32Range `json:"chapters"`
+	WordsPerChapter Int32Range `json:"wordsPerChapter"`
+	Favorites       Int32Range `json:"favorites"`
 
-	IncludeTags  []DefinedTagDto
-	ExcludeTags  []DefinedTagDto
-	IncludeUsers []UserFromSearchRequestDto
-	ExcludeUsers []UserFromSearchRequestDto
+	IncludeTags  []DefinedTagDto            `json:"includeTags"`
+	ExcludeTags  []DefinedTagDto            `json:"excludeTags"`
+	IncludeUsers []UserFromSearchRequestDto `json:"includeUsers"`
+	ExcludeUsers []UserFromSearchRequestDto `json:"excludeUsers"`
 
-	IncludeBanned bool
-	IncludeHidden bool
-	IncludeEmpty  bool
+	IncludeBanned bool `json:"includeBanned"`
+	IncludeHidden bool `json:"includeHidden"`
+	IncludeEmpty  bool `json:"includeEmpty"`
 
-	Page     uint
-	PageSize uint
+	Page     uint `json:"page"`
+	PageSize uint `json:"pageSize"`
+}
+
+func (d *DetailedBookSearchQuery) ActiveFilters() int {
+	var count int
+
+	if d.Words.Min.Valid || d.Words.Max.Valid {
+		count++
+	}
+	if d.Chapters.Min.Valid || d.Chapters.Max.Valid {
+		count++
+	}
+	if d.WordsPerChapter.Min.Valid || d.WordsPerChapter.Max.Valid {
+		count++
+	}
+	if d.Favorites.Min.Valid || d.Favorites.Max.Valid {
+		count++
+	}
+
+	if len(d.IncludeTags) > 0 {
+		count++
+	}
+	if len(d.ExcludeTags) > 0 {
+		count++
+	}
+	if len(d.IncludeUsers) > 0 {
+		count++
+	}
+	if len(d.ExcludeUsers) > 0 {
+		count++
+	}
+
+	return count
 }
 
 type SearchService interface {

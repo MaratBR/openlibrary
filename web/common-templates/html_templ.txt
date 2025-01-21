@@ -5,6 +5,7 @@
 <link rel=\"stylesheet\" href=\"
 \">
 <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200\"><style>\n        [x-cloak]{ display: none !important; }\n        </style>
-<noscript><style>.nojs-hidden{display: none;}</style></noscript></head><body class=\"m-0 font-text theme-default bg-background text-foreground\">
+<noscript><style>.nojs-hidden{display: none;}</style></noscript></head>
+<body>
 <script src=\"/_/embed-assets/instantclick.min.js\" data-no-instant></script> <script data-no-instant>InstantClick.init('mousedown');</script>
 </body></html>

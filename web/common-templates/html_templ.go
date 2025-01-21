@@ -9,14 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "context"
-
-type DocSettings struct {
-	Title        string
-	Scripts      []string
-	CSS          []string
-	InstantClick bool
-	AppendToHead templ.Component
-}
+import "github.com/MaratBR/openlibrary/internal/http-util"
 
 func Doc(
 	ctx context.Context,
@@ -49,7 +42,7 @@ func Doc(
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(settings.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/common-templates/html.templ`, Line: 23, Col: 31}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/common-templates/html.templ`, Line: 17, Col: 31}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -67,7 +60,7 @@ func Doc(
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(scriptPath)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/common-templates/html.templ`, Line: 25, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/common-templates/html.templ`, Line: 19, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -86,7 +79,7 @@ func Doc(
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(cssPath)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/common-templates/html.templ`, Line: 28, Col: 49}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/common-templates/html.templ`, Line: 22, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -107,7 +100,17 @@ func Doc(
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<noscript><style>.nojs-hidden{display: none;}</style></noscript></head><body class=\"m-0 font-text theme-default bg-background text-foreground\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<noscript><style>.nojs-hidden{display: none;}</style></noscript></head>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+
+		bodyClasses := "m-0 font-text theme-default bg-background text-foreground"
+		isDark := httputil.GetUITheme(ctx) == "dark"
+		if isDark {
+			bodyClasses += " dark"
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<body>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -116,17 +119,25 @@ func Doc(
 			return templ_7745c5c3_Err
 		}
 		if settings.InstantClick {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<script src=\"/_/embed-assets/instantclick.min.js\" data-no-instant></script> <script data-no-instant>InstantClick.init('mousedown');</script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<script src=\"/_/embed-assets/instantclick.min.js\" data-no-instant></script> <script data-no-instant>InstantClick.init('mousedown');</script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		return nil
 	})
+}
+
+type DocSettings struct {
+	Title        string
+	Scripts      []string
+	CSS          []string
+	InstantClick bool
+	AppendToHead templ.Component
 }
 
 var _ = templruntime.GeneratedTemplate

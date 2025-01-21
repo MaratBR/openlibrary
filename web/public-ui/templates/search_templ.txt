@@ -1,6 +1,16 @@
  
- <div class=\"ol-container my-12\"><h1 class=\"font-title text-3xl\">Search</h1><button class=\"ol-btn ol-btn--lg ol-btn--secondary rounded-full my-4\"><span class=\"material-symbols-outlined\">filter</span> Filters</button>
-<ul role=\"listbox\" id=\"results\" class=\"ol-book-search-results\">
+ 
+<div class=\"ol-container my-12\" x-data=\"
+\"><h1 class=\"font-title text-3xl flex\"><span>
+</span> 
+<span class=\"text-muted-foreground\">&nbsp;&ndash;&nbsp;
+</span>
+</h1><button @click=\"openFilters=!openFilters\" class=\"ol-btn ol-btn--lg ol-btn--secondary rounded-full my-4\"><span class=\"material-symbols-outlined\">filter</span> 
+ 
+(
+)
+</button><section class=\"search-filters\" x-cloak x-show=\"openFilters\" x-collapse><div class=\"p-4\"><ol-island active=\"true\" name=\"search-filters\" load-method=\"script\" src=\"/_/assets/islands/search-filters.js\"></ol-island></div></section>
+ <ul role=\"listbox\" id=\"results\" class=\"ol-book-search-results\">
 <li role=\"listitem\" id=\"
 \" class=\"ol-book-search-card\"><div class=\"ol-book-search-card__left\"><a class=\"ol-book-search-card__imglink\" href=\"
 \">
@@ -20,4 +30,18 @@
 <div class=\"ol-book-search-card__summary __user-content\" x-ignore>
 </div>
 </div></li>
-</ul></div>
+</ul><div class=\"pt-4\">
+</div>
+</div>
+<div class=\"my-8 px-12 text-lg overflow-hidden rounded-xl grid grid-cols-[auto_1fr] bg-[#dee0e2] dark:bg-[#211f1d] max-w-[600px]\"><div><img class=\"dark:invert\" aria-hidden=\"true\" src=\"/_/embed-assets/book_question.h300.webp\"></div><div class=\"p-4 flex items-center\"><p class=\"text-3xl font-title\">
+</p></div></div>
+<nav role=\"listbox\" class=\"ol-pagination\">
+<a href=\"
+\" class=\"ol-pagination__item\">
+</a> 
+<a href=\"#\" class=\"ol-pagination__item ol-pagination__item--active\">
+</a> 
+<a href=\"
+\" class=\"ol-pagination__item\">
+</a>
+</nav>

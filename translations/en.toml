@@ -66,3 +66,22 @@ writeReviewLogin = "Log in to write review"
 rateBook = "Rate this book"
 youRated = "You rated this book {{.rating}}"
 myReview = "My review"
+
+[search]
+filters = "Filters"
+search = "Search"
+doSearch = "Search"
+tags = "Tags"
+excludeTags = "Exclude tags"
+includeTags = "Include tags"
+author = "Author"
+includeAuthors = "Include authors"
+excludeAuthors = "Exclude authors"
+words = "Words count"
+chapters = "Chapters count"
+wordsPerChapter = "Words per chapter"
+favorites = "Favorites count"
+noResults = "No results, try to change your search query"
+
+[special]
+noJavascript = "Hey there! It looks like you have Javascript disabled. OpenLibrary only offers limited functionality without it. Please enable it in your browser settings."

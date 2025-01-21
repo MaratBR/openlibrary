@@ -1,14 +1,51 @@
 .ol-input {
     @apply 
-        border rounded-md h-10 px-3 w-full bg-background
-        focus:outline focus:outline-2
+        border-gray-400 dark:border-gray-600 border 
+        rounded-sm h-10 px-3 w-full bg-background
         hover:border-black dark:hover:border-white;
+}
 
-    &--primary {
+input.ol-input {
+    @apply focus:outline focus:outline-2 text-foreground;
+}
 
-    }
+.ol-input-dropdown {
+    @apply hidden;
 }
 
 .ol-label {
     @apply block text-sm text-foreground;
+}
+
+.ol-dropdown {
+    @apply 
+        border-gray-400 dark:border-gray-200 border 
+        rounded-sm w-full bg-background relative
+        transition-all;
+
+    &__input {
+        @apply outline-none w-full h-10 px-3 bg-transparent;
+    }
+
+    &__menu {
+        @apply hidden absolute left-[-1px] right-[-1px] top-full bg-background z-30
+            border-gray-400 dark:border-gray-200 border border-t-0
+            rounded-b-sm;
+    }
+
+    &[data-open=true] {
+        @apply rounded-b-none m-[-5px] p-[5px];
+    }
+
+    &:not([data-open=true]) {
+        @apply hover:border-primary hover:ring-1 hover:ring-primary;
+    }
+
+    &[data-open=true] &__menu {
+        @apply block;
+    }
+
+    &[data-open=true] &__input {
+        @apply bg-secondary rounded-sm;
+    }
 }

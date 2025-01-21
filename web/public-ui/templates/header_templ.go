@@ -97,7 +97,7 @@ func siteHeader(ctx context.Context) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = siteHeaderLayout().Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = siteHeaderLayout(ctx).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -105,7 +105,7 @@ func siteHeader(ctx context.Context) templ.Component {
 	})
 }
 
-func siteHeaderLayout() templ.Component {
+func siteHeaderLayout(ctx context.Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -126,7 +126,8 @@ func siteHeaderLayout() templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<nav class=\"z-10 bg-background sticky top-0 w-full h-[var(--header-height)] border-b\" id=\"site-header\"><div class=\"ol-container h-full flex gap-6\"><a href=\"/\" class=\"my-1 flex items-center focus:outline focus:outline-2 outline-offset-[-2px]\"><img style=\"height:64px\" src=\"/_/embed-assets/logo.svg\"></a>")
+		l := i18nProvider.GetLocalizer(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<nav class=\"z-40 bg-background sticky top-0 w-full h-[var(--header-height)] border-b\" id=\"site-header\"><div id=\"site-header-inner\" class=\"ol-container h-full flex gap-6\"><a href=\"/\" class=\"my-1 flex items-center focus:outline focus:outline-2 outline-offset-[-2px]\"><img style=\"height:64px\" src=\"/_/embed-assets/logo.svg\"></a>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -134,7 +135,20 @@ func siteHeaderLayout() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><noscript><div class=\"fixed bottom-0 left-0 right-0\"><div class=\"ol-container py-2 bg-yellow-100 border-yellow-600 border-2\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var7 string
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(_t(l, "special.noJavascript"))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/header.templ`, Line: 44, Col: 51}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div></noscript></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -41,6 +41,10 @@
 }
 
 .__user-content {
+  hr {
+    @apply my-3;
+  }
+
   p {
     margin-bottom: 0.4em;
   }

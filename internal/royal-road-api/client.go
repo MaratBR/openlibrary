@@ -42,7 +42,7 @@ func NewClient() *Client {
 	httpClient := &http.Client{
 		Timeout: time.Second * 120,
 	}
-	limiter := rate.NewLimiter(rate.Every(time.Millisecond*1000), 5)
+	limiter := rate.NewLimiter(rate.Every(time.Millisecond*1000), 7)
 
 	return &Client{
 		httpClient:  httplim.NewHttpWorker(4, httpClient, limiter),

@@ -41,7 +41,7 @@ templ bookReadingList(ctx context.Context, bookID int64, readingListStatus app.N
             if readingListStatus.Valid {
                 x-cloak
             }
-            @click="status('want_to_read')" x-show="rl === null" class="ol-btn ol-btn--primary ol-btn--lg rounded-full w-full">
+            @click="status('want_to_read')" x-show="rl === null" class="ol-btn ol-btn--primary ol-btn--lg rounded-full w-full nojs-hidden">
             {l.MustLocalize(&i18n.LocalizeConfig{
                 MessageID: "readingList.want_to_read",
             })}

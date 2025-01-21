@@ -1,13 +1,16 @@
 package publicui
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/a-h/templ"
 	"github.com/gofrs/uuid"
 )
 
@@ -149,4 +152,19 @@ func splitByWithEscape(s string, c byte) []string {
 	}
 
 	return result
+}
+
+func writeTemplate(w http.ResponseWriter, ctx context.Context, t templ.Component) {
+	err := t.Render(ctx, w)
+	if err != nil {
+		slog.Error("error while writing to the client", "err", err)
+		return
+	}
+	w.Write([]byte(`<!--
+  OOOOO  L        
+ O     O L        
+ O     O L        
+ O     O L        
+  OOOOO  LLLLLLLL
+-->`))
 }

@@ -115,7 +115,7 @@ templ BookMyReview(
 
         if ratingAndReview.Review.Valid {
             {{ review := ratingAndReview.Review.Value }}
-            <div x-ref="myReview" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4">
+            <div x-ref="myReview" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden">
                 @jsonTemplate("island-review-editor-data", ratingAndReview.Review.Value)
                 <div class="grid grid-cols-[110px_auto]" x-show="!edit&&!loading">
                     <div>
@@ -154,7 +154,7 @@ templ BookMyReview(
         }
         
         if !ratingAndReview.Review.Valid {
-            <div x-show="edit" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4">
+            <div x-show="edit" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden">
                 <ol-island 
                     load-method="script" 
                     name="review-editor" 

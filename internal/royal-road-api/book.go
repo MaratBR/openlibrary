@@ -19,6 +19,7 @@ type BookPage struct {
 	Description string
 	Author      BookPageAuthor
 	Chapters    []BookPageChapter
+	Tags        []string
 }
 
 type BookPageAuthor struct {
@@ -80,7 +81,12 @@ func parseBookPage(r io.Reader) (*BookPage, error) {
 		CoverURL:    schema.Image,
 		Description: schema.Description,
 		Chapters:    []BookPageChapter{},
+		Tags:        []string{},
 	}
+
+	doc.Find(".tags").Find(".fiction-tag").Each(func(i int, s *goquery.Selection) {
+		page.Tags = append(page.Tags, s.Text())
+	})
 
 	doc.Find(".chapter-row").Each(func(i int, s *goquery.Selection) {
 		link := s.Find("td").First().Find("a").First()
@@ -160,6 +166,7 @@ func (c *Client) GetBookWithChapters(bookID int) (*BookWithChapters, error) {
 	}
 
 	for i := range page.Chapters {
+		slog.Debug("downloading chapter", "chapterID", page.Chapters[i].ID)
 		book.Chapters[i], err = c.GetChapterPage(bookID, page.Chapters[i].ID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetching chapter %d (id=%d): %s", i+1, page.Chapters[i].ID, err.Error())

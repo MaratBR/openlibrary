@@ -1,14 +1,8 @@
 package commonTemplates
 
 import "context"
+import "github.com/MaratBR/openlibrary/internal/http-util"
 
-type DocSettings struct {
-    Title string
-    Scripts []string
-    CSS []string
-    InstantClick bool
-    AppendToHead templ.Component
-}
 
 templ Doc(
     ctx context.Context, 
@@ -39,12 +33,27 @@ templ Doc(
         }
         <noscript><style>.nojs-hidden{display: none;}</style></noscript>
     </head>
-    <body class="m-0 font-text theme-default bg-background text-foreground">
-    { children... }
-    if settings.InstantClick {
-        <script src="/_/embed-assets/instantclick.min.js" data-no-instant></script>
-        <script data-no-instant>InstantClick.init('mousedown');</script>
-    }
+    {{
+        bodyClasses := "m-0 font-text theme-default bg-background text-foreground"
+        isDark := httputil.GetUITheme(ctx) == "dark"
+        if isDark {
+            bodyClasses += " dark"
+        }
+    }}
+    <body>
+        { children... }
+        if settings.InstantClick {
+            <script src="/_/embed-assets/instantclick.min.js" data-no-instant></script>
+            <script data-no-instant>InstantClick.init('mousedown');</script>
+        }
     </body>
     </html>
+}
+
+type DocSettings struct {
+    Title string
+    Scripts []string
+    CSS []string
+    InstantClick bool
+    AppendToHead templ.Component
 }

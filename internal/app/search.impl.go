@@ -61,7 +61,7 @@ func (s *searchService) ExplainSearchQuery(ctx context.Context, req BookSearchQu
 
 		for _, tagId := range req.ExcludeTags {
 			if t, ok := tagMap[tagId]; ok {
-				detailed.ExcludeTags = append(detailed.IncludeTags, t)
+				detailed.ExcludeTags = append(detailed.ExcludeTags, t)
 			}
 		}
 	}

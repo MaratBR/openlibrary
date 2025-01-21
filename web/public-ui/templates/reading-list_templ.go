@@ -83,7 +83,7 @@ func bookReadingList(ctx context.Context, bookID int64, readingListStatus app.Nu
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " @click=\"status(&#39;want_to_read&#39;)\" x-show=\"rl === null\" class=\"ol-btn ol-btn--primary ol-btn--lg rounded-full w-full\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " @click=\"status(&#39;want_to_read&#39;)\" x-show=\"rl === null\" class=\"ol-btn ol-btn--primary ol-btn--lg rounded-full w-full nojs-hidden\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

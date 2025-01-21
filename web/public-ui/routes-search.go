@@ -51,5 +51,5 @@ func (c *searchController) Search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates.SearchPage(r.Context(), result, explainedQuery).Render(r.Context(), w)
+	writeTemplate(w, r.Context(), templates.SearchPage(r.Context(), result, explainedQuery))
 }

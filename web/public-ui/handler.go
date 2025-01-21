@@ -8,6 +8,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/csrf"
+	httputil "github.com/MaratBR/openlibrary/internal/http-util"
 	"github.com/MaratBR/openlibrary/web/public-ui/templates"
 	"github.com/NYTimes/gziphandler"
 	"github.com/go-chi/chi/v5"
@@ -54,6 +55,7 @@ func NewHandler(
 func (h *Handler) createRouter() {
 	h.r = chi.NewRouter()
 	h.r.Use(gziphandler.GzipHandler)
+	h.r.Use(httputil.ReqCtxMiddleware)
 	h.r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			r = r.WithContext(context.WithValue(r.Context(), "version", h.version))
@@ -94,27 +96,33 @@ func (h *Handler) createRouter() {
 		bookController := newBookController(bookService, reviewsService, readingListService)
 		chapterController := newChaptersController(bookService)
 		searchController := newSearchController(searchService)
+		tagsController := newTagsController(tagsService)
 
 		r.HandleFunc("/login", authController.LogIn)
 
 		r.Get("/book/{bookID}", bookController.GetBook)
-		r.Get("/book/{bookID}/toc", bookController.GetBookTOC)
+		r.Get("/book/{bookID}/__fragment/toc", bookController.GetBookTOC)
 		r.Get("/book/{bookID}/__fragment/review", bookController.GetBookReview)
 
 		r.Get("/book/{bookID}/chapters/{chapterID}", chapterController.GetChapter)
 
 		r.Get("/search", searchController.Search)
+
+		r.Get("/tag/{tagID}", tagsController.TagPage)
 	})
 
 	h.r.Route("/_api", func(r chi.Router) {
 		apiBookController := newAPIBookController(bookService, reviewsService, readingListService)
 		apiReadingListController := newAPIReadingListController(readingListService)
+		apiTagsController := newAPITagsController(tagsService)
 
 		r.Post("/reviews/rating", apiBookController.RateBook)
 		r.Post("/reviews/{bookID}", apiBookController.UpdateOrCreateReview)
 		r.Delete("/reviews/{bookID}", apiBookController.DeleteReview)
 
 		r.Post("/reading-list/status", apiReadingListController.UpdateStatus)
+
+		r.Get("/tags", apiTagsController.Tags)
 	})
 
 	bookBackgroundService.Start()

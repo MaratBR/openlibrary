@@ -1,5 +1,5 @@
 import Toastify from 'toastify-js'
-import 'toastify-js/src/toastify.css'
+// import 'toastify-js/src/toastify.css'
 
 function toast(message: string) {
   Toastify({

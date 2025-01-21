@@ -14,6 +14,7 @@ import "encoding/json"
 import "context"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "crypto/md5"
 
 func BookPage(
 	ctx context.Context,
@@ -92,7 +93,7 @@ func BookPage(
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("{ tab: '%s', once: false }", tab))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 29, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 30, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -117,7 +118,7 @@ func BookPage(
 				MessageID: "reviews.title",
 			}))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 40, Col: 22}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 41, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -142,7 +143,7 @@ func BookPage(
 				MessageID: "book.toc",
 			}))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 51, Col: 22}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 52, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -175,9 +176,9 @@ func BookPage(
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`let load=()=>$ajax('/book/%d/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID))
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`let load=()=>$ajax('/book/%d/__fragment/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 66, Col: 243}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 67, Col: 254}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -206,6 +207,24 @@ func convertBookDetailsToAlpineState(book *app.BookDetailsDto, readingList app.N
 	state.BookID = book.ID
 	bytes, _ := json.Marshal(state)
 	return string(bytes)
+}
+
+func getBookCoverURL(name string, height int) string {
+	h := md5.New()
+	h.Write([]byte(name))
+	hash := h.Sum(nil)
+
+	id := (hash[2] % 5) + 1
+
+	if height <= 200 {
+		return fmt.Sprintf("/_/embed-assets/cover/%d.h200.webp", id)
+	}
+
+	if height <= 300 {
+		return fmt.Sprintf("/_/embed-assets/cover/%d.h300.webp", id)
+	}
+
+	return fmt.Sprintf("/_/embed-assets/cover/%d.jpg", id)
 }
 
 func bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList app.Nullable[app.BookReadingListDto]) templ.Component {
@@ -248,7 +267,7 @@ func bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList ap
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(convertBookDetailsToAlpineState(&book, readingList))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 93, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 113, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -268,7 +287,7 @@ func bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList ap
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = bookCover(book.Cover, book.Name, 1.5).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = bookCover(book.Cover, book.Name, 300).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -283,7 +302,7 @@ func bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList ap
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(book.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 103, Col: 73}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 123, Col: 73}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -305,7 +324,7 @@ func bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList ap
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(book.Author.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 105, Col: 131}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 125, Col: 131}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -369,7 +388,7 @@ func bookRating(book *app.BookDetailsDto) templ.Component {
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(formatInt32(book.Votes))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 121, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 141, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -382,7 +401,7 @@ func bookRating(book *app.BookDetailsDto) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(formatInt32(book.Reviews))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 122, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 142, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -396,7 +415,7 @@ func bookRating(book *app.BookDetailsDto) templ.Component {
 	})
 }
 
-func bookCover(cover, bookName string, scale float32) templ.Component {
+func bookCover(cover, bookName string, height int) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -419,26 +438,26 @@ func bookCover(cover, bookName string, scale float32) templ.Component {
 		ctx = templ.ClearChildren(ctx)
 
 		if cover == "" {
-			cover = "/_/embed-assets/cover.jpg"
+			cover = getBookCoverURL(bookName, height)
 		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div class=\"ol-book-cover\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = templ.RenderAttributes(ctx, templ_7745c5c3_Buffer, templ.Attributes{
-			"style": fmt.Sprintf("--cover-scale:%f", scale),
+			"style": fmt.Sprintf("height:%dpx", height),
 		})
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "><img src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "><img loading=\"lazy\" src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(cover)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 137, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 157, Col: 39}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -491,7 +510,7 @@ func bookTags(ctx context.Context, tags []app.DefinedTagDto) templ.Component {
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("{len:%d,open:false}", len(tags)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 148, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 168, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
@@ -525,7 +544,7 @@ func bookTags(ctx context.Context, tags []app.DefinedTagDto) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, " class=\"nojs-hidden\" role=\"button\" x-show=\"len&gt;10\" @click=\"open=!open\"><span class=\"ol-tag font-semibold\" x-text=\"i18n[open?&#39;common.less&#39;:&#39;common.more&#39;]\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, " class=\"nojs-hidden\" role=\"button\" x-show=\"len&gt;10\" @click=\"open=!open\"><span class=\"ol-tag font-semibold nojs-hidden\" x-text=\"i18n[open?&#39;common.less&#39;:&#39;common.more&#39;]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -534,7 +553,7 @@ func bookTags(ctx context.Context, tags []app.DefinedTagDto) templ.Component {
 			MessageID: "common.more",
 		}))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 163, Col: 18}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/book.templ`, Line: 183, Col: 18}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {

@@ -14,6 +14,8 @@ import (
 func main() {
 	slog.SetLogLoggerLevel(slog.LevelDebug)
 
+	booksParallelism := 1
+
 	c := royalroadapi.NewClient()
 	c.Run()
 	defer c.Close()
@@ -23,7 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	bestRatedBooks := make(chan royalroadapi.BestRatedBook, 1000)
+	bestRatedBooks := make(chan royalroadapi.BestRatedBook, booksParallelism)
 	go loadAllBestRatedBooks(bestRatedBooks, c)
 
 	// open json file for all best rated books
@@ -35,8 +37,8 @@ func main() {
 	defer f.Close()
 	enc := json.NewEncoder(f)
 
-	downloadBooks := make(chan royalroadapi.BestRatedBook, 1000)
-	dwnldWg := downloadAllBooks(downloadBooks, c, 10)
+	downloadBooks := make(chan royalroadapi.BestRatedBook)
+	dwnldWg := downloadAllBooks(downloadBooks, c, booksParallelism)
 
 	// put all books into a file and then put them into a queue to be downloaded
 	for book := range bestRatedBooks {
@@ -99,6 +101,17 @@ func downloadAllBooks(
 		wg.Add(1)
 		go func() {
 			for book := range ch {
+				fileName := fmt.Sprintf("rr-books/%d.json", book.ID)
+
+				_, err := os.Stat(fileName)
+				if err == nil {
+					slog.Debug("book already downloaded", "bookID", book.ID)
+					continue
+				} else if !os.IsNotExist(err) {
+					slog.Error("failed to check if file exists", "err", err)
+					continue
+				}
+
 				slog.Debug("downloading book", "bookID", book.ID)
 				book, err := c.GetBookWithChapters(book.ID)
 				if err != nil {
@@ -106,7 +119,7 @@ func downloadAllBooks(
 					continue
 				}
 
-				f, err := os.Create(fmt.Sprintf("rr-books/%d.json", book.Book.ID))
+				f, err := os.Create(fileName)
 				if err != nil {
 					slog.Error("failed to create file", "err", err, "bookID", book.Book.ID)
 					continue

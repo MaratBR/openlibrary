@@ -239,7 +239,7 @@ func BookMyReview(
 		}
 		if ratingAndReview.Review.Valid {
 			review := ratingAndReview.Review.Value
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div x-ref=\"myReview\" class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div x-ref=\"myReview\" class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -297,7 +297,7 @@ func BookMyReview(
 			}
 		}
 		if !ratingAndReview.Review.Valid {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div x-show=\"edit\" class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4\"><ol-island load-method=\"script\" name=\"review-editor\" src=\"/_/assets/islands/review-editor.js\" :active=\"loading||edit\" @review:updated=\"onUpdated($event.detail)\" @island-mount=\"onEditorReady()\"></ol-island></div><div class=\"pt-6 pb-8 rounded-xl items-start gap-4 my-8\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div x-show=\"edit\" class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden\"><ol-island load-method=\"script\" name=\"review-editor\" src=\"/_/assets/islands/review-editor.js\" :active=\"loading||edit\" @review:updated=\"onUpdated($event.detail)\" @island-mount=\"onEditorReady()\"></ol-island></div><div class=\"pt-6 pb-8 rounded-xl items-start gap-4 my-8\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

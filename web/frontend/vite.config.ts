@@ -74,6 +74,7 @@ const ENTRIES = [
   'public.api',
 
   'islands/review-editor',
+  'islands/search-filters',
 ]
 
 export default defineConfig({

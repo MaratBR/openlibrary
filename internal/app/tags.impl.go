@@ -160,13 +160,16 @@ func (t *tagsService) GetTagsByIds(ctx context.Context, ids []int64) ([]DefinedT
 	return mapSlice(tags, definedTagToTagDto), nil
 }
 
-const (
-	searchTagsLimit = 20
-)
-
 func (t *tagsService) SearchTags(ctx context.Context, query string) ([]DefinedTagDto, error) {
 	query = strings.Trim(query, " \n\t")
 	query = strings.ToLower(query)
+
+	var searchTagsLimit int32 = 20
+
+	if query == "" {
+		searchTagsLimit = 100
+	}
+
 	tags, err := t.queries.SearchDefinedTags(ctx, store.SearchDefinedTagsParams{
 		LowercasedName: escapeSqlLikeValue(query) + "%",
 		Limit:          searchTagsLimit,

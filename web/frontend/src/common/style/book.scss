@@ -33,10 +33,6 @@
 
     &__tags {
         @apply flex gap-1 flex-wrap text-sm mt-2;
-    
-        .ol-tag {
-            @apply p-2 !shadow-none bg-secondary active:bg-slate-800 active:text-primary-foreground hover:outline hover:-outline-offset-1 hover:outline-1 hover:outline-slate-900;
-        }
 
         &__more {
             @apply cursor-pointer p-2 active:bg-slate-800 active:text-primary-foreground

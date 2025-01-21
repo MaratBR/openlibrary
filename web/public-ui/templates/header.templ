@@ -7,7 +7,7 @@ import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 templ siteHeader(ctx context.Context) {
     {{ l := i18nProvider.GetLocalizer(ctx) }}
 
-    @siteHeaderLayout() {
+    @siteHeaderLayout(ctx) {
         <a class="ol-nav-link" href="/">
             {l.MustLocalize(&i18n.LocalizeConfig{
                 MessageID: "nav.home",
@@ -26,14 +26,24 @@ templ siteHeader(ctx context.Context) {
     }
 }
 
-templ siteHeaderLayout() {
-    <nav class="z-10 bg-background sticky top-0 w-full h-[var(--header-height)] border-b" id="site-header">
-        <div class="ol-container h-full flex gap-6">
+templ siteHeaderLayout(ctx context.Context) {
+    {{ l := i18nProvider.GetLocalizer(ctx) }}
+
+    <nav class="z-40 bg-background sticky top-0 w-full h-[var(--header-height)] border-b" id="site-header">
+        <div  id="site-header-inner" class="ol-container h-full flex gap-6">
             <a href="/" class="my-1 flex items-center focus:outline focus:outline-2 outline-offset-[-2px]">
                 <img style="height:64px" src="/_/embed-assets/logo.svg" />
             </a>
 
             { children... }
         </div>
+
+        <noscript>
+            <div class="fixed bottom-0 left-0 right-0">
+                <div class="ol-container py-2 bg-yellow-100 border-yellow-600 border-2">
+                    { _t(l, "special.noJavascript") }
+                </div>
+            </div>
+        </noscript>
     </nav>
 }
