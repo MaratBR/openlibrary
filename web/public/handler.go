@@ -1,4 +1,4 @@
-package publicui
+package public
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
-	"github.com/MaratBR/openlibrary/web/public-ui/templates"
+	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/NYTimes/gziphandler"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"

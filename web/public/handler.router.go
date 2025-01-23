@@ -1,4 +1,4 @@
-package publicui
+package public
 
 import (
 	"net/http"
@@ -30,6 +30,8 @@ func (h *Handler) setupRouter() {
 	userService := app.NewUserService(db)
 	// bookManagerService := app.NewBookManagerService(db, tagsService, uploadService)
 	bookBackgroundService := app.NewBookBackgroundService(db)
+	h.backgroundServices = append(h.backgroundServices, bookBackgroundService)
+
 	reviewsService := app.NewCachedReviewsService(app.NewReviewsService(db, userService, bookBackgroundService), h.cache)
 	bookService := app.NewBookService(db, tagsService, uploadService, readingListService, reviewsService)
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, uploadService, userService), h.cache)

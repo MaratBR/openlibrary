@@ -1,11 +1,11 @@
-package publicui
+package public
 
 import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
-	"github.com/MaratBR/openlibrary/web/public-ui/templates"
+	"github.com/MaratBR/openlibrary/web/public/templates"
 )
 
 type searchController struct {

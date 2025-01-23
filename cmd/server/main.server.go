@@ -15,7 +15,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/admin"
 	"github.com/MaratBR/openlibrary/web/frontend"
-	publicui "github.com/MaratBR/openlibrary/web/public-ui"
+	public "github.com/MaratBR/openlibrary/web/public"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
 	"golang.org/x/text/language"
@@ -63,7 +63,7 @@ func mainServer(
 	r.Mount("/_/embed-assets/", http.StripPrefix("/_/embed-assets/", frontend.EmbedAssets()))
 	r.Mount("/_/assets/", http.StripPrefix("/_/assets/", frontend.Assets(frontend.AssetsConfig{Dev: cliParams.Dev})))
 
-	publicUIHandler := publicui.NewHandler(db, config, cliParams.AppVersion, cacheInstance, csrfHandler)
+	publicUIHandler := public.NewHandler(db, config, cliParams.AppVersion, cacheInstance, csrfHandler)
 	adminHandler := admin.NewHandler(db, config, cacheInstance)
 
 	err = publicUIHandler.Start()

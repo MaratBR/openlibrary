@@ -1,4 +1,4 @@
-package publicui
+package public
 
 import (
 	"context"

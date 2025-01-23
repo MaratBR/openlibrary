@@ -27,8 +27,9 @@ type Handler struct {
 }
 
 func NewHandler(db app.DB, cfg *koanf.Koanf, cache *cache.Cache) *Handler {
-	h := &Handler{db: db, cfg: cfg}
+	h := &Handler{db: db, cfg: cfg, cache: cache}
 	h.initRouter()
+	h.setupRouter()
 	return h
 }
 

@@ -1,4 +1,4 @@
-package publicui
+package public
 
 import (
 	"log/slog"
@@ -9,7 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/csrf"
-	"github.com/MaratBR/openlibrary/web/public-ui/templates"
+	"github.com/MaratBR/openlibrary/web/public/templates"
 )
 
 type authController struct {

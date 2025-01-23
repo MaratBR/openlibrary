@@ -10,7 +10,7 @@ import (
 )
 
 type BookBackgroundService interface {
-	Start()
+	Start() error
 	Stop()
 	ScheduleBookRecalculation(bookID int64)
 }
@@ -18,7 +18,7 @@ type BookBackgroundService interface {
 type dummyBookBackgroundService struct{}
 
 func (d *dummyBookBackgroundService) ScheduleBookRecalculation(bookID int64) {}
-func (d *dummyBookBackgroundService) Start()                                 {}
+func (d *dummyBookBackgroundService) Start() error                           { return nil }
 func (d *dummyBookBackgroundService) Stop()                                  {}
 
 func NewDummyBookBackgroundService() BookBackgroundService {
@@ -37,18 +37,19 @@ func NewBookBackgroundService(db DB) BookBackgroundService {
 	return &bookBackgroundService{db: db}
 }
 
-func (s *bookBackgroundService) Start() {
+func (s *bookBackgroundService) Start() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	if s.running {
-		return
+		return nil
 	}
 
 	s.queue = make(chan int64, 10000)
 	s.running = true
 	s.wg.Add(1)
 	go s.worker(context.Background())
+	return nil
 }
 
 func (s *bookBackgroundService) Stop() {
