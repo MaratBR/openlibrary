@@ -11,6 +11,8 @@
 @import "./style/book.scss";
 @import "./style/search.scss";
 @import "./style/pagination.scss";
+@import "./style/table.scss";
+@import "./style/checkbox.scss";
 
 
 @tailwind components;

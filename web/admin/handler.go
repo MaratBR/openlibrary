@@ -1,93 +1,84 @@
 package admin
 
 import (
-	_ "embed"
-	"fmt"
 	"net/http"
-	"net/url"
+	"sync"
 
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/app/cache"
+	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
 )
 
 type Handler struct {
-	db  app.DB
-	cfg *koanf.Koanf
-	r   chi.Router
+	_mutex   sync.Mutex
+	_started bool
+
+	backgroundServices []interface {
+		Start() error
+		Stop()
+	}
+	db    app.DB
+	cfg   *koanf.Koanf
+	r     chi.Router
+	cache *cache.Cache
 }
 
-func NewHandler(db app.DB, cfg *koanf.Koanf) *Handler {
+func NewHandler(db app.DB, cfg *koanf.Koanf, cache *cache.Cache) *Handler {
 	h := &Handler{db: db, cfg: cfg}
-	h.createRouter()
+	h.initRouter()
 	return h
 }
 
-func (h *Handler) createRouter() {
+func (h *Handler) initRouter() {
 	h.r = chi.NewRouter()
+	h.r.Use(olhttp.ReqCtxMiddleware)
+}
 
-	adminOrigin := h.cfg.String("server.public-admin-origin")
-	if adminOrigin != "" {
-		adminOriginU, err := url.Parse(adminOrigin)
-		if err != nil {
-			panic(err)
-		}
-
-		h.r.Use(func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.Host != adminOriginU.Host {
-					location := fmt.Sprintf("%s://%s/admin", adminOriginU.Scheme, adminOriginU.Host)
-					w.Header().Add("Location", location)
-					w.Header().Set("Content-Type", "text/html")
-					w.WriteHeader(307)
-					w.Write([]byte(fmt.Sprintf("Redirect to <a href=\"%s\">%s</a>", location, location)))
-					return
-				}
-				next.ServeHTTP(w, r)
-			})
-		})
+// Start starts all background services and sets started flag to true.
+// If any of the services fail to start, an error is returned.
+func (h *Handler) Start() error {
+	h._mutex.Lock()
+	defer h._mutex.Unlock()
+	if h._started {
+		return nil
 	}
 
-	h.r.Group(func(r chi.Router) {
-		r.Use(func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				session, ok := auth.GetSession(r.Context())
-				if ok && session.UserRole == app.RoleAdmin {
-					next.ServeHTTP(w, r)
-				} else {
-					http.Redirect(w, r, "/admin/403", http.StatusFound)
-				}
-			})
-		})
+	for _, s := range h.backgroundServices {
+		err := s.Start()
+		if err != nil {
+			return err
+		}
+	}
 
-		r.Route("/tags", func(r chi.Router) {
-			c := newTagsController(h.db, h.cfg)
+	h._started = true
+	return nil
+}
 
-			r.Get("/", c.Home)
-		})
+func (h *Handler) Stop() {
+	h._mutex.Lock()
+	defer h._mutex.Unlock()
+	if !h._started {
+		return
+	}
 
-	})
+	for _, s := range h.backgroundServices {
+		s.Stop()
+	}
 
-	h.r.NotFound(adminNotFound)
+	h._started = false
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if !h._started {
+		panic("cannot serve http until handle has been started")
+	}
+
 	h.r.ServeHTTP(w, r)
 }
 
 func adminNotFound(w http.ResponseWriter, r *http.Request) {
-
-	_, ok := auth.GetSession(r.Context())
-	if ok {
-		templates.NotFound(r.Context()).Render(r.Context(), w)
-		return
-	} else {
-		if r.URL.Path == "/admin" || r.URL.Path == "/admin/login" {
-			templates.NotFound(r.Context()).Render(r.Context(), w)
-		} else {
-			http.Redirect(w, r, "/admin/login", http.StatusFound)
-		}
-	}
+	templates.NotFound().Render(r.Context(), w)
 }

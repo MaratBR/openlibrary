@@ -24,7 +24,10 @@ values ($1, $2, $3, $4, $5, $6, $7, $8);
 select exists(select 1 from defined_tags) as initialized;
 
 -- name: GetTag :one
-select * from defined_tags where id = $1;
+select defined_tags.*, syn.name as synonym_name
+from defined_tags
+left join defined_tags as syn on defined_tags.synonym_of = syn.id 
+where defined_tags.id = $1;
 
 -- name: GetTagParent :one
 select t0.* 

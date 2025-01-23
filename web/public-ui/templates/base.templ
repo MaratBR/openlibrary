@@ -1,19 +1,19 @@
 package templates
 
-import "context"
-import "github.com/MaratBR/openlibrary/web/common-templates"
+import "github.com/MaratBR/openlibrary/web/olresponse"
 
-templ baseLayout(ctx context.Context, title string) {
-    @htmlLayout(ctx, title) {
-        @siteHeader(ctx)
+
+templ baseLayout(title string) {
+    @htmlLayout(title) {
+        @siteHeader()
         { children... }
-        @siteFooter(ctx)
+        @siteFooter()
         <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
     }
 }
 
-templ htmlLayout(ctx context.Context, title string) {
-    @commonTemplates.Doc(ctx, commonTemplates.DocSettings{
+templ htmlLayout(title string) {
+    @olresponse.Doc(ctx, olresponse.DocSettings{
         Title: title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
         CSS: []string{ "/_/assets/common.css", "/_/embed-assets/fonts.css" },
@@ -23,7 +23,7 @@ templ htmlLayout(ctx context.Context, title string) {
     }
 }
 
-templ siteFooter(ctx context.Context) {
+templ siteFooter() {
     {{ 
         version := ctx.Value("version").(string)
     }}

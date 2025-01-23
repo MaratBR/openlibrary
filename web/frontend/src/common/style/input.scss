@@ -15,6 +15,10 @@ input.ol-input {
 
 .ol-label {
     @apply block text-sm text-foreground;
+
+    &[for] {
+        @apply cursor-pointer;
+    }
 }
 
 .ol-dropdown {

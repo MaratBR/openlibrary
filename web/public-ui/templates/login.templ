@@ -1,6 +1,5 @@
 package templates
 
-import "context"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/csrf"
@@ -8,22 +7,31 @@ import "github.com/MaratBR/openlibrary/internal/csrf"
 type LoginData struct {
     InitialLogin string
     Error string
+	IsToAdmin bool
 }
 
-templ Login(ctx context.Context, data LoginData) {
+templ Login(data LoginData) {
     {{
         l := i18nProvider.GetLocalizer(ctx)
     }}
 
-    @htmlLayout(ctx, "Login") {
+    @htmlLayout("Login") {
         <div class="p-8 w-screen h-screen flex items-center justify-center bg-secondary">
-            <main class="min-w-[400px] min-h-[450px] bg-background p-4 shadow-lg rounded-sm">
+            <main class="w-[400px] min-h-[450px] bg-background p-4 shadow-lg rounded-sm">
+                if data.IsToAdmin {
+                    <section class="p-2 bg-emerald-500 text-white rounded-sm -m-3 text-sm text-center">
+                        { _t(l, "admin.login.redirectNotice") }
+                    </section>
+                }
+
                 <div class="flex justify-center">
                     <img class="block dark:hidden" src="/_/embed-assets/logo.svg" />
                     <img class="hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
                 </div>
 
-                <form method="post" action="/login" class="flex flex-col">
+                
+
+                <form method="post" class="flex flex-col">
                     @csrf.CSRFInputTempl(ctx)
 
                     <div class="mb-4">

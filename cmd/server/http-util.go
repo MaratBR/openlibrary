@@ -227,17 +227,3 @@ func writeTLSRequiredError(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusForbidden)
 	w.Write([]byte("TLS required"))
 }
-
-func getPage(values url.Values, key string) uint {
-	v := getInt32FromQuery(values, key)
-
-	if !v.Valid {
-		return 1
-	}
-
-	if v.Int32 < 1 {
-		return 1
-	}
-
-	return uint(v.Int32)
-}

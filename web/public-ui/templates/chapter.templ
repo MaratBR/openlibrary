@@ -1,6 +1,5 @@
 package templates
 
-import "context"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
@@ -13,7 +12,6 @@ type ReaderSettings struct {
 }
 
 templ Chapter(
-    ctx context.Context,
     chapterWithDetails app.ChapterWithDetails,
     book app.BookDetailsDto,
     readerSettings ReaderSettings,
@@ -23,8 +21,8 @@ templ Chapter(
         chapter := chapterWithDetails.Chapter
     }}
 
-    @htmlLayout(ctx, chapter.Name) {
-        @siteHeaderLayout(ctx) {
+    @htmlLayout(chapter.Name) {
+        @siteHeaderLayout() {
             <div class="h-full items-center flex gap-2">
                 <a class="ol-link !font-[600]" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
                     { book.Name }
@@ -51,7 +49,7 @@ templ Chapter(
                     </div>
                 </aside>
                 <div x-bind="chapter" class="ol-book-reader__chapter relative">
-                    @ChapterContentSection(ctx, &chapter, readerSettings)
+                    @ChapterContentSection(&chapter, readerSettings)
 
                     <section class="grid grid-cols-2 mt-4 bg-background sticky bottom-0 py-1">
                         if chapter.PrevChapter.Valid {
@@ -85,7 +83,7 @@ templ Chapter(
             </div>
         </div>
 
-        @siteFooter(ctx)
+        @siteFooter()
     }
 }
 
@@ -109,7 +107,7 @@ templ readerSettingsUI(settings ReaderSettings) {
     </div>
 }
 
-templ ChapterContentSection(ctx context.Context, chapter *app.ChapterDto, readerSettings ReaderSettings) {
+templ ChapterContentSection(chapter *app.ChapterDto, readerSettings ReaderSettings) {
     {{
         l := i18nProvider.GetLocalizer(ctx)
     }}

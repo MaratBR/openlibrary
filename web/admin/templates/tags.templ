@@ -1,0 +1,181 @@
+package templates
+
+import "context"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+import "net/url"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+
+type TagsSearchRequest struct {
+    SearchQuery string
+    OnlyParentTags bool
+    OnlyAdultTags bool
+}
+
+templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
+    {{
+        l := i18nProvider.GetLocalizer(ctx)
+        pagination := tagsPagination(&result)
+    }}
+
+
+    @dashboardLayout("Tags") {
+        <header class="my-10">
+            <h1 class="text-4xl font-title mb-3">Tags</h1>
+            <p>View list of tags and create new tags or edit existing ones.</p>
+        </header>
+
+        <section class="ol-admin-card">
+            <form method="get">
+                <input name="p" type="number" value={ fmt.Sprintf("%d", result.Page) } aria-hidden="true" class="hidden" />
+
+                <div class="flex gap-8 mb-3">
+                    <div class="flex items-center gap-2">
+                        <input
+                            if searchRequest.OnlyParentTags {
+                                checked
+                            } 
+                            id="chk_onlyParentTags" name="onlyParentTags" type="checkbox" class="ol-checkbox" />
+                        <label class="ol-label" for="chk_onlyParentTags">{ _t(l, "admin.tags.onlyParentTags") }</label>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <input
+                            if searchRequest.OnlyAdultTags {
+                                checked
+                            } 
+                            id="chk_onlyAdultTags" name="onlyAdultTags" type="checkbox" class="ol-checkbox" />
+                        <label class="ol-label" for="chk_onlyAdultTags">{ _t(l, "admin.tags.onlyAdultTags") }</label>
+                    </div>
+
+                    <button type="submit" class="ol-btn ol-btn--primary rounded-full">
+                        { _t(l, "common.apply") }
+                    </button>
+                </div>
+            </form>
+
+            @pagination
+
+            <table id="slot-tags-table" class="-mx-4 my-4 ol-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>{ _t(l, "admin.tags.name") }</th>
+                        <th>{ _t(l, "admin.tags.synonym") }</th>
+                        <th>{ _t(l, "admin.tags.adult") }</th>
+                        <th>{ _t(l, "admin.tags.spoiler") }</th>
+                        <th>{ _t(l, "admin.tags.createdAt") }</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    if len(result.Tags) == 0 {
+                        <tr>
+                            <td colspan="6">
+                                { _t(l, "admin.tags.noTags") }
+                            </td>
+                        </tr>
+                    }
+
+                    for _, tag := range result.Tags {
+                        <tr>
+                            <td>
+                                <span class="ol-admin-id">
+                                    { fmt.Sprintf("%d", tag.ID) }
+                                </span>
+                            </td>
+                            <td>
+                                <a class="ol-link !text-primary" href={ templ.SafeURL(fmt.Sprintf("/admin/tags/tag-details/%d", tag.ID)) }>{ tag.Name }</a>
+                                if tag.IsDefault {
+                                    <i>({ _t(l, "admin.tags.default") })</i>
+                                }
+                            </td>
+                            <td>
+                                if tag.SynonymOf.Valid {
+                                    <span>{ tag.Name }</span>
+                                } else {
+                                    <span aria-label="none">--</span>
+                                }
+                            </td>
+                            <td>
+                                @tableBoolValue(tag.IsAdult)
+                            </td>
+                            <td>
+                                @tableBoolValue(tag.IsSpoiler)
+                            </td>
+                            <td>
+                                @tableTimeValue(tag.CreatedAt)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @pagination
+        </section>
+    }
+}
+
+
+const (
+	tagsPaginationSize uint32 = 9
+)
+
+func getTagsPageURL(ctx context.Context, p uint32) templ.SafeURL {
+    u := new(url.URL)
+    r := olhttp.GetRequest(ctx)
+    *u = *r.URL
+    query := u.Query()
+    if p == 1 {
+        query.Del("p")
+    } else {
+        query.Set("p", fmt.Sprintf("%d", p))
+    }
+    u.RawQuery = query.Encode()
+    return templ.SafeURL(u.String())
+}
+
+templ tagsPagination(result *app.ListTagsResult) {
+    {{
+        remaining := tagsPaginationSize - 1
+        left := remaining / 2
+        if left > result.Page - 1  {
+            left = result.Page - 1
+        }
+        remaining -= left
+        right := remaining
+        if result.Page + right > result.TotalPages {
+            right = result.TotalPages - result.Page
+        }
+        remaining -= right
+        if remaining > 0 && left < result.Page - 1 {
+            left += min(remaining, result.Page - 1 - left)
+        }
+    }}
+
+    <nav role="listbox" class="ol-pagination">
+        for i := result.Page - left; i < result.Page; i++ {
+            <a href={ getTagsPageURL(ctx, i) } class="ol-pagination__item">
+                { fmt.Sprintf("%d", i) }
+            </a>
+        }
+        <a href="#" x-init="$el.href=window.location.href" class="ol-pagination__item ol-pagination__item--active">
+            { fmt.Sprintf("%d", result.Page) }
+        </a>
+        for i := result.Page + 1; i <= result.Page + right; i++ {
+            <a href={ getTagsPageURL(ctx, i) } class="ol-pagination__item">
+                { fmt.Sprintf("%d", i) }
+            </a>
+        }
+    </nav>
+}
+
+templ Tag(tag app.TagDetailsItemDto) {
+    @dashboardLayout("Admin - " + tag.Name) {
+        <header>
+            <h1 class="font-title text-3xl">
+                { tag.Name }
+            </h1>
+        </header>
+    }
+}

@@ -1,0 +1,20 @@
+package olresponse
+
+templ errorLayout(title string) {
+    @Doc(ctx, DocSettings{
+        Title: title,
+        CSS: []string{ "/_/assets/common.css" },
+    }) {
+        { children... }
+    }
+}
+
+templ err500(err error) {
+    @errorLayout("500") {
+        <main class="m-10">
+            <h1 class="font-title text-4xl my-4">500 Internal Server Error</h1>
+
+            <pre class="bg-secondary px-3 py-5">{ err.Error() }</pre>
+        </main>
+    }
+}

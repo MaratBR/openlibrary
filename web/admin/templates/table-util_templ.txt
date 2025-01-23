@@ -1,0 +1,8 @@
+<!-- TODO: make aria friendly --><span class=\"h-full\">
+<span class=\"material-symbols-outlined text-green-600\">check_circle</span>
+<span class=\"material-symbols-outlined text-red-600\">cancel</span>
+</span>
+<time title=\"
+\" datetime=\"
+\">
+</time>

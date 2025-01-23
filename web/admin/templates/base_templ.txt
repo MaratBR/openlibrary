@@ -1,3 +1,3 @@
-<a href=\"/admin\" class=\"font-literata text-3xl font-semibold select-none\">OpenLibrary</a>
- <main class=\"ml-[300px] p-4\">
+<img class=\"h-20\" src=\"/_/embed-assets/logo-dark.svg\">
+ <main class=\"ml-[300px] p-4 bg-secondary min-h-screen\">
 </main>

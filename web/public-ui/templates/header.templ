@@ -1,13 +1,12 @@
 package templates
 
-import "context"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 
-templ siteHeader(ctx context.Context) {
+templ siteHeader() {
     {{ l := i18nProvider.GetLocalizer(ctx) }}
 
-    @siteHeaderLayout(ctx) {
+    @siteHeaderLayout() {
         <a class="ol-nav-link" href="/">
             {l.MustLocalize(&i18n.LocalizeConfig{
                 MessageID: "nav.home",
@@ -26,7 +25,7 @@ templ siteHeader(ctx context.Context) {
     }
 }
 
-templ siteHeaderLayout(ctx context.Context) {
+templ siteHeaderLayout() {
     {{ l := i18nProvider.GetLocalizer(ctx) }}
 
     <nav class="z-40 bg-background sticky top-0 w-full h-[var(--header-height)] border-b" id="site-header">

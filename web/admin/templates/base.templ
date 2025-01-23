@@ -1,27 +1,29 @@
 package templates
 
-import "github.com/MaratBR/openlibrary/web/common-templates"
-import "context"
+import "github.com/MaratBR/openlibrary/web/olresponse"
 
 templ logo() {
-    <a href="/admin" class="font-literata text-3xl font-semibold select-none">
-        OpenLibrary
-    </a>
+    <img class="h-20" src="/_/embed-assets/logo-dark.svg" />
+
 }
 
 
-templ DashboardLayout(ctx context.Context, title string) {
-    @commonTemplates.Doc(ctx, commonTemplates.DocSettings{
-        Title: title,
-        Scripts: []string{ "/_/assets/common.js", "/_/assets/admin.common.js", "/_/assets/admin.alpinejs.js" },
-        CSS: []string{ "/_/assets/common.css", "/_/embed-assets/fonts.css" },
-        InstantClick: false,
-    }) {
+templ dashboardLayout(title string) {
+    @baseLayout(title) {
         @sidebar()
-
-        <main class="ml-[300px] p-4">
+        <main class="ml-[300px] p-4 bg-secondary min-h-screen">
             { children... }
         </main>
     }
+}
 
+templ baseLayout(title string) {
+    @olresponse.Doc(ctx, olresponse.DocSettings{
+        Title: title,
+        Scripts: []string{ "/_/assets/common.js", "/_/assets/admin-common.js", "/_/assets/admin-alpinejs.js" },
+        CSS: []string{ "/_/assets/common.css", "/_/assets/admin-common.css", "/_/embed-assets/fonts.css" },
+        InstantClick: false,
+    }) {
+        { children... }
+    }
 }

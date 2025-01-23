@@ -1,6 +1,5 @@
 package templates
 
-import "context"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
@@ -10,7 +9,6 @@ import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 import "strconv"
 
 templ bookTopReviews(
-    ctx context.Context,  
     reviews []app.ReviewDto, 
     authorID uuid.UUID,
 ) {
@@ -21,14 +19,13 @@ templ bookTopReviews(
     <ul class="space-y-2">
         for _, review := range reviews {
             if !userId.Valid || userId.UUID != review.User.ID {
-                @bookReview(ctx, review, review.User.ID == authorID)
+                @bookReview(review, review.User.ID == authorID)
             }
         }
     </ul>
 }
 
 templ bookReview(
-    ctx context.Context, 
     review app.ReviewDto, 
     isAuthor bool,
 ) {
@@ -64,7 +61,7 @@ templ bookReview(
             <div class="mb-2">
                 @starRating(float64(review.Rating), 0.4)
             </div>
-            @collapsibleRawHtml(ctx, fmt.Sprintf("review-%s", review.User.ID.String()), review.Content)
+            @collapsibleRawHtml(fmt.Sprintf("review-%s", review.User.ID.String()), review.Content)
         </div>
 
         <div class="text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2">
@@ -76,7 +73,6 @@ templ bookReview(
 }
 
 templ BookMyReview(
-    ctx context.Context,
     bookID int64,
     ratingAndReview app.RatingAndReview,
 ) {
@@ -133,7 +129,7 @@ templ BookMyReview(
                             </button>
                         </div>
                         <article class="__user-content mt-4 text-sm">
-                            @collapsibleRawHtml(ctx, "current-review-content", review.Content)
+                            @collapsibleRawHtml("current-review-content", review.Content)
                         </article>
                     </div>
                 </div>
@@ -240,19 +236,19 @@ templ BookMyReview(
     </section>
 }
 
-templ collapsibleRawHtml(ctx context.Context, id, html string) {
+templ collapsibleRawHtml(id, html string) {
     {{ 
         canBeCollapsed := approximateLines(831, 18, html) >= 8
     }}
 
-   @collapsible(ctx, 250, canBeCollapsed) {
+   @collapsible(250, canBeCollapsed) {
     <div id={id} class="contents __user-content" x-ignore>
         @templ.Raw(html)
     </div>
    }
 }
 
-templ collapsible(ctx context.Context, height int, canBeCollapsed bool) {
+templ collapsible(height int, canBeCollapsed bool) {
     {{ 
         l := i18nProvider.GetLocalizer(ctx)
     }}

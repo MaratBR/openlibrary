@@ -1,0 +1,45 @@
+<header class=\"my-10\"><h1 class=\"text-4xl font-title mb-3\">Tags</h1><p>View list of tags and create new tags or edit existing ones.</p></header><section class=\"ol-admin-card\"><form method=\"get\"><input name=\"p\" type=\"number\" value=\"
+\" aria-hidden=\"true\" class=\"hidden\"><div class=\"flex gap-8 mb-3\"><div class=\"flex items-center gap-2\"><input
+ checked
+ id=\"chk_onlyParentTags\" name=\"onlyParentTags\" type=\"checkbox\" class=\"ol-checkbox\"> <label class=\"ol-label\" for=\"chk_onlyParentTags\">
+</label></div><div class=\"flex items-center gap-2\"><input
+ checked
+ id=\"chk_onlyAdultTags\" name=\"onlyAdultTags\" type=\"checkbox\" class=\"ol-checkbox\"> <label class=\"ol-label\" for=\"chk_onlyAdultTags\">
+</label></div><button type=\"submit\" class=\"ol-btn ol-btn--primary rounded-full\">
+</button></div></form>
+<table id=\"slot-tags-table\" class=\"-mx-4 my-4 ol-table\"><thead><tr><th>ID</th><th>
+</th><th>
+</th><th>
+</th><th>
+</th><th>
+</th></tr></thead> <tbody>
+<tr><td colspan=\"6\">
+</td></tr>
+<tr><td><span class=\"ol-admin-id\">
+</span></td><td><a class=\"ol-link !text-primary\" href=\"
+\">
+</a> 
+<i>(
+)</i>
+</td><td>
+<span>
+</span>
+<span aria-label=\"none\">--</span>
+</td><td>
+</td><td>
+</td><td>
+</td></tr>
+</tbody></table>
+</section>
+<nav role=\"listbox\" class=\"ol-pagination\">
+<a href=\"
+\" class=\"ol-pagination__item\">
+</a> 
+<a href=\"#\" x-init=\"$el.href=window.location.href\" class=\"ol-pagination__item ol-pagination__item--active\">
+</a> 
+<a href=\"
+\" class=\"ol-pagination__item\">
+</a>
+</nav>
+<header><h1 class=\"font-title text-3xl\">
+</h1></header>

@@ -77,7 +77,6 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates.BookPage(
-		r.Context(),
 		book,
 		ratingAndReview,
 		readingListStatus,
@@ -127,5 +126,5 @@ func (b *bookController) GetBookReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates.BookMyReview(r.Context(), bookID, review).Render(r.Context(), w)
+	templates.BookMyReview(bookID, review).Render(r.Context(), w)
 }

@@ -1,0 +1,20 @@
+package templates
+
+import "time"
+
+templ tableBoolValue(value bool) {
+    <!-- TODO: make aria friendly -->
+    <span class="h-full">
+        if value {
+            <span class="material-symbols-outlined text-green-600">check_circle</span>
+        } else {
+            <span class="material-symbols-outlined text-red-600">cancel</span>
+        }
+    </span>
+}
+
+templ tableTimeValue(value time.Time) {
+    <time title={ value.Format(time.RFC1123) } datetime={ value.Format(time.RFC3339) }>
+    { value.Format(time.DateOnly) }
+    </time>
+}

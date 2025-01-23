@@ -23,12 +23,29 @@ func (q *Queries) DefinedTagsAreInitialized(ctx context.Context) (bool, error) {
 }
 
 const getTag = `-- name: GetTag :one
-select id, name, description, is_spoiler, is_adult, created_at, tag_type, synonym_of, is_default, lowercased_name from defined_tags where id = $1
+select defined_tags.id, defined_tags.name, defined_tags.description, defined_tags.is_spoiler, defined_tags.is_adult, defined_tags.created_at, defined_tags.tag_type, defined_tags.synonym_of, defined_tags.is_default, defined_tags.lowercased_name, syn.name as synonym_name
+from defined_tags
+left join defined_tags as syn on defined_tags.synonym_of = syn.id 
+where defined_tags.id = $1
 `
 
-func (q *Queries) GetTag(ctx context.Context, id int64) (DefinedTag, error) {
+type GetTagRow struct {
+	ID             int64
+	Name           string
+	Description    string
+	IsSpoiler      bool
+	IsAdult        bool
+	CreatedAt      pgtype.Timestamptz
+	TagType        TagType
+	SynonymOf      pgtype.Int8
+	IsDefault      bool
+	LowercasedName string
+	SynonymName    string
+}
+
+func (q *Queries) GetTag(ctx context.Context, id int64) (GetTagRow, error) {
 	row := q.db.QueryRow(ctx, getTag, id)
-	var i DefinedTag
+	var i GetTagRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -40,6 +57,7 @@ func (q *Queries) GetTag(ctx context.Context, id int64) (DefinedTag, error) {
 		&i.SynonymOf,
 		&i.IsDefault,
 		&i.LowercasedName,
+		&i.SynonymName,
 	)
 	return i, err
 }

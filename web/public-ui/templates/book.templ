@@ -3,13 +3,11 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "encoding/json"
-import "context"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 import "crypto/md5"
 
 templ BookPage(
-    ctx context.Context, 
     book app.BookDetailsDto,
     ratingAndReview app.RatingAndReview,
     readingListStatus app.Nullable[app.BookReadingListDto],
@@ -20,11 +18,11 @@ templ BookPage(
         tab := "reviews"
     }}
     
-    @bookPageLayout(ctx, book, readingListStatus) {
+    @bookPageLayout(book, readingListStatus) {
         @i18nExtractKeys(l, []string{ "common.more", "common.less", "common.save" })
 
         <div x-ignore class="mt-4 __user-content">@templ.Raw(book.Summary)</div>
-        @bookTags(ctx, book.Tags)
+        @bookTags(book.Tags)
         @bookRating(&book)
 
         <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) }>
@@ -60,8 +58,8 @@ templ BookPage(
                 } 
                 class="contents" 
                 x-show="tab==='reviews'">
-                @BookMyReview(ctx, book.ID, ratingAndReview)
-                @bookTopReviews(ctx, topReviews, book.Author.ID)
+                @BookMyReview(book.ID, ratingAndReview)
+                @bookTopReviews(topReviews, book.Author.ID)
             </div>
 
             <div role="tabpanel" class="contents" id="slot-book-toc" x-merge="replace" x-cloak x-show="tab==='toc'" x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/__fragment/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
@@ -105,8 +103,8 @@ func getBookCoverURL(name string, height int) string {
     return fmt.Sprintf("/_/embed-assets/cover/%d.jpg", id)
 }
 
-templ bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList app.Nullable[app.BookReadingListDto]) {
-    @baseLayout(ctx, book.Name) {
+templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookReadingListDto]) {
+    @baseLayout(book.Name) {
         <div 
             id="book" 
             class="md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[1300px] py-4" 
@@ -116,7 +114,7 @@ templ bookPageLayout(ctx context.Context, book app.BookDetailsDto, readingList a
             })
             <div class="md:col-span-3 flex flex-col items-center">
                 @bookCover(book.Cover, book.Name, 300)
-                @bookReadingList(ctx, book.ID, readingList)
+                @bookReadingList(book.ID, readingList)
             </div>
             <div class="md:col-span-9">
                 <header>
@@ -158,7 +156,7 @@ templ bookCover(cover, bookName string, height int) {
     </div>
 } 
 
-templ bookTags(ctx context.Context, tags []app.DefinedTagDto) {
+templ bookTags(tags []app.DefinedTagDto) {
     {{ l := i18nProvider.GetLocalizer(ctx) }}
     <ul 
         if len(tags) > 10 {

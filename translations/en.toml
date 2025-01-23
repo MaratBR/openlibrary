@@ -3,6 +3,7 @@ more = "More"
 less = "Less"
 save = "Save"
 saveChanges = "Save changes"
+apply = "Apply"
 
 [time]
 justNow = "Just now"
@@ -85,3 +86,34 @@ noResults = "No results, try to change your search query"
 
 [special]
 noJavascript = "Hey there! It looks like you have Javascript disabled. OpenLibrary only offers limited functionality without it. Please enable it in your browser settings."
+
+
+#####################
+#                   #
+# ADMIN PAGE        #
+#                   #
+#####################
+
+[admin]
+
+[admin.login]
+redirectNotice = "You will be redirected to admin panel once you login"
+
+
+[admin.sidebar]
+users = "Users"
+tags = "Tags"
+siteSettings = "Site settings"
+home = "Home page"
+logout = "Logout"
+
+[admin.tags]
+name = "Name"
+synonym = "Synonym"
+adult = "Is adult"
+spoiler = "Is spoiler"
+createdAt = "Creation date"
+default = "default"
+onlyParentTags = "Parent tags only"
+onlyAdultTags = "Adult tags only"
+noTags = "No tags found, adjust your search query or create more tags"

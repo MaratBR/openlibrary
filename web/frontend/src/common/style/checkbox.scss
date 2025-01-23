@@ -1,0 +1,27 @@
+.ol-checkbox {
+    @apply mt-6 mr-6 size-0 relative;
+
+    &::after {
+        font-family: 'Material Symbols Outlined';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 1.5rem;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-feature-settings: 'liga';
+        -webkit-font-smoothing: antialiased;
+
+        @apply cursor-pointer hover:text-primary absolute left-0 bottom-0;
+
+        content: 'check_box_outline_blank';
+    }
+
+    &:checked::after {
+        content: 'check_box';
+    }
+}

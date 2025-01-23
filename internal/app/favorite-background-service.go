@@ -27,9 +27,10 @@ func (s *FavoriteRecalculationBackgroundService) ScheduleRecalculation(bookID in
 	s.scheduledRecalculation[bookID] = struct{}{}
 }
 
-func (s *FavoriteRecalculationBackgroundService) Start() {
+func (s *FavoriteRecalculationBackgroundService) Start() error {
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 	go s.run()
+	return nil
 }
 
 func (s *FavoriteRecalculationBackgroundService) Stop() {

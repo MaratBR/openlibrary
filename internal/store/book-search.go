@@ -209,9 +209,6 @@ func SearchBooks(ctx context.Context, db DBTX, req BookSearchRequest) ([]BookSea
 		}
 		books = append(books, row)
 	}
-	if err != nil {
-		return nil, err
-	}
 
 	if books == nil {
 		return []BookSearchRow{}, nil

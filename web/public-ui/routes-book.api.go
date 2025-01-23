@@ -6,7 +6,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
-	httputil "github.com/MaratBR/openlibrary/internal/http-util"
+	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 )
 
 type apiBookController struct {
@@ -26,13 +26,13 @@ func newAPIBookController(service app.BookService, reviewService app.ReviewsServ
 func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 
-	bookID, err := httputil.URLQueryParamInt64(r, "bookId")
+	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
 	if err != nil {
 		apiWriteRequestError(w, err)
 		return
 	}
 
-	rating, err := httputil.URLQueryParamInt64(r, "rating")
+	rating, err := olhttp.URLQueryParamInt64(r, "rating")
 	if err != nil {
 		apiWriteRequestError(w, err)
 		return
@@ -54,13 +54,13 @@ func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
 func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 
-	bookID, err := httputil.URLQueryParamInt64(r, "bookId")
+	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
 	if err != nil {
 		apiWriteRequestError(w, err)
 		return
 	}
 
-	rating, err := httputil.URLQueryParamInt64(r, "rating")
+	rating, err := olhttp.URLQueryParamInt64(r, "rating")
 	if err != nil {
 		apiWriteRequestError(w, err)
 		return

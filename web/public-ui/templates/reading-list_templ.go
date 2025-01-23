@@ -10,11 +10,10 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/app"
-import "context"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 
-func bookReadingList(ctx context.Context, bookID int64, readingListStatus app.Nullable[app.BookReadingListDto]) templ.Component {
+func bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadingListDto]) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -66,7 +65,7 @@ func bookReadingList(ctx context.Context, bookID int64, readingListStatus app.Nu
 				MessageID: fmt.Sprintf("readingList.%s", readingListStatus.Value.Status),
 			}))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 36, Col: 22}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 35, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -92,7 +91,7 @@ func bookReadingList(ctx context.Context, bookID int64, readingListStatus app.Nu
 			MessageID: "readingList.want_to_read",
 		}))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 47, Col: 14}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 46, Col: 14}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -110,7 +109,7 @@ func bookReadingList(ctx context.Context, bookID int64, readingListStatus app.Nu
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("rl !== null && rl.status === '%s'", status))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 54, Col: 92}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 53, Col: 92}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -123,7 +122,7 @@ func bookReadingList(ctx context.Context, bookID int64, readingListStatus app.Nu
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("status('%s')", status))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 55, Col: 68}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 54, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -136,7 +135,7 @@ func bookReadingList(ctx context.Context, bookID int64, readingListStatus app.Nu
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("i18n['readingList.%s']", status))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 56, Col: 78}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public-ui/templates/reading-list.templ`, Line: 55, Col: 78}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {

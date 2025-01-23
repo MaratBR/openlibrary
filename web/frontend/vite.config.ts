@@ -68,8 +68,8 @@ const ENTRIES = [
   'alpinejs',
   'http-client',
 
-  'admin.common',
-  'admin.alpinejs',
+  'admin-common',
+  'admin-alpinejs',
 
   'public.api',
 
@@ -100,6 +100,7 @@ export default defineConfig({
         chunkFileNames: 'chunks/[hash].js',
         // Put chunk styles at <output>/assets
         assetFileNames: (assetInfo) => {
+          console.log(assetInfo.names)
           if (
             assetInfo.names.length === 1 &&
             assetInfo.names[0].endsWith('.css') &&

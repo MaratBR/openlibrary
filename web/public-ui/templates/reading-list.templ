@@ -2,11 +2,10 @@ package templates
 
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/app"
-import "context"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 
-templ bookReadingList(ctx context.Context, bookID int64, readingListStatus app.Nullable[app.BookReadingListDto]) {
+templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadingListDto]) {
     {{ l := i18nProvider.GetLocalizer(ctx) }}
 
     @i18nExtractKeys(l, []string {

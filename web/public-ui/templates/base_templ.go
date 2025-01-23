@@ -8,10 +8,9 @@ package templates
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "context"
-import "github.com/MaratBR/openlibrary/web/common-templates"
+import "github.com/MaratBR/openlibrary/web/olresponse"
 
-func baseLayout(ctx context.Context, title string) templ.Component {
+func baseLayout(title string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -44,7 +43,7 @@ func baseLayout(ctx context.Context, title string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = siteHeader(ctx).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = siteHeader().Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -60,7 +59,7 @@ func baseLayout(ctx context.Context, title string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = siteFooter(ctx).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = siteFooter().Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -70,7 +69,7 @@ func baseLayout(ctx context.Context, title string) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = htmlLayout(ctx, title).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = htmlLayout(title).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -78,7 +77,7 @@ func baseLayout(ctx context.Context, title string) templ.Component {
 	})
 }
 
-func htmlLayout(ctx context.Context, title string) templ.Component {
+func htmlLayout(title string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -117,7 +116,7 @@ func htmlLayout(ctx context.Context, title string) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = commonTemplates.Doc(ctx, commonTemplates.DocSettings{
+		templ_7745c5c3_Err = olresponse.Doc(ctx, olresponse.DocSettings{
 			Title:        title,
 			Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js"},
 			CSS:          []string{"/_/assets/common.css", "/_/embed-assets/fonts.css"},
@@ -130,7 +129,7 @@ func htmlLayout(ctx context.Context, title string) templ.Component {
 	})
 }
 
-func siteFooter(ctx context.Context) templ.Component {
+func siteFooter() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {

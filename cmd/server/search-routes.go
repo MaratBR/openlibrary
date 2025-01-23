@@ -9,6 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
+	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/gofrs/uuid"
 )
 
@@ -180,7 +181,7 @@ func parseSearchRequest(source url.Values) (search searchRequest) {
 	search.ExcludeUsers = getUUIDArray(source, "eu")
 
 	// pagination and page size
-	search.Page = getPage(source, "p")
+	search.Page = uint(olhttp.GetPage(source, "p"))
 	pageSize := getInt32FromQuery(source, "ps")
 	if pageSize.Valid {
 		if pageSize.Int32 <= 0 {

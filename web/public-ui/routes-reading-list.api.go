@@ -7,7 +7,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
-	httputil "github.com/MaratBR/openlibrary/internal/http-util"
+	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/gofrs/uuid"
 )
 
@@ -22,7 +22,7 @@ func newAPIReadingListController(service app.ReadingListService) *apiReadingList
 func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 
-	bookID, err := httputil.URLQueryParamInt64(r, "bookId")
+	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
 	if err != nil {
 		apiWriteUnprocessableEntity(w, "failed to parse bookId: "+err.Error())
 		return

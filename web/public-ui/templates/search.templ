@@ -4,7 +4,7 @@ import "context"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
-import "github.com/MaratBR/openlibrary/internal/http-util"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "net/url"
 
 
@@ -21,7 +21,7 @@ templ SearchPage(
         }
     }}
 
-    @baseLayout(ctx, "Search") {
+    @baseLayout("Search") {
         @jsonTemplate("data-search-explained-query", explainedQuery)
 
         @i18nExtractKeys(l, []string{
@@ -71,14 +71,14 @@ templ SearchPage(
             {{
                 var pagination templ.Component
                 if result.TotalPages > 1 {
-                    pagination = searchPagination(ctx, result)
+                    pagination = searchPagination(result)
                 } else {
                     pagination = templ.NopComponent
                 }
             }}
 
             if len(result.Books) == 0 {
-                @searchNoResultsCard(ctx)
+                @searchNoResultsCard()
             } else {
                 @pagination
                 <ul role="listbox" id="results" class="ol-book-search-results">
@@ -98,7 +98,7 @@ templ SearchPage(
                                     { book.Author.Name }
                                 </a>
 
-                                @collapsible(ctx, 160, false) {
+                                @collapsible(160, false) {
                                     <ul class="ol-book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
                                         data-expand="false"
                                         :data-expand="expand"
@@ -141,7 +141,7 @@ templ SearchPage(
     }
 }
 
-templ searchNoResultsCard(ctx context.Context) {
+templ searchNoResultsCard() {
     {{ l := i18nProvider.GetLocalizer(ctx) }}
 
     <div class="my-8 px-12 text-lg overflow-hidden rounded-xl grid grid-cols-[auto_1fr] bg-[#dee0e2] dark:bg-[#211f1d] max-w-[600px]">
@@ -157,7 +157,7 @@ templ searchNoResultsCard(ctx context.Context) {
 }
 
 func getSearchPageURL(ctx context.Context, page uint32) templ.SafeURL {
-    r := httputil.GetRequest(ctx)
+    r := olhttp.GetRequest(ctx)
     u := new(url.URL)
     *u = *r.URL
     query := u.Query()
@@ -170,7 +170,7 @@ const (
     searchPaginationSize uint32 = 9
 )
 
-templ searchPagination(ctx context.Context, result *app.BookSearchResult) {
+templ searchPagination(result *app.BookSearchResult) {
     {{
         remaining := searchPaginationSize - 1
         left := remaining / 2

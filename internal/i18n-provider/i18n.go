@@ -52,7 +52,7 @@ func NewLocaleProvider(
 func (p *LocaleProvider) CreateLocalizer(r *http.Request) *i18n.Localizer {
 	accept := r.Header.Get("Accept-Language")
 	bundle := p.getBundle()
-	localizer := i18n.NewLocalizer(bundle, accept)
+	localizer := i18n.NewLocalizer(bundle, accept, language.English.String())
 	return localizer
 }
 

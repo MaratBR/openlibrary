@@ -1,0 +1,17 @@
+.ol-table {
+    @apply w-full;
+
+    td, th {
+        @apply p-2 border-border border-b text-start;
+    }
+
+    th {
+        @apply font-[400] bg-secondary text-lg;
+    }
+
+    thead {
+        tr:last-child {
+            @apply border-b-2;
+        }
+    }
+}

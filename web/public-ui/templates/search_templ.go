@@ -12,7 +12,7 @@ import "context"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
-import "github.com/MaratBR/openlibrary/internal/http-util"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "net/url"
 
 func SearchPage(
@@ -185,12 +185,12 @@ func SearchPage(
 
 			var pagination templ.Component
 			if result.TotalPages > 1 {
-				pagination = searchPagination(ctx, result)
+				pagination = searchPagination(result)
 			} else {
 				pagination = templ.NopComponent
 			}
 			if len(result.Books) == 0 {
-				templ_7745c5c3_Err = searchNoResultsCard(ctx).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = searchNoResultsCard().Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -370,7 +370,7 @@ func SearchPage(
 						}
 						return nil
 					})
-					templ_7745c5c3_Err = collapsible(ctx, 160, false).Render(templ.WithChildren(ctx, templ_7745c5c3_Var14), templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = collapsible(160, false).Render(templ.WithChildren(ctx, templ_7745c5c3_Var14), templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -398,7 +398,7 @@ func SearchPage(
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = baseLayout(ctx, "Search").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = baseLayout("Search").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -406,7 +406,7 @@ func SearchPage(
 	})
 }
 
-func searchNoResultsCard(ctx context.Context) templ.Component {
+func searchNoResultsCard() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -450,7 +450,7 @@ func searchNoResultsCard(ctx context.Context) templ.Component {
 }
 
 func getSearchPageURL(ctx context.Context, page uint32) templ.SafeURL {
-	r := httputil.GetRequest(ctx)
+	r := olhttp.GetRequest(ctx)
 	u := new(url.URL)
 	*u = *r.URL
 	query := u.Query()
@@ -463,7 +463,7 @@ const (
 	searchPaginationSize uint32 = 9
 )
 
-func searchPagination(ctx context.Context, result *app.BookSearchResult) templ.Component {
+func searchPagination(result *app.BookSearchResult) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {

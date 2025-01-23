@@ -4,11 +4,12 @@ import (
 	"context"
 	_ "embed"
 	"net/http"
+	"sync"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/csrf"
-	httputil "github.com/MaratBR/openlibrary/internal/http-util"
+	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public-ui/templates"
 	"github.com/NYTimes/gziphandler"
 	"github.com/go-chi/chi/v5"
@@ -16,6 +17,13 @@ import (
 )
 
 type Handler struct {
+	_mutex   sync.Mutex
+	_started bool
+
+	backgroundServices []interface {
+		Start() error
+		Stop()
+	}
 	r           chi.Router
 	db          app.DB
 	cfg         *koanf.Koanf
@@ -48,88 +56,65 @@ func NewHandler(
 		cache:       cache,
 		csrfHandler: csrfHandler,
 	}
-	h.createRouter()
+	h.initRouter()
+	h.setupRouter()
 	return h
 }
 
-func (h *Handler) createRouter() {
+func (h *Handler) initRouter() {
 	h.r = chi.NewRouter()
 	h.r.Use(gziphandler.GzipHandler)
-	h.r.Use(httputil.ReqCtxMiddleware)
+	h.r.Use(olhttp.ReqCtxMiddleware)
+
+	// add version of the app as context info
 	h.r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			r = r.WithContext(context.WithValue(r.Context(), "version", h.version))
 			next.ServeHTTP(w, r)
 		})
 	})
+	h.r.NotFound(notFoundHandler)
+}
 
-	if Dev {
-		h.r.Mount("/_/assets/", http.StripPrefix("/_/assets/", http.FileServer(http.Dir("web/public-ui/frontend/dist"))))
-	} else {
-		panic("not implemented yet")
+// Start starts all background services and sets started flag to true.
+// If any of the services fail to start, an error is returned.
+func (h *Handler) Start() error {
+	h._mutex.Lock()
+	defer h._mutex.Unlock()
+	if h._started {
+		return nil
 	}
 
-	h.r.NotFound(notFoundHandler)
+	for _, s := range h.backgroundServices {
+		err := s.Start()
+		if err != nil {
+			return err
+		}
+	}
 
-	db := h.db
+	h._started = true
+	return nil
+}
 
-	// application layer services
-	uploadService := app.NewUploadServiceFromApplicationConfig(h.cfg)
-	sessionService := app.NewSessionService(db)
-	sessionService = app.NewCachedSessionService(sessionService, h.cache)
-	authService := app.NewAuthService(db, sessionService)
-	// favoriteRecalculationBackgroundService := app.NewFavoriteRecalculationBackgroundService(db)
-	// favoritesService := app.NewFavoriteService(db, favoriteRecalculationBackgroundService)
-	tagsService := app.NewTagsService(db)
-	readingListService := app.NewReadingListService(db)
-	userService := app.NewUserService(db)
-	// bookManagerService := app.NewBookManagerService(db, tagsService, uploadService)
-	bookBackgroundService := app.NewBookBackgroundService(db)
-	reviewsService := app.NewReviewsService(db, userService, bookBackgroundService)
-	reviewsService = app.NewCachedReviewsService(reviewsService, h.cache)
-	bookService := app.NewBookService(db, tagsService, uploadService, readingListService, reviewsService)
-	searchService := app.NewSearchService(db, tagsService, uploadService, userService)
-	searchService = app.NewCachedSearchService(searchService, h.cache)
+func (h *Handler) Stop() {
+	h._mutex.Lock()
+	defer h._mutex.Unlock()
+	if !h._started {
+		return
+	}
 
-	h.r.Group(func(r chi.Router) {
-		authController := newAuthController(authService, h.csrfHandler)
-		bookController := newBookController(bookService, reviewsService, readingListService)
-		chapterController := newChaptersController(bookService)
-		searchController := newSearchController(searchService)
-		tagsController := newTagsController(tagsService)
+	for _, s := range h.backgroundServices {
+		s.Stop()
+	}
 
-		r.HandleFunc("/login", authController.LogIn)
-
-		r.Get("/book/{bookID}", bookController.GetBook)
-		r.Get("/book/{bookID}/__fragment/toc", bookController.GetBookTOC)
-		r.Get("/book/{bookID}/__fragment/review", bookController.GetBookReview)
-
-		r.Get("/book/{bookID}/chapters/{chapterID}", chapterController.GetChapter)
-
-		r.Get("/search", searchController.Search)
-
-		r.Get("/tag/{tagID}", tagsController.TagPage)
-	})
-
-	h.r.Route("/_api", func(r chi.Router) {
-		apiBookController := newAPIBookController(bookService, reviewsService, readingListService)
-		apiReadingListController := newAPIReadingListController(readingListService)
-		apiTagsController := newAPITagsController(tagsService)
-
-		r.Post("/reviews/rating", apiBookController.RateBook)
-		r.Post("/reviews/{bookID}", apiBookController.UpdateOrCreateReview)
-		r.Delete("/reviews/{bookID}", apiBookController.DeleteReview)
-
-		r.Post("/reading-list/status", apiReadingListController.UpdateStatus)
-
-		r.Get("/tags", apiTagsController.Tags)
-	})
-
-	bookBackgroundService.Start()
-
+	h._started = false
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if !h._started {
+		panic("cannot serve http until handle has been started")
+	}
+
 	h.r.ServeHTTP(w, r)
 }
 
@@ -139,5 +124,5 @@ var (
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
-	templates.NotFoundPage(r.Context()).Render(r.Context(), w)
+	templates.NotFoundPage().Render(r.Context(), w)
 }

@@ -50,7 +50,7 @@ func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) 
 	}
 
 	uiSettings := getUIBookSettings(r)
-	templates.Chapter(r.Context(), chapter.Chapter, book, templates.ReaderSettings{
+	templates.Chapter(chapter.Chapter, book, templates.ReaderSettings{
 		FontSize: uiSettings.FontSize,
 	}).Render(r.Context(), w)
 }

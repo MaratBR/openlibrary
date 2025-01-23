@@ -1,7 +1,9 @@
 package publicui
 
 import (
+	"log/slog"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -43,7 +45,11 @@ func (c *authController) writeLoginForm(w http.ResponseWriter, r *http.Request, 
 		}
 	}
 
-	templates.Login(r.Context(), data).Render(r.Context(), w)
+	if r.URL.Query().Get("next") == "/admin" {
+		data.IsToAdmin = true
+	}
+
+	templates.Login(data).Render(r.Context(), w)
 }
 
 func (c *authController) handleSignIn(w http.ResponseWriter, r *http.Request) {
@@ -79,7 +85,45 @@ func (c *authController) signIn(username string, password string, w http.Respons
 	c.csrfHandler.WriteCSRFToken(w, result.SessionID)
 	w.Header().Add("Set-Cookie", "auth_ll="+username)
 
-	http.Redirect(w, r, "/", http.StatusFound)
+	c.redirectToNext(w, r)
 }
 
-func (c *authController) LogOut(w http.ResponseWriter, r *http.Request) {}
+func (c *authController) redirectToNext(w http.ResponseWriter, r *http.Request) {
+	next := r.URL.Query().Get("next")
+	if next == "" {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	u, err := url.Parse(next)
+	if err != nil {
+		slog.Warn("failed to parse next param", "err", err)
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	if u.Scheme != "" || u.Host != "" || u.User != nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+	} else {
+		http.Redirect(w, r, next, http.StatusFound)
+	}
+}
+
+func (c *authController) LogOut(w http.ResponseWriter, r *http.Request) {
+	session, ok := auth.GetSession(r.Context())
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	err := c.authService.SignOut(r.Context(), session.SID)
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	w.Header().Add("Set-Cookie", "sid=deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT")
+	w.Header().Add("Set-Cookie", "auth_ll=deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT")
+	c.csrfHandler.WriteAnonymousCSRFToken(w)
+	http.Redirect(w, r, "/", http.StatusFound)
+}

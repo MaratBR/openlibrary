@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"math"
 	"strings"
 	"time"
 
@@ -89,7 +90,102 @@ func definedTagToTagDto(t store.DefinedTag) DefinedTagDto {
 }
 
 type tagsService struct {
+	db      store.DBTX
 	queries *store.Queries
+}
+
+// GetTag implements TagsService.
+func (t *tagsService) GetTag(ctx context.Context, id int64) (TagDetailsItemDto, error) {
+	tag, err := t.queries.GetTag(ctx, id)
+	if err != nil {
+		return TagDetailsItemDto{}, wrapUnexpectedDBError(err)
+	}
+
+	var synonym Nullable[struct {
+		ID   int64
+		Name string
+	}]
+
+	if tag.SynonymOf.Valid {
+		synonym = Value(struct {
+			ID   int64
+			Name string
+		}{
+			ID:   tag.SynonymOf.Int64,
+			Name: tag.SynonymName,
+		})
+	}
+
+	return TagDetailsItemDto{
+		DefinedTagDto: DefinedTagDto{
+			ID:          tag.ID,
+			Name:        tag.Name,
+			Description: tag.Description,
+			IsAdult:     tag.IsAdult,
+			IsSpoiler:   tag.IsSpoiler,
+			Category:    dbTagTypeToTagsCategory(tag.TagType),
+		},
+		CreatedAt: timeDbToDomain(tag.CreatedAt),
+		IsDefault: tag.IsDefault,
+		SynonymOf: synonym,
+	}, nil
+}
+
+// List implements TagsService.
+func (t *tagsService) List(ctx context.Context, query ListTagsQuery) (ListTagsResult, error) {
+	limit := min(1000, max(query.PageSize, 1))
+	offset := (max(1, query.Page) - 1) * limit
+
+	dbQuery := store.ListTagsQuery{
+		Query:          query.SearchQuery,
+		Limit:          uint(limit),
+		Offset:         uint(offset),
+		OnlyParentTags: query.OnlyParentTags,
+		OnlyAdultTags:  query.OnlyAdultTags,
+	}
+	tags, err := store.ListTags(ctx, t.db, dbQuery)
+	if err != nil {
+		return ListTagsResult{}, wrapUnexpectedDBError(err)
+	}
+
+	count, err := store.CountTags(ctx, t.db, dbQuery)
+	totalPages := uint32(math.Ceil(float64(count) / float64(limit)))
+
+	tagDtos := mapSlice(tags, func(t store.TagRow) TagDetailsItemDto {
+		var synonym Nullable[struct {
+			ID   int64
+			Name string
+		}]
+
+		if t.SynonymOf.Valid && t.SynonymOfName.Valid {
+			synonym = Value(struct {
+				ID   int64
+				Name string
+			}{
+				ID:   t.SynonymOf.Int64,
+				Name: t.SynonymOfName.String,
+			})
+		}
+
+		return TagDetailsItemDto{
+			DefinedTagDto: DefinedTagDto{
+				ID:          t.ID,
+				Name:        t.Name,
+				Description: t.Description,
+				IsAdult:     t.IsAdult,
+				IsSpoiler:   t.IsSpoiler,
+				Category:    dbTagTypeToTagsCategory(t.TagType),
+			},
+			IsDefault: t.IsDefault,
+			CreatedAt: t.CreatedAt,
+			SynonymOf: synonym,
+		}
+	})
+	return ListTagsResult{
+		Tags:       tagDtos,
+		TotalPages: totalPages,
+		Page:       query.Page,
+	}, nil
 }
 
 // CreateTags implements TagsService.
@@ -118,12 +214,6 @@ func (t *tagsService) CreateTags(ctx context.Context, cmd CreateTagsCommand) ([]
 
 	tagsDto, err := t.queries.GetTagsByName(ctx, tagNames)
 	return mapSlice(tagsDto, definedTagToTagDto), err
-}
-
-func NewTagsService(db store.DBTX) TagsService {
-	return &tagsService{
-		queries: store.New(db),
-	}
 }
 
 func (t *tagsService) FindParentTagIds(ctx context.Context, ids []int64) (r BookTags, err error) {
@@ -186,6 +276,13 @@ func escapeSqlLikeValue(v string) string {
 	v = strings.ReplaceAll(v, "_", "\\_")
 	v = strings.ReplaceAll(v, "%", "\\%")
 	return v
+}
+
+func NewTagsService(db store.DBTX) TagsService {
+	return &tagsService{
+		db:      db,
+		queries: store.New(db),
+	}
 }
 
 type tagsAggregator struct {
