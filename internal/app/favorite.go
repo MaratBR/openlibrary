@@ -10,10 +10,10 @@ import (
 type FavoriteService struct {
 	db                     DB
 	queries                *store.Queries
-	favoritesRecalculation *FavoriteRecalculationBackgroundService
+	favoritesRecalculation FavoriteRecalculationIngest
 }
 
-func NewFavoriteService(db DB, favoritesRecalculation *FavoriteRecalculationBackgroundService) *FavoriteService {
+func NewFavoriteService(db DB, favoritesRecalculation FavoriteRecalculationIngest) *FavoriteService {
 	return &FavoriteService{db: db, queries: store.New(db), favoritesRecalculation: favoritesRecalculation}
 }
 

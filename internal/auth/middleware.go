@@ -12,7 +12,11 @@ type MiddlewareOptions struct {
 	OnFail func(w http.ResponseWriter, r *http.Request, err error)
 }
 
-func NewAuthorizationMiddleware(service app.SessionService, options MiddlewareOptions) func(http.Handler) http.Handler {
+func NewAuthorizationMiddleware(
+	sessionService app.SessionService,
+	userService app.UserService,
+	options MiddlewareOptions,
+) func(http.Handler) http.Handler {
 	if options.OnFail == nil {
 		options.OnFail = defaultAuthorizationFailedHandler
 	}
@@ -30,7 +34,7 @@ func NewAuthorizationMiddleware(service app.SessionService, options MiddlewareOp
 				return
 			}
 
-			sessionInfo, err := service.GetBySID(r.Context(), sidCookie.Value)
+			sessionInfo, err := sessionService.GetBySID(r.Context(), sidCookie.Value)
 			if err != nil {
 				if err == app.ErrSessionNotFound {
 					next.ServeHTTP(w, r)
@@ -41,7 +45,14 @@ func NewAuthorizationMiddleware(service app.SessionService, options MiddlewareOp
 				return
 			}
 
-			r = AttachSessionInfo(r, sessionInfo)
+			user, err := userService.GetUserSelfData(r.Context(), sessionInfo.UserID)
+			if err != nil {
+				slog.Error("unexpected error when trying to retrieve user's data", "err", err)
+				options.OnFail(w, r, err)
+				return
+			}
+
+			r = attachSessionInfo(r, sessionInfo, user)
 			next.ServeHTTP(w, r)
 		})
 	}

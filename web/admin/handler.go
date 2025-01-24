@@ -26,10 +26,10 @@ type Handler struct {
 	cache *cache.Cache
 }
 
-func NewHandler(db app.DB, cfg *koanf.Koanf, cache *cache.Cache) *Handler {
+func NewHandler(db app.DB, cfg *koanf.Koanf, cache *cache.Cache, bgServices *app.BackgroundServices) *Handler {
 	h := &Handler{db: db, cfg: cfg, cache: cache}
 	h.initRouter()
-	h.setupRouter()
+	h.setupRouter(bgServices)
 	return h
 }
 

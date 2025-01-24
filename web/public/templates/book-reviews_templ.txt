@@ -18,7 +18,7 @@
 <button @click=\"requestEditing()\" class=\"ol-btn ol-btn--lg ol-btn--outline rounded-full\"><span class=\"material-symbols-outlined\">edit</span> 
 </button></div><article class=\"__user-content mt-4 text-sm\">
 </article></div></div><div x-cloak x-show=\"loading\" class=\"flex items-center justify-center h-full\"><span class=\"loader m-0\"></span></div><ol-island load-method=\"script\" name=\"review-editor\" src=\"/_/assets/islands/review-editor.js\" x-show=\"edit\" :active=\"loading||edit\" @review:updated=\"onUpdated($event.detail)\" @island-mount=\"onEditorReady()\"></ol-island></div>
-<div x-show=\"edit\" class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden\"><ol-island load-method=\"script\" name=\"review-editor\" src=\"/_/assets/islands/review-editor.js\" :active=\"loading||edit\" @review:updated=\"onUpdated($event.detail)\" @island-mount=\"onEditorReady()\"></ol-island></div><div class=\"pt-6 pb-8 rounded-xl items-start gap-4 my-8\">
+<div x-show=\"edit\" x-cloak class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden\"><ol-island load-method=\"script\" name=\"review-editor\" src=\"/_/assets/islands/review-editor.js\" :active=\"loading||edit\" @review:updated=\"onUpdated($event.detail)\" @island-mount=\"onEditorReady()\"></ol-island></div><div class=\"pt-6 pb-8 rounded-xl items-start gap-4 my-8\">
 <div class=\"flex flex-col items-center\"><span class=\"mt-3 block text-3xl font-title font-semibold\">
 </span><div class=\"flex gap-6 items-center mt-4\">
 <div class=\"flex flex-col items-center\" x-data=\"

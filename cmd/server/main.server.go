@@ -15,7 +15,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/admin"
 	"github.com/MaratBR/openlibrary/web/frontend"
-	public "github.com/MaratBR/openlibrary/web/public"
+	"github.com/MaratBR/openlibrary/web/public"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
 	"golang.org/x/text/language"
@@ -25,7 +25,6 @@ type cliParams struct {
 	Dev            bool
 	BypassTLSCheck bool
 	StaticDir      string
-	AppVersion     string
 }
 
 func mainServer(
@@ -40,6 +39,7 @@ func mainServer(
 
 	var err error
 
+	slog.Debug("initializing localizer provider")
 	localizerProvider := i18nProvider.NewLocaleProvider(
 		language.English,
 		cliParams.Dev,
@@ -47,8 +47,14 @@ func mainServer(
 			"translations/en.toml",
 		},
 	)
+
+	slog.Debug("connecting to database")
 	db := connectToDatabase(config)
+
+	slog.Debug("connecting to cache")
 	cacheInstance := createCache(config)
+
+	slog.Debug("initializing csr handler")
 	csrfHandler := csrf.NewHandler("CSRF HANDLER HERE")
 
 	// create router
@@ -56,15 +62,30 @@ func mainServer(
 	r.Use(csrfHandler.Middleware)
 	r.Use(localizerProvider.Middleware)
 
-	//
-	// init spa and data preload
-	//
+	// mount assets
+	assetsFS := frontend.AssetsFS(frontend.AssetsConfig{Dev: cliParams.Dev})
+	assetsHandler := frontend.Assets(assetsFS)
 
-	r.Mount("/_/embed-assets/", http.StripPrefix("/_/embed-assets/", frontend.EmbedAssets()))
-	r.Mount("/_/assets/", http.StripPrefix("/_/assets/", frontend.Assets(frontend.AssetsConfig{Dev: cliParams.Dev})))
+	embedAssetsFS := frontend.EmbedAssetsFS()
+	embedAssetsHandler := frontend.EmbedAssets(embedAssetsFS)
 
-	publicUIHandler := public.NewHandler(db, config, cliParams.AppVersion, cacheInstance, csrfHandler)
-	adminHandler := admin.NewHandler(db, config, cacheInstance)
+	frontend.AttachAssetsInliningHandler(embedAssetsFS, "embed-assets", r)
+	frontend.AttachAssetsInliningHandler(assetsFS, "assets", r)
+
+	r.Mount("/_/embed-assets/", http.StripPrefix("/_/embed-assets/", embedAssetsHandler))
+	r.Mount("/_/assets/", http.StripPrefix("/_/assets/", assetsHandler))
+
+	// create and start background services
+	bgServices := app.NewBackgroundServices(db)
+
+	err = bgServices.Start()
+	if err != nil {
+		panic("failed to start background services: " + err.Error())
+	}
+	defer bgServices.Stop()
+
+	publicUIHandler := public.NewHandler(db, config, cacheInstance, csrfHandler, bgServices)
+	adminHandler := admin.NewHandler(db, config, cacheInstance, bgServices)
 
 	err = publicUIHandler.Start()
 	if err != nil {

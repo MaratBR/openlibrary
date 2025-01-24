@@ -9,10 +9,14 @@ import (
 	"github.com/MaratBR/openlibrary/internal/store"
 )
 
+type BookRecalculationIngest interface {
+	ScheduleBookRecalculation(bookID int64)
+}
+
 type BookBackgroundService interface {
+	BookRecalculationIngest
 	Start() error
 	Stop()
-	ScheduleBookRecalculation(bookID int64)
 }
 
 type dummyBookBackgroundService struct{}

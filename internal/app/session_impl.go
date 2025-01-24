@@ -34,7 +34,6 @@ func (s *sessionService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]S
 			IpAddress:    s.IpAddress,
 			UserName:     s.UserName,
 			UserJoinedAt: timeDbToDomain(s.UserJoinedAt),
-			UserAvatar:   getUserAvatar(s.UserName, 84),
 		}
 	}), nil
 }
@@ -59,21 +58,30 @@ func (s *sessionService) Create(ctx context.Context, command CreateSessionComman
 		return nil, wrapUnexpectedDBError(err)
 	}
 
-	session, err := s.GetBySID(ctx, sessionID)
-	return session, err
+	session, err := s.get(ctx, sessionID)
+	return &session, err
 }
 
 // GetBySID implements SessionService.
 func (s *sessionService) GetBySID(ctx context.Context, sessionID string) (*SessionInfo, error) {
+	sessionInfo, err := s.get(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &sessionInfo, nil
+}
+
+func (s *sessionService) get(ctx context.Context, sessionID string) (SessionInfo, error) {
 	result, err := s.queries.GetSessionInfo(ctx, sessionID)
 	if err != nil {
 		if err == store.ErrNoRows {
-			return nil, ErrSessionNotFound
+			return SessionInfo{}, ErrSessionNotFound
 		}
-		return nil, wrapUnexpectedDBError(err)
+		return SessionInfo{}, wrapUnexpectedDBError(err)
 	}
 
-	return &SessionInfo{
+	return SessionInfo{
 		ID:           result.ID,
 		SID:          result.Sid,
 		CreatedAt:    timeDbToDomain(result.CreatedAt),
@@ -129,7 +137,12 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 		return nil, err
 	}
 
-	return s.GetBySID(ctx, command.SessionID)
+	si, err := s.get(ctx, command.SessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &si, nil
 }
 
 // TerminateAllByUserID implements SessionService.

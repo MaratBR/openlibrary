@@ -7,8 +7,6 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-var version = "development"
-
 func main() {
 	command := &cli.Command{
 		Commands: []*cli.Command{
@@ -26,7 +24,7 @@ func main() {
 				Usage: "runs openlibrary server",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
-						Name:  "dev-frontend-proxy",
+						Name:  "dev",
 						Usage: "enable dev frontend proxy",
 					},
 					&cli.BoolFlag{
@@ -42,9 +40,8 @@ func main() {
 					cfg := loadConfigOrPanic()
 					var cliParam cliParams
 					cliParam.BypassTLSCheck = c.Bool("bypass-tls-check")
-					cliParam.Dev = c.Bool("dev-frontend-proxy")
+					cliParam.Dev = c.Bool("dev")
 					cliParam.StaticDir = c.String("static-dir")
-					cliParam.AppVersion = version
 					mainServer(cliParam, cfg)
 					return nil
 				},

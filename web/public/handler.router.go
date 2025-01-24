@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (h *Handler) setupRouter() {
+func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	db := h.db
 
 	// application layer services
@@ -20,24 +20,18 @@ func (h *Handler) setupRouter() {
 
 	authService := app.NewAuthService(db, sessionService)
 
-	favoriteRecalculationBackgroundService := app.NewFavoriteRecalculationBackgroundService(db)
-	h.backgroundServices = append(h.backgroundServices, favoriteRecalculationBackgroundService)
-
-	_ = app.NewFavoriteService(db, favoriteRecalculationBackgroundService)
+	_ = app.NewFavoriteService(db, bgServices.Favorites)
 
 	tagsService := app.NewTagsService(db)
 	readingListService := app.NewReadingListService(db)
 	userService := app.NewUserService(db)
-	// bookManagerService := app.NewBookManagerService(db, tagsService, uploadService)
-	bookBackgroundService := app.NewBookBackgroundService(db)
-	h.backgroundServices = append(h.backgroundServices, bookBackgroundService)
 
-	reviewsService := app.NewCachedReviewsService(app.NewReviewsService(db, userService, bookBackgroundService), h.cache)
+	reviewsService := app.NewCachedReviewsService(app.NewReviewsService(db, userService, bgServices.Book), h.cache)
 	bookService := app.NewBookService(db, tagsService, uploadService, readingListService, reviewsService)
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, uploadService, userService), h.cache)
 
 	h.r.Group(func(r chi.Router) {
-		r.Use(auth.NewAuthorizationMiddleware(sessionService, auth.MiddlewareOptions{
+		r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
 			OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
 				olresponse.Write500(w, r, err)
 			},
@@ -62,20 +56,20 @@ func (h *Handler) setupRouter() {
 		r.Get("/search", searchController.Search)
 
 		r.Get("/tag/{tagID}", tagsController.TagPage)
-	})
 
-	h.r.Route("/_api", func(r chi.Router) {
-		apiBookController := newAPIBookController(bookService, reviewsService, readingListService)
-		apiReadingListController := newAPIReadingListController(readingListService)
-		apiTagsController := newAPITagsController(tagsService)
+		r.Route("/_api", func(r chi.Router) {
+			apiBookController := newAPIBookController(bookService, reviewsService, readingListService)
+			apiReadingListController := newAPIReadingListController(readingListService)
+			apiTagsController := newAPITagsController(tagsService)
 
-		r.Post("/reviews/rating", apiBookController.RateBook)
-		r.Post("/reviews/{bookID}", apiBookController.UpdateOrCreateReview)
-		r.Delete("/reviews/{bookID}", apiBookController.DeleteReview)
+			r.Post("/reviews/rating", apiBookController.RateBook)
+			r.Post("/reviews/{bookID}", apiBookController.UpdateOrCreateReview)
+			r.Delete("/reviews/{bookID}", apiBookController.DeleteReview)
 
-		r.Post("/reading-list/status", apiReadingListController.UpdateStatus)
+			r.Post("/reading-list/status", apiReadingListController.UpdateStatus)
 
-		r.Get("/tags", apiTagsController.Tags)
+			r.Get("/tags", apiTagsController.Tags)
+		})
 	})
 
 }

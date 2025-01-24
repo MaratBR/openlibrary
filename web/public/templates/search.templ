@@ -47,10 +47,11 @@ templ SearchPage(
 
         <div class="ol-container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
             <h1 class="font-title text-3xl flex">
-                <span>{ _t(l, "search.search") }</span>
                 if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
                     {{ firstTag := explainedQuery.IncludeTags[0] }}
-                    <span class="text-muted-foreground">&nbsp;&ndash;&nbsp;{ firstTag.Name }</span>
+                    <span>{ firstTag.Name }</span>
+                } else {
+                    <span>{ _t(l, "search.search") }</span>
                 }
             </h1>
 

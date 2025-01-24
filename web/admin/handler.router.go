@@ -13,14 +13,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (h *Handler) setupRouter() {
+func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	h.setupAutoRedirect()
 
 	h.r.Group(func(r chi.Router) {
 		sessionService := app.NewCachedSessionService(app.NewSessionService(h.db), h.cache)
 		tagsService := app.NewTagsService(h.db)
+		userService := app.NewUserService(h.db)
 
-		authorizationMiddleware := auth.NewAuthorizationMiddleware(sessionService, auth.MiddlewareOptions{
+		authorizationMiddleware := auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
 			OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
 				olresponse.Write500(w, r, err)
 			},

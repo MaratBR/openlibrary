@@ -14,7 +14,7 @@ build-server:
 build: sqlc templ build-server
 
 watch-server:
-	gow run ./cmd/server server --dev-frontend-proxy --bypass-tls-check --static-dir ./cmd/server/ui/dist
+	gow run ./cmd/server server --dev --bypass-tls-check --static-dir ./cmd/server/ui/dist
 
 watch-templ:
 	templ generate --watch

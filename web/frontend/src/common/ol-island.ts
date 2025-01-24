@@ -1,3 +1,4 @@
+import { isAttrTrue } from './html-elements'
 import './ol-island.scss'
 
 export interface OLIsland {
@@ -59,13 +60,6 @@ class OLIslandsRegistry {
 }
 
 OLIslandsRegistry.instance = new OLIslandsRegistry()
-
-function isAttrTrue(v: string | null) {
-  if (v === '' || v === 'true') {
-    return true
-  }
-  return false
-}
 
 abstract class OLIslandElementBase extends HTMLElement {
   private _unmount?: () => void

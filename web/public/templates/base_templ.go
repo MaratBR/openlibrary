@@ -9,6 +9,8 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/web/frontend"
 
 func baseLayout(title string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -119,8 +121,11 @@ func htmlLayout(title string) templ.Component {
 		templ_7745c5c3_Err = olresponse.Doc(ctx, olresponse.DocSettings{
 			Title:        title,
 			Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js"},
-			CSS:          []string{"/_/assets/common.css", "/_/embed-assets/fonts.css"},
+			CSS:          []string{"/_/assets/common.css"},
 			InstantClick: false,
+			AppendToHead: templ.Join(
+				frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
+			),
 		}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -151,7 +156,7 @@ func siteFooter() templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 
-		version := ctx.Value("version").(string)
+		version := app.AppVersion()
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<footer id=\"site-footer\" class=\"bg-secondary p-10\"><div class=\"ol-container\"><a href=\"https://github.com/MaratBR/openlibrary\" class=\"text-muted-foreground hover:text-foreground\" target=\"_blank\">Powered by <span class=\"font-[500] font-title\">OpenLibrary</span><br><span class=\"text-sm\">v:")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -159,7 +164,7 @@ func siteFooter() templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(version)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/base.templ`, Line: 35, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/base.templ`, Line: 40, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {

@@ -1,7 +1,7 @@
 .ol-nav-link {
     @apply 
-        h-full inline-flex items-center font-[500] text-foreground/80 text-[1rem] underline-offset-4 px-5 
-        hover:text-foreground hover:underline hover:bg-accent
-        focus:underline focus:outline -outline-offset-2
+        h-full inline-flex items-center font-medium text-foreground/80 text-[1rem] px-5 
+        hover:text-foreground hover:bg-accent
+        focus:outline -outline-offset-2
         active:text-primary;
 }

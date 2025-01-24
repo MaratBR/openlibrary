@@ -1,9 +1,10 @@
  
  
 <div class=\"ol-container my-12\" x-data=\"
-\"><h1 class=\"font-title text-3xl flex\"><span>
-</span> 
-<span class=\"text-muted-foreground\">&nbsp;&ndash;&nbsp;
+\"><h1 class=\"font-title text-3xl flex\">
+<span>
+</span>
+<span>
 </span>
 </h1><button @click=\"openFilters=!openFilters\" class=\"ol-btn ol-btn--lg ol-btn--secondary rounded-full my-4\"><span class=\"material-symbols-outlined\">filter</span> 
  

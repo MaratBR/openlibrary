@@ -2,8 +2,8 @@ package frontend
 
 import (
 	"embed"
+	"io/fs"
 	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -17,23 +17,30 @@ type assetsHandler struct {
 
 // ServeHTTP implements http.Handler.
 func (a assetsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	r2 := new(http.Request)
-	*r2 = *r
-	r2.URL = new(url.URL)
-	*r2.URL = *r.URL
-
-	r2.URL.Path = "embed-assets/" + r2.URL.Path
-	r2.URL.RawPath = "/embed-assets/" + r2.URL.RawPath
-
 	// Set cache headers assuming the response does not change and was created at assetsTime
 	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 	w.Header().Set("Last-Modified", assetsTime.UTC().Format(http.TimeFormat))
 
-	a.fileServer.ServeHTTP(w, r2)
+	a.fileServer.ServeHTTP(w, r)
 }
 
-func EmbedAssets() http.Handler {
+type embedAssetsFS struct {
+	inner fs.FS
+}
+
+// Open implements fs.FS.
+func (e embedAssetsFS) Open(name string) (fs.File, error) {
+	name = "embed-assets/" + name
+	file, err := e.inner.Open(name)
+	return file, err
+}
+
+func EmbedAssetsFS() fs.FS {
+	return embedAssetsFS{inner: folder}
+}
+
+func EmbedAssets(fs fs.FS) http.Handler {
 	return assetsHandler{
-		fileServer: http.FileServerFS(folder),
+		fileServer: http.FileServerFS(fs),
 	}
 }

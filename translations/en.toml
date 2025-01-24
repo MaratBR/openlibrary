@@ -23,7 +23,8 @@ other = "{{.count}} days ago"
 [login]
 username = "Username"
 password = "Password"
-login = "Log In"
+login = "Log in"
+logout = "Log out"
 
 [account]
 profile = "Profile"

@@ -1,6 +1,8 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/web/frontend"
 
 
 templ baseLayout(title string) {
@@ -16,8 +18,11 @@ templ htmlLayout(title string) {
     @olresponse.Doc(ctx, olresponse.DocSettings{
         Title: title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
-        CSS: []string{ "/_/assets/common.css", "/_/embed-assets/fonts.css" },
+        CSS: []string{ "/_/assets/common.css" },
         InstantClick: false,
+        AppendToHead: templ.Join(
+            frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
+        ),
     }) {
         { children... }
     }
@@ -25,7 +30,7 @@ templ htmlLayout(title string) {
 
 templ siteFooter() {
     {{ 
-        version := ctx.Value("version").(string)
+        version := app.AppVersion()
     }}
 
     <footer id="site-footer" class="bg-secondary p-10">

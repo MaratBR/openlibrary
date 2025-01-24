@@ -1,16 +1,24 @@
 package frontend
 
-import "net/http"
+import (
+	"io/fs"
+	"net/http"
+	"os"
+)
 
 type AssetsConfig struct {
 	Dev bool
 }
 
-func Assets(config AssetsConfig) http.Handler {
+func AssetsFS(config AssetsConfig) fs.FS {
 	if config.Dev {
-		fileServer := http.FileServer(http.Dir("./web/frontend/dist"))
-		return fileServer
+		return os.DirFS("./web/frontend/dist")
 	} else {
 		panic("not implemented")
 	}
+}
+
+func Assets(fs fs.FS) http.Handler {
+	fileServer := http.FileServerFS(fs)
+	return fileServer
 }

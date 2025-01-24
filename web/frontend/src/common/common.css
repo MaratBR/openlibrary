@@ -1,18 +1,20 @@
-@import "./style/theme.css";
-@import "./style/button.scss";
-@import "./style/input.scss";
-@import "./style/tag.scss";
 @import "./style/avatar.scss";
 @import "./style/book-reader.scss";
-@import "./style/user-content.scss";
-@import "./style/nav.scss";
-@import "./style/util.scss";
-@import "./style/loader.css";
 @import "./style/book.scss";
-@import "./style/search.scss";
-@import "./style/pagination.scss";
-@import "./style/table.scss";
+@import "./style/button.scss";
 @import "./style/checkbox.scss";
+@import "./style/input.scss";
+@import "./style/loader.css";
+@import "./style/nav.scss";
+@import "./style/pagination.scss";
+@import "./style/search.scss";
+@import "./style/table.scss";
+@import "./style/tag.scss";
+@import "./style/theme.css";
+@import "./style/toast.scss";
+@import "./style/user-content.scss";
+@import "./style/util.scss";
+
 
 
 @tailwind components;

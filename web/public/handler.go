@@ -1,7 +1,6 @@
 package public
 
 import (
-	"context"
 	_ "embed"
 	"net/http"
 	"sync"
@@ -20,24 +19,19 @@ type Handler struct {
 	_mutex   sync.Mutex
 	_started bool
 
-	backgroundServices []interface {
-		Start() error
-		Stop()
-	}
 	r           chi.Router
 	db          app.DB
 	cfg         *koanf.Koanf
 	cache       *cache.Cache
 	csrfHandler *csrf.Handler
-	version     string
 }
 
 func NewHandler(
 	db app.DB,
 	cfg *koanf.Koanf,
-	version string,
 	cache *cache.Cache,
 	csrfHandler *csrf.Handler,
+	bgServices *app.BackgroundServices,
 ) *Handler {
 	if cache == nil {
 		panic("cache is nil")
@@ -52,12 +46,11 @@ func NewHandler(
 	h := &Handler{
 		db:          db,
 		cfg:         cfg,
-		version:     version,
 		cache:       cache,
 		csrfHandler: csrfHandler,
 	}
 	h.initRouter()
-	h.setupRouter()
+	h.setupRouter(bgServices)
 	return h
 }
 
@@ -66,13 +59,6 @@ func (h *Handler) initRouter() {
 	h.r.Use(gziphandler.GzipHandler)
 	h.r.Use(olhttp.ReqCtxMiddleware)
 
-	// add version of the app as context info
-	h.r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			r = r.WithContext(context.WithValue(r.Context(), "version", h.version))
-			next.ServeHTTP(w, r)
-		})
-	})
 	h.r.NotFound(notFoundHandler)
 }
 
@@ -85,13 +71,6 @@ func (h *Handler) Start() error {
 		return nil
 	}
 
-	for _, s := range h.backgroundServices {
-		err := s.Start()
-		if err != nil {
-			return err
-		}
-	}
-
 	h._started = true
 	return nil
 }
@@ -101,10 +80,6 @@ func (h *Handler) Stop() {
 	defer h._mutex.Unlock()
 	if !h._started {
 		return
-	}
-
-	for _, s := range h.backgroundServices {
-		s.Stop()
 	}
 
 	h._started = false

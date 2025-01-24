@@ -10,7 +10,7 @@ import (
 type reviewsService struct {
 	db                DB
 	userService       UserService
-	backgroundService BookBackgroundService
+	backgroundService BookRecalculationIngest
 }
 
 // GetBookReviewsDistribution implements ReviewsService.
@@ -238,6 +238,6 @@ func (r *reviewsService) UpdateRating(ctx context.Context, cmd UpdateRatingComma
 	return nil
 }
 
-func NewReviewsService(db DB, userService UserService, backgroundService BookBackgroundService) ReviewsService {
+func NewReviewsService(db DB, userService UserService, backgroundService BookRecalculationIngest) ReviewsService {
 	return &reviewsService{db: db, userService: userService, backgroundService: backgroundService}
 }

@@ -17,6 +17,10 @@ type FavoriteRecalculationBackgroundService struct {
 	cancel                 func()
 }
 
+type FavoriteRecalculationIngest interface {
+	ScheduleRecalculation(bookID int64)
+}
+
 func NewFavoriteRecalculationBackgroundService(db DB) *FavoriteRecalculationBackgroundService {
 	return &FavoriteRecalculationBackgroundService{db: db, scheduledRecalculation: map[int64]struct{}{}}
 }

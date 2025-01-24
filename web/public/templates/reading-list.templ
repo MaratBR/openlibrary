@@ -4,59 +4,78 @@ import "fmt"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/auth"
+import "net/url"
 
 templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadingListDto]) {
-    {{ l := i18nProvider.GetLocalizer(ctx) }}
+    {{ 
+        _, isAuthorized := auth.GetSession(ctx)
+        l := i18nProvider.GetLocalizer(ctx) 
+    }}
+        
+    <section
+        if isAuthorized {
+            x-data="{ 
+                open: false,
+                toggle() { this.open = !this.open },
+                status(s) { OL.api.book.updateReadingListStatus(bookId, s).then(r => { this.rl = r; this.open = false; }) }
+            }"
+        }
+        id="reading-list" 
+        class="w-[80%] my-4 relative">
+        if isAuthorized {
+            @i18nExtractKeys(l, []string {
+                "readingList.want_to_read",
+                "readingList.reading",
+                "readingList.read",
+                "readingList.paused",
+                "readingList.dnf",
+            })
 
-    @i18nExtractKeys(l, []string {
-        "readingList.want_to_read",
-        "readingList.reading",
-        "readingList.read",
-        "readingList.paused",
-        "readingList.dnf",
-    })
-    <section id="reading-list" class="w-[80%] my-4 relative" x-data="{ 
-        open: false,
-        toggle() { this.open = !this.open },
-        status(s) { OL.api.book.updateReadingListStatus(bookId, s).then(r => { this.rl = r; this.open = false; }) }
-    }">
-        <button
-            if !readingListStatus.Valid {
-                x-cloak
-            }
-            x-show="rl !== null" 
-            class="ol-btn ol-btn--outline ol-btn--lg rounded-full w-full"
-            @click="open=true">
-            <span class="material-symbols-outlined">edit</span> 
-            <span x-text="i18n['readingList.' + rl.status] ?? rl.status">
-                if readingListStatus.Valid {
-                    {l.MustLocalize(&i18n.LocalizeConfig{
-                        MessageID: fmt.Sprintf("readingList.%s", readingListStatus.Value.Status),
-                    })}
+            <button
+                if !readingListStatus.Valid {
+                    x-cloak
                 }
-            </span>
-        </button>
-        <button
-            if readingListStatus.Valid {
-                x-cloak
-            }
-            @click="status('want_to_read')" x-show="rl === null" class="ol-btn ol-btn--primary ol-btn--lg rounded-full w-full nojs-hidden">
-            {l.MustLocalize(&i18n.LocalizeConfig{
-                MessageID: "readingList.want_to_read",
-            })}
-        </button>
+                x-show="rl !== null" 
+                class="ol-btn ol-btn--outline ol-btn--lg rounded-full w-full"
+                @click="open=true">
+                <span class="material-symbols-outlined">edit</span> 
+                <span x-text="rl ? (i18n['readingList.' + rl.status] ?? rl.status) : ''">
+                    if readingListStatus.Valid {
+                        {l.MustLocalize(&i18n.LocalizeConfig{
+                            MessageID: fmt.Sprintf("readingList.%s", readingListStatus.Value.Status),
+                        })}
+                    }
+                </span>
+            </button>
+            <button
+                if readingListStatus.Valid {
+                    x-cloak
+                }
+                @click="status('want_to_read')" x-show="rl === null" class="ol-btn ol-btn--primary ol-btn--lg rounded-full w-full nojs-hidden">
+                {l.MustLocalize(&i18n.LocalizeConfig{
+                    MessageID: "readingList.want_to_read",
+                })}
+            </button>
 
-        <ul x-cloak x-show="open" class="flex flex-col gap-2 absolute left-0 right-0 top-16 shadow-lg bg-background p-2 rounded-xl" @click.outside="open=false">
-            for _, status := range displayableReadingListStatuses() {
-                <li>
-                    <button 
-                        :disabled={ fmt.Sprintf("rl !== null && rl.status === '%s'", status) }
-                        @click={ fmt.Sprintf("status('%s')", status) }
-                        x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }
-                        class="ol-btn ol-btn--outline rounded-full w-full border border-border" />
-                </li>
-            }
-        </ul>
+            <ul x-cloak x-show="open" class="flex flex-col gap-2 absolute left-0 right-0 top-16 shadow-lg bg-background p-2 rounded-xl" @click.outside="open=false">
+                for _, status := range displayableReadingListStatuses() {
+                    <li>
+                        <button 
+                            :disabled={ fmt.Sprintf("rl !== null && rl.status === '%s'", status) }
+                            @click={ fmt.Sprintf("status('%s')", status) }
+                            x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }
+                            class="ol-btn ol-btn--outline rounded-full w-full border border-border" />
+                    </li>
+                }
+            </ul>
+        } else {
+            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", bookID)))) } class="ol-btn ol-btn--primary ol-btn--lg rounded-full w-full">
+                {l.MustLocalize(&i18n.LocalizeConfig{
+                    MessageID: "readingList.want_to_read",
+                })}
+            </a>
+        }
     </section>
 }
 
