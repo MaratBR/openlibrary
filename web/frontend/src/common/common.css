@@ -26,7 +26,11 @@
 }
 
 .ol-link {
-    @apply text-blue-600 underline-offset-4 hover:text-blue-900 hover:underline focus:underline;
+    @apply text-foreground/80 underline-offset-4 hover:text-foreground hover:underline focus:underline;
+}
+
+.ol-link--primary {
+    @apply text-blue-600 hover:text-blue-900;
 }
 
 .ol-star-background {

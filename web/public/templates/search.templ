@@ -4,8 +4,7 @@ import "context"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
-import "github.com/MaratBR/openlibrary/internal/olhttp"
-import "net/url"
+import "github.com/MaratBR/openlibrary/web/olresponse"
 
 
 templ SearchPage(
@@ -72,7 +71,7 @@ templ SearchPage(
             {{
                 var pagination templ.Component
                 if result.TotalPages > 1 {
-                    pagination = searchPagination(result)
+                    pagination = olresponse.Pagination(result.Page, result.TotalPages, 9)
                 } else {
                     pagination = templ.NopComponent
                 }
@@ -157,51 +156,3 @@ templ searchNoResultsCard() {
     </div>
 }
 
-func getSearchPageURL(ctx context.Context, page uint32) templ.SafeURL {
-    r := olhttp.GetRequest(ctx)
-    u := new(url.URL)
-    *u = *r.URL
-    query := u.Query()
-    query.Set("p", fmt.Sprintf("%d", page))
-    u.RawQuery = query.Encode()
-    return templ.SafeURL(u.String())
-}
-
-const (
-    searchPaginationSize uint32 = 9
-)
-
-templ searchPagination(result *app.BookSearchResult) {
-    {{
-        remaining := searchPaginationSize - 1
-        left := remaining / 2
-        if left > result.Page - 1  {
-            left = result.Page - 1
-        }
-        remaining -= left
-        right := remaining
-        if result.Page + right > result.TotalPages {
-            right = result.TotalPages - result.Page
-        }
-        remaining -= right
-        if remaining > 0 && left < result.Page - 1 {
-            left += min(remaining, result.Page - 1 - left)
-        }
-    }}
-
-    <nav role="listbox" class="ol-pagination">
-        for i := result.Page - left; i < result.Page; i++ {
-            <a href={ getSearchPageURL(ctx, i) } class="ol-pagination__item">
-                { fmt.Sprintf("%d", i) }
-            </a>
-        }
-        <a href="#" class="ol-pagination__item ol-pagination__item--active">
-            { fmt.Sprintf("%d", result.Page) }
-        </a>
-        for i := result.Page + 1; i <= result.Page + right; i++ {
-            <a href={ getSearchPageURL(ctx, i) } class="ol-pagination__item">
-                { fmt.Sprintf("%d", i) }
-            </a>
-        }
-    </nav>
-}

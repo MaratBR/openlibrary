@@ -125,14 +125,6 @@ func CountTags(
 
 	query = applyTagsQuery(query, &req)
 
-	if req.Limit > 0 {
-		query = query.Limit(req.Limit)
-	}
-
-	if req.Offset > 0 {
-		query = query.Offset(req.Offset)
-	}
-
 	sql, params, err := query.ToSQL()
 	if err != nil {
 		return 0, err

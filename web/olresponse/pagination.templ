@@ -1,0 +1,53 @@
+package olresponse
+
+import "context"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "net/url"
+import "fmt"
+
+func getPageURL(ctx context.Context, page uint32) templ.SafeURL {
+    r := olhttp.GetRequest(ctx)
+    u := new(url.URL)
+    *u = *r.URL
+    query := u.Query()
+    query.Set("p", fmt.Sprintf("%d", page))
+    u.RawQuery = query.Encode()
+    return templ.SafeURL(u.String())
+}
+
+templ Pagination(
+    page, totalPages, size uint32,
+) {
+    {{
+        remaining := size - 1
+        left := remaining / 2
+        if left > page - 1  {
+            left = page - 1
+        }
+        remaining -= left
+        right := remaining
+        if page + right > totalPages {
+            right = totalPages - page
+        }
+        remaining -= right
+        if remaining > 0 && left < page - 1 {
+            left += min(remaining, page - 1 - left)
+        }
+    }}
+
+    <nav role="listbox" class="ol-pagination">
+        for i := page - left; i < page; i++ {
+            <a href={ getPageURL(ctx, i) } class="ol-pagination__item">
+                { fmt.Sprintf("%d", i) }
+            </a>
+        }
+        <a href="#" class="ol-pagination__item ol-pagination__item--active">
+            { fmt.Sprintf("%d", page) }
+        </a>
+        for i := page + 1; i <= page + right; i++ {
+            <a href={ getPageURL(ctx, i) } class="ol-pagination__item">
+                { fmt.Sprintf("%d", i) }
+            </a>
+        }
+    </nav>
+}

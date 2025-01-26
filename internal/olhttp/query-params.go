@@ -94,3 +94,91 @@ func GetBoolDefault(value url.Values, key string, defaultValue bool) bool {
 		return defaultValue
 	}
 }
+
+func splitByWithEscape(s string, c byte) []string {
+	result := []string{}
+	buf := []byte{}
+	escaped := false
+
+	for i := 0; i < len(s); i++ {
+		if escaped {
+			escaped = false
+			buf = append(buf, s[i])
+			continue
+		}
+
+		if s[i] == '\\' {
+			escaped = true
+			continue
+		}
+
+		if s[i] == c {
+			result = append(result, string(buf))
+			buf = nil
+			continue
+		}
+
+		buf = append(buf, s[i])
+	}
+
+	if len(buf) > 0 {
+		result = append(result, string(buf))
+	}
+
+	return result
+}
+
+func GetStringArray(value url.Values, key string) []string {
+	values, ok := value[key]
+
+	if !ok || len(values) == 0 {
+		return nil
+	}
+
+	if len(values) == 1 {
+		return splitByWithEscape(values[0], ',')
+	} else {
+		return values
+	}
+}
+
+func GetInt64Array(value url.Values, key string) []int64 {
+	strArr := GetStringArray(value, key)
+
+	if strArr == nil {
+		return nil
+	}
+
+	i64Arr := []int64{}
+	for _, str := range strArr {
+		id, err := strconv.ParseInt(str, 10, 64)
+		if err != nil {
+			continue
+		}
+
+		i64Arr = append(i64Arr, id)
+	}
+
+	return i64Arr
+
+}
+
+func GetUUIDArray(value url.Values, key string) []uuid.UUID {
+	strArr := GetStringArray(value, key)
+
+	if strArr == nil {
+		return nil
+	}
+
+	uuidArr := []uuid.UUID{}
+	for _, str := range strArr {
+		id, err := uuid.FromString(str)
+		if err != nil {
+			continue
+		}
+
+		uuidArr = append(uuidArr, id)
+	}
+
+	return uuidArr
+}

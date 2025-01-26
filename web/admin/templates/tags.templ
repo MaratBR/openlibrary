@@ -6,6 +6,7 @@ import "fmt"
 import "net/url"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/web/olresponse"
 
 type TagsSearchRequest struct {
     SearchQuery string
@@ -16,7 +17,7 @@ type TagsSearchRequest struct {
 templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
     {{
         l := i18nProvider.GetLocalizer(ctx)
-        pagination := tagsPagination(&result)
+        pagination := olresponse.Pagination(result.Page, result.TotalPages, 9)
     }}
 
 
@@ -86,7 +87,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                                     </span>
                                 </td>
                                 <td>
-                                    <a class="ol-link !text-primary" href={ templ.SafeURL(fmt.Sprintf("/admin/tags/tag-details/%d", tag.ID)) }>{ tag.Name }</a>
+                                    <a class="ol-link ol-link--primary" href={ templ.SafeURL(fmt.Sprintf("/admin/tags/tag-details/%d", tag.ID)) }>{ tag.Name }</a>
                                     if tag.IsDefault {
                                         <i>({ _t(l, "admin.tags.default") })</i>
                                     }

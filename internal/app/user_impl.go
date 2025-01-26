@@ -19,7 +19,7 @@ type userService struct {
 func (u *userService) ListUsers(ctx context.Context, req UsersQuery) (UserListResponse, error) {
 	var (
 		limit  uint = uint(max(1, req.PageSize))
-		offset uint = uint(max(1, req.Page) * req.PageSize)
+		offset uint = uint((max(1, req.Page) - 1) * req.PageSize)
 	)
 
 	dbQuery := store.UsersQuery{

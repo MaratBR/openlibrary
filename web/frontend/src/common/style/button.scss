@@ -22,7 +22,7 @@
     }
 
     &--secondary {
-        @apply bg-secondary text-secondary-foreground active:outline;
+        @apply bg-muted text-secondary-foreground hover:bg-muted-2;
     }
 
     &--ghost {

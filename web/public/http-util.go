@@ -11,7 +11,6 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/a-h/templ"
-	"github.com/gofrs/uuid"
 )
 
 func write500(w http.ResponseWriter, r *http.Request, err error) {
@@ -36,47 +35,6 @@ func writeUnauthorizedError(w http.ResponseWriter) {
 
 func readJSON(r *http.Request, v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
-}
-
-func getInt64Array(value url.Values, key string) []int64 {
-	strArr := getStringArray(value, key)
-
-	if strArr == nil {
-		return nil
-	}
-
-	i64Arr := []int64{}
-	for _, str := range strArr {
-		id, err := strconv.ParseInt(str, 10, 64)
-		if err != nil {
-			continue
-		}
-
-		i64Arr = append(i64Arr, id)
-	}
-
-	return i64Arr
-
-}
-
-func getUUIDArray(value url.Values, key string) []uuid.UUID {
-	strArr := getStringArray(value, key)
-
-	if strArr == nil {
-		return nil
-	}
-
-	uuidArr := []uuid.UUID{}
-	for _, str := range strArr {
-		id, err := uuid.FromString(str)
-		if err != nil {
-			continue
-		}
-
-		uuidArr = append(uuidArr, id)
-	}
-
-	return uuidArr
 }
 
 func getInt32FromQuery(values url.Values, key string) app.Int32 {

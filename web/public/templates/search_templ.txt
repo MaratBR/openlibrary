@@ -36,13 +36,3 @@
 </div>
 <div class=\"my-8 px-12 text-lg overflow-hidden rounded-xl grid grid-cols-[auto_1fr] bg-[#dee0e2] dark:bg-[#211f1d] max-w-[600px]\"><div><img class=\"dark:invert\" aria-hidden=\"true\" src=\"/_/embed-assets/book_question.h300.webp\"></div><div class=\"p-4 flex items-center\"><p class=\"text-3xl font-title\">
 </p></div></div>
-<nav role=\"listbox\" class=\"ol-pagination\">
-<a href=\"
-\" class=\"ol-pagination__item\">
-</a> 
-<a href=\"#\" class=\"ol-pagination__item ol-pagination__item--active\">
-</a> 
-<a href=\"
-\" class=\"ol-pagination__item\">
-</a>
-</nav>

@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/gofrs/uuid"
 )
 
@@ -29,11 +30,11 @@ func parseSearchRequest(source url.Values) (search searchRequest) {
 	search.Chapters = getInt32RangeFromQuery(source, "c")
 	search.WordsPerChapter = getInt32RangeFromQuery(source, "wc")
 
-	search.IncludeTags = getInt64Array(source, "it")
-	search.ExcludeTags = getInt64Array(source, "et")
+	search.IncludeTags = olhttp.GetInt64Array(source, "it")
+	search.ExcludeTags = olhttp.GetInt64Array(source, "et")
 
-	search.IncludeUsers = getUUIDArray(source, "iu")
-	search.ExcludeUsers = getUUIDArray(source, "eu")
+	search.IncludeUsers = olhttp.GetUUIDArray(source, "iu")
+	search.ExcludeUsers = olhttp.GetUUIDArray(source, "eu")
 
 	// pagination and page size
 	search.Page = getPage(source, "p")

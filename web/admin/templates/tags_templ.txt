@@ -16,7 +16,7 @@
 <tr><td colspan=\"6\">
 </td></tr>
 <tr><td><span class=\"ol-admin-id\">
-</span></td><td><a class=\"ol-link !text-primary\" href=\"
+</span></td><td><a class=\"ol-link ol-link--primary\" href=\"
 \">
 </a> 
 <i>(
