@@ -33,4 +33,9 @@
         @apply bg-primary text-primary-foreground hover:bg-primary/90 active:shadow-[0_0_7px] ring-black ring-offset-2 active:ring-2 dark:active:ring-white;
     }
 
+    &--destructive {
+        @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+    }
+
+
 }

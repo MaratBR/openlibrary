@@ -171,11 +171,45 @@ templ tagsPagination(result *app.ListTagsResult) {
 }
 
 templ Tag(tag app.TagDetailsItemDto) {
+    {{ l := i18nProvider.GetLocalizer(ctx) }}
+
     @dashboardLayout("Admin - " + tag.Name) {
-        <header>
-            <h1 class="font-title text-3xl">
+        <header class="mb-4">
+            <h1 class="my-6 font-title text-5xl">
                 { tag.Name }
             </h1>
+
+            <article class="ol-admin-card">
+                if tag.Description == "" {
+                    <p class="text-muted-foreground">
+                        { _t(l, "admin.tags.noDescription") }
+                    </p>
+                } else {
+                    <p>{ tag.Description }</p>
+                }
+            </article>
         </header>
+
+        <div class="ol-admin-card">
+            <div class="space-y-2">
+                @tagParam(_t(l, "admin.tags.adult"), tableBoolValue(tag.IsAdult))
+                @tagParam(_t(l, "admin.tags.spoiler"), tableBoolValue(tag.IsSpoiler))
+            </div>
+        </div>
+
+        <div class="flex gap-2 mt-10">
+            <button class="ol-btn ol-btn--lg ol-btn--destructive">
+                { _t(l, "common.delete") }
+            </button>
+        </div>
     }
+}
+
+templ tagParam(name string, value templ.Component) {
+    <div class="w-48 flex items-start">
+        <div class="mr-auto">{ name }</div>
+        <div>
+            @value
+        </div>
+    </div>
 }

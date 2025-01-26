@@ -47,6 +47,9 @@ dependencies:
   alpinejs:
     specifier: ^3.14.8
     version: 3.14.8
+  animejs:
+    specifier: ^3.2.2
+    version: 3.2.2
   clsx:
     specifier: ^2.1.1
     version: 2.1.1
@@ -73,6 +76,9 @@ devDependencies:
   '@types/alpinejs':
     specifier: ^3.13.11
     version: 3.13.11
+  '@types/animejs':
+    specifier: ^3.1.13
+    version: 3.1.13
   '@types/node':
     specifier: ^22.10.5
     version: 22.10.5
@@ -1346,6 +1352,10 @@ packages:
     resolution: {integrity: sha512-3KhGkDixCPiLdL3Z/ok1GxHwLxEWqQOKJccgaQL01wc0EVM2tCTaqlC3NIedmxAXkVzt/V6VTM8qPgnOHKJ1MA==}
     dev: true
 
+  /@types/animejs@3.1.13:
+    resolution: {integrity: sha512-yWg9l1z7CAv/TKpty4/vupEh24jDGUZXv4r26StRkpUPQm04ztJaftgpto8vwdFs8SiTq6XfaPKCSI+wjzNMvQ==}
+    dev: true
+
   /@types/estree@1.0.6:
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
     dev: true
@@ -1542,6 +1552,10 @@ packages:
     resolution: {integrity: sha512-wT2fuP2DXpGk/jKaglwy7S/IJpm1FD+b7U6zUrhwErjoq5h27S4dxkJEXVvhbdwyPv9U+3OkUuNLkZT4h2Kfrg==}
     dependencies:
       '@vue/reactivity': 3.1.5
+    dev: false
+
+  /animejs@3.2.2:
+    resolution: {integrity: sha512-Ao95qWLpDPXXM+WrmwcKbl6uNlC5tjnowlaRYtuVDHHoygjtIPfDUoK9NthrlZsQSKjZXlmji2TrBUAVbiH0LQ==}
     dev: false
 
   /ansi-regex@5.0.1:

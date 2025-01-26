@@ -191,17 +191,26 @@ templ BookMyReview(
                                 }
                             }}
                             <div class="flex flex-col items-center" x-data={ fmt.Sprintf("{rating:%f}", initialValue) }>
-                                @starRatingInput(0.3, initialValue, fmt.Sprintf("rating=$event.detail;OL.api.reviews.updateRating('%d', rating)", bookID))
+                                @starRatingInput(0.3, initialValue, fmt.Sprintf(`
+                                    rating=$event.detail;
+                                    OL.api.reviews.updateRating('%d', rating).then(() => window.toast({
+                                        text: i18n['book.thankYouForRating'],
+                                        title: i18n['book.ratingSaved'],
+                                        type: 'success',
+                                    }))
+                                `, bookID))
                                 @i18nKeys(map[string]string{
-                                    "book.rateBook": l.MustLocalize(&i18n.LocalizeConfig{
-                                        MessageID: "book.rateBook",
-                                    }),
                                     "book.youRated": l.MustLocalize(&i18n.LocalizeConfig{
                                         MessageID: "book.youRated",
                                         TemplateData: map[string]string{
                                             "rating": "$",
                                         },
                                     }),
+                                })
+                                @i18nExtractKeys(l, []string{
+                                    "book.rateBook",
+                                    "book.ratingSaved",
+                                    "book.thankYouForRating",
                                 })
                                 <span
                                     x-text="!rating?i18n['book.rateBook']:i18n['book.youRated'].replaceAll('$',rating/2)"

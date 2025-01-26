@@ -16,6 +16,8 @@ import (
 func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	h.setupAutoRedirect()
 
+	h.r.NotFound(adminNotFound)
+
 	h.r.Group(func(r chi.Router) {
 		sessionService := app.NewCachedSessionService(app.NewSessionService(h.db), h.cache)
 		tagsService := app.NewTagsService(h.db)
@@ -61,8 +63,6 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 				r.Get("/tag-details/{id}", c.Tag)
 
 			})
-
-			r.NotFound(adminNotFound)
 		})
 	})
 

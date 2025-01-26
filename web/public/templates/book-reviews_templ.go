@@ -348,20 +348,32 @@ func BookMyReview(
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = starRatingInput(0.3, initialValue, fmt.Sprintf("rating=$event.detail;OL.api.reviews.updateRating('%d', rating)", bookID)).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = starRatingInput(0.3, initialValue, fmt.Sprintf(`
+                                    rating=$event.detail;
+                                    OL.api.reviews.updateRating('%d', rating).then(() => window.toast({
+                                        text: i18n['book.thankYouForRating'],
+                                        title: i18n['book.ratingSaved'],
+                                        type: 'success',
+                                    }))
+                                `, bookID)).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				templ_7745c5c3_Err = i18nKeys(map[string]string{
-					"book.rateBook": l.MustLocalize(&i18n.LocalizeConfig{
-						MessageID: "book.rateBook",
-					}),
 					"book.youRated": l.MustLocalize(&i18n.LocalizeConfig{
 						MessageID: "book.youRated",
 						TemplateData: map[string]string{
 							"rating": "$",
 						},
 					}),
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = i18nExtractKeys(l, []string{
+					"book.rateBook",
+					"book.ratingSaved",
+					"book.thankYouForRating",
 				}).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -373,7 +385,7 @@ func BookMyReview(
 				var templ_7745c5c3_Var13 string
 				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(text)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 209, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 218, Col: 42}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
@@ -388,7 +400,7 @@ func BookMyReview(
 					MessageID: "book.writeReview",
 				}))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 216, Col: 38}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 225, Col: 38}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 				if templ_7745c5c3_Err != nil {
@@ -418,7 +430,7 @@ func BookMyReview(
 					MessageID: "book.writeReviewLogin",
 				}))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 231, Col: 26}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 240, Col: 26}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 				if templ_7745c5c3_Err != nil {
@@ -484,7 +496,7 @@ func collapsibleRawHtml(id, html string) templ.Component {
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(id)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 245, Col: 15}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 254, Col: 15}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -542,7 +554,7 @@ func collapsible(height int, canBeCollapsed bool) templ.Component {
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", height))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 258, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 267, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -565,7 +577,7 @@ func collapsible(height int, canBeCollapsed bool) templ.Component {
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("`max-height:${expand?10000:%d}px;`", height))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 265, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 274, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -606,7 +618,7 @@ func collapsible(height int, canBeCollapsed bool) templ.Component {
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(_t(l, "common.more"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 284, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/public/templates/book-reviews.templ`, Line: 293, Col: 61}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {

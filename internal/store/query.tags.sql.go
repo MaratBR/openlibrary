@@ -23,10 +23,10 @@ func (q *Queries) DefinedTagsAreInitialized(ctx context.Context) (bool, error) {
 }
 
 const getTag = `-- name: GetTag :one
-select defined_tags.id, defined_tags.name, defined_tags.description, defined_tags.is_spoiler, defined_tags.is_adult, defined_tags.created_at, defined_tags.tag_type, defined_tags.synonym_of, defined_tags.is_default, defined_tags.lowercased_name, syn.name as synonym_name
-from defined_tags
-left join defined_tags as syn on defined_tags.synonym_of = syn.id 
-where defined_tags.id = $1
+select t.id, t.name, t.description, t.is_spoiler, t.is_adult, t.created_at, t.tag_type, t.synonym_of, t.is_default, t.lowercased_name, syn.name as synonym_name
+from defined_tags t
+left join defined_tags syn on t.synonym_of = syn.id 
+where t.id = $1
 `
 
 type GetTagRow struct {
@@ -40,7 +40,7 @@ type GetTagRow struct {
 	SynonymOf      pgtype.Int8
 	IsDefault      bool
 	LowercasedName string
-	SynonymName    string
+	SynonymName    pgtype.Text
 }
 
 func (q *Queries) GetTag(ctx context.Context, id int64) (GetTagRow, error) {

@@ -112,7 +112,7 @@ func (t *tagsService) GetTag(ctx context.Context, id int64) (TagDetailsItemDto, 
 			Name string
 		}{
 			ID:   tag.SynonymOf.Int64,
-			Name: tag.SynonymName,
+			Name: tag.SynonymName.String,
 		})
 	}
 

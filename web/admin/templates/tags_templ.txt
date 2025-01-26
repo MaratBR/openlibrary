@@ -41,5 +41,15 @@
 \" class=\"ol-pagination__item\">
 </a>
 </nav>
-<header><h1 class=\"font-title text-3xl\">
-</h1></header>
+<header class=\"mb-4\"><h1 class=\"my-6 font-title text-5xl\">
+</h1><article class=\"ol-admin-card\">
+<p class=\"text-muted-foreground\">
+</p>
+<p>
+</p>
+</article></header><div class=\"ol-admin-card\"><div class=\"space-y-2\">
+</div></div><div class=\"flex gap-2 mt-10\"><button class=\"ol-btn ol-btn--lg ol-btn--destructive\">
+</button></div>
+<div class=\"w-48 flex items-start\"><div class=\"mr-auto\">
+</div><div>
+</div></div>

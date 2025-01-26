@@ -4,6 +4,7 @@ less = "Less"
 save = "Save"
 saveChanges = "Save changes"
 apply = "Apply"
+delete = "Delete"
 
 [time]
 justNow = "Just now"
@@ -68,6 +69,8 @@ writeReviewLogin = "Log in to write review"
 rateBook = "Rate this book"
 youRated = "You rated this book {{.rating}}"
 myReview = "My review"
+ratingSaved = "Your rating was saved"
+thankYouForRating = "Thank you for your contribution!"
 
 [search]
 filters = "Filters"
@@ -118,3 +121,4 @@ default = "default"
 onlyParentTags = "Parent tags only"
 onlyAdultTags = "Adult tags only"
 noTags = "No tags found, adjust your search query or create more tags"
+noDescription = "Tag has no description"
