@@ -5,3 +5,15 @@
 .ol-admin-id {
     @apply text-sm bg-secondary rounded-sm p-1;
 }
+
+.ol-admin-page-content {
+    @apply p-4;
+}
+
+.ol-admin-page-breadcrumb {
+    @apply border-b bg-background p-2 flex gap-2 items-center flex-wrap sticky top-0 z-10 pl-4;
+}
+
+.ol-admin-page-header {
+    @apply py-4;
+}

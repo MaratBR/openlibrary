@@ -21,98 +21,99 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
 
 
     @dashboardLayout("Tags") {
-        <header class="my-10">
-            <h1 class="text-4xl font-title mb-3">Tags</h1>
-            <p>View list of tags and create new tags or edit existing ones.</p>
-        </header>
+        <div class="ol-admin-page-content">
+            <header class="ol-admin-page-header">
+                <h1 class="text-4xl font-title mb-3">Tags</h1>
+                <p>View list of tags and create new tags or edit existing ones.</p>
+            </header>
 
-        <section class="ol-admin-card">
-            <form method="get">
-                <input name="p" type="number" value={ fmt.Sprintf("%d", result.Page) } aria-hidden="true" class="hidden" />
+            <section class="ol-admin-card">
+                <form method="get">
+                    <input name="p" type="number" value={ fmt.Sprintf("%d", result.Page) } aria-hidden="true" class="hidden" />
 
-                <div class="flex gap-8 mb-3">
-                    <div class="flex items-center gap-2">
-                        <input
-                            if searchRequest.OnlyParentTags {
-                                checked
-                            } 
-                            id="chk_onlyParentTags" name="onlyParentTags" type="checkbox" class="ol-checkbox" />
-                        <label class="ol-label" for="chk_onlyParentTags">{ _t(l, "admin.tags.onlyParentTags") }</label>
+                    <div class="flex gap-8 mb-3">
+                        <div class="flex items-center gap-2">
+                            <input
+                                if searchRequest.OnlyParentTags {
+                                    checked
+                                } 
+                                id="chk_onlyParentTags" name="onlyParentTags" type="checkbox" class="ol-checkbox" />
+                            <label class="ol-label" for="chk_onlyParentTags">{ _t(l, "admin.tags.onlyParentTags") }</label>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <input
+                                if searchRequest.OnlyAdultTags {
+                                    checked
+                                } 
+                                id="chk_onlyAdultTags" name="onlyAdultTags" type="checkbox" class="ol-checkbox" />
+                            <label class="ol-label" for="chk_onlyAdultTags">{ _t(l, "admin.tags.onlyAdultTags") }</label>
+                        </div>
+
+                        <button type="submit" class="ol-btn ol-btn--primary rounded-full">
+                            { _t(l, "common.apply") }
+                        </button>
                     </div>
+                </form>
 
-                    <div class="flex items-center gap-2">
-                        <input
-                            if searchRequest.OnlyAdultTags {
-                                checked
-                            } 
-                            id="chk_onlyAdultTags" name="onlyAdultTags" type="checkbox" class="ol-checkbox" />
-                        <label class="ol-label" for="chk_onlyAdultTags">{ _t(l, "admin.tags.onlyAdultTags") }</label>
-                    </div>
+                @pagination
 
-                    <button type="submit" class="ol-btn ol-btn--primary rounded-full">
-                        { _t(l, "common.apply") }
-                    </button>
-                </div>
-            </form>
-
-            @pagination
-
-            <table id="slot-tags-table" class="-mx-4 my-4 ol-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>{ _t(l, "admin.tags.name") }</th>
-                        <th>{ _t(l, "admin.tags.synonym") }</th>
-                        <th>{ _t(l, "admin.tags.adult") }</th>
-                        <th>{ _t(l, "admin.tags.spoiler") }</th>
-                        <th>{ _t(l, "admin.tags.createdAt") }</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    if len(result.Tags) == 0 {
+                <table id="slot-tags-table" class="-mx-4 my-4 ol-table">
+                    <thead>
                         <tr>
-                            <td colspan="6">
-                                { _t(l, "admin.tags.noTags") }
-                            </td>
+                            <th>ID</th>
+                            <th>{ _t(l, "admin.tags.name") }</th>
+                            <th>{ _t(l, "admin.tags.synonym") }</th>
+                            <th>{ _t(l, "admin.tags.adult") }</th>
+                            <th>{ _t(l, "admin.tags.spoiler") }</th>
+                            <th>{ _t(l, "admin.tags.createdAt") }</th>
                         </tr>
-                    }
+                    </thead>
+                    <tbody>
+                        if len(result.Tags) == 0 {
+                            <tr>
+                                <td colspan="6">
+                                    { _t(l, "admin.tags.noTags") }
+                                </td>
+                            </tr>
+                        }
 
-                    for _, tag := range result.Tags {
-                        <tr>
-                            <td>
-                                <span class="ol-admin-id">
-                                    { fmt.Sprintf("%d", tag.ID) }
-                                </span>
-                            </td>
-                            <td>
-                                <a class="ol-link !text-primary" href={ templ.SafeURL(fmt.Sprintf("/admin/tags/tag-details/%d", tag.ID)) }>{ tag.Name }</a>
-                                if tag.IsDefault {
-                                    <i>({ _t(l, "admin.tags.default") })</i>
-                                }
-                            </td>
-                            <td>
-                                if tag.SynonymOf.Valid {
-                                    <span>{ tag.Name }</span>
-                                } else {
-                                    <span aria-label="none">--</span>
-                                }
-                            </td>
-                            <td>
-                                @tableBoolValue(tag.IsAdult)
-                            </td>
-                            <td>
-                                @tableBoolValue(tag.IsSpoiler)
-                            </td>
-                            <td>
-                                @tableTimeValue(tag.CreatedAt)
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-            @pagination
-        </section>
+                        for _, tag := range result.Tags {
+                            <tr>
+                                <td>
+                                    <span class="ol-admin-id">
+                                        { fmt.Sprintf("%d", tag.ID) }
+                                    </span>
+                                </td>
+                                <td>
+                                    <a class="ol-link !text-primary" href={ templ.SafeURL(fmt.Sprintf("/admin/tags/tag-details/%d", tag.ID)) }>{ tag.Name }</a>
+                                    if tag.IsDefault {
+                                        <i>({ _t(l, "admin.tags.default") })</i>
+                                    }
+                                </td>
+                                <td>
+                                    if tag.SynonymOf.Valid {
+                                        <span>{ tag.Name }</span>
+                                    } else {
+                                        <span aria-label="none">--</span>
+                                    }
+                                </td>
+                                <td>
+                                    @tableBoolValue(tag.IsAdult)
+                                </td>
+                                <td>
+                                    @tableBoolValue(tag.IsSpoiler)
+                                </td>
+                                <td>
+                                    @tableTimeValue(tag.CreatedAt)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                @pagination
+            </section>
+        </div>
     }
 }
 
@@ -174,33 +175,35 @@ templ Tag(tag app.TagDetailsItemDto) {
     {{ l := i18nProvider.GetLocalizer(ctx) }}
 
     @dashboardLayout("Admin - " + tag.Name) {
-        <header class="mb-4">
-            <h1 class="my-6 font-title text-5xl">
-                { tag.Name }
-            </h1>
+        <div class="ol-admin-page-content">
+            <header class="ol-admin-page-header">
+                <h1 class="my-6 font-title text-5xl">
+                    { tag.Name }
+                </h1>
 
-            <article class="ol-admin-card">
-                if tag.Description == "" {
-                    <p class="text-muted-foreground">
-                        { _t(l, "admin.tags.noDescription") }
-                    </p>
-                } else {
-                    <p>{ tag.Description }</p>
-                }
-            </article>
-        </header>
+                <article class="ol-admin-card">
+                    if tag.Description == "" {
+                        <p class="text-muted-foreground">
+                            { _t(l, "admin.tags.noDescription") }
+                        </p>
+                    } else {
+                        <p>{ tag.Description }</p>
+                    }
+                </article>
+            </header>
 
-        <div class="ol-admin-card">
-            <div class="space-y-2">
-                @tagParam(_t(l, "admin.tags.adult"), tableBoolValue(tag.IsAdult))
-                @tagParam(_t(l, "admin.tags.spoiler"), tableBoolValue(tag.IsSpoiler))
+            <div class="ol-admin-card">
+                <div class="space-y-2">
+                    @tagParam(_t(l, "admin.tags.adult"), tableBoolValue(tag.IsAdult))
+                    @tagParam(_t(l, "admin.tags.spoiler"), tableBoolValue(tag.IsSpoiler))
+                </div>
             </div>
-        </div>
 
-        <div class="flex gap-2 mt-10">
-            <button class="ol-btn ol-btn--lg ol-btn--destructive">
-                { _t(l, "common.delete") }
-            </button>
+            <div class="flex gap-2 mt-10">
+                <button class="ol-btn ol-btn--lg ol-btn--destructive">
+                    { _t(l, "common.delete") }
+                </button>
+            </div>
         </div>
     }
 }

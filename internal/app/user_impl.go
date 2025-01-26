@@ -2,8 +2,10 @@ package app
 
 import (
 	"context"
+	"math"
 
 	"github.com/MaratBR/openlibrary/internal/app/gravatar"
+	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 )
@@ -11,6 +13,46 @@ import (
 type userService struct {
 	queries *store.Queries
 	db      DB
+}
+
+// ListUsers implements UserService.
+func (u *userService) ListUsers(ctx context.Context, req UsersQuery) (UserListResponse, error) {
+	var (
+		limit  uint = uint(max(1, req.PageSize))
+		offset uint = uint(max(1, req.Page) * req.PageSize)
+	)
+
+	dbQuery := store.UsersQuery{
+		Query:  req.Query,
+		Banned: req.Banned,
+		Limit:  limit,
+		Offset: offset,
+	}
+
+	count, err := store.CountUsers(ctx, u.db, &dbQuery)
+	if err != nil {
+		return UserListResponse{}, wrapUnexpectedDBError(err)
+	}
+
+	users, err := store.ListUsers(ctx, u.db, dbQuery)
+	if err != nil {
+		return UserListResponse{}, wrapUnexpectedDBError(err)
+	}
+
+	return UserListResponse{
+		Users: commonutil.MapSlice(users, func(user store.UserRow) UserSearchItem {
+			return UserSearchItem{
+				ID:       uuidDbToDomain(user.ID),
+				Name:     user.Name,
+				Role:     UserRole(user.Role),
+				IsBanned: user.IsBanned,
+				JoinedAt: user.JoinedAt,
+			}
+		}),
+		Total:      int32(count),
+		Page:       req.Page,
+		TotalPages: int32(math.Ceil(float64(count) / float64(req.PageSize))),
+	}, nil
 }
 
 // FollowUser implements UserService.

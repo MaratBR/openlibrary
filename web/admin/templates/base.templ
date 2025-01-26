@@ -11,7 +11,7 @@ templ logo() {
 templ dashboardLayout(title string) {
     @baseLayout(title) {
         @sidebar()
-        <main class="ml-[300px] p-4 bg-secondary min-h-screen">
+        <main class="ml-[300px] bg-secondary min-h-screen">
             { children... }
         </main>
     }

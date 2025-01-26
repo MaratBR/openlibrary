@@ -5,6 +5,9 @@ save = "Save"
 saveChanges = "Save changes"
 apply = "Apply"
 delete = "Delete"
+edit = "Edit"
+update = "Update"
+report = "Report"
 
 [time]
 justNow = "Just now"
@@ -30,6 +33,17 @@ logout = "Log out"
 [account]
 profile = "Profile"
 settings = "Settings"
+
+[user]
+admin = "Administrator"
+adminDescription = "You can manage users, tags and site settings"
+superAdmin = "Super administrator"
+superAdminDescription = "You can manage everything, demote administrators, etc."
+mod = "Moderator"
+modDescription = "You can manage users, tags, moderate content"
+user = "User"
+users = "Users"
+allUsers = "All users"
 
 [readingList]
 want_to_read = "Want to read"
@@ -122,3 +136,7 @@ onlyParentTags = "Parent tags only"
 onlyAdultTags = "Adult tags only"
 noTags = "No tags found, adjust your search query or create more tags"
 noDescription = "Tag has no description"
+
+
+[admin.users]
+userIsBanned = "User is banned"

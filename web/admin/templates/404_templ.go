@@ -41,7 +41,7 @@ func NotFound() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1 class=\"text-4xl font-title mt-4\">404</h1><p class=\"mt-2 text-lg\">Page not found</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"ol-admin-page-content\"><h1 class=\"text-4xl font-title mt-4\">404</h1><p class=\"mt-2 text-lg\">Page not found</p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

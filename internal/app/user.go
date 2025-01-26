@@ -110,6 +110,31 @@ type UnfollowUserCommand struct {
 	Follower uuid.UUID
 }
 
+type UsersQuery struct {
+	Banned bool
+	Role   []UserRole
+	Query  string
+
+	Page     uint32
+	PageSize uint32
+}
+
+type UserSearchItem struct {
+	ID       uuid.UUID
+	Name     string
+	Role     UserRole
+	IsBanned bool
+	JoinedAt time.Time
+	Avatar   string
+}
+
+type UserListResponse struct {
+	Users      []UserSearchItem `json:"users"`
+	Total      int32            `json:"total"`
+	Page       uint32           `json:"page"`
+	TotalPages int32            `json:"totalPages"`
+}
+
 type UserService interface {
 	GetUserPrivacySettings(ctx context.Context, userID uuid.UUID) (*UserPrivacySettings, error)
 	GetUserModerationSettings(ctx context.Context, userID uuid.UUID) (*UserModerationSettings, error)
@@ -126,4 +151,6 @@ type UserService interface {
 
 	FollowUser(ctx context.Context, cmd FollowUserCommand) error
 	UnfollowUser(ctx context.Context, cmd UnfollowUserCommand) error
+
+	ListUsers(ctx context.Context, req UsersQuery) (UserListResponse, error)
 }

@@ -61,7 +61,12 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 				r.Get("/", c.Home)
 				r.Get("/tag-details/{id}", c.Tag)
+			})
 
+			r.Route("/users", func(r chi.Router) {
+				c := newUsersController(userService)
+
+				r.Get("/", c.Users)
 			})
 		})
 	})

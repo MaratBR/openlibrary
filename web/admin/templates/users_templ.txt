@@ -1,0 +1,20 @@
+<div class=\"ol-admin-page-content\"><header class=\"ol-admin-page-header\"><h1 class=\"text-3xl font-title\">
+</h1></header><div class=\"flex gap-3\"><a href=\"?usersFilter.role=admin\" class=\"ol-link\">
+</a> <a href=\"?usersFilter.role=system\" class=\"ol-link\">
+</a> <a href=\"?usersFilter.role=moderator\" class=\"ol-link\">
+</a> <a href=\"?\" class=\"ol-link\">
+</a></div><div class=\"ol-admin-card mt-4\"><table class=\"ol-table -mx-4\"><thead><tr><th class=\"w-64\">ID</th><th>
+</th><th>
+</th></tr></thead> <tbody>
+<tr><td><span class=\"ol-admin-id !text-xs\">
+</span></td><td><a class=\"ol-link\" href=\"
+\" target=\"_blank\">
+ <span class=\"material-symbols-outlined !text-sm\">open_in_new</span></a> 
+<div class=\"text-muted-foreground flex items-center\"><span class=\"material-symbols-outlined mr-1\">report</span> 
+</div>
+</td><td><div class=\"flex gap-1\"><a aria-label=\"
+\" class=\"ol-btn ol-btn--secondary ol-btn--sm\" href=\"
+\"><span class=\"material-symbols-outlined\">edit</span></a> <a aria-label=\"
+\" class=\"ol-btn ol-btn--secondary ol-btn--sm text-destructive hover:bg-destructive/10\" href=\"
+\"><span class=\"material-symbols-outlined\">delete</span></a></div></td></tr>
+</tbody></table></div></div>

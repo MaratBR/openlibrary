@@ -1,0 +1,79 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+
+templ Users(resp app.UserListResponse) {
+    {{ 
+        l := i18nProvider.GetLocalizer(ctx)
+        pageTitle := _t(l, "users.title")
+    }}
+
+    @dashboardLayout(pageTitle) {
+        <div class="ol-admin-page-content">
+            <header class="ol-admin-page-header">
+                <h1 class="text-3xl font-title">{ pageTitle }</h1>
+            </header>
+
+            <div class="flex gap-3">
+                <a href="?usersFilter.role=admin" class="ol-link">{ _t(l, "user.admin") }</a>
+                <a href="?usersFilter.role=system" class="ol-link">{ _t(l, "user.superAdmin") }</a>
+                <a href="?usersFilter.role=moderator" class="ol-link">{ _t(l, "user.mod") }</a>
+                <a href="?" class="ol-link">{ _t(l, "user.allUsers") }</a>
+            </div>
+
+            <div class="ol-admin-card mt-4">
+                
+                <table class="ol-table -mx-4">
+                    <thead>
+                        <tr>
+                            <th class="w-64">ID</th>
+                            <th>{ _t(l, "admin.users.name") }</th>
+                            <th>{ _t(l, "admin.users.actions") }</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {{
+                            edit := _t(l, "common.edit")
+                            delete := _t(l, "common.delete")
+                        }}
+                        for _, user := range resp.Users {
+                            <tr>
+                                <td>
+                                    <span class="ol-admin-id !text-xs">
+                                        { user.ID.String() }
+                                    </span>
+                                </td>
+                                <td>
+                                    <a class="ol-link" href={ templ.SafeURL(fmt.Sprintf("/user/%s", user.ID)) } target="_blank">
+                                        { user.Name }
+                                        <span class="material-symbols-outlined !text-sm">open_in_new</span>
+                                    </a>
+                                    if user.IsBanned {
+                                        <div class="text-muted-foreground flex items-center">
+                                            <span class="material-symbols-outlined mr-1">report</span>
+                                            { _t(l, "admin.users.userIsBanned") }
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="flex gap-1">
+                                        <a aria-label={ edit } class="ol-btn ol-btn--secondary ol-btn--sm" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s", user.ID)) }>
+                                            <span class="material-symbols-outlined">edit</span>
+                                        </a>
+
+                                        <a aria-label={ delete } class="ol-btn ol-btn--secondary ol-btn--sm text-destructive hover:bg-destructive/10" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s/delete", user.ID)) }>
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}

@@ -51,6 +51,24 @@ func GetPage(values url.Values, key string) uint32 {
 	return uint32(v.Int32)
 }
 
+func GetPageSize(values url.Values, key string, minValue, maxValue, defaultValue uint32) uint32 {
+	v := GetInt32FromQuery(values, key)
+
+	if !v.Valid {
+		return defaultValue
+	}
+
+	if v.Int32 < int32(minValue) {
+		return minValue
+	}
+
+	if v.Int32 > int32(maxValue) {
+		return maxValue
+	}
+
+	return uint32(v.Int32)
+}
+
 func GetBool(value url.Values, key string) app.Nullable[bool] {
 	v := value.Get(key)
 	if v == "" {
