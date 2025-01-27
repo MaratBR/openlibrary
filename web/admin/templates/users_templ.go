@@ -36,7 +36,7 @@ func Users(resp app.UserListResponse) templ.Component {
 		ctx = templ.ClearChildren(ctx)
 
 		l := i18nProvider.GetLocalizer(ctx)
-		pageTitle := _t(l, "users.title")
+		pageTitle := _t(l, "admin.users.title")
 		templ_7745c5c3_Var2 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)

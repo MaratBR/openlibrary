@@ -17,9 +17,25 @@ var (
 	RoleModerator = UserRole("moderator")
 )
 
+func ParseUserRole(role string) (UserRole, error) {
+	switch role {
+	case "user":
+		return RoleUser, nil
+	case "admin":
+		return RoleAdmin, nil
+	case "system":
+		return RoleSystem, nil
+	case "moderator":
+		return RoleModerator, nil
+	default:
+		return "", ErrInvalidUserRole
+	}
+}
+
 var (
-	ErrUserNotFound   = AppErrors.NewType("user_not_found", ErrTraitEntityNotFound).New("user not found")
-	ErrFollowYourself = AppErrors.NewType("follow_yourself").New("you can't follow yourself")
+	ErrUserNotFound    = AppErrors.NewType("user_not_found", ErrTraitEntityNotFound).New("user not found")
+	ErrFollowYourself  = AppErrors.NewType("follow_yourself").New("you can't follow yourself")
+	ErrInvalidUserRole = AppErrors.NewType("invalid_user_role").New("invalid user role")
 )
 
 type UserDetailsDto struct {

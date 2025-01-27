@@ -27,6 +27,9 @@ func (u *userService) ListUsers(ctx context.Context, req UsersQuery) (UserListRe
 		Banned: req.Banned,
 		Limit:  limit,
 		Offset: offset,
+		Roles: commonutil.MapSlice(req.Role, func(role UserRole) store.UserRole {
+			return store.UserRole(role)
+		}),
 	}
 
 	count, err := store.CountUsers(ctx, u.db, &dbQuery)

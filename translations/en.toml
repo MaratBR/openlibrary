@@ -139,4 +139,7 @@ noDescription = "Tag has no description"
 
 
 [admin.users]
+title = "Users"
 userIsBanned = "User is banned"
+name = "Name"
+actions = "Actions"

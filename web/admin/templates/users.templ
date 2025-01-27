@@ -8,7 +8,7 @@ import "github.com/MaratBR/openlibrary/web/olresponse"
 templ Users(resp app.UserListResponse) {
     {{ 
         l := i18nProvider.GetLocalizer(ctx)
-        pageTitle := _t(l, "users.title")
+        pageTitle := _t(l, "admin.users.title")
     }}
 
     @dashboardLayout(pageTitle) {

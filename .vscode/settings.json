@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "bgworker",
+        "commonutil",
         "denormalized",
         "Dexie",
         "favourite",
