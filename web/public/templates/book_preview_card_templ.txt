@@ -1,4 +1,0 @@
-<div class=\"relative h-full\"><h1 class=\"font-title text-lg\">
-</h1><div x-ignore class=\"mt-4 text-sm __user-content\">
-</div><div class=\"ol-tags--xs absolute bottom-1 pt-2 bg-background\">
-</div></div>

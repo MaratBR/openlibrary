@@ -20,8 +20,6 @@ type BookDetailsDto struct {
 	Author          BookDetailsAuthorDto  `json:"author"`
 	Permissions     BookUserPermissions   `json:"permissions"`
 	Summary         string                `json:"summary"`
-	Favorites       int32                 `json:"favorites"`
-	IsFavorite      bool                  `json:"isFavorite"`
 	Notifications   []GenericNotification `json:"notifications,omitempty"`
 	Cover           string                `json:"cover"`
 	Rating          Nullable[float64]     `json:"rating"`
@@ -63,7 +61,6 @@ type PinnedBookDto struct {
 	AgeRating       AgeRating `json:"ageRating"`
 	Words           int       `json:"words"`
 	WordsPerChapter int       `json:"wordsPerChapter"`
-	Favorites       int32     `json:"favorites"`
 	Chapters        int       `json:"chapters"`
 	Cover           string    `json:"cover"`
 	IsPinned        bool      `json:"isPinned"`

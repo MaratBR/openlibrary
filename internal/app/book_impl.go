@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -41,10 +40,9 @@ func (s *bookService) GetUserBooks(ctx context.Context, input GetUserBooksQuery)
 			WordsPerChapter: getWordsPerChapter(
 				int(rows[i].Words),
 				int(rows[i].Chapters)),
-			Favorites: rows[i].Favorites,
-			Chapters:  int(rows[i].Chapters),
-			Cover:     getBookCoverURL(s.uploadService, rows[i].ID, rows[i].HasCover),
-			IsPinned:  rows[i].IsPinned,
+			Chapters: int(rows[i].Chapters),
+			Cover:    getBookCoverURL(s.uploadService, rows[i].ID, rows[i].HasCover),
+			IsPinned: rows[i].IsPinned,
 		})
 	}
 
@@ -118,7 +116,6 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 		WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 		CreatedAt:       book.CreatedAt.Time,
 		Collections:     []BookCollectionDto{},
-		Favorites:       book.Favorites,
 		Author: BookDetailsAuthorDto{
 			ID:   authorID,
 			Name: book.AuthorName,
@@ -143,22 +140,6 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 				ID:   "book:owner:banned",
 				Text: fmt.Sprintf("This book has been banned by our moderation team, please [click here](/manager/book/banned/%d?from=book-page-notification) to find out more about this", book.ID),
 			})
-		}
-	}
-
-	if query.ActorUserID.Valid {
-		isFavorite, err := s.queries.IsFavoritedBy(ctx, store.IsFavoritedByParams{
-			BookID: query.ID,
-			UserID: uuidDomainToDb(query.ActorUserID.UUID),
-		})
-		if err != nil {
-			if err == store.ErrNoRows {
-				bookDto.IsFavorite = false
-			} else {
-				slog.Error("failed to get isFavorite value for a book and a user", "bookID", book.ID, "userID", query.ActorUserID.UUID, "error", err)
-			}
-		} else {
-			bookDto.IsFavorite = isFavorite
 		}
 	}
 

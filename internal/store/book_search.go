@@ -31,7 +31,6 @@ type BookSearchFilter struct {
 	Words           Int4Range
 	WordsPerChapter Int4Range
 	Chapters        Int4Range
-	Favorites       Int4Range
 
 	IncludeAuthors []pgtype.UUID
 	ExcludeAuthors []pgtype.UUID
@@ -69,7 +68,6 @@ type BookSearchRow struct {
 func applyWhere(query *goqu.SelectDataset, filter *BookSearchFilter) *goqu.SelectDataset {
 	query = applyRange(query, goqu.I("books.words"), filter.Words)
 	query = applyRange(query, goqu.I("books.chapters"), filter.Chapters)
-	query = applyRange(query, goqu.I("books.favorites"), filter.Favorites)
 	query = applyRange(query, goqu.L("cast(books.words as real) / books.chapters"), filter.WordsPerChapter)
 
 	if len(filter.IncludeAuthors) > 0 {

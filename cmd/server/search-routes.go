@@ -57,7 +57,6 @@ func performBookSearch(searchService app.SearchService, tagsService app.TagsServ
 		ExcludeTags:     search.ExcludeTags,
 		Words:           search.Words,
 		Chapters:        search.Chapters,
-		Favorites:       search.Favorites,
 		WordsPerChapter: search.WordsPerChapter,
 
 		IncludeBanned: false,
@@ -101,7 +100,6 @@ func performBookSearch(searchService app.SearchService, tagsService app.TagsServ
 				AuthorName: book.Author.Name,
 				AgeRating:  ageRatingToProto(book.AgeRating),
 				Chapters:   uint32(book.Chapters),
-				Favorites:  uint32(book.Favorites),
 				Words:      uint32(book.Words),
 				Summary:    book.Summary,
 				TagIds:     commonutil.MapSlice(book.Tags, func(id app.Int64String) int64 { return int64(id) }),
@@ -131,8 +129,6 @@ func performBookSearch(searchService app.SearchService, tagsService app.TagsServ
 			ChaptersMax:        search.Chapters.Max.Ptr(),
 			WordsPerChapterMin: search.WordsPerChapter.Min.Ptr(),
 			WordsPerChapterMax: search.WordsPerChapter.Max.Ptr(),
-			FavoritesMin:       search.Favorites.Min.Ptr(),
-			FavoritesMax:       search.Favorites.Max.Ptr(),
 			IncludeTags:        search.IncludeTags,
 			ExcludeTags:        search.ExcludeTags,
 			IncludeUsers:       commonutil.StringifyUUIDArray(search.IncludeUsers),
@@ -162,7 +158,6 @@ type searchRequest struct {
 	Words           app.Int32Range
 	Chapters        app.Int32Range
 	WordsPerChapter app.Int32Range
-	Favorites       app.Int32Range
 
 	Page     uint
 	PageSize uint
@@ -170,7 +165,6 @@ type searchRequest struct {
 
 func parseSearchRequest(source url.Values) (search searchRequest) {
 	search.Words = getInt32RangeFromQuery(source, "w")
-	search.Favorites = getInt32RangeFromQuery(source, "f")
 	search.Chapters = getInt32RangeFromQuery(source, "c")
 	search.WordsPerChapter = getInt32RangeFromQuery(source, "wc")
 

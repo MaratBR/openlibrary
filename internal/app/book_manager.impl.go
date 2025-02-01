@@ -157,7 +157,6 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		Summary:           book.Summary,
 		IsPubliclyVisible: book.IsPubliclyVisible,
 		IsBanned:          book.IsBanned,
-		Favorites:         book.Favorites,
 		Cover:             getBookCoverURL(s.uploadService, book.ID, book.HasCover),
 	}
 

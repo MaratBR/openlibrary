@@ -47,7 +47,6 @@ type ManagerBookDetailsDto struct {
 	Summary           string               `json:"summary"`
 	IsPubliclyVisible bool                 `json:"isPubliclyVisible"`
 	IsBanned          bool                 `json:"isBanned"`
-	Favorites         int32                `json:"favorites"`
 	Cover             string               `json:"cover"`
 }
 

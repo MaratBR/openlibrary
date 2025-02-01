@@ -61,7 +61,6 @@ type BookSearchQuery struct {
 	Words           Int32Range
 	Chapters        Int32Range
 	WordsPerChapter Int32Range
-	Favorites       Int32Range
 
 	IncludeTags  []int64
 	ExcludeTags  []int64
@@ -146,7 +145,6 @@ type DetailedBookSearchQuery struct {
 	Words           Int32Range `json:"words"`
 	Chapters        Int32Range `json:"chapters"`
 	WordsPerChapter Int32Range `json:"wordsPerChapter"`
-	Favorites       Int32Range `json:"favorites"`
 
 	IncludeTags  []DefinedTagDto            `json:"includeTags"`
 	ExcludeTags  []DefinedTagDto            `json:"excludeTags"`
@@ -171,9 +169,6 @@ func (d *DetailedBookSearchQuery) ActiveFilters() int {
 		count++
 	}
 	if d.WordsPerChapter.Min.Valid || d.WordsPerChapter.Max.Valid {
-		count++
-	}
-	if d.Favorites.Min.Valid || d.Favorites.Max.Valid {
 		count++
 	}
 

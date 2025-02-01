@@ -119,7 +119,6 @@ func (u *userService) GetUserPrivacySettings(ctx context.Context, userID uuid.UU
 	}
 	return &UserPrivacySettings{
 		HideStats:      user.PrivacyHideStats,
-		HideFavorites:  user.PrivacyHideFavorites,
 		HideComments:   user.PrivacyHideComments,
 		HideEmail:      user.PrivacyHideEmail,
 		AllowSearching: user.PrivacyAllowSearching,
@@ -196,7 +195,6 @@ func (u *userService) UpdateUserModerationSettings(ctx context.Context, userID u
 func (u *userService) UpdateUserPrivacySettings(ctx context.Context, userID uuid.UUID, settings UserPrivacySettings) error {
 	err := u.queries.UpdateUserPrivacySettings(ctx, store.UpdateUserPrivacySettingsParams{
 		PrivacyHideStats:      settings.HideStats,
-		PrivacyHideFavorites:  settings.HideFavorites,
 		PrivacyHideComments:   settings.HideComments,
 		PrivacyHideEmail:      settings.HideEmail,
 		PrivacyAllowSearching: settings.AllowSearching,
@@ -321,21 +319,15 @@ func (u *userService) GetUserDetails(ctx context.Context, query GetUserQuery) (*
 			Bio:    user.About,
 			Gender: user.Gender,
 		},
-		Following:     int32(user.Following),
-		Followers:     int32(user.Followers),
-		Favorites:     int32(user.Favorites),
-		BooksTotal:    int32(user.BooksTotal),
-		HideEmail:     user.PrivacyHideEmail,
-		HideStats:     user.PrivacyHideStats,
-		HideFavorites: user.PrivacyHideFavorites,
-		IsFollowing:   user.IsFollowing,
+		Following:   int32(user.Following),
+		Followers:   int32(user.Followers),
+		BooksTotal:  int32(user.BooksTotal),
+		HideEmail:   user.PrivacyHideEmail,
+		HideStats:   user.PrivacyHideStats,
+		IsFollowing: user.IsFollowing,
 	}
 
 	if !query.UserID.Valid || details.ID != query.UserID.UUID {
-		if user.PrivacyHideFavorites {
-			details.Favorites = -1
-		}
-
 		if user.PrivacyHideStats {
 			details.Followers = -1
 			details.Following = -1

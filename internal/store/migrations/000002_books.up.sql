@@ -23,7 +23,6 @@ create table books (
     chapters int4 not null default 0,
     tag_ids int8[] not null default '{}',
     cached_parent_tag_ids int8[] not null default '{}',
-    favorites int4 not null default 0,
     has_cover boolean not null default false,
     view int4 not null default 0,
     rating float8 null,

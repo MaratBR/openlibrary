@@ -39,7 +39,7 @@ func (q *Queries) DeleteUserFollow(ctx context.Context, arg DeleteUserFollowPara
 }
 
 const findUserByUsername = `-- name: FindUserByUsername :one
-select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_favorites, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
+select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
 from users
 where name = $1
 limit 1
@@ -62,7 +62,6 @@ func (q *Queries) FindUserByUsername(ctx context.Context, name string) (User, er
 		&i.EnableProfileCss,
 		&i.DefaultTheme,
 		&i.PrivacyHideStats,
-		&i.PrivacyHideFavorites,
 		&i.PrivacyHideComments,
 		&i.PrivacyHideEmail,
 		&i.PrivacyAllowSearching,
@@ -148,7 +147,7 @@ func (q *Queries) GetSessionInfo(ctx context.Context, sid string) (GetSessionInf
 }
 
 const getUser = `-- name: GetUser :one
-select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_favorites, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
+select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
 from users
 where id = $1
 limit 1
@@ -171,7 +170,6 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 		&i.EnableProfileCss,
 		&i.DefaultTheme,
 		&i.PrivacyHideStats,
-		&i.PrivacyHideFavorites,
 		&i.PrivacyHideComments,
 		&i.PrivacyHideEmail,
 		&i.PrivacyAllowSearching,
@@ -249,7 +247,6 @@ func (q *Queries) GetUserModerationSettings(ctx context.Context, id pgtype.UUID)
 const getUserPrivacySettings = `-- name: GetUserPrivacySettings :one
 select
     privacy_hide_stats,
-    privacy_hide_favorites,
     privacy_hide_comments,
     privacy_hide_email,
     privacy_allow_searching
@@ -259,7 +256,6 @@ where id = $1
 
 type GetUserPrivacySettingsRow struct {
 	PrivacyHideStats      bool
-	PrivacyHideFavorites  bool
 	PrivacyHideComments   bool
 	PrivacyHideEmail      bool
 	PrivacyAllowSearching bool
@@ -270,7 +266,6 @@ func (q *Queries) GetUserPrivacySettings(ctx context.Context, id pgtype.UUID) (G
 	var i GetUserPrivacySettingsRow
 	err := row.Scan(
 		&i.PrivacyHideStats,
-		&i.PrivacyHideFavorites,
 		&i.PrivacyHideComments,
 		&i.PrivacyHideEmail,
 		&i.PrivacyAllowSearching,
@@ -333,9 +328,8 @@ func (q *Queries) GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]Ge
 
 const getUserWithDetails = `-- name: GetUserWithDetails :one
 select 
-    users.id, users.name, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_favorites, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
+    users.id, users.name, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
     (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned) as books_total,
-    (select count(*) from favorites where user_id = users.id) as favorites,
     (select count(*) from user_follower where followed_id = users.id) as followers,
     (select count(*) from user_follower where follower_id = users.id) as "following",
     (user_follower.created_at is not null)::bool as is_following
@@ -364,7 +358,6 @@ type GetUserWithDetailsRow struct {
 	EnableProfileCss      bool
 	DefaultTheme          string
 	PrivacyHideStats      bool
-	PrivacyHideFavorites  bool
 	PrivacyHideComments   bool
 	PrivacyHideEmail      bool
 	PrivacyAllowSearching bool
@@ -372,7 +365,6 @@ type GetUserWithDetailsRow struct {
 	CensoredTags          []string
 	CensoredTagsMode      CensorMode
 	BooksTotal            int64
-	Favorites             int64
 	Followers             int64
 	Following             int64
 	IsFollowing           bool
@@ -395,7 +387,6 @@ func (q *Queries) GetUserWithDetails(ctx context.Context, arg GetUserWithDetails
 		&i.EnableProfileCss,
 		&i.DefaultTheme,
 		&i.PrivacyHideStats,
-		&i.PrivacyHideFavorites,
 		&i.PrivacyHideComments,
 		&i.PrivacyHideEmail,
 		&i.PrivacyAllowSearching,
@@ -403,7 +394,6 @@ func (q *Queries) GetUserWithDetails(ctx context.Context, arg GetUserWithDetails
 		&i.CensoredTags,
 		&i.CensoredTagsMode,
 		&i.BooksTotal,
-		&i.Favorites,
 		&i.Followers,
 		&i.Following,
 		&i.IsFollowing,
@@ -603,17 +593,15 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 const updateUserPrivacySettings = `-- name: UpdateUserPrivacySettings :exec
 update users
 set privacy_hide_stats = $2,
-    privacy_hide_favorites = $3,
-    privacy_hide_comments = $4,
-    privacy_hide_email = $5,
-    privacy_allow_searching = $6
+    privacy_hide_comments = $3,
+    privacy_hide_email = $4,
+    privacy_allow_searching = $5
 where id = $1
 `
 
 type UpdateUserPrivacySettingsParams struct {
 	ID                    pgtype.UUID
 	PrivacyHideStats      bool
-	PrivacyHideFavorites  bool
 	PrivacyHideComments   bool
 	PrivacyHideEmail      bool
 	PrivacyAllowSearching bool
@@ -623,7 +611,6 @@ func (q *Queries) UpdateUserPrivacySettings(ctx context.Context, arg UpdateUserP
 	_, err := q.db.Exec(ctx, updateUserPrivacySettings,
 		arg.ID,
 		arg.PrivacyHideStats,
-		arg.PrivacyHideFavorites,
 		arg.PrivacyHideComments,
 		arg.PrivacyHideEmail,
 		arg.PrivacyAllowSearching,

@@ -20,8 +20,6 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 	authService := app.NewAuthService(db, sessionService)
 
-	_ = app.NewFavoriteService(db, bgServices.Favorites)
-
 	tagsService := app.NewTagsService(db)
 	readingListService := app.NewReadingListService(db)
 	userService := app.NewUserService(db)

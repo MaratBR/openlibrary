@@ -60,7 +60,6 @@ type UserDetailsDto struct {
 	About          UserAboutDto `json:"about"`
 	Followers      int32        `json:"followers"`
 	Following      int32        `json:"following"`
-	Favorites      int32        `json:"favorites"`
 	BooksTotal     int32        `json:"booksTotal"`
 	HideEmail      bool         `json:"hideEmail"`
 	HideStats      bool         `json:"hideStats"`

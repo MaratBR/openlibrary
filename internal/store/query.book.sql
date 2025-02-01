@@ -52,4 +52,4 @@ where bc.id = $1 and bc.book_id = $2;
 select *
 from books
 where author_user_id = $1 and is_publicly_visible
-order by favorites desc limit $2;
+order by rating desc limit $2;

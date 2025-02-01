@@ -8,7 +8,6 @@ limit 1;
 select 
     users.*, 
     (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned) as books_total,
-    (select count(*) from favorites where user_id = users.id) as favorites,
     (select count(*) from user_follower where followed_id = users.id) as followers,
     (select count(*) from user_follower where follower_id = users.id) as "following",
     (user_follower.created_at is not null)::bool as is_following
@@ -65,7 +64,6 @@ where s.sid = $1;
 -- name: GetUserPrivacySettings :one
 select
     privacy_hide_stats,
-    privacy_hide_favorites,
     privacy_hide_comments,
     privacy_hide_email,
     privacy_allow_searching
@@ -75,10 +73,9 @@ where id = $1;
 -- name: UpdateUserPrivacySettings :exec
 update users
 set privacy_hide_stats = $2,
-    privacy_hide_favorites = $3,
-    privacy_hide_comments = $4,
-    privacy_hide_email = $5,
-    privacy_allow_searching = $6
+    privacy_hide_comments = $3,
+    privacy_hide_email = $4,
+    privacy_allow_searching = $5
 where id = $1;
 
 -- name: GetUserModerationSettings :one

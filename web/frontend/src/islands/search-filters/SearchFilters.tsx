@@ -32,16 +32,6 @@ export default function SearchFilters() {
           onInput={(words) => setFilters({ ...filters, words })}
         />
       </div>
-
-      <div class="mb-4">
-        <label class="ol-label font-semibold mb-2 text-md">{_('search.favorites')}</label>
-        <RangeInput
-          disableNegative
-          value={filters.favorites}
-          onInput={(favorites) => setFilters({ ...filters, favorites })}
-        />
-      </div>
-
       <div class="mb-4">
         <label class="ol-label font-semibold mb-2 text-md">{_('search.chapters')}</label>
         <RangeInput

@@ -31,7 +31,6 @@ create table users (
 
     -- privacy columns
     privacy_hide_stats boolean not null default false,
-    privacy_hide_favorites boolean not null default false,
     privacy_hide_comments boolean not null default false,
     privacy_hide_email boolean not null default true,
     privacy_allow_searching boolean not null default false,

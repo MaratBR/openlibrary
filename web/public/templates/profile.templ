@@ -33,13 +33,6 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetUserPinnedBooksResult) {
                             { _tc(l, "user.books", int(user.BooksTotal)) }
                         </a>
 
-                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/user/%s/favorites", user.ID)) }>
-                            <div class="text-2xl font-semibold">
-                                { commonutil.FormatInt(int(user.Favorites)) }
-                            </div>
-                            { _tc(l, "user.favorites", int(user.Favorites)) }
-                        </a>
-
                         <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/user/%s/followers", user.ID)) }>
                             <div class="text-2xl font-semibold">
                                 { commonutil.FormatInt(int(user.Followers)) }

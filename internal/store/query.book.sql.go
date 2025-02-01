@@ -12,7 +12,7 @@ import (
 )
 
 const getBook = `-- name: GetBook :one
-select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.favorites, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, users.name as author_name
+select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, users.name as author_name
 from books
 join users on books.author_user_id = users.id
 where books.id = $1
@@ -32,7 +32,6 @@ type GetBookRow struct {
 	Chapters           int32
 	TagIds             []int64
 	CachedParentTagIds []int64
-	Favorites          int32
 	HasCover           bool
 	View               int32
 	Rating             pgtype.Float8
@@ -58,7 +57,6 @@ func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
 		&i.Chapters,
 		&i.TagIds,
 		&i.CachedParentTagIds,
-		&i.Favorites,
 		&i.HasCover,
 		&i.View,
 		&i.Rating,
@@ -269,10 +267,10 @@ func (q *Queries) GetBooksCollections(ctx context.Context, dollar_1 []int64) ([]
 }
 
 const getTopUserBooks = `-- name: GetTopUserBooks :many
-select id, name, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, words, chapters, tag_ids, cached_parent_tag_ids, favorites, has_cover, view, rating, total_reviews, total_ratings, is_pinned
+select id, name, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, words, chapters, tag_ids, cached_parent_tag_ids, has_cover, view, rating, total_reviews, total_ratings, is_pinned
 from books
 where author_user_id = $1 and is_publicly_visible
-order by favorites desc limit $2
+order by rating desc limit $2
 `
 
 type GetTopUserBooksParams struct {
@@ -302,7 +300,6 @@ func (q *Queries) GetTopUserBooks(ctx context.Context, arg GetTopUserBooksParams
 			&i.Chapters,
 			&i.TagIds,
 			&i.CachedParentTagIds,
-			&i.Favorites,
 			&i.HasCover,
 			&i.View,
 			&i.Rating,
@@ -321,7 +318,7 @@ func (q *Queries) GetTopUserBooks(ctx context.Context, arg GetTopUserBooksParams
 }
 
 const getUserBooks = `-- name: GetUserBooks :many
-select b.id, b.name, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.favorites, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned
+select b.id, b.name, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned
 from books b
 where b.author_user_id = $1
 order by b.is_pinned desc, b.created_at asc
@@ -356,7 +353,6 @@ func (q *Queries) GetUserBooks(ctx context.Context, arg GetUserBooksParams) ([]B
 			&i.Chapters,
 			&i.TagIds,
 			&i.CachedParentTagIds,
-			&i.Favorites,
 			&i.HasCover,
 			&i.View,
 			&i.Rating,

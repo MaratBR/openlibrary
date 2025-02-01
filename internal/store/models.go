@@ -290,7 +290,6 @@ type Book struct {
 	Chapters           int32
 	TagIds             []int64
 	CachedParentTagIds []int64
-	Favorites          int32
 	HasCover           bool
 	View               int32
 	Rating             pgtype.Float8
@@ -365,13 +364,6 @@ type DefinedTag struct {
 	LowercasedName string
 }
 
-type Favorite struct {
-	UserID     pgtype.UUID
-	BookID     int64
-	IsFavorite bool
-	CreatedAt  pgtype.Timestamptz
-}
-
 type Rating struct {
 	UserID    pgtype.UUID
 	BookID    int64
@@ -429,7 +421,6 @@ type User struct {
 	EnableProfileCss      bool
 	DefaultTheme          string
 	PrivacyHideStats      bool
-	PrivacyHideFavorites  bool
 	PrivacyHideComments   bool
 	PrivacyHideEmail      bool
 	PrivacyAllowSearching bool

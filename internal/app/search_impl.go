@@ -27,7 +27,6 @@ func (s *searchService) ExplainSearchQuery(ctx context.Context, req BookSearchQu
 		Words:           req.Words,
 		WordsPerChapter: req.WordsPerChapter,
 		Chapters:        req.Chapters,
-		Favorites:       req.Favorites,
 		IncludeBanned:   req.IncludeBanned,
 		IncludeHidden:   req.IncludeHidden,
 		IncludeEmpty:    req.IncludeEmpty,
@@ -268,7 +267,6 @@ func constructBookSearchRequest(ctx context.Context, tagsService TagsService, re
 	dbReq.Words = int32RangeToInt4Range(req.Words)
 	dbReq.WordsPerChapter = int32RangeToInt4Range(req.WordsPerChapter)
 	dbReq.Chapters = int32RangeToInt4Range(req.Chapters)
-	dbReq.Favorites = int32RangeToInt4Range(req.Favorites)
 
 	dbReq.IncludeAuthors = arrUuidDomainToDb(req.IncludeUsers)
 	dbReq.ExcludeAuthors = arrUuidDomainToDb(req.ExcludeUsers)

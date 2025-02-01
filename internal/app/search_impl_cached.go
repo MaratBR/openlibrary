@@ -90,7 +90,6 @@ func getSearchRequestCacheKey(req *BookSearchQuery) string {
 	writeInt32Range(h, req.Words)
 	writeInt32Range(h, req.WordsPerChapter)
 	writeInt32Range(h, req.Chapters)
-	writeInt32Range(h, req.Favorites)
 
 	{
 		var buf [8]byte

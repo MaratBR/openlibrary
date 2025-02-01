@@ -28,7 +28,6 @@ func (c *searchController) Search(w http.ResponseWriter, r *http.Request) {
 		ExcludeTags:     search.ExcludeTags,
 		Words:           search.Words,
 		Chapters:        search.Chapters,
-		Favorites:       search.Favorites,
 		WordsPerChapter: search.WordsPerChapter,
 
 		IncludeBanned: false,

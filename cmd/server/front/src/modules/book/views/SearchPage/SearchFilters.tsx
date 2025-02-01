@@ -19,7 +19,6 @@ export default function SearchFilters() {
   const {
     params,
     setChapters,
-    setFavorites,
     setWords,
     setWordsPerChapter,
     setExcludeTags,
@@ -93,13 +92,6 @@ export default function SearchFilters() {
               value={params.wordsPerChapter}
               range={extremes.wordsPerChapter}
               onChange={setWordsPerChapter}
-            />
-          </ExpandableField>
-          <ExpandableField label={t('search.favorites')}>
-            <RangeInput
-              value={params.favorites}
-              range={extremes.favorites}
-              onChange={setFavorites}
             />
           </ExpandableField>
         </div>
