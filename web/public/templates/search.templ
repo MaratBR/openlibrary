@@ -64,7 +64,7 @@ templ SearchPage(
 
             <section class="search-filters" x-cloak x-show="openFilters" x-collapse>
                 <div class="p-4">
-                    <ol-island active="true" name="search-filters" load-method="script" src="/_/assets/islands/search-filters.js" />
+                    <ol-island active="true" src="/_/assets/islands/search-filters.js" />
                 </div>
             </section>
 
@@ -94,7 +94,7 @@ templ SearchPage(
                                 <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="ol-link ol-book-search-card__link">{ book.Name }</a>                    
                                 <br />
                                 by
-                                <a class="ol-link ol-book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/user/%s", book.Author.ID.String())) }>
+                                <a class="ol-link ol-book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>
                                     { book.Author.Name }
                                 </a>
 

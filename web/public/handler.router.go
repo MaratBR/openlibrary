@@ -48,6 +48,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		r.HandleFunc("/logout", authController.LogOut)
 
 		r.Get("/book/{bookID}", bookController.GetBook)
+		r.Get("/book/{bookID}/__fragment/preview-card", bookController.GetBookPreview)
 		r.Get("/book/{bookID}/__fragment/toc", bookController.GetBookTOC)
 		r.Get("/book/{bookID}/__fragment/review", bookController.GetBookReview)
 
@@ -56,6 +57,11 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		r.Get("/search", searchController.Search)
 
 		r.Get("/tag/{tagID}", tagsController.TagPage)
+
+		r.Route("/users", func(r chi.Router) {
+			c := newProfileController(userService, bookService)
+			r.Get("/{id}", c.GetProfile)
+		})
 
 		r.Route("/_api", func(r chi.Router) {
 			apiBookController := newAPIBookController(bookService, reviewsService, readingListService)

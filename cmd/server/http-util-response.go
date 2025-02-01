@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func writeRequestError(err error, w http.ResponseWriter) {
+func writeBadRequest(err error, w http.ResponseWriter) {
 	var werr error
 
 	switch err.(type) {

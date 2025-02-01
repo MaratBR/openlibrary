@@ -58,7 +58,7 @@ ao3-build-docker:
 #
 
 watch-front:
-	cd ./cmd/server/front && pnpm run dev
+	cd ./web/frontend && pnpm run dev
 
 build-ui:
 	cd ./cmd/server/ui && make build

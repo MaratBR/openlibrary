@@ -1,0 +1,28 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/app"
+
+templ BookPreviewPartial(book app.BookDetailsDto) {
+    <div class="relative h-full">
+
+        <h1 class="font-title text-lg">{ book.Name }</h1>
+
+        <div x-ignore class="mt-4 text-sm __user-content">
+            {{
+                const maxLength = 400
+                summary := book.Summary
+
+                if len(summary) > maxLength {
+                    summary = summary[:maxLength] + "..."
+                }
+            }}
+            
+            @templ.Raw(summary)
+        </div>
+
+        <div class="ol-tags--xs absolute bottom-1 pt-2 bg-background">
+            @bookTags(book.Tags)
+        </div>
+    
+    </div>
+}

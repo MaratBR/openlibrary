@@ -18,6 +18,42 @@ type bookService struct {
 	reviewService      ReviewsService
 }
 
+// GetUserBooks implements BookService.
+func (s *bookService) GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserPinnedBooksResult, error) {
+	rows, err := s.queries.GetUserBooks(ctx, store.GetUserBooksParams{
+		AuthorUserID: uuidDomainToDb(input.UserID),
+		Offset:       int32(input.Offset),
+		Limit:        int32(input.Limit + 1),
+	})
+	if err != nil {
+		return GetUserPinnedBooksResult{}, wrapUnexpectedDBError(err)
+	}
+
+	hasMore := len(rows) == input.Limit+1
+	books := make([]PinnedBookDto, 0, min(len(rows), input.Limit))
+	for i := 0; i < len(rows); i++ {
+		books = append(books, PinnedBookDto{
+			ID:        rows[i].ID,
+			Name:      rows[i].Name,
+			CreatedAt: rows[i].CreatedAt.Time,
+			AgeRating: ageRatingFromDbValue(rows[i].AgeRating),
+			Words:     int(rows[i].Words),
+			WordsPerChapter: getWordsPerChapter(
+				int(rows[i].Words),
+				int(rows[i].Chapters)),
+			Favorites: rows[i].Favorites,
+			Chapters:  int(rows[i].Chapters),
+			Cover:     getBookCoverURL(s.uploadService, rows[i].ID, rows[i].HasCover),
+			IsPinned:  rows[i].IsPinned,
+		})
+	}
+
+	return GetUserPinnedBooksResult{
+		Books:   books,
+		HasMore: hasMore,
+	}, nil
+}
+
 func NewBookService(
 	db store.DBTX,
 	tagsService TagsService,
@@ -32,20 +68,6 @@ func NewBookService(
 		readingListService: readingListService,
 		reviewService:      reviewService,
 	}
-}
-
-type AuthorBookDto struct {
-	ID              int64               `json:"id,string"`
-	Name            string              `json:"name"`
-	CreatedAt       time.Time           `json:"createdAt"`
-	AgeRating       AgeRating           `json:"ageRating"`
-	Tags            []DefinedTagDto     `json:"tags"`
-	Words           int                 `json:"words"`
-	WordsPerChapter int                 `json:"wordsPerChapter"`
-	Favorites       int32               `json:"favorites"`
-	Chapters        int                 `json:"chapters"`
-	Collections     []BookCollectionDto `json:"collections"`
-	IsPinned        bool                `json:"isPinned"`
 }
 
 type BookCollectionDto struct {

@@ -1,0 +1,24 @@
+.profile-books {
+
+    .os-scrollbar-horizontal {
+        margin: 0 max(0px, calc((100vw - 1300px) / 2));
+    }
+
+    @apply w-full max-w-[100vw] overflow-auto;
+
+    &__list {
+        @apply flex [&>*]:flex-shrink-0 gap-8 flex-nowrap pb-8;
+    }
+}
+
+.profile-book-card {
+    @apply inline-block w-[200px] font-text font-medium transition-transform cursor-pointer;
+
+    &:hover {
+        @apply text-primary;
+    }
+
+    &__title {
+        @apply text-lg whitespace-break-spaces;
+    }
+}

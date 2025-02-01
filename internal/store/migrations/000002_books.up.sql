@@ -28,7 +28,8 @@ create table books (
     view int4 not null default 0,
     rating float8 null,
     total_reviews int4 not null default 0,
-    total_ratings int4 not null default 0
+    total_ratings int4 not null default 0,
+    is_pinned boolean not null default false
 );
 
 create index ix_books_author_user_id on books (author_user_id);

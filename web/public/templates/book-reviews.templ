@@ -40,7 +40,7 @@ templ bookReview(
 
         <div>
             <span class="mb-2 flex gap-1">
-                <a class="ol-link text-lg" href={ templ.SafeURL(fmt.Sprintf("/user/%s", review.User.ID)) }>{ review.User.Name }</a>
+                <a class="ol-link text-lg" href={ templ.SafeURL(fmt.Sprintf("/users/%s", review.User.ID)) }>{ review.User.Name }</a>
                 if isAuthor {
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <g
@@ -138,9 +138,7 @@ templ BookMyReview(
                     <span class="loader m-0"></span>
                 </div>
                 
-                <ol-island 
-                    load-method="script" 
-                    name="review-editor" 
+                <ol-island
                     src="/_/assets/islands/review-editor.js" 
                     x-show="edit"
                     :active="loading||edit"
@@ -152,8 +150,6 @@ templ BookMyReview(
         if !ratingAndReview.Review.Valid {
             <div x-show="edit" x-cloak class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden">
                 <ol-island 
-                    load-method="script" 
-                    name="review-editor" 
                     src="/_/assets/islands/review-editor.js" 
                     :active="loading||edit"
                     @review:updated="onUpdated($event.detail)"

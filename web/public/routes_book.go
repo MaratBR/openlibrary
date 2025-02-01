@@ -6,6 +6,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 )
 
@@ -85,7 +86,7 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 }
 
 func (b *bookController) GetBookTOC(w http.ResponseWriter, r *http.Request) {
-	bookID, err := commonutil.URLParamInt64(r, "bookID")
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		w.WriteHeader(404)
 		w.Write([]byte(err.Error()))
@@ -103,8 +104,28 @@ func (b *bookController) GetBookTOC(w http.ResponseWriter, r *http.Request) {
 	templates.BookTOC(r.Context(), bookID, chapters).Render(r.Context(), w)
 }
 
+func (b *bookController) GetBookPreview(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		w.WriteHeader(404)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	book, err := b.service.GetBook(r.Context(), app.GetBookQuery{
+		ID:          bookID,
+		ActorUserID: auth.GetNullableUserID(r.Context()),
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	templates.BookPreviewPartial(book).Render(r.Context(), w)
+}
+
 func (b *bookController) GetBookReview(w http.ResponseWriter, r *http.Request) {
-	bookID, err := commonutil.URLParamInt64(r, "bookID")
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		w.WriteHeader(404)
 		w.Write([]byte(err.Error()))

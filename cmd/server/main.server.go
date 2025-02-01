@@ -110,14 +110,15 @@ func mainServer(
 	//
 	// post-initialization stuff
 	//
-	// if config.Bool("init.create-default-users") {
-	// 	go func() {
-	// 		err := authService.EnsureAdminUserExists(context.Background())
-	// 		if err != nil {
-	// 			slog.Error("failed to ensure admin user exists", "err", err)
-	// 		}
-	// 	}()
-	// }
+	if config.Bool("init.create-default-users") {
+		go func() {
+			authService := app.NewAuthService(db, app.NewSessionService(db))
+			err := authService.EnsureAdminUserExists(context.Background())
+			if err != nil {
+				slog.Error("failed to ensure admin user exists", "err", err)
+			}
+		}()
+	}
 
 	if config.Bool("init.import-predefined-tags") {
 		go func() {

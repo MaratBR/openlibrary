@@ -146,3 +146,13 @@ values ($1, $2);
 select exists(select 1
 from user_follower
 where follower_id = $1 and followed_id = $2);
+
+-- name: UpdateUserPassword :exec
+update users
+set password_hash = $2
+where id = $1;
+
+-- name: UpdateUserRole :exec
+update users
+set "role" = $2
+where id = $1;

@@ -10,7 +10,7 @@
  
 (
 )
-</button><section class=\"search-filters\" x-cloak x-show=\"openFilters\" x-collapse><div class=\"p-4\"><ol-island active=\"true\" name=\"search-filters\" load-method=\"script\" src=\"/_/assets/islands/search-filters.js\"></ol-island></div></section>
+</button><section class=\"search-filters\" x-cloak x-show=\"openFilters\" x-collapse><div class=\"p-4\"><ol-island active=\"true\" src=\"/_/assets/islands/search-filters.js\"></ol-island></div></section>
  <ul role=\"listbox\" id=\"results\" class=\"ol-book-search-results\">
 <li role=\"listitem\" id=\"
 \" class=\"ol-book-search-card\"><div class=\"ol-book-search-card__left\"><a class=\"ol-book-search-card__imglink\" href=\"

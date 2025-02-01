@@ -50,7 +50,7 @@ func updateUserSettings[T any](w http.ResponseWriter, r *http.Request, fn func(c
 	session := auth.RequireSession(r.Context())
 	settings, err := getJSON[T](r)
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 

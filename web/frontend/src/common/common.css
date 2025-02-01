@@ -14,7 +14,7 @@
 @import "./style/toast.scss";
 @import "./style/user-content.scss";
 @import "./style/util.scss";
-
+@import "./style/profile.scss";
 
 
 @tailwind components;
@@ -44,4 +44,12 @@
 
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 110 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon fill='rgb(250 204 21)' points='50,5 35,40 0,40 30,60 20,95 50,75 80,95 70,60 100,40 65,40' /%3E%3C/svg%3E");
     /* background-image: url("data:image/svg+xml,%3Csvg viewBox='-3 0 110 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon%0Afill='rgb(250 204 21)' stroke='rgb(250 204 21)' stroke-width='2' points='50,5 35,40 0,40 30,60 20,95 50,75 80,95 70,60 100,40 65,40' /%3E%3C/svg%3E"); */
+}
+
+.os-theme-dark, .os-theme-light {
+    --os-size: 22px;
+}
+
+.os-theme-dark {
+    --os-handle-bg: rgba(0, 0, 0, .2);
 }

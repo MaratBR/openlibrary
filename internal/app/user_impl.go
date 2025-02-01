@@ -11,8 +11,9 @@ import (
 )
 
 type userService struct {
-	queries *store.Queries
-	db      DB
+	queries       *store.Queries
+	db            DB
+	uploadService *UploadService
 }
 
 // ListUsers implements UserService.
@@ -207,6 +208,69 @@ func (u *userService) UpdateUserPrivacySettings(ctx context.Context, userID uuid
 	return nil
 }
 
+// UpdateUser implements UserService.
+func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) error {
+	tx, err := u.db.Begin(ctx)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	queries := u.queries.WithTx(tx)
+
+	if cmd.Password != "" {
+		hash, err := hashPassword(cmd.Password)
+		if err != nil {
+			rollbackTx(ctx, tx)
+			return wrapUnexpectedAppError(err)
+		}
+
+		err = queries.UpdateUserPassword(ctx, store.UpdateUserPasswordParams{
+			ID:           uuidDomainToDb(cmd.UserID),
+			PasswordHash: hash,
+		})
+		if err != nil {
+			rollbackTx(ctx, tx)
+			return wrapUnexpectedDBError(err)
+		}
+	}
+
+	err = queries.UpdateUserAboutSettings(ctx, store.UpdateUserAboutSettingsParams{
+		ID:     uuidDomainToDb(cmd.UserID),
+		About:  cmd.About,
+		Gender: cmd.Gender,
+	})
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return wrapUnexpectedDBError(err)
+	}
+
+	if cmd.Role.Valid {
+		println(cmd.Role.Value)
+		err = u.updateUserRole(ctx, queries, cmd.UserID, cmd.Role.Value)
+		if err != nil {
+			rollbackTx(ctx, tx)
+			return err
+		}
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	return nil
+}
+
+func (u *userService) updateUserRole(ctx context.Context, queries *store.Queries, userID uuid.UUID, role UserRole) error {
+	err := queries.UpdateUserRole(ctx, store.UpdateUserRoleParams{
+		ID:   uuidDomainToDb(userID),
+		Role: store.UserRole(role),
+	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	return nil
+}
+
 // GetUserSelfData implements UserService.
 func (u *userService) GetUserSelfData(ctx context.Context, userID uuid.UUID) (*SelfUserDto, error) {
 	user, err := u.queries.GetUser(ctx, uuidDomainToDb(userID))
@@ -285,30 +349,6 @@ func (u *userService) GetUserDetails(ctx context.Context, query GetUserQuery) (*
 	details.Avatar.MD = getUserAvatar(user.Name, 84)
 	details.Avatar.LG = getUserAvatar(user.Name, 256)
 
-	books, err := u.queries.GetTopUserBooks(ctx, store.GetTopUserBooksParams{
-		Limit:        10,
-		AuthorUserID: uuidDomainToDb(query.ID),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	details.Books = mapSlice(books, func(book store.Book) AuthorBookDto {
-		return AuthorBookDto{
-			ID:              book.ID,
-			Name:            book.Name,
-			CreatedAt:       timeDbToDomain(book.CreatedAt),
-			AgeRating:       ageRatingFromDbValue(book.AgeRating),
-			Words:           int(book.Words),
-			WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
-			Chapters:        int(book.Chapters),
-			Favorites:       book.Favorites,
-			Tags:            []DefinedTagDto{},
-			Collections:     []BookCollectionDto{},
-		}
-	})
-
 	return details, nil
 }
 
@@ -321,6 +361,7 @@ func NewUserService(db DB) UserService {
 
 func getUserAvatar(name string, size int) string {
 	g := gravatar.NewGravatarFromEmail(name)
+	g.Default = "robohash"
 	g.Size = size
 	return g.GetURL()
 }

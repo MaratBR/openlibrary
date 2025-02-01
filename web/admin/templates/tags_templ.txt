@@ -48,7 +48,7 @@
 <p>
 </p>
 </article></header><div class=\"ol-admin-card\"><div class=\"space-y-2\">
-</div></div><div class=\"flex gap-2 mt-10\"><button class=\"ol-btn ol-btn--lg ol-btn--destructive\">
+</div></div><div class=\"flex gap-2 mt-10\"><button class=\"ol-btn ol-btn--lg ol-btn--destructive\" x-init @click=\"alert(&#39;not implemented&#39;)\">
 </button></div></div>
 <div class=\"w-48 flex items-start\"><div class=\"mr-auto\">
 </div><div>

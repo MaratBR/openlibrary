@@ -1,6 +1,6 @@
  <div x-ignore class=\"mt-4 __user-content\">
+</div><div class=\"mt-6\">
 </div>
- 
  <section x-data=\"
 \"><header role=\"tablist\" class=\"flex gap-4 items-baseline\"><span role=\"tab\" @click.prevent=\"tab=&#39;reviews&#39;\"
  data-active=\"true\"
@@ -31,7 +31,7 @@
 <ul
  data-hidden
  :data-hidden=\"!open\" x-data=\"
-\" class=\"mt-6 [&amp;&gt;li]:inline [&amp;&gt;li]:me-2 [&amp;[data-hidden]&gt;li:not(:last-child):nth-child(n+11)]:hidden\">
+\" class=\"[&amp;&gt;li]:inline [&amp;&gt;li]:me-2 [&amp;[data-hidden]&gt;li:not(:last-child):nth-child(n+11)]:hidden\">
 <li>
 </li>
 <li

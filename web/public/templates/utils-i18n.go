@@ -24,6 +24,14 @@ func _t(l *i18n.Localizer, key string) string {
 	return value
 }
 
+func _tc(l *i18n.Localizer, key string, count int) string {
+	value, err := l.Localize(&i18n.LocalizeConfig{MessageID: key, PluralCount: count})
+	if err != nil {
+		return key
+	}
+	return value
+}
+
 func _tt(l *i18n.Localizer, key string, params any) string {
 	value, err := l.Localize(&i18n.LocalizeConfig{MessageID: key, TemplateData: params})
 	if err != nil {

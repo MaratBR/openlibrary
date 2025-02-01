@@ -21,7 +21,7 @@ func (c *userController) GetUser(w http.ResponseWriter, r *http.Request) {
 	currentUserID := auth.GetNullableUserID(r.Context())
 	userID, err := urlParamUUID(r, "userID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 
@@ -62,7 +62,7 @@ func (c *userController) Whoami(w http.ResponseWriter, r *http.Request) {
 func (c *userController) Follow(w http.ResponseWriter, r *http.Request) {
 	userID, err := urlQueryParamUUID(r, "userId")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	session := auth.RequireSession(r.Context())
@@ -80,7 +80,7 @@ func (c *userController) Follow(w http.ResponseWriter, r *http.Request) {
 func (c *userController) Unfollow(w http.ResponseWriter, r *http.Request) {
 	userID, err := urlQueryParamUUID(r, "userId")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	session := auth.RequireSession(r.Context())

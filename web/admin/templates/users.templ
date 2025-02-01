@@ -4,23 +4,33 @@ import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/nicksnyder/go-i18n/v2/i18n"
+import "github.com/MaratBR/openlibrary/internal/csrf"
 
-templ Users(resp app.UserListResponse) {
+templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     {{ 
         l := i18nProvider.GetLocalizer(ctx)
         pageTitle := _t(l, "admin.users.title")
     }}
 
     @dashboardLayout(pageTitle) {
-        <div class="ol-admin-page-content">
+        <div class="ol-admin-page-content relative">
+            <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
+                <input value={ query.Query } x-model="q" class="ol-input w-64 mr-2" name="q" placeholder={ _t(l, "common.search") } />
+                <button type="submit" :disabled="q.trim()===''" class="ol-btn ol-btn--secondary">
+                    <span class="material-symbols-outlined">search</span>
+                </button>
+            </form>
+
+
             <header class="ol-admin-page-header">
                 <h1 class="text-3xl font-title">{ pageTitle }</h1>
             </header>
 
             <div class="flex gap-3">
-                <a href="?usersFilter.role=admin" class="ol-link ol-link--primary">{ _t(l, "user.admin") }</a>|
-                <a href="?usersFilter.role=system" class="ol-link ol-link--primary">{ _t(l, "user.superAdmin") }</a>|
-                <a href="?usersFilter.role=moderator" class="ol-link ol-link--primary">{ _t(l, "user.mod") }</a>|
+                <a href="?usersFilter.role=admin" class="ol-link ol-link--primary">{ _t(l, "role.admin") }</a>|
+                <a href="?usersFilter.role=system" class="ol-link ol-link--primary">{ _t(l, "role.system") }</a>|
+                <a href="?usersFilter.role=moderator" class="ol-link ol-link--primary">{ _t(l, "role.moderator") }</a>|
                 <a href="?" class="ol-link ol-link--primary">{ _t(l, "user.allUsers") }</a>
             </div>
 
@@ -32,11 +42,12 @@ templ Users(resp app.UserListResponse) {
 
                 @pagination
                 
-                <table class="ol-table -mx-4 my-2">
+                <table class="ol-table -mx-4 my-2" style="width: calc(100% + 32px);">
                     <thead>
                         <tr>
                             <th class="w-64">ID</th>
                             <th>{ _t(l, "admin.users.name") }</th>
+                            <th>{ _t(l, "admin.users.role") }</th>
                             <th>{ _t(l, "admin.users.actions") }</th>
                         </tr>
                     </thead>
@@ -46,6 +57,15 @@ templ Users(resp app.UserListResponse) {
                             edit := _t(l, "common.edit")
                             delete := _t(l, "common.delete")
                         }}
+
+                        if len(resp.Users) == 0 {
+                            <tr>
+                                <td colspan="4">
+                                    { _t(l, "admin.users.noUsers") }
+                                </td>
+                            </tr>
+                        }
+
                         for _, user := range resp.Users {
                             <tr>
                                 <td>
@@ -54,7 +74,7 @@ templ Users(resp app.UserListResponse) {
                                     </span>
                                 </td>
                                 <td>
-                                    <a class="ol-link ol-link--primary" href={ templ.SafeURL(fmt.Sprintf("/user/%s", user.ID)) } target="_blank">
+                                    <a class="ol-link ol-link--primary" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) } target="_blank">
                                         { user.Name }
                                         <span class="material-symbols-outlined !text-sm">open_in_new</span>
                                     </a>
@@ -63,6 +83,13 @@ templ Users(resp app.UserListResponse) {
                                             <span class="material-symbols-outlined mr-1">report</span>
                                             { _t(l, "admin.users.userIsBanned") }
                                         </div>
+                                    }
+                                </td>
+                                <td>
+                                    if user.Role == app.RoleUser {
+                                        &ndash;
+                                    } else {
+                                        { _t(l, fmt.Sprintf("role.%s", user.Role)) }
                                     }
                                 </td>
                                 <td>
@@ -85,4 +112,155 @@ templ Users(resp app.UserListResponse) {
             </div>
         </div>
     }
+}
+
+templ User(user *app.UserDetailsDto) {
+    {{
+        l := i18nProvider.GetLocalizer(ctx)
+    }}
+
+    @dashboardLayout(user.Name) {
+        <div class="ol-admin-page-content">
+            <header class="ol-admin-page-header">
+                <h1 class="text-3xl flex items-center gap-1 font-title">
+                    <a href="/admin/users" class="ol-link">{ _t(l, "admin.users.title") }</a>
+                    <span class="mx-2 text-muted-foreground text-[0.8em]">/</span>
+                    {user.Name}
+                </h1>
+            </header>
+
+            <section class="ol-admin-card">
+                <form method="post">
+                    @csrf.CSRFInputTempl(ctx)
+
+                    @userFormSection("user-general-information", _t(l, "admin.users.generalInformation")) {
+                        <div class="ol-admin-form-field">
+                            <div class="ol-admin-form-field__label">
+                                <label>{ _t(l, "admin.users.name") }</label>
+                            </div>
+                            <div class="ol-admin-form-field__value">
+                                <input  disabled name="name" class="ol-input" value={ user.Name } />
+                            </div>
+                        </div>
+
+                        <div class="ol-admin-form-field">
+                            <div class="ol-admin-form-field__label">
+                                <label>{ _t(l, "admin.users.gender") }</label>
+                            </div>
+                            {{
+                                var genderType string
+                                if user.About.Gender != "female" && user.About.Gender != "male" && user.About.Gender != "" {
+                                    genderType = "other"
+                                } else {
+                                    genderType = user.About.Gender
+                                }
+                            }}
+                            <div class="ol-admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
+                                <select 
+                                    x-model="genderType" 
+                                    name="gender" 
+                                    class="ol-input">
+                                    <option
+                                        if genderType == "" {
+                                            selected
+                                        }
+                                        >{ _t(l, "gender.ratherNotSay") }</option>
+                                    <option
+                                        if genderType == "male" {
+                                            selected
+                                        }
+                                        value="male">{ _t(l, "gender.m") }</option>
+                                    <option 
+                                        if genderType == "female" {
+                                            selected
+                                        }
+                                        value="female">{ _t(l, "gender.f") }</option>
+                                    <option 
+                                        if genderType == "other" {
+                                            selected
+                                        }
+                                        value="other">{ _t(l, "gender.o") }</option>
+                                </select>
+
+                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="ol-input mt-2" />
+                            </div>
+                        </div>
+
+                        <div class="ol-admin-form-field">
+                            <div class="ol-admin-form-field__label">
+                                <label>{ _t(l, "admin.users.about") }</label>
+                            </div>
+                            <div class="ol-admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
+                                <textarea rows="8" name="about" class="ol-input">{user.About.Bio}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 mb-2">
+                            <img class="ol-avatar border size-32 rounded-none" src={ user.Avatar.LG } />
+                            <p>
+                                @templ.Raw(l.MustLocalize(&i18n.LocalizeConfig{
+                                    MessageID: "admin.users.providedByGravatar",
+                                }))
+                            </p>
+                        </div>
+                    }
+                    @userFormSection("user-permissions", _t(l, "admin.users.rolesAndPermissions")) {
+                        <div class="ol-admin-form-field">
+                            <div class="ol-admin-form-field__label">
+                                <label>{ _t(l, "admin.users.role") }</label>
+                            </div>
+                            <div class="ol-admin-form-field__value">
+                                <select name="role" class="ol-input">
+                                    for _, role := range app.AllRoles {
+                                        <option 
+                                            if role == user.Role {
+                                                selected
+                                            }
+                                            value={ string(role) }>
+                                            { _t(l, fmt.Sprintf("role.%s", string(role))) }
+                                        </option>
+                                    }
+                                </select>
+
+                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="ol-input mt-2" />
+                            </div>
+                        </div>
+                    }
+
+                    @userFormSection("user-account-management", _t(l, "admin.users.accountManagement")) {
+                        <div x-data="{open:false,pwd:''}">
+                            <div role="button" @click="open=true;$refs.pwdInput.dispatchEvent(new CustomEvent('island:custom:generate-password'))" class="ol-btn ol-btn--outline select-none">
+                                { _t(l, "admin.users.resetPassword") }
+                            </div>
+
+                            @i18nExtractKeys(l, []string{
+                                "passwordStrength.Weak",
+                                "passwordStrength.OK",
+                                "passwordStrength.Strong",
+                                "passwordStrength.VeryStrong",
+                                "common.cancel",
+                            })
+                            <div class="mt-2 max-w-128" x-cloak x-show="open">
+                                <ol-island @island:destroy="open=false" x-ref="pwdInput" preload :active="open" src="/_/assets/islands/admin-password-reset.js" />
+                            </div>
+                        </div>   
+                    }
+
+                    <button type="submit" class="ol-btn ol-btn--lg ol-btn--primary rounded-full mt-6">
+                        { _t(l, "common.save") }
+                    </button>
+                </form>
+            </section>
+        </div>
+    }
+}
+
+templ userFormSection(id, name string) {
+    <div class="mb-4">
+        <label id={ id } class="font-medium text-xl">{ name }</label>
+
+        <section class="mt-2" aria-describedby={ id }>
+            { children... }
+        </section>
+    </div>
 }

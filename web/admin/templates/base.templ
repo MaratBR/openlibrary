@@ -1,6 +1,7 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/flash"
 
 templ logo() {
     <img class="h-20" src="/_/embed-assets/logo-dark.svg" />
@@ -8,10 +9,31 @@ templ logo() {
 }
 
 
+templ flashes() {
+    {{
+        arr := flash.GetFlashes(ctx)
+    }}
+
+    if len(arr) > 0 {
+        <div class="fixed top-0 left-[300px] right-0 p-1">
+            for _, f := range arr {
+                <div x-data="{}" class="bg-emerald-400 border-emerald-800 border p-2 relative min-h-10">
+                    @f
+
+                    <button class="absolute right-0 top-0 hover:bg-highlight flex items-center justify-center size-10" @click="$root.remove()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            }
+        </div>
+    }
+}
+
 templ dashboardLayout(title string) {
     @baseLayout(title) {
+        @flashes()
         @sidebar()
-        <main class="ml-[300px] bg-secondary min-h-screen">
+        <main class="ml-[300px] bg-secondary min-h-screen text-foreground" style="">
             { children... }
         </main>
     }

@@ -1,3 +1,7 @@
 .ol-container {
     @apply max-w-[1300px] mx-auto px-2;
 }
+
+.ol-container-padded-left {
+    padding-left: max(0px, calc((100% - 1300px) / 2));
+}

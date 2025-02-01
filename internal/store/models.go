@@ -296,6 +296,7 @@ type Book struct {
 	Rating             pgtype.Float8
 	TotalReviews       int32
 	TotalRatings       int32
+	IsPinned           bool
 }
 
 type BookBanHistory struct {

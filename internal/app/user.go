@@ -15,6 +15,13 @@ var (
 	RoleAdmin     = UserRole("admin")
 	RoleSystem    = UserRole("system")
 	RoleModerator = UserRole("moderator")
+
+	AllRoles = []UserRole{
+		RoleUser,
+		RoleAdmin,
+		RoleSystem,
+		RoleModerator,
+	}
 )
 
 func ParseUserRole(role string) (UserRole, error) {
@@ -46,20 +53,19 @@ type UserDetailsDto struct {
 		LG string `json:"lg"`
 		MD string `json:"md"`
 	} `json:"avatar"`
-	JoinedAt       time.Time       `json:"joinedAt"`
-	IsBanned       bool            `json:"isBlocked"`
-	Role           UserRole        `json:"role"`
-	HasCustomTheme bool            `json:"hasCustomTheme"`
-	About          UserAboutDto    `json:"about"`
-	Books          []AuthorBookDto `json:"books"`
-	Followers      int32           `json:"followers"`
-	Following      int32           `json:"following"`
-	Favorites      int32           `json:"favorites"`
-	BooksTotal     int32           `json:"booksTotal"`
-	HideEmail      bool            `json:"hideEmail"`
-	HideStats      bool            `json:"hideStats"`
-	HideFavorites  bool            `json:"hideFavorites"`
-	IsFollowing    bool            `json:"isFollowing"`
+	JoinedAt       time.Time    `json:"joinedAt"`
+	IsBanned       bool         `json:"isBlocked"`
+	Role           UserRole     `json:"role"`
+	HasCustomTheme bool         `json:"hasCustomTheme"`
+	About          UserAboutDto `json:"about"`
+	Followers      int32        `json:"followers"`
+	Following      int32        `json:"following"`
+	Favorites      int32        `json:"favorites"`
+	BooksTotal     int32        `json:"booksTotal"`
+	HideEmail      bool         `json:"hideEmail"`
+	HideStats      bool         `json:"hideStats"`
+	HideFavorites  bool         `json:"hideFavorites"`
+	IsFollowing    bool         `json:"isFollowing"`
 }
 
 type UserAboutDto struct {
@@ -151,6 +157,15 @@ type UserListResponse struct {
 	TotalPages int32            `json:"totalPages"`
 }
 
+type UpdateUserCommand struct {
+	UserID      uuid.UUID
+	ActorUserID uuid.NullUUID
+	Password    string
+	Role        Nullable[UserRole]
+	About       string
+	Gender      string
+}
+
 type UserService interface {
 	GetUserPrivacySettings(ctx context.Context, userID uuid.UUID) (*UserPrivacySettings, error)
 	GetUserModerationSettings(ctx context.Context, userID uuid.UUID) (*UserModerationSettings, error)
@@ -161,6 +176,8 @@ type UserService interface {
 	UpdateUserModerationSettings(ctx context.Context, userID uuid.UUID, settings UserModerationSettings) error
 	UpdateUserCustomizationSettings(ctx context.Context, userID uuid.UUID, settings UserCustomizationSetting) error
 	UpdateUserAboutSettings(ctx context.Context, userID uuid.UUID, settings UserAboutSettings) error
+
+	UpdateUser(ctx context.Context, cmd UpdateUserCommand) error
 
 	GetUserDetails(ctx context.Context, query GetUserQuery) (*UserDetailsDto, error)
 	GetUserSelfData(ctx context.Context, userID uuid.UUID) (*SelfUserDto, error)

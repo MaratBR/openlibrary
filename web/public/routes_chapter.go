@@ -21,13 +21,13 @@ func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) 
 
 	bookID, err := commonutil.URLParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(w, r, err)
+		writeBadRequest(w, r, err)
 		return
 	}
 
 	chapterID, err := commonutil.URLParamInt64(r, "chapterID")
 	if err != nil {
-		writeRequestError(w, r, err)
+		writeBadRequest(w, r, err)
 		return
 	}
 

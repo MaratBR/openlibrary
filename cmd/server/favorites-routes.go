@@ -25,7 +25,7 @@ func (c *favoritesController) SetFavorite(w http.ResponseWriter, r *http.Request
 
 	bookID, err := urlQueryParamInt64(r, "bookId")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 

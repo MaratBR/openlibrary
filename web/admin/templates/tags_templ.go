@@ -603,7 +603,7 @@ func Tag(tag app.TagDetailsItemDto) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</div></div><div class=\"flex gap-2 mt-10\"><button class=\"ol-btn ol-btn--lg ol-btn--destructive\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</div></div><div class=\"flex gap-2 mt-10\"><button class=\"ol-btn ol-btn--lg ol-btn--destructive\" x-init @click=\"alert(&#39;not implemented&#39;)\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

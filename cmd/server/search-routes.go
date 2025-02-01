@@ -28,7 +28,7 @@ func newSearchController(searchService app.SearchService, tagsService app.TagsSe
 func (c *searchController) Search(w http.ResponseWriter, r *http.Request) {
 	search, err := getSearchRequest(r)
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 

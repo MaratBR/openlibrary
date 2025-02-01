@@ -28,13 +28,13 @@ func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
 
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
 	if err != nil {
-		apiWriteRequestError(w, err)
+		apiwriteBadRequest(w, err)
 		return
 	}
 
 	rating, err := olhttp.URLQueryParamInt64(r, "rating")
 	if err != nil {
-		apiWriteRequestError(w, err)
+		apiwriteBadRequest(w, err)
 		return
 	}
 
@@ -56,13 +56,13 @@ func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request)
 
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
 	if err != nil {
-		apiWriteRequestError(w, err)
+		apiwriteBadRequest(w, err)
 		return
 	}
 
 	rating, err := olhttp.URLQueryParamInt64(r, "rating")
 	if err != nil {
-		apiWriteRequestError(w, err)
+		apiwriteBadRequest(w, err)
 		return
 	}
 

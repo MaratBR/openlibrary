@@ -25,7 +25,7 @@ type myBooksResponse struct {
 func (c *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 	bookID, err := urlParamInt64(r, "id")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	if bookID == 0 {
@@ -51,12 +51,12 @@ type getChapterResponse struct {
 func (c *bookController) GetChapter(w http.ResponseWriter, r *http.Request) {
 	bookID, err := urlParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	chapterID, err := urlParamInt64(r, "chapterID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	chapter, err := c.bookService.GetBookChapter(r.Context(), app.GetBookChapterQuery{

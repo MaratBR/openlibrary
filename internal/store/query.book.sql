@@ -11,6 +11,13 @@ from book_chapters c
 where book_id = $1
 order by "order";
 
+-- name: GetUserBooks :many
+select b.*
+from books b
+where b.author_user_id = $1
+order by b.is_pinned desc, b.created_at asc
+limit $2 offset $3;
+
 -- name: GetBookCollections :many
 select collections.id, collections.name, collections.books_count as size, collection_books."order" as position, collections.created_at, users.name as user_name, collections.user_id
 from collections

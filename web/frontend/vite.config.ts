@@ -73,8 +73,10 @@ const ENTRIES = [
 
   'public.api',
 
+  'islands/book-card-preview',
   'islands/review-editor',
   'islands/search-filters',
+  'islands/admin-password-reset',
 ]
 
 export default defineConfig({
@@ -82,6 +84,19 @@ export default defineConfig({
     preact({
       devToolsEnabled: true,
       prefreshEnabled: true,
+      babel: {
+        plugins: [
+          [
+            '@babel/plugin-proposal-decorators',
+            {
+              decoratorsBeforeExport: true,
+              version: '2023-05',
+            },
+          ],
+          '@babel/plugin-transform-class-static-block',
+          '@babel/plugin-transform-class-properties',
+        ],
+      },
     }),
     autoInjectCSSAsLinkTagPlugin({
       baseUrl: '/_/assets/',
@@ -90,6 +105,7 @@ export default defineConfig({
 
   resolve: {
     alias: {
+      // eslint-disable-next-line no-undef
       '@': resolve(__dirname, './src'),
     },
   },
@@ -119,6 +135,7 @@ export default defineConfig({
       name: 'ol-public-ui',
       formats: ['es'],
       entry: Object.fromEntries(
+        // eslint-disable-next-line no-undef
         ENTRIES.map((entry) => [entry, resolve(__dirname, 'src', entry, 'index.ts')]),
       ),
     },

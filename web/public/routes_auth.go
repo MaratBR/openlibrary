@@ -55,7 +55,7 @@ func (c *authController) writeLoginForm(w http.ResponseWriter, r *http.Request, 
 func (c *authController) handleSignIn(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		writeRequestError(w, r, err)
+		writeBadRequest(w, r, err)
 		return
 	}
 

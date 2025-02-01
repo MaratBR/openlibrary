@@ -1,4 +1,4 @@
-import type { OLIsland } from '../common/ol-island'
+import { OLIsland } from '@/lib/island'
 import { ComponentType, render } from 'preact'
 
 export type PreactIslandProps = { data?: unknown; rootElement: HTMLElement }

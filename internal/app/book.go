@@ -56,8 +56,28 @@ type BookUserPermissions struct {
 	CanEdit bool `json:"canEdit"`
 }
 
+type PinnedBookDto struct {
+	ID              int64     `json:"id,string"`
+	Name            string    `json:"name"`
+	CreatedAt       time.Time `json:"createdAt"`
+	AgeRating       AgeRating `json:"ageRating"`
+	Words           int       `json:"words"`
+	WordsPerChapter int       `json:"wordsPerChapter"`
+	Favorites       int32     `json:"favorites"`
+	Chapters        int       `json:"chapters"`
+	Cover           string    `json:"cover"`
+	IsPinned        bool      `json:"isPinned"`
+}
+
+type GetUserPinnedBooksResult struct {
+	Books   []PinnedBookDto `json:"books"`
+	HasMore bool            `json:"hasMore"`
+}
+
 type BookService interface {
 	GetBook(ctx context.Context, query GetBookQuery) (BookDetailsDto, error)
 	GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]BookChapterDto, error)
 	GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error)
+
+	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserPinnedBooksResult, error)
 }

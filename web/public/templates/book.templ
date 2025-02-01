@@ -22,7 +22,9 @@ templ BookPage(
         @i18nExtractKeys(l, []string{ "common.more", "common.less", "common.save" })
 
         <div x-ignore class="mt-4 __user-content">@templ.Raw(book.Summary)</div>
-        @bookTags(book.Tags)
+        <div class="mt-6">
+            @bookTags(book.Tags)
+        </div>
         @bookRating(&book)
 
         <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) }>
@@ -120,7 +122,7 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
                 <header>
                     <h1 class="font-[500] text-3xl font-title">{book.Name}</h1>
                     <p>
-                        <a class="ol-link" href={templ.SafeURL(fmt.Sprintf("/user/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
+                        <a class="ol-link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
                     </p>
                 </header>
 
@@ -164,7 +166,7 @@ templ bookTags(tags []app.DefinedTagDto) {
         }
         :data-hidden="!open" 
         x-data={ fmt.Sprintf("{len:%d,open:false}", len(tags)) } 
-        class="mt-6 [&>li]:inline [&>li]:me-2 [&[data-hidden]>li:not(:last-child):nth-child(n+11)]:hidden">
+        class="[&>li]:inline [&>li]:me-2 [&[data-hidden]>li:not(:last-child):nth-child(n+11)]:hidden">
         for _, t := range tags {
             <li>
                 @tag(t)
@@ -183,4 +185,5 @@ templ bookTags(tags []app.DefinedTagDto) {
         </li>
     </ul>
 }
+
 

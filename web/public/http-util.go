@@ -18,7 +18,7 @@ func write500(w http.ResponseWriter, r *http.Request, err error) {
 	w.Write([]byte(err.Error()))
 }
 
-func writeRequestError(w http.ResponseWriter, r *http.Request, err error) {
+func writeBadRequest(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(400)
 	w.Write([]byte(err.Error()))
 }

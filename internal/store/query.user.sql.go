@@ -584,6 +584,22 @@ func (q *Queries) UpdateUserModerationSettings(ctx context.Context, arg UpdateUs
 	return err
 }
 
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+update users
+set password_hash = $2
+where id = $1
+`
+
+type UpdateUserPasswordParams struct {
+	ID           pgtype.UUID
+	PasswordHash string
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.PasswordHash)
+	return err
+}
+
 const updateUserPrivacySettings = `-- name: UpdateUserPrivacySettings :exec
 update users
 set privacy_hide_stats = $2,
@@ -612,6 +628,22 @@ func (q *Queries) UpdateUserPrivacySettings(ctx context.Context, arg UpdateUserP
 		arg.PrivacyHideEmail,
 		arg.PrivacyAllowSearching,
 	)
+	return err
+}
+
+const updateUserRole = `-- name: UpdateUserRole :exec
+update users
+set "role" = $2
+where id = $1
+`
+
+type UpdateUserRoleParams struct {
+	ID   pgtype.UUID
+	Role UserRole
+}
+
+func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) error {
+	_, err := q.db.Exec(ctx, updateUserRole, arg.ID, arg.Role)
 	return err
 }
 

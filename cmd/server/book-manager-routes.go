@@ -36,7 +36,7 @@ func (c *bookManagerController) CreateBook(w http.ResponseWriter, r *http.Reques
 
 	req, err := getJSON[createBookRequest](r)
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 
@@ -69,7 +69,7 @@ type updateBookResponse struct {
 func (c *bookManagerController) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	bookID, err := urlParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 
@@ -81,7 +81,7 @@ func (c *bookManagerController) UpdateBook(w http.ResponseWriter, r *http.Reques
 
 	req, err := getJSON[updateBookRequest](r)
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 
@@ -115,7 +115,7 @@ type getBookResponse struct {
 func (c *bookManagerController) GetBook(w http.ResponseWriter, r *http.Request) {
 	id, err := urlParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	session, ok := auth.GetSession(r.Context())
@@ -149,13 +149,13 @@ type createChapterResponse struct {
 func (c *bookManagerController) CreateChapter(w http.ResponseWriter, r *http.Request) {
 	bookID, err := urlParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 
 	body, err := getJSON[createChapterRequest](r)
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	if len(body.Content) == 0 || len(body.Content) > 50000 {
@@ -191,18 +191,18 @@ type updateChapterRequest struct {
 func (c *bookManagerController) UpdateChapter(w http.ResponseWriter, r *http.Request) {
 	_, err := urlParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	chapterID, err := urlParamInt64(r, "chapterID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 
 	body, err := getJSON[updateChapterRequest](r)
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	if len(body.Content) == 0 || len(body.Content) > 50000 {
@@ -235,14 +235,14 @@ type reorderChapterRequest struct {
 func (c *bookManagerController) UpdateChaptersOrder(w http.ResponseWriter, r *http.Request) {
 	bookID, err := urlParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	sessionInfo := auth.RequireSession(r.Context())
 
 	body, err := getJSON[reorderChapterRequest](r)
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 
@@ -261,7 +261,7 @@ func (c *bookManagerController) UpdateChaptersOrder(w http.ResponseWriter, r *ht
 func (c *bookManagerController) GetChapters(w http.ResponseWriter, r *http.Request) {
 	bookID, err := urlParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	sessionInfo := auth.RequireSession(r.Context())
@@ -279,12 +279,12 @@ func (c *bookManagerController) GetChapters(w http.ResponseWriter, r *http.Reque
 func (c *bookManagerController) GetChapter(w http.ResponseWriter, r *http.Request) {
 	bookID, err := urlParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	chapterID, err := urlParamInt64(r, "chapterID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	sessionInfo := auth.RequireSession(r.Context())
@@ -325,14 +325,14 @@ type uploadBookCoverResponse struct {
 func (c *bookManagerController) UploadBookCover(w http.ResponseWriter, r *http.Request) {
 	bookID, err := urlParamInt64(r, "bookID")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	session := auth.RequireSession(r.Context())
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		writeRequestError(err, w)
+		writeBadRequest(err, w)
 		return
 	}
 	defer file.Close()

@@ -182,7 +182,7 @@ func SearchPage(
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</button><section class=\"search-filters\" x-cloak x-show=\"openFilters\" x-collapse><div class=\"p-4\"><ol-island active=\"true\" name=\"search-filters\" load-method=\"script\" src=\"/_/assets/islands/search-filters.js\"></ol-island></div></section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</button><section class=\"search-filters\" x-cloak x-show=\"openFilters\" x-collapse><div class=\"p-4\"><ol-island active=\"true\" src=\"/_/assets/islands/search-filters.js\"></ol-island></div></section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -264,7 +264,7 @@ func SearchPage(
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var12 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/user/%s", book.Author.ID.String()))
+					var templ_7745c5c3_Var12 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var12)))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err

@@ -1,3 +1,8 @@
 <img class=\"h-20\" src=\"/_/embed-assets/logo-dark.svg\">
- <main class=\"ml-[300px] bg-secondary min-h-screen\">
+<div class=\"fixed top-0 left-[300px] right-0 p-1\">
+<div x-data=\"{}\" class=\"bg-emerald-400 border-emerald-800 border p-2 relative min-h-10\">
+<button class=\"absolute right-0 top-0 hover:bg-highlight flex items-center justify-center size-10\" @click=\"$root.remove()\"><span class=\"material-symbols-outlined\">close</span></button></div>
+</div>
+ 
+ <main class=\"ml-[300px] bg-secondary min-h-screen text-foreground\" style=\"\">
 </main>

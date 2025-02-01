@@ -14,3 +14,17 @@
         }
     }
 }
+
+.ol-tags {
+    &--sm {
+        .ol-tag {
+            @apply text-sm p-1;
+        }
+    }
+
+    &--xs {
+        .ol-tag {
+            @apply text-xs p-0.5;
+        }
+    }
+}

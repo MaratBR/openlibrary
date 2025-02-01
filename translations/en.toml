@@ -8,6 +8,8 @@ delete = "Delete"
 edit = "Edit"
 update = "Update"
 report = "Report"
+cancel = "Cancel"
+search = "Search"
 
 [time]
 justNow = "Just now"
@@ -34,6 +36,24 @@ logout = "Log out"
 profile = "Profile"
 settings = "Settings"
 
+[gender]
+m = "Male"
+f = "Female"
+ratherNotSay = "Rather not say"
+o = "Other"
+
+[role]
+admin = "Administrator"
+moderator = "Moderator"
+user = "User (default)"
+system = "System (super admin)"
+
+[passwordStrength]
+Weak = "Weak"
+OK = "OK"
+Strong = "Strong"
+VeryStrong = "Very strong"
+
 [user]
 admin = "Administrator"
 adminDescription = "You can manage users, tags and site settings"
@@ -44,6 +64,22 @@ modDescription = "You can manage users, tags, moderate content"
 user = "User"
 users = "Users"
 allUsers = "All users"
+
+[user.books]
+one = "book"
+other = "books"
+
+[user.favorites]
+one = "favorite"
+other = "favorites"
+
+[user.followers]
+one = "follower"
+other = "followers"
+
+[user.following]
+one = "following"
+other = "following"
 
 [readingList]
 want_to_read = "Want to read"
@@ -113,6 +149,7 @@ noJavascript = "Hey there! It looks like you have Javascript disabled. OpenLibra
 #####################
 
 [admin]
+goBackToSite = "Go back to site"
 
 [admin.login]
 redirectNotice = "You will be redirected to admin panel once you login"
@@ -142,4 +179,17 @@ noDescription = "Tag has no description"
 title = "Users"
 userIsBanned = "User is banned"
 name = "Name"
+email = "Email"
 actions = "Actions"
+gender = "Gender"
+role = "Role"
+about = "About you"
+generalInformation = "General information"
+avatar = "Avatar"
+accountManagement = "Account management"
+rolesAndPermissions = "Roles and permissions"
+providedByGravatar = "This user's avatar is provided by <a class=\"ol-link ol-link--primary\" target=\"_blank\" href=\"https://gravatar.com\">Gravatar</a>"
+resetPassword = "Reset password"
+userWasUpdated = "User was successfully updated"
+noUsers = "No users found, adjust your search query or create more tags"
+

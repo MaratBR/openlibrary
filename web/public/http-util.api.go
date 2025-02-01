@@ -13,7 +13,7 @@ func apiWrite500(w http.ResponseWriter, err error) {
 	w.Write([]byte(err.Error()))
 }
 
-func apiWriteRequestError(w http.ResponseWriter, err error) {
+func apiwriteBadRequest(w http.ResponseWriter, err error) {
 	w.WriteHeader(400)
 	w.Write([]byte(err.Error()))
 }

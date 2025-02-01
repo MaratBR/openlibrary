@@ -7,9 +7,11 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/reqid"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -30,6 +32,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		})
 
 		r.Use(reqid.New())
+		r.Use(flash.Middleware)
 		r.Use(authorizationMiddleware)
 
 		// controllers for anonymous area
@@ -67,6 +70,9 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 				c := newUsersController(userService)
 
 				r.Get("/", c.Users)
+				r.Get("/{id}", c.User)
+				r.With(httpin.NewInput(updateUserRequest{})).Post("/{id}", c.UserUpdate)
+
 			})
 		})
 	})
