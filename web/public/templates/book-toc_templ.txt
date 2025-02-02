@@ -1,8 +1,0 @@
-<div class=\"contents\" id=\"slot-book-toc\" x-cloak x-show=\"tab===&#39;toc&#39;\"><ul class=\"grid grid-cols-2 mt-3\" role=\"listbox\">
-<li role=\"listitem\"><a href=\"
-\" class=\"p-2 text-lg grid grid-cols-[48px_auto] hover:bg-secondary focus:outline focus:outline-2\"><span>
-</span><div><div class=\"mb-1\">
-</div><span class=\"text-sm text-muted-foreground\">
-,&nbsp; 
-</span></div></a></li>
-</ul></div>
