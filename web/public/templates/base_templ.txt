@@ -1,0 +1,5 @@
+ 
+ 
+ <div id=\"toasts-root\" class=\"flex flex-col left-1 bottom-1 fixed z-10 gap-1\"></div>
+<footer id=\"site-footer\" class=\"bg-secondary p-10\"><div class=\"ol-container\"><a href=\"https://github.com/MaratBR/openlibrary\" class=\"text-muted-foreground hover:text-foreground\" target=\"_blank\">Powered by <span class=\"font-[500] font-title\">OpenLibrary</span><br><span class=\"text-sm\">v:
+</span></a></div></footer>

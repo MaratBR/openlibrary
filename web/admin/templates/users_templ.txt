@@ -1,0 +1,74 @@
+<div class=\"ol-admin-page-content relative\"><form x-data=\"
+\" method=\"get\" class=\"absolute top-16 right-4 flex items-center\"><input value=\"
+\" x-model=\"q\" class=\"ol-input w-64 mr-2\" name=\"q\" placeholder=\"
+\"> <button type=\"submit\" :disabled=\"q.trim()===&#39;&#39;\" class=\"ol-btn ol-btn--secondary\"><span class=\"material-symbols-outlined\">search</span></button></form><header class=\"ol-admin-page-header\"><h1 class=\"text-3xl font-title\">
+</h1></header><div class=\"flex gap-3\"><a href=\"?usersFilter.role=admin\" class=\"ol-link ol-link--primary\">
+</a>| <a href=\"?usersFilter.role=system\" class=\"ol-link ol-link--primary\">
+</a>| <a href=\"?usersFilter.role=moderator\" class=\"ol-link ol-link--primary\">
+</a>| <a href=\"?\" class=\"ol-link ol-link--primary\">
+</a></div><div class=\"ol-admin-card mt-4\">
+<table class=\"ol-table -mx-4 my-2\" style=\"width: calc(100% + 32px);\"><thead><tr><th class=\"w-64\">ID</th><th>
+</th><th>
+</th><th>
+</th></tr></thead> <tbody>
+<tr><td colspan=\"4\">
+</td></tr>
+<tr><td><span class=\"ol-admin-id !text-xs\">
+</span></td><td><a class=\"ol-link ol-link--primary\" href=\"
+\" target=\"_blank\">
+ <span class=\"material-symbols-outlined !text-sm\">open_in_new</span></a> 
+<div class=\"text-muted-foreground flex items-center\"><span class=\"material-symbols-outlined mr-1\">report</span> 
+</div>
+</td><td>
+&ndash;
+</td><td><div class=\"flex gap-1\"><a aria-label=\"
+\" class=\"ol-btn ol-btn--secondary ol-btn--sm\" href=\"
+\"><span class=\"material-symbols-outlined\">edit</span></a> <a aria-label=\"
+\" class=\"ol-btn ol-btn--secondary ol-btn--sm text-destructive hover:bg-destructive/10\" href=\"
+\"><span class=\"material-symbols-outlined\">delete</span></a></div></td></tr>
+</tbody></table>
+</div></div>
+<div class=\"ol-admin-page-content\"><header class=\"ol-admin-page-header\"><h1 class=\"text-3xl flex items-center gap-1 font-title\"><a href=\"/admin/users\" class=\"ol-link\">
+</a> <span class=\"mx-2 text-muted-foreground text-[0.8em]\">/</span> 
+</h1></header><section class=\"ol-admin-card\"><form method=\"post\">
+<div class=\"ol-admin-form-field\"><div class=\"ol-admin-form-field__label\"><label>
+</label></div><div class=\"ol-admin-form-field__value\"><input disabled name=\"name\" class=\"ol-input\" value=\"
+\"></div></div><div class=\"ol-admin-form-field\"><div class=\"ol-admin-form-field__label\"><label>
+</label></div>
+<div class=\"ol-admin-form-field__value\" x-data=\"
+\"><select x-model=\"genderType\" name=\"gender\" class=\"ol-input\"><option
+ selected
+>
+</option> <option
+ selected
+ value=\"male\">
+</option> <option
+ selected
+ value=\"female\">
+</option> <option
+ selected
+ value=\"other\">
+</option></select> <input name=\"genderOther\" x-cloak x-show=\"genderType===&#39;other&#39;\" class=\"ol-input mt-2\"></div></div><div class=\"ol-admin-form-field\"><div class=\"ol-admin-form-field__label\"><label>
+</label></div><div class=\"ol-admin-form-field__value\" x-data=\"
+\"><textarea rows=\"8\" name=\"about\" class=\"ol-input\">
+</textarea></div></div><div class=\"flex gap-2 mb-2\"><img class=\"ol-avatar border size-32 rounded-none\" src=\"
+\"><p>
+</p></div>
+<div class=\"ol-admin-form-field\"><div class=\"ol-admin-form-field__label\"><label>
+</label></div><div class=\"ol-admin-form-field__value\"><select name=\"role\" class=\"ol-input\">
+<option
+ selected
+ value=\"
+\">
+</option>
+</select> <input name=\"genderOther\" x-cloak x-show=\"genderType===&#39;other&#39;\" class=\"ol-input mt-2\"></div></div>
+<div x-data=\"{open:false,pwd:&#39;&#39;}\"><div role=\"button\" @click=\"open=true;$refs.pwdInput.dispatchEvent(new CustomEvent(&#39;island:custom:generate-password&#39;))\" class=\"ol-btn ol-btn--outline select-none\">
+</div>
+<div class=\"mt-2 max-w-128\" x-cloak x-show=\"open\"><ol-island @island:destroy=\"open=false\" x-ref=\"pwdInput\" preload :active=\"open\" src=\"/_/assets/islands/admin-password-reset.js\"></ol-island></div></div>
+<button type=\"submit\" class=\"ol-btn ol-btn--lg ol-btn--primary rounded-full mt-6\">
+</button></form></section></div>
+<div class=\"mb-4\"><label id=\"
+\" class=\"font-medium text-xl\">
+</label><section class=\"mt-2\" aria-describedby=\"
+\">
+</section></div>

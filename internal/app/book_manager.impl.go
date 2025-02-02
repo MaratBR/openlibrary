@@ -288,7 +288,10 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 	}
 
 	id := GenID()
-	content := ProcessContent(input.Content)
+	content, err := ProcessContent(input.Content)
+	if err != nil {
+		return CreateBookChapterResult{}, ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
+	}
 	err = s.queries.InsertBookChapter(ctx, store.InsertBookChapterParams{
 		ID:        id,
 		BookID:    input.BookID,
@@ -310,7 +313,10 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 }
 
 func (s *bookManagerService) UpdateBookChapter(ctx context.Context, input UpdateBookChapterCommand) error {
-	content := ProcessContent(input.Content)
+	content, err := ProcessContent(input.Content)
+	if err != nil {
+		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
+	}
 	bookID, err := s.queries.UpdateBookChapter(ctx, store.UpdateBookChapterParams{
 		ID:      input.ID,
 		Name:    input.Name,

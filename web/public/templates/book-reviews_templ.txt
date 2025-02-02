@@ -1,0 +1,46 @@
+<ul class=\"space-y-2\">
+</ul>
+<div class=\"group grid grid-cols-[auto_1fr] gap-6 p-4 relative border-b last:border-b-0\" id=\"
+\"><div><img class=\"ol-avatar\" src=\"
+\"></div><div><span class=\"mb-2 flex gap-1\"><a class=\"ol-link text-lg\" href=\"
+\">
+</a> 
+<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" color=\"currentColor\"><path d=\"M5.076 17C4.089 4.545 12.912 1.012 19.973 2.224c.286 4.128-1.734 5.673-5.58 6.387c.742.776 2.055 1.753 1.913 2.974c-.1.868-.69 1.295-1.87 2.147C11.85 15.6 8.854 16.78 5.076 17\"></path> <path d=\"M4 22c0-6.5 3.848-9.818 6.5-12\"></path></g></svg>
+</span><div class=\"mb-2\">
+</div>
+</div><div class=\"text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2\"><button class=\"ol-btn ol-btn--icon ol-btn--ghost\"><span class=\"material-symbols-outlined\">flag</span></button></div></div>
+<section id=\"
+\" data-book-id=\"
+\" class=\"my-2\" x-data=\"{\n        edit:false,\n        loading:false,\n        start:0,\n        requestEditing() {\n            this.loading = true;\n            this.start = Date.now();\n            this.$refs.myReview.style.height=`${this.$refs.myReview.clientHeight}px`;\n        },\n        onEditorReady() {\n            window.delay(Math.max(0, 300-(Date.now()-this.start))).then(() =&gt; {\n                this.loading = false;\n                this.edit = true;\n                this.$refs.myReview.style.removeProperty(&#39;height&#39;);\n            })\n        },\n        onUpdated(review) {\n            this.loading = false;\n            this.edit = false;\n            $ajax(`/book/${this.$root.dataset.bookId}/__fragment/review`);\n        }\n    }\">
+<div x-ref=\"myReview\" class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden\">
+<div class=\"grid grid-cols-[110px_auto]\" x-show=\"!edit&amp;&amp;!loading\"><div><img class=\"ol-avatar\" src=\"
+\"></div><div><div class=\"flex gap-4 items-center\">
+<button @click=\"requestEditing()\" class=\"ol-btn ol-btn--lg ol-btn--outline rounded-full\"><span class=\"material-symbols-outlined\">edit</span> 
+</button></div><article class=\"__user-content mt-4 text-sm\">
+</article></div></div><div x-cloak x-show=\"loading\" class=\"flex items-center justify-center h-full\"><span class=\"loader m-0\"></span></div><ol-island src=\"/_/assets/islands/review-editor.js\" x-show=\"edit\" :active=\"loading||edit\" @review:updated=\"onUpdated($event.detail)\" @island-mount=\"onEditorReady()\"></ol-island></div>
+<div x-show=\"edit\" x-cloak class=\"shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden\"><ol-island src=\"/_/assets/islands/review-editor.js\" :active=\"loading||edit\" @review:updated=\"onUpdated($event.detail)\" @island-mount=\"onEditorReady()\"></ol-island></div><div class=\"pt-6 pb-8 rounded-xl items-start gap-4 my-8\">
+<div class=\"flex flex-col items-center\"><span class=\"mt-3 block text-3xl font-title font-semibold\">
+</span><div class=\"flex gap-6 items-center mt-4\">
+<div class=\"flex flex-col items-center\" x-data=\"
+\">
+<span x-text=\"!rating?i18n[&#39;book.rateBook&#39;]:i18n[&#39;book.youRated&#39;].replaceAll(&#39;$&#39;,rating/2)\" class=\"font-light\">
+</span></div><button class=\"ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full\" @click=\"requestEditing()\"><span x-show=\"!loading\">
+</span> <span x-cloak x-show=\"loading\" class=\"loader mx-8\"></span></button></div></div>
+<span class=\"mt-3 block text-3xl font-title font-semibold\">
+</span> <a class=\"ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full mt-4\" href=\"/login\">
+</a>
+</div>
+</section>
+<div id=\"
+\" class=\"contents __user-content\" x-ignore>
+</div>
+<div x-data=\"collapseContent\" data-collapsible-height=\"
+\" :data-expanded=\"expand\"
+ data-collapsible-init data-collapsible=\"true\"
+ :data-collapsible=\"can\" :style=\"
+\"
+ class=\"mb-4 relative overflow-y-hidden \n        data-[expanded=true]:pb-10\n        after:hidden data-[collapsible=true]:after:block data-[expanded=true]:after:hidden\n        after:absolute after:h-16 after:left-0 after:right-0 after:bottom-0 \n        after:bg-gradient-to-t after:from-background after:via-background/95 after:to-transparent\"><div x-bind=\"content\">
+</div><button x-bind=\"button\"
+ x-cloak
+ class=\"absolute flex items-center left-0 right-0 bottom-0 p-1 z-20 text-lg font-[500] hover:text-primary focus:outline focus:outline-2 outline-offset-[-2px]\"><span x-bind=\"buttonLabel\">
+</span> <span x-bind=\"buttonIcon\" class=\"material-symbols-outlined !text-[18px]\">expand_all</span></button></div>

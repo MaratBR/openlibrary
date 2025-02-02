@@ -1,0 +1,10 @@
+<nav role=\"listbox\" class=\"ol-pagination\">
+<a href=\"
+\" class=\"ol-pagination__item\">
+</a> 
+<a href=\"#\" class=\"ol-pagination__item ol-pagination__item--active\">
+</a> 
+<a href=\"
+\" class=\"ol-pagination__item\">
+</a>
+</nav>

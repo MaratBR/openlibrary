@@ -8,6 +8,10 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+var (
+	ErrTypeBookSanitizationFailed = AppErrors.NewType("content_sanitization_failed")
+)
+
 type CreateBookCommand struct {
 	Name              string
 	UserID            uuid.UUID

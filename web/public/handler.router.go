@@ -61,6 +61,11 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 			r.Get("/{id}", c.GetProfile)
 		})
 
+		r.Route("/library", func(r chi.Router) {
+			c := newLibraryController()
+			c.Register(r)
+		})
+
 		r.Route("/_api", func(r chi.Router) {
 			apiBookController := newAPIBookController(bookService, reviewsService, readingListService)
 			apiReadingListController := newAPIReadingListController(readingListService)

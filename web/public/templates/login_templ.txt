@@ -1,0 +1,12 @@
+<div class=\"p-8 w-screen h-screen flex items-center justify-center bg-secondary\"><main class=\"w-[400px] min-h-[450px] bg-background p-4 shadow-lg rounded-sm\">
+<section class=\"p-2 bg-emerald-500 text-white rounded-sm -m-3 text-sm text-center\">
+</section>
+<div class=\"flex justify-center\"><img class=\"block dark:hidden\" src=\"/_/embed-assets/logo.svg\"> <img class=\"hidden dark:block\" src=\"/_/embed-assets/logo-dark.svg\"></div><form method=\"post\" class=\"flex flex-col\">
+<div class=\"mb-4\"><label for=\"username\" class=\"ol-label\">
+</label> <input name=\"username\" id=\"username\" value=\"
+\" class=\"ol-input\" type=\"text\"></div><div class=\"mb-4\"><label for=\"password\" class=\"ol-label\">
+</label> <input name=\"password\" id=\"password\" class=\"ol-input\" type=\"password\"></div><div class=\"flex gap-2 justify-center\"><button type=\"submit\" class=\"ol-btn ol-btn--lg ol-btn--primary rounded-full\">
+</button></div>
+<div class=\"border-destructive border bg-destructive/20 p-4 mt-4 rounded-lg text-sm\">
+</div>
+</form></main></div>

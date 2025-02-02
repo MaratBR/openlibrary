@@ -54,6 +54,11 @@ func BookPreviewPartial(book app.BookDetailsDto) templ.Component {
 
 		if len(summary) > maxLength {
 			summary = summary[:maxLength] + "..."
+			var err error
+			summary, err = app.FixHTML(summary)
+			if err != nil {
+				summary = `<p><em>Failed to fix HTML</em></p>`
+			}
 		}
 		templ_7745c5c3_Err = templ.Raw(summary).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {

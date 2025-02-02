@@ -14,6 +14,11 @@ templ BookPreviewPartial(book app.BookDetailsDto) {
 
                 if len(summary) > maxLength {
                     summary = summary[:maxLength] + "..."
+                    var err error
+                    summary, err = app.FixHTML(summary)
+                    if err != nil {
+                        summary = `<p><em>Failed to fix HTML</em></p>`
+                    }
                 }
             }}
             
