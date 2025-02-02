@@ -2,3 +2,6 @@
 /ao3-books
 /rr-books
 **/node_modules
+
+*_templ.txt
+*_templ.go
