@@ -1,9 +1,124 @@
 package templates
 
-templ Library() {
-    @baseLayout("library") {
+import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "fmt"
+
+templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
+    {{
+        l := i18nProvider.GetLocalizer(ctx)
+    }}
+
+    @baseLayout(_t(l, "library.title")) {
         <main class="ol-container">
-        <h1 class="text-4xl font-title">Library</h1>
-    </main>
+            <header class="ol-library-header flex gap-4">
+                <h1 class="ol-page-header ol-page-header--big underline underline-offset-2">{_t(l, "library.title")}</h1>
+                <a href="/library/archive" class="ol-page-header ol-page-header--big text-muted-foreground hover:underline underline-offset-2">{_t(l, "library.archive")}</a>
+            </header>
+
+            <ol-island 
+                data={ "{\"selector\": \".ol-library-body\"}" }
+                src="/_/assets/islands/book-card-preview.js" 
+                active="true" />
+        
+            <div class="ol-library-body">
+                if len(reading) + len(paused) + len(wantToRead) == 0 {
+                    <p>
+                        {_t(l, "library.libraryDescription")}
+                    </p>
+                }
+
+                if len(reading) != 0 {
+                    @librarySection(_t(l, "readingList.reading"), reading)
+                }
+                if len(paused) != 0 {
+                    @librarySection(_t(l, "readingList.paused"), paused)
+                }
+                if len(wantToRead) != 0 {
+                    @librarySection(_t(l, "readingList.want_to_read"), wantToRead)
+                }
+            </div>
+        </main>
     }
 }
+
+templ LibraryArchive(read, dnf []app.BookLibraryDto) {
+    {{
+        l := i18nProvider.GetLocalizer(ctx)
+    }}
+
+    @baseLayout(_t(l, "library.title")) {
+        <main class="ol-container">
+            <header class="ol-library-header flex gap-4">
+                <a href="/library" class="ol-page-header ol-page-header--big text-muted-foreground hover:underline underline-offset-2">{_t(l, "library.title")}</a>
+                <h1 class="ol-page-header ol-page-header--big underline underline-offset-2">{_t(l, "library.archive")}</h1>
+            </header>
+
+            <ol-island 
+                data={ "{\"selector\": \".ol-library-body\"}" }
+                src="/_/assets/islands/book-card-preview.js" 
+                active="true" />
+        
+            <div class="ol-library-body">
+                if len(read) + len(dnf) == 0 {
+                    <p>
+                        {_t(l, "library.archiveDescription")}
+                    </p>
+                }
+
+                if len(read) != 0 {
+                    @librarySection(_t(l, "readingList.read"), read)
+                }
+                if len(dnf) != 0 {
+                    @librarySection(_t(l, "readingList.dnf"), dnf)
+                }
+            </div>
+        </main>
+    }
+}
+
+templ librarySection(label string, books []app.BookLibraryDto) {
+    <section class="ol-library-section">
+        <header class="ol-library-section__header">
+            { label }
+        </header>
+        <div class="ol-library-section__books">
+            for _, book := range books {
+                @libraryBookCard(book.ID, book.Name, book.Cover)
+            }
+        </div>
+    </section>
+}
+
+templ libraryBookCard(bookID int64, name, cover string) {
+    <a 
+        href={ templ.SafeURL(fmt.Sprintf("/book/%d?ol.from=library", bookID)) } 
+        class="profile-book-card" 
+        data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
+        @bookCover(cover, name, 300)
+        <div class="profile-book-card__title">
+            { name }
+        </div>
+    </a>
+}
+
+templ LibraryAnon() {
+    {{
+        l := i18nProvider.GetLocalizer(ctx)
+    }}
+
+    @baseLayout(_t(l, "library.title")) {
+        <main class="ol-container">
+            <header class="ol-library-header">
+                <h1 class="ol-page-header ol-page-header--big">{_t(l, "library.title")}</h1>
+            </header>
+
+            <div class="ol-library-body">
+                <a href="/login" class="ol-btn ol-btn--outline ol-btn--lg text-lg rounded-full">
+                    { _t(l, "library.login") }
+                </a>
+            </div>
+        </main>
+    }
+}
+

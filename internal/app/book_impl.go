@@ -17,6 +17,18 @@ type bookService struct {
 	reviewService      ReviewsService
 }
 
+// GetRandomBookID implements BookService.
+func (s *bookService) GetRandomBookID(ctx context.Context) (Nullable[int64], error) {
+	ids, err := s.queries.GetRandomPublicBookIDs(ctx, 1)
+	if err != nil {
+		return Nullable[int64]{}, wrapUnexpectedDBError(err)
+	}
+	if len(ids) == 0 {
+		return Null[int64](), nil
+	}
+	return Value(ids[0]), nil
+}
+
 // GetUserBooks implements BookService.
 func (s *bookService) GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserPinnedBooksResult, error) {
 	rows, err := s.queries.GetUserBooks(ctx, store.GetUserBooksParams{

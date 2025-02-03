@@ -1,5 +1,9 @@
 .__user-content {
 
+    h1, h1, h2, h3, h4, h5, h6 {
+        @apply font-title;
+    }
+
     hr {
         @apply my-4;
     }
@@ -10,6 +14,10 @@
 
     strong, b {
         @apply font-[500];
+    }
+
+    a {
+        @apply underline-offset-4 text-blue-600 underline hover:text-blue-800;
     }
 
 }

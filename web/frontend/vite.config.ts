@@ -73,6 +73,8 @@ const ENTRIES = [
 
   'public.api',
 
+  'book-reader',
+
   'islands/book-card-preview',
   'islands/review-editor',
   'islands/search-filters',

@@ -1,24 +1,52 @@
 package public
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/go-chi/chi/v5"
 )
 
 type searchController struct {
-	service app.SearchService
+	service     app.SearchService
+	bookService app.BookService
 }
 
-func newSearchController(service app.SearchService) *searchController {
+func newSearchController(service app.SearchService, bookService app.BookService) *searchController {
 	return &searchController{
-		service: service,
+		service:     service,
+		bookService: bookService,
 	}
 }
 
-func (c *searchController) Search(w http.ResponseWriter, r *http.Request) {
+func (c *searchController) Register(r chi.Router) {
+	r.Get("/search", c.search)
+	r.Get("/s", c.simpleSearch)
+	r.Get("/random", c.random)
+}
+
+func (c *searchController) random(w http.ResponseWriter, r *http.Request) {
+	id, err := c.bookService.GetRandomBookID(r.Context())
+	if err != nil {
+		write500(w, r, err)
+		return
+	}
+
+	if id.Valid {
+		http.Redirect(w, r, fmt.Sprintf("/book/%d", id.Value), http.StatusFound)
+	} else {
+		http.Redirect(w, r, "/s?ol.error=no_books", http.StatusFound)
+	}
+}
+
+func (c *searchController) simpleSearch(w http.ResponseWriter, r *http.Request) {
+	templates.SimpleSearch().Render(r.Context(), w)
+}
+
+func (c *searchController) search(w http.ResponseWriter, r *http.Request) {
 	search := getSearchRequest(r)
 	query := app.BookSearchQuery{
 		UserID:          auth.GetNullableUserID(r.Context()),

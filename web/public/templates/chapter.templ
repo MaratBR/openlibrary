@@ -48,7 +48,7 @@ templ Chapter(
                         </button>
                     </div>
                 </aside>
-                <div x-bind="chapter" class="ol-book-reader__chapter relative">
+                <div class="ol-book-reader__chapter relative">
                     @ChapterContentSection(&chapter, readerSettings)
 
                     <section class="grid grid-cols-2 mt-4 bg-background sticky bottom-0 py-1">
@@ -128,8 +128,16 @@ templ ChapterContentSection(chapter *app.ChapterDto, readerSettings ReaderSettin
     <article class="__user-content ol-book-reader__content" { templ.Attributes{
         "style": fmt.Sprintf("--book-font-size:%dpx", readerSettings.FontSize),
     }... } :style="`--book-font-size:${fontSize}px`">
-        <div class="contents" x-ignore>
+        <div class="contents" x-ignore id="book-reader-content">
             @templ.Raw(chapter.Content)
         </div>
     </article>
+
+    <script>
+        document.addEventListener('ol:book-reader:ready', () => {
+            window.__initBookReader && window.__initBookReader(document.getElementById('book-reader-content'));
+        })
+    </script>
+
+    <script src="/_/assets/book-reader.js"></script>
 }

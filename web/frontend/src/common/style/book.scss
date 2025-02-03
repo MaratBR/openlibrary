@@ -1,3 +1,42 @@
+// ----------------- //
+//                   //
+// BOOK PAGE         //
+//                   //
+// ----------------- //
+.ol-book-page {
+    @apply md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[100ch] py-4;
+
+    &__left {
+        @apply md:col-span-3 flex flex-col items-center;
+    }
+
+    &__right {
+        @apply md:col-span-9 px-4 md:px-0;
+    }
+
+    &__rating-card {
+        @apply inline-flex gap-2 items-center p-4 rounded-md transition-shadow hover:bg-highlight mt-2 text-muted-foreground;
+    }
+}
+
+// ----------------- //
+//                   //
+// BOOK TOC          //
+//                   //
+// ----------------- //
+.ol-book-toc {
+    @apply grid grid-cols-2 mt-3;
+
+    &__item {
+        @apply p-2 text-lg grid grid-cols-[48px_auto] hover:bg-secondary focus:outline focus:outline-2;
+    }
+}
+
+// ----------------- //
+//                   //
+// BOOK SEARCH PAGE  //
+//                   //
+// ----------------- //
 .ol-book-search-results {
 }
 

@@ -78,6 +78,7 @@ function getDetailedBookSearchQuery(): DetailedBookSearchQuery {
   if (el instanceof HTMLTemplateElement) {
     try {
       const parsed = JSON.parse(el.content.textContent || '')
+      console.log(parsed)
       return detailedBookSearchQuerySchema.parse(parsed)
     } catch {
       // no-op

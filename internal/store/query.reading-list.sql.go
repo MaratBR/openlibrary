@@ -61,6 +61,65 @@ func (q *Queries) GetLastChapterID(ctx context.Context, bookID int64) (int64, er
 	return id, err
 }
 
+const getUserLibrary = `-- name: GetUserLibrary :many
+select 
+    books.id, books.name, books.has_cover, books.age_rating, 
+    reading_list.last_updated_at,
+    last_chapter."order" as chapter_order, last_chapter.name as chapter_name, last_chapter.id as chapter_id
+from reading_list
+join books on reading_list.book_id = books.id
+left join book_chapters last_chapter on last_chapter.id = reading_list.last_accessed_chapter_id
+where reading_list.user_id = $1 and reading_list.status = $2
+order by reading_list.last_updated_at
+limit $3
+`
+
+type GetUserLibraryParams struct {
+	UserID pgtype.UUID
+	Status ReadingListStatus
+	Limit  int32
+}
+
+type GetUserLibraryRow struct {
+	ID            int64
+	Name          string
+	HasCover      bool
+	AgeRating     AgeRating
+	LastUpdatedAt pgtype.Timestamptz
+	ChapterOrder  pgtype.Int4
+	ChapterName   pgtype.Text
+	ChapterID     pgtype.Int8
+}
+
+func (q *Queries) GetUserLibrary(ctx context.Context, arg GetUserLibraryParams) ([]GetUserLibraryRow, error) {
+	rows, err := q.db.Query(ctx, getUserLibrary, arg.UserID, arg.Status, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserLibraryRow
+	for rows.Next() {
+		var i GetUserLibraryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.HasCover,
+			&i.AgeRating,
+			&i.LastUpdatedAt,
+			&i.ChapterOrder,
+			&i.ChapterName,
+			&i.ChapterID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const setBookReadingListStatus = `-- name: SetBookReadingListStatus :one
 INSERT INTO reading_list (book_id, user_id, status, last_accessed_chapter_id)
 VALUES ($1, $2, $3, null)

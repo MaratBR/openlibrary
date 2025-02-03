@@ -235,6 +235,8 @@ func (r *reviewsService) UpdateRating(ctx context.Context, cmd UpdateRatingComma
 	if err != nil {
 		return wrapUnexpectedDBError(err)
 	}
+
+	r.backgroundService.ScheduleBookRecalculation(cmd.BookID)
 	return nil
 }
 

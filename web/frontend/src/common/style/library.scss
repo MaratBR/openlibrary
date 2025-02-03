@@ -1,0 +1,21 @@
+.ol-library-header {
+    @apply my-8;
+}
+
+.ol-library-body {
+    @apply pb-10 space-y-12;
+}
+
+.ol-library-section {
+    @apply relative;
+
+    &__header {
+        @apply 
+            text-2xl font-medium mb-4 whitespace-nowrap
+            2xl:absolute 2xl:right-full 2xl:text-right 2xl:py-2 2xl:px-3 2xl:rounded-full 2xl:bg-muted 2xl:mr-4;
+    }
+
+    &__books {
+        @apply flex gap-4 items-start flex-wrap;
+    }
+}

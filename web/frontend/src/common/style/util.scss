@@ -1,7 +1,18 @@
 .ol-container {
-    @apply max-w-[1300px] mx-auto px-2;
+    @apply max-w-[80ch] mx-auto px-2;
 }
 
 .ol-container-padded-left {
     padding-left: max(0px, calc((100% - 1300px) / 2));
+}
+
+/**
+ * Main page header
+ */ 
+.ol-page-header {
+    @apply font-[500] text-3xl font-title;
+
+    &--big {
+        @apply text-4xl;
+    }
 }

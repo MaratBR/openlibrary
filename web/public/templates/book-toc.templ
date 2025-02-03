@@ -14,12 +14,12 @@ templ BookTOC(
     {{ l := i18nProvider.GetLocalizer(ctx) }}
 
     <div class="contents" id="slot-book-toc" x-cloak x-show="tab==='toc'">
-        <ul class="grid grid-cols-2 mt-3" role="listbox">
+        <ul class="ol-book-toc" role="listbox">
             for i, chapter := range chapters {
                 <li role="listitem">
                     <a
                         href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
-                        class="p-2 text-lg grid grid-cols-[48px_auto] hover:bg-secondary focus:outline focus:outline-2">
+                        class="ol-book-toc__item">
                         <span>{ commonutil.FormatInt(i + 1) }</span>
                         <div>
                             <div class="mb-1">

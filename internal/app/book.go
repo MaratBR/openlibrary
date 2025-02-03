@@ -77,4 +77,5 @@ type BookService interface {
 	GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error)
 
 	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserPinnedBooksResult, error)
+	GetRandomBookID(ctx context.Context) (Nullable[int64], error)
 }

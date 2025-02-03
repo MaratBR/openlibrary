@@ -266,6 +266,34 @@ func (q *Queries) GetBooksCollections(ctx context.Context, dollar_1 []int64) ([]
 	return items, nil
 }
 
+const getRandomPublicBookIDs = `-- name: GetRandomPublicBookIDs :many
+select id
+from books
+where is_publicly_visible and age_rating not in ('R', 'NC-17') and not is_banned and chapters > 0
+order by random()
+limit $1
+`
+
+func (q *Queries) GetRandomPublicBookIDs(ctx context.Context, limit int32) ([]int64, error) {
+	rows, err := q.db.Query(ctx, getRandomPublicBookIDs, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTopUserBooks = `-- name: GetTopUserBooks :many
 select id, name, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, words, chapters, tag_ids, cached_parent_tag_ids, has_cover, view, rating, total_reviews, total_ratings, is_pinned
 from books

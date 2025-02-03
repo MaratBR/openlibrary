@@ -1,0 +1,16 @@
+.p {
+    
+}
+
+.active {
+    --spacing: 0.5em;
+    margin: calc(var(--spacing) * -1);
+    margin-bottom: calc(var(--spacing) * -1 + 0.6em) !important;
+    padding: var(--spacing);
+    @apply bg-secondary rounded-lg;
+}
+
+.active:last-child {
+    margin-bottom: calc(var(--spacing) * -1) !important;
+
+}

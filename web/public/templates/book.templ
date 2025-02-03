@@ -109,18 +109,18 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
     @baseLayout(book.Name) {
         <div 
             id="book" 
-            class="md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[1300px] py-4" 
+            class="ol-book-page" 
             x-data={ convertBookDetailsToAlpineState(&book, readingList) }>
             @serverData(map[string]any{
                 "bookId": fmt.Sprintf("%d", book.ID),
             })
-            <div class="md:col-span-3 flex flex-col items-center">
+            <div class="ol-book-page__left">
                 @bookCover(book.Cover, book.Name, 300)
                 @bookReadingList(book.ID, readingList)
             </div>
-            <div class="md:col-span-9">
+            <div class="ol-book-page__right">
                 <header>
-                    <h1 class="font-[500] text-3xl font-title">{book.Name}</h1>
+                    <h1 class="ol-page-header">{book.Name}</h1>
                     <p>
                         <a class="ol-link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
                     </p>
@@ -135,7 +135,7 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
 }
 
 templ bookRating(book *app.BookDetailsDto) {
-    <a id="rating-card" href="#reviews" class="inline-flex gap-2 items-center p-4 rounded-md transition-shadow hover:bg-highlight mt-2 text-muted-foreground">
+    <a id="rating-card" href="#reviews" class="ol-book-page__rating-card">
         @starRating(book.Rating.Value, 0.5)
         <div class="text-xs inline-block">
             {formatInt32(book.Votes)} votes <br />

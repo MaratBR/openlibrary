@@ -9,7 +9,39 @@ import (
 )
 
 type readingListService struct {
-	db store.DBTX
+	db            store.DBTX
+	uploadService *UploadService
+}
+
+// GetReadingListBooks implements ReadingListService.
+func (s *readingListService) GetReadingListBooks(ctx context.Context, query GetReadingListItemsQuery) ([]BookLibraryDto, error) {
+	queries := store.New(s.db)
+	rows, err := queries.GetUserLibrary(ctx, store.GetUserLibraryParams{
+		UserID: uuidDomainToDb(query.UserID),
+		Status: store.ReadingListStatus(query.Status),
+		Limit:  int32(query.Limit),
+	})
+	if err != nil {
+		return nil, wrapUnexpectedDBError(err)
+	}
+	return mapSlice(rows, func(r store.GetUserLibraryRow) BookLibraryDto {
+		var lastChapter Nullable[BookReadingListItemLastChapterDto]
+		if r.ChapterID.Valid {
+			lastChapter = Value(BookReadingListItemLastChapterDto{
+				ID:    r.ChapterID.Int64,
+				Name:  r.ChapterName.String,
+				Order: r.ChapterOrder.Int32,
+			})
+		}
+
+		return BookLibraryDto{
+			ID:          r.ID,
+			Name:        r.Name,
+			Cover:       getBookCoverURL(s.uploadService, r.ID, r.HasCover),
+			AgeRating:   ageRatingFromDbValue(r.AgeRating),
+			LastChapter: lastChapter,
+		}
+	}), nil
 }
 
 // GetStatus implements ReadingListService.
@@ -102,6 +134,6 @@ func (r *readingListService) setStatusAndChapter(
 	return nil
 }
 
-func NewReadingListService(db store.DBTX) ReadingListService {
-	return &readingListService{db: db}
+func NewReadingListService(db store.DBTX, uploadService *UploadService) ReadingListService {
+	return &readingListService{db: db, uploadService: uploadService}
 }

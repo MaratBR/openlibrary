@@ -30,6 +30,26 @@ type BookReadingListDto struct {
 	LastUpdatedAt time.Time             `json:"lastUpdatedAt"`
 }
 
+type BookLibraryDto struct {
+	ID          int64                                       `json:"id,string"`
+	Name        string                                      `json:"name"`
+	Cover       string                                      `json:"cover"`
+	AgeRating   AgeRating                                   `json:"ageRating"`
+	LastChapter Nullable[BookReadingListItemLastChapterDto] `json:"lastChapter"`
+}
+
+type BookReadingListItemLastChapterDto struct {
+	ID    int64  `json:"id,string"`
+	Name  string `json:"name"`
+	Order int32  `json:"order"`
+}
+
+type GetReadingListItemsQuery struct {
+	UserID uuid.UUID
+	Limit  uint32
+	Status ReadingListStatus
+}
+
 type ReadingListService interface {
 	MarksAsWantToRead(ctx context.Context, userID uuid.UUID, bookID int64) error
 	MarkAsDnf(ctx context.Context, userID uuid.UUID, bookID int64) error
@@ -39,4 +59,6 @@ type ReadingListService interface {
 	MarkAsReadingWithChapterID(ctx context.Context, userID uuid.UUID, bookID int64, chapterID int64) error
 
 	GetStatus(ctx context.Context, userID uuid.UUID, bookID int64) (Nullable[BookReadingListDto], error)
+
+	GetReadingListBooks(ctx context.Context, query GetReadingListItemsQuery) ([]BookLibraryDto, error)
 }

@@ -53,3 +53,11 @@ select *
 from books
 where author_user_id = $1 and is_publicly_visible
 order by rating desc limit $2;
+
+
+-- name: GetRandomPublicBookIDs :many
+select id
+from books
+where is_publicly_visible and age_rating not in ('R', 'NC-17') and not is_banned and chapters > 0
+order by random()
+limit $1;

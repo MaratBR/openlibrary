@@ -64,7 +64,7 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetUserPinnedBooksResult) {
             <ul class="profile-books__list" id={bookSectionId}>
                 <div class="-mr-4" style="width: max(0px, calc((100vw - 1300px) / 2));"></div>
                 for _, book := range pinnedBooks.Books {
-                    @userProfilePinnedBookCard(book)
+                    @userProfilePinnedBookCard(book.ID, book.Name, book.Cover)
                 }
                 <div class="-ml-4" style="width: max(0px, calc((100vw - 1300px) / 2))"></div>
             </ul>
@@ -80,11 +80,14 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetUserPinnedBooksResult) {
     }
 }
 
-templ userProfilePinnedBookCard(book app.PinnedBookDto) {
-    <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="profile-book-card" data-book-card-preview={ fmt.Sprintf("%d", book.ID) }>
-        @bookCover(book.Cover, book.Name, 300)
+templ userProfilePinnedBookCard(bookID int64, name, cover string) {
+    <a 
+        href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) } 
+        class="profile-book-card" 
+        data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
+        @bookCover(cover, name, 300)
         <div class="profile-book-card__title">
-            { book.Name }
+            { name }
         </div>
     </a>
 }

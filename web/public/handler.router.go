@@ -17,13 +17,11 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	uploadService := app.NewUploadServiceFromApplicationConfig(h.cfg)
 
 	sessionService := app.NewCachedSessionService(app.NewSessionService(db), h.cache)
-
 	authService := app.NewAuthService(db, sessionService)
 
 	tagsService := app.NewTagsService(db)
-	readingListService := app.NewReadingListService(db)
+	readingListService := app.NewReadingListService(db, uploadService)
 	userService := app.NewUserService(db)
-
 	reviewsService := app.NewCachedReviewsService(app.NewReviewsService(db, userService, bgServices.Book), h.cache)
 	bookService := app.NewBookService(db, tagsService, uploadService, readingListService, reviewsService)
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, uploadService, userService), h.cache)
@@ -39,7 +37,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		authController := newAuthController(authService, h.csrfHandler)
 		bookController := newBookController(bookService, reviewsService, readingListService)
 		chapterController := newChaptersController(bookService)
-		searchController := newSearchController(searchService)
+		searchController := newSearchController(searchService, bookService)
 		tagsController := newTagsController(tagsService)
 
 		r.HandleFunc("/login", authController.LogIn)
@@ -52,7 +50,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 		r.Get("/book/{bookID}/chapters/{chapterID}", chapterController.GetChapter)
 
-		r.Get("/search", searchController.Search)
+		searchController.Register(r)
 
 		r.Get("/tag/{tagID}", tagsController.TagPage)
 
@@ -62,7 +60,8 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		})
 
 		r.Route("/library", func(r chi.Router) {
-			c := newLibraryController()
+			r.Use()
+			c := newLibraryController(readingListService)
 			c.Register(r)
 		})
 

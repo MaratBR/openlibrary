@@ -45,7 +45,7 @@ templ SearchPage(
         {{ activeFilters := explainedQuery.ActiveFilters() }}
 
         <div class="ol-container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
-            <h1 class="font-title text-3xl flex">
+            <h1 class="ol-page-header">
                 if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
                     {{ firstTag := explainedQuery.IncludeTags[0] }}
                     <span>{ firstTag.Name }</span>
@@ -156,3 +156,33 @@ templ searchNoResultsCard() {
     </div>
 }
 
+css simpleSearchCSSRoot() {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+templ SimpleSearch() {
+    {{
+        l := i18nProvider.GetLocalizer(ctx)
+    }}
+    @htmlLayout(_t(l, "search.search")) {
+        <main class={ simpleSearchCSSRoot() }>
+            <img src="/_/embed-assets/logo.svg" />
+            <form method="get" action="/search">
+                <input placeholder={_t(l, "search.search")} class="w-96 ol-input rounded-full text-lg p-6" name="query" />
+                <div class="flex gap-2 justify-center mt-8">
+                    <a href="/random" class="ol-btn ol-btn--secondary rounded-full">
+                        {_t(l, "search.feelingLucky")}
+                    </a>
+                    <button type="submit" class="ol-btn ol-btn--secondary rounded-full">
+                        {_t(l, "search.doSearch")}
+                    </button>
+                </div>
+            </form>
+        </main>
+    }
+}

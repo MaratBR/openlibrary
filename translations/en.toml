@@ -126,6 +126,7 @@ thankYouForRating = "Thank you for your contribution!"
 filters = "Filters"
 search = "Search"
 doSearch = "Search"
+feelingLucky = "I'm feeling lucky"
 tags = "Tags"
 excludeTags = "Exclude tags"
 includeTags = "Include tags"
@@ -141,6 +142,12 @@ noResults = "No results, try to change your search query"
 [special]
 noJavascript = "Hey there! It looks like you have Javascript disabled. OpenLibrary only offers limited functionality without it. Please enable it in your browser settings."
 
+[library]
+libraryDescription = "Books from your reading list will appear here. If you want to take a look at books that you already read or simply did not finish (i.e. abandoned) please checkout the Archive tab."
+title = "My library"
+login = "Login to add books to your library"
+archive = "Archive"
+archiveDescription = "Books that you read or did not finish will appear here"
 
 #####################
 #                   #
