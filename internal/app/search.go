@@ -58,6 +58,8 @@ type Int32Range struct {
 type BookSearchQuery struct {
 	UserID uuid.NullUUID
 
+	Query string
+
 	Words           Int32Range
 	Chapters        Int32Range
 	WordsPerChapter Int32Range
@@ -142,6 +144,8 @@ type UserFromSearchRequestDto struct {
 }
 
 type DetailedBookSearchQuery struct {
+	Query string `json:"query"`
+
 	Words           Int32Range `json:"words"`
 	Chapters        Int32Range `json:"chapters"`
 	WordsPerChapter Int32Range `json:"wordsPerChapter"`

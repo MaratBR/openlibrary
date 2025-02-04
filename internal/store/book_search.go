@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
@@ -28,6 +29,8 @@ func applyRange(builder *goqu.SelectDataset, column exp.Comparable, int4Range In
 }
 
 type BookSearchFilter struct {
+	Query string
+
 	Words           Int4Range
 	WordsPerChapter Int4Range
 	Chapters        Int4Range
@@ -96,6 +99,11 @@ func applyWhere(query *goqu.SelectDataset, filter *BookSearchFilter) *goqu.Selec
 
 	if !filter.IncludeEmpty {
 		query = query.Where(goqu.I("books.chapters").Gt(0))
+	}
+
+	stringQuery := strings.Trim(filter.Query, " \n\t")
+	if stringQuery != "" {
+		query = query.Where(goqu.I("books.name").ILike("%" + stringQuery + "%"))
 	}
 
 	return query

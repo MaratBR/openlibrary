@@ -49,7 +49,10 @@ func (c *searchController) simpleSearch(w http.ResponseWriter, r *http.Request) 
 func (c *searchController) search(w http.ResponseWriter, r *http.Request) {
 	search := getSearchRequest(r)
 	query := app.BookSearchQuery{
-		UserID:          auth.GetNullableUserID(r.Context()),
+		UserID: auth.GetNullableUserID(r.Context()),
+
+		Query: search.Query,
+
 		IncludeUsers:    search.IncludeUsers,
 		ExcludeUsers:    search.ExcludeUsers,
 		IncludeTags:     search.IncludeTags,

@@ -5,6 +5,7 @@ import (
 	"context"
 	"math"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/commonutil"
@@ -24,6 +25,7 @@ type searchService struct {
 // ExplainSearchQuery implements SearchService.
 func (s *searchService) ExplainSearchQuery(ctx context.Context, req BookSearchQuery) (DetailedBookSearchQuery, error) {
 	detailed := DetailedBookSearchQuery{
+		Query:           req.Query,
 		Words:           req.Words,
 		WordsPerChapter: req.WordsPerChapter,
 		Chapters:        req.Chapters,
@@ -246,6 +248,11 @@ func (s *searchService) searchInternal(ctx context.Context, dbReq store.BookSear
 }
 
 func constructBookSearchRequest(ctx context.Context, tagsService TagsService, req BookSearchQuery) (dbReq store.BookSearchRequest, err error) {
+	query := strings.Trim(req.Query, " \n\t")
+	if len(query) >= 2 {
+		dbReq.Query = req.Query
+	}
+
 	{
 		var includeTags BookTags
 		includeTags, err = tagsService.FindParentTagIds(ctx, req.IncludeTags)

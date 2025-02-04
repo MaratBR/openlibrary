@@ -10,6 +10,8 @@ import (
 )
 
 type searchRequest struct {
+	Query string
+
 	IncludeUsers []uuid.UUID
 	ExcludeUsers []uuid.UUID
 	IncludeTags  []int64
@@ -24,6 +26,8 @@ type searchRequest struct {
 }
 
 func parseSearchRequest(source url.Values) (search searchRequest) {
+	search.Query = source.Get("q")
+
 	search.Words = getInt32RangeFromQuery(source, "w")
 	search.Chapters = getInt32RangeFromQuery(source, "c")
 	search.WordsPerChapter = getInt32RangeFromQuery(source, "wc")

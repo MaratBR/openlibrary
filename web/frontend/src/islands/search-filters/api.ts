@@ -76,7 +76,7 @@ export function getQueryParams(query: DetailedBookSearchQuery): URLSearchParams 
   if (query.excludeUsers.length > 0) params.set('eu', query.excludeUsers.map((x) => x.id).join(','))
 
   if (query.page > 1) params.set('page', query.page.toString())
-  params.set('pageSize', query.pageSize.toString())
+  if (query.pageSize !== 20) params.set('pageSize', query.pageSize.toString())
 
   return params
 }

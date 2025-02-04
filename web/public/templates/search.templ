@@ -42,7 +42,9 @@ templ SearchPage(
             "search.genres",
         })
 
-        {{ activeFilters := explainedQuery.ActiveFilters() }}
+        {{ 
+            activeFilters := explainedQuery.ActiveFilters()
+        }}
 
         <div class="ol-container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
             <h1 class="ol-page-header">
@@ -54,17 +56,24 @@ templ SearchPage(
                 }
             </h1>
 
-            <button @click="openFilters=!openFilters" class="ol-btn ol-btn--lg ol-btn--secondary rounded-full my-4">
-                <span class="material-symbols-outlined">filter</span>
-                {_t(l, "search.filters")}
-                if activeFilters > 0 {
-                    ({ formatInt32(int32(activeFilters)) })
-                }
-            </button>
+            <form class="mt-5">
+                <input id="search-input" name="q" class="ol-input p-6 rounded-full text-lg w-full" value={ explainedQuery.Query } />
+            </form>
+
+            <div class="flex gap-2 my-4">
+                <button @click="openFilters=!openFilters" class="ol-btn ol-btn--lg ol-btn--secondary rounded-full">
+                    <span class="material-symbols-outlined">filter_list</span>
+                    {_t(l, "search.filters")}
+                    if activeFilters > 0 {
+                        ({ formatInt32(int32(activeFilters)) })
+                    }
+                </button>
+            </div>
+
 
             <section class="search-filters" x-cloak x-show="openFilters" x-collapse>
                 <div class="p-4">
-                    <ol-island active="true" src="/_/assets/islands/search-filters.js" />
+                    <ol-island data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
                 </div>
             </section>
 

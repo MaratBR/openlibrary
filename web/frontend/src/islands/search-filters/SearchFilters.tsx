@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks'
+import { useMemo, useState } from 'preact/hooks'
 import {
   DetailedBookSearchQuery,
   detailedBookSearchQuerySchema,
@@ -8,8 +8,18 @@ import {
 import TagsInput from './TagsInput'
 import { _ } from '@/common/i18n'
 import RangeInput from './RangeInput'
+import { PreactIslandProps } from '../common'
+import { z } from 'zod'
 
-export default function SearchFilters() {
+const dataSchema = z
+  .object({
+    searchInputId: z.string().optional().nullable(),
+  })
+  .nullable()
+  .optional()
+
+export default function SearchFilters({ data }: PreactIslandProps) {
+  const parsedData = useMemo(() => dataSchema.parse(data), [data])
   const [filters, setFilters] = useState<DetailedBookSearchQuery>(getDetailedBookSearchQuery)
 
   function handleSubmit(event: SubmitEvent) {
@@ -18,6 +28,15 @@ export default function SearchFilters() {
     const queryParams = getQueryParams(filters)
 
     const url = new URL(window.location.href)
+
+    if (parsedData?.searchInputId) {
+      const input = document.getElementById(parsedData.searchInputId)
+      if (input instanceof HTMLInputElement) {
+        const value = input.value.trim()
+        if (value) queryParams.set('q', input.value)
+      }
+    }
+
     url.search = queryParams.toString()
     window.location.href = url.href
   }
