@@ -1,9 +1,13 @@
 .ol-container {
     @apply max-w-[80ch] mx-auto px-2;
+
+    &--big {
+        @apply max-w-[120ch];
+    }
 }
 
 .ol-container-padded-left {
-    padding-left: max(0px, calc((100% - 1300px) / 2));
+    padding-left: max(0px, calc((100% - 120ch) / 2));
 }
 
 /**

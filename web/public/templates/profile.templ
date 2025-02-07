@@ -11,7 +11,7 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetUserPinnedBooksResult) {
     }}
 
     @baseLayout(user.Name) {
-        <div class="ol-container py-10">
+        <div class="ol-container ol-container--big py-10">
             <section class="border bg-background rounded-lg overflow-hidden relative">
                 <div class="h-64 overflow-hidden">
                     <img alt="profile cover" aria-hidden="true" src="/_/embed-assets/profile_cover.jpg" />
@@ -62,11 +62,11 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetUserPinnedBooksResult) {
 
         <section class="profile-books" id="profile-books">
             <ul class="profile-books__list" id={bookSectionId}>
-                <div class="-mr-4" style="width: max(0px, calc((100vw - 1300px) / 2));"></div>
+                <div class="-mr-4" style="width: max(0px, calc((100vw - 120ch) / 2));"></div>
                 for _, book := range pinnedBooks.Books {
                     @userProfilePinnedBookCard(book.ID, book.Name, book.Cover)
                 }
-                <div class="-ml-4" style="width: max(0px, calc((100vw - 1300px) / 2))"></div>
+                <div class="-ml-4" style="width: max(0px, calc((100vw - 120ch) / 2))"></div>
             </ul>
         </section>
         <script>

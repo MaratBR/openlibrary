@@ -1,10 +1,8 @@
 .ol-tag {
     @apply 
-        inline-block overflow-hidden transition-shadow
-        hover:shadow-[0_2px_0_currentColor] hover:bg-highlight
-        p-2 !shadow-none bg-secondary 
-        active:bg-slate-800 active:text-primary-foreground dark:active:text-white
-        hover:outline hover:-outline-offset-1 hover:outline-2 hover:outline-slate-900;
+        inline-block overflow-hidden rounded-lg p-1 !shadow-none bg-secondary border border-secondary transition-colors
+        hover:border-slate-300
+        active:bg-slate-200 active:ring-2 ring-offset-2;
 
 
     &--adult {
