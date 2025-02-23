@@ -1,0 +1,27 @@
+.book-manager {
+    @apply grid grid-cols-[30ch_1fr];
+
+    &__menu {
+        @apply pt-4;
+
+        ul {
+            @apply flex flex-col items-stretch gap-2;
+
+            li {
+                & > a {
+                    @apply block font-medium p-2 rounded-md text-lg
+                        hover:bg-secondary hover:text-primary
+                        active:bg-muted-2;
+
+                        &[data-link-active-full=true] {
+                            @apply outline outline-2;
+                        }
+                }
+            }
+        }
+    }
+
+    &__body {
+        @apply pl-8;
+    }
+}

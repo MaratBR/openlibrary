@@ -21,7 +21,13 @@ templ BookPage(
     @bookPageLayout(book, readingListStatus) {
         @i18nExtractKeys(l, []string{ "common.more", "common.less", "common.save" })
 
-        <div x-ignore class="mt-4 __user-content">@templ.Raw(book.Summary)</div>
+        <div x-ignore class="mt-4 __user-content">
+            @templ.Raw(book.Summary)
+        </div>
+        <div class="mt-2 text-muted-foreground font-medium">
+            <span>{_t(l, "common.ageRating")}:&nbsp;&nbsp;</span>
+            @bookRatingBadge(book.AgeRating)
+        </div>
         <div class="mt-6">
             @bookTags(book.Tags)
         </div>
@@ -75,6 +81,12 @@ templ BookPage(
     }
 }
 
+templ bookRatingBadge(rating app.AgeRating) {
+    <span class="book-rating" data-rating={string(rating)}>
+        {string(rating)}
+    </span>
+}
+
 func convertBookDetailsToAlpineState(book *app.BookDetailsDto, readingList app.Nullable[app.BookReadingListDto]) string {
     var state struct {
         ReadingList app.Nullable[app.BookReadingListDto] `json:"rl"`
@@ -120,9 +132,9 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
             </div>
             <div class="ol-book-page__right">
                 <header>
-                    <h1 class="ol-page-header">{book.Name}</h1>
+                    <h1 class="page-header">{book.Name}</h1>
                     <p>
-                        <a class="ol-link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
+                        <a class="link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
                     </p>
                 </header>
 

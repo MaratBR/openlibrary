@@ -128,27 +128,12 @@ func splitByWithEscape(s string, c byte) []string {
 	return result
 }
 
-func GetStringArray(value url.Values, key string) []string {
-	values, ok := value[key]
-
-	if !ok || len(values) == 0 {
-		return nil
-	}
-
-	if len(values) == 1 {
-		return splitByWithEscape(values[0], ',')
-	} else {
-		return values
-	}
+func ParseStringArray(value string) []string {
+	return splitByWithEscape(value, ',')
 }
 
-func GetInt64Array(value url.Values, key string) []int64 {
-	strArr := GetStringArray(value, key)
-
-	if strArr == nil {
-		return nil
-	}
-
+func ParseInt64Array(value string) []int64 {
+	strArr := ParseStringArray(value)
 	i64Arr := []int64{}
 	for _, str := range strArr {
 		id, err := strconv.ParseInt(str, 10, 64)
@@ -160,7 +145,24 @@ func GetInt64Array(value url.Values, key string) []int64 {
 	}
 
 	return i64Arr
+}
 
+func GetStringArray(value url.Values, key string) []string {
+	values, ok := value[key]
+
+	if !ok || len(values) == 0 {
+		return nil
+	}
+
+	if len(values) == 1 {
+		return ParseStringArray(values[0])
+	} else {
+		return values
+	}
+}
+
+func GetInt64Array(value url.Values, key string) []int64 {
+	return ParseInt64Array(value.Get(key))
 }
 
 func GetUUIDArray(value url.Values, key string) []uuid.UUID {

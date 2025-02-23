@@ -1,0 +1,22 @@
+.tabs {
+    @apply flex gap-2;
+
+    .tab {
+        @apply p-2 cursor-pointer;
+    }
+
+    &--primary {
+        .tab {
+            @apply text-lg font-medium relative hover:bg-secondary;
+
+            &--active {
+                @apply text-primary;
+
+                &::after {
+                    content: ' ';
+                    @apply absolute bottom-0 left-0 right-0 h-[4px] bg-primary rounded-sm;
+                }
+            }
+        }
+    }
+}

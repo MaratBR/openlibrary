@@ -45,16 +45,16 @@ export function DropdownCore({ slotProps = {}, slots = {}, ...props }: DropdownP
   const handleInputFocus = useCallback(() => setOpen(true), [])
 
   return (
-    <div ref={rootRef} class="ol-dropdown" data-open={open} {...props}>
+    <div ref={rootRef} class="dropdown" data-open={open} {...props}>
       {slots.beforeInput}
-      <input class="ol-dropdown__input" onFocus={handleInputFocus} {...slotProps.input} />
+      <input class="dropdown__input" onFocus={handleInputFocus} {...slotProps.input} />
 
       <div
         aria-hidden={!open}
         data-dropdown-content
         onMouseDown={preventDefault}
         {...slotProps.menu}
-        class={clsx('ol-dropdown__menu', slotProps.menu?.class, slotProps.menu?.className)}
+        class={clsx('dropdown__menu', slotProps.menu?.class, slotProps.menu?.className)}
       />
     </div>
   )

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useMemo, useState } from 'preact/hooks'
 import { DefinedTagDto, searchTags } from './api'
 import { DropdownCore } from './DropdownCore'
-import { _ } from '@/common/i18n'
+
 
 export type TagsInputProps = {
   tags: DefinedTagDto[]
@@ -17,6 +17,15 @@ export default function TagsInput({ tags, onInput }: TagsInputProps) {
   useEffect(() => {
     defaultTagsPromise.then(setSearchResults)
   }, [])
+
+  const handleSearchInput = useMemo(
+    () =>
+      window.debounce((event: InputEvent) => {
+        const value = (event.target as HTMLInputElement).value
+        searchTags(value).then(setSearchResults)
+      }, 500),
+    [],
+  )
 
   function add(tag: DefinedTagDto) {
     if (tags.some((x) => x.id === tag.id)) return
@@ -50,7 +59,7 @@ export default function TagsInput({ tags, onInput }: TagsInputProps) {
                     remove(tag)
                   }}
                   class="h-5 hover:text-rose-600"
-                  aria-label={_('search.removeTag')}
+                  aria-label={window._('search.removeTag')}
                 >
                   <span class="material-symbols-outlined !text-[20px]">close</span>
                 </button>
@@ -60,6 +69,9 @@ export default function TagsInput({ tags, onInput }: TagsInputProps) {
         ),
       }}
       slotProps={{
+        input: {
+          onInput: handleSearchInput,
+        },
         menu: {
           className: 'max-h-[300px] overflow-y-auto',
           children: (

@@ -7,6 +7,18 @@ import (
 	"github.com/a-h/templ"
 )
 
+func GetCSRFToken(ctx context.Context) string {
+	v := ctx.Value(csrfTokenKey)
+	if v == nil {
+		return ""
+	}
+	if token, ok := v.(string); ok {
+		return token
+	} else {
+		return ""
+	}
+}
+
 func CSRFInputString(ctx context.Context) string {
 	v := ctx.Value(csrfTokenKey)
 	if v == nil {

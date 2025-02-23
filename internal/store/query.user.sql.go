@@ -329,7 +329,7 @@ func (q *Queries) GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]Ge
 const getUserWithDetails = `-- name: GetUserWithDetails :one
 select 
     users.id, users.name, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
-    (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned) as books_total,
+    (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned and chapters > 0) as books_total,
     (select count(*) from user_follower where followed_id = users.id) as followers,
     (select count(*) from user_follower where follower_id = users.id) as "following",
     (user_follower.created_at is not null)::bool as is_following

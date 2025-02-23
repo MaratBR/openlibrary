@@ -348,7 +348,7 @@ func (q *Queries) GetTopUserBooks(ctx context.Context, arg GetTopUserBooksParams
 const getUserBooks = `-- name: GetUserBooks :many
 select b.id, b.name, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned
 from books b
-where b.author_user_id = $1
+where b.author_user_id = $1 and chapters > 0
 order by b.is_pinned desc, b.created_at asc
 limit $2 offset $3
 `

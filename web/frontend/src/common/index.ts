@@ -1,4 +1,5 @@
 import './i18n'
+import './util'
 
 import { OverlayScrollbars } from 'overlayscrollbars'
 import 'overlayscrollbars/overlayscrollbars.css'
@@ -7,7 +8,7 @@ import 'overlayscrollbars/overlayscrollbars.css'
 ;(window as any).OverlayScrollbars = OverlayScrollbars
 document.dispatchEvent(new CustomEvent('overlayscrollbars-ready'))
 
-import './ol-global'
+import './__server__'
 import './delay'
 import '../lib/island'
 import '../toast/toast'

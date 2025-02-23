@@ -38,7 +38,7 @@ export const httpClient = ky.create({
   },
 })
 
-function getCsrfToken() {
+export function getCsrfToken() {
   try {
     return getCookie('csrf')
   } catch {

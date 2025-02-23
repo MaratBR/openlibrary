@@ -7,9 +7,18 @@ import "github.com/MaratBR/openlibrary/web/frontend"
 
 templ baseLayout(title string) {
     @htmlLayout(title) {
+        
         @siteHeader()
         { children... }
         @siteFooter()
+        <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
+    }
+}
+
+templ baseLayoutNoFooter(title string) {
+    @htmlLayout(title) {
+        @siteHeader()
+        { children... }
         <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
     }
 }
@@ -33,7 +42,7 @@ templ siteFooter() {
         version := app.AppVersion()
     }}
 
-    <footer id="site-footer" class="bg-secondary p-10">
+    <footer id="site-footer" class="p-10">
         <div class="ol-container">
             <a href="https://github.com/MaratBR/openlibrary" class="text-muted-foreground hover:text-foreground" target="_blank">
                 Powered by <span class="font-[500] font-title">OpenLibrary</span> <br />

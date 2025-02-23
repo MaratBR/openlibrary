@@ -32,15 +32,16 @@ templ Doc(
             @settings.AppendToHead
         }
         <noscript><style>.nojs-hidden{display: none;}</style></noscript>
+        @ServerData()
     </head>
     {{
-        bodyClasses := "m-0 font-text theme-default bg-background text-foreground"
+        bodyClasses := "m-0 font-text theme-default bg-background text-foreground h-screen"
         isDark := olhttp.GetUITheme(ctx) == "dark"
         if isDark {
             bodyClasses += " dark"
         }
     }}
-    <body class="font-text">
+    <body class={bodyClasses}>
         { children... }
         if settings.InstantClick {
             <script src="/_/embed-assets/instantclick.min.js" data-no-instant></script>

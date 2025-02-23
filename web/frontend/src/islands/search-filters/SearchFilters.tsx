@@ -6,7 +6,7 @@ import {
   getQueryParams,
 } from './api'
 import TagsInput from './TagsInput'
-import { _ } from '@/common/i18n'
+
 import RangeInput from './RangeInput'
 import { PreactIslandProps } from '../common'
 import { z } from 'zod'
@@ -44,7 +44,7 @@ export default function SearchFilters({ data }: PreactIslandProps) {
   return (
     <form onSubmit={handleSubmit}>
       <div class="mb-4">
-        <label class="ol-label font-semibold mb-2 text-md">{_('search.words')}</label>
+        <label class="label font-semibold mb-2 text-md">{window._('search.words')}</label>
         <RangeInput
           disableNegative
           value={filters.words}
@@ -52,7 +52,7 @@ export default function SearchFilters({ data }: PreactIslandProps) {
         />
       </div>
       <div class="mb-4">
-        <label class="ol-label font-semibold mb-2 text-md">{_('search.chapters')}</label>
+        <label class="label font-semibold mb-2 text-md">{window._('search.chapters')}</label>
         <RangeInput
           disableNegative
           value={filters.chapters}
@@ -61,7 +61,7 @@ export default function SearchFilters({ data }: PreactIslandProps) {
       </div>
 
       <div class="mb-4">
-        <label class="ol-label font-semibold mb-2 text-md">{_('search.chapters')}</label>
+        <label class="label font-semibold mb-2 text-md">{window._('search.chapters')}</label>
         <RangeInput
           disableNegative
           value={filters.wordsPerChapter}
@@ -70,7 +70,7 @@ export default function SearchFilters({ data }: PreactIslandProps) {
       </div>
 
       <div class="mb-4">
-        <label class="ol-label font-semibold mb-2 text-md">{_('search.includeTags')}</label>
+        <label class="label font-semibold mb-2 text-md">{window._('search.includeTags')}</label>
         <TagsInput
           tags={filters.includeTags}
           onInput={(tags) => setFilters({ ...filters, includeTags: tags })}
@@ -78,7 +78,7 @@ export default function SearchFilters({ data }: PreactIslandProps) {
       </div>
 
       <div class="mb-4">
-        <label class="ol-label font-semibold mb-2 text-md">{_('search.excludeTags')}</label>
+        <label class="label font-semibold mb-2 text-md">{window._('search.excludeTags')}</label>
         <TagsInput
           tags={filters.excludeTags}
           onInput={(tags) => setFilters({ ...filters, excludeTags: tags })}
@@ -86,7 +86,7 @@ export default function SearchFilters({ data }: PreactIslandProps) {
       </div>
 
       <button type="submit" class="ol-btn ol-btn--lg ol-btn--primary rounded-full">
-        {_('search.doSearch')}
+        {window._('search.doSearch')}
       </button>
     </form>
   )

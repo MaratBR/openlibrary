@@ -9,6 +9,7 @@
   box-shadow: 32px 0 hsl(var(--loader-color)), -32px 0 hsl(var(--loader-color));
   position: relative;
   margin-left: 32px;
+  margin-right: 32px;
   animation: flash 0.5s ease-out infinite alternate;
 }
 

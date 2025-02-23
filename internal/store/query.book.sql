@@ -14,7 +14,7 @@ order by "order";
 -- name: GetUserBooks :many
 select b.*
 from books b
-where b.author_user_id = $1
+where b.author_user_id = $1 and chapters > 0
 order by b.is_pinned desc, b.created_at asc
 limit $2 offset $3;
 

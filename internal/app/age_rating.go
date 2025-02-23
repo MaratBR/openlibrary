@@ -13,6 +13,15 @@ const (
 	AgeRatingNC17    AgeRating = "NC-17"
 )
 
+var AllRatings []AgeRating = []AgeRating{
+	AgeRatingG,
+	AgeRatingPG,
+	AgeRatingPG13,
+	AgeRatingR,
+	AgeRatingNC17,
+	AgeRatingUnknown,
+}
+
 func ageRatingDbValue(r AgeRating) store.AgeRating {
 	switch r {
 	case AgeRatingG:

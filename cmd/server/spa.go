@@ -92,7 +92,7 @@ func newSPAHandler(
 
 	})
 
-	devHandler.PreloadData("/user/__profile", func(r *http.Request, data *uiserver.Data) {
+	devHandler.PreloadData("/users/__profile", func(r *http.Request, data *uiserver.Data) {
 		data.ServerMetadata["iframeAllowed"] = true
 
 		userID, err := urlQueryParamUUID(r, "userId")
@@ -107,7 +107,7 @@ func newSPAHandler(
 		}
 	})
 
-	// devHandler.PreloadData("/user/{userID}", func(r *http.Request, data *uiserver.Data) {
+	// devHandler.PreloadData("/users/{userID}", func(r *http.Request, data *uiserver.Data) {
 	// 	userID := chi.URLParam(r, "userID")
 	// 	data.AddPreloadURL()
 	// })

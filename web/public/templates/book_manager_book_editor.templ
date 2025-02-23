@@ -1,0 +1,56 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+
+templ BookManagerNewBook() {
+    {{
+        l := i18nProvider.GetLocalizer(ctx)
+    }}
+
+	@bookManagerLayoutBase(_t(l, "bookManager.newBook.title"), false) {
+        <div class="ol-container ol-container--big">
+            <div class="pt-20">
+                @i18nExtractKeys(l, []string{
+                    "bookManager.newBook.title",
+                    "bookManager.newBook.namePlaceholder",
+                    "bookManager.newBook.next",
+                    "bookManager.newBook.create",
+                    "bookManager.newBook.selectRating",
+                    "bookManager.newBook.selectTags",
+                    "bookManager.newBook.pleaseReview",
+                    "bookManager.newBook.bookName",
+                    "bookManager.newBook.ageRating",
+                    "bookManager.newBook.tags",
+
+                    "bookManager.newBook.stageLabel0",
+                    "bookManager.newBook.stageLabel1",
+                    "bookManager.newBook.stageLabel2",
+                    "bookManager.newBook.stageLabel3",
+                })
+                for _, ageRating := range app.AllRatings {
+                    @i18nExtractKeys(l, []string{
+                        fmt.Sprintf("ageRating.%s.rating", ageRating),
+                        fmt.Sprintf("ageRating.%s.ratingDescription", ageRating),
+                        fmt.Sprintf("ageRating.%s.examples", ageRating),
+                        fmt.Sprintf("ageRating.%s.targetAudience", ageRating),
+                        fmt.Sprintf("ageRating.%s.parentalGuidance", ageRating),
+                    })
+                }
+                <ol-island active="true" src="/_/assets/islands/bookmanager-new-book.js" />
+            </div>
+        </div>
+    }
+}
+
+templ collapsibleText(text string) {
+    <div x-data="{open:false}">
+        <div @click="open=!open" role="button" class="rounded-md p-2 cursor-pointer font-medium hover:underline hover:bg-highlight">
+            {text}
+        </div>
+        <div x-show="open" x-collapse>
+            { children... }
+        </div>
+    </div>
+}

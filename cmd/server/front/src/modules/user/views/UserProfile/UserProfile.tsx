@@ -9,7 +9,7 @@ export default function UserProfile() {
   const id = `iframe${userId?.replace(/-/g, '')}`
 
   const iframeUrl = useMemo(
-    () => getIframeUrl(`/user/__profile?userId=${userId}`, false, true),
+    () => getIframeUrl(`/users/__profile?userId=${userId}`, false, true),
     [userId],
   )
 

@@ -1,4 +1,4 @@
-import { SelfUserDto } from '@/modules/user/api'
+import { SelfUserDto } from '@/modules/users/api'
 import { create } from 'zustand'
 
 type AuthState = {

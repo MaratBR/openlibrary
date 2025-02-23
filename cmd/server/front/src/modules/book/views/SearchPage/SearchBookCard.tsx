@@ -98,7 +98,7 @@ export default function SearchBookCard({ book }: { book: BookSearchItemState }) 
                   {book.name}
                 </NavLink>{' '}
                 by{' '}
-                <NavLink className="link-default" to={`/user/${book.author.id}`}>
+                <NavLink className="link-default" to={`/users/${book.author.id}`}>
                   {book.author.name}
                 </NavLink>
               </span>

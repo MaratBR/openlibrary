@@ -82,7 +82,7 @@ export function getQueryParams(query: DetailedBookSearchQuery): URLSearchParams 
 }
 
 export async function searchTags(query: string): Promise<DefinedTagDto[]> {
-  const response = await httpClient.get('/_api/tags', { searchParams: { query } })
+  const response = await httpClient.get('/_api/tags', { searchParams: { q: query } })
   const json = await response.json()
 
   return z.array(definedTagDtoSchema).parse(json)

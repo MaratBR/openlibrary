@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { PreactIslandProps } from '../common'
 import { evaluatePasswordStrength, generateStrongPassword } from '@/lib/password'
-import { _ } from '@/common/i18n'
+
 import clsx from 'clsx'
 
 export default function PasswordReset({ rootElement }: PreactIslandProps) {
@@ -32,7 +32,7 @@ export default function PasswordReset({ rootElement }: PreactIslandProps) {
       <div class="relative mb-10 mr-2">
         <input
           name="password"
-          class="ol-input"
+          class="input"
           onInput={(e) => setValue((e.target as HTMLInputElement).value)}
           value={value}
         />
@@ -44,11 +44,11 @@ export default function PasswordReset({ rootElement }: PreactIslandProps) {
             'text-yellow-800 bg-yellow-200 border-yellow-600 border': pwdEval.strength === 'OK',
           })}
         >
-          {_(`passwordStrength.${pwdEval.strength}`)}
+          {window._(`passwordStrength.${pwdEval.strength}`)}
         </div>
       </div>
       <button onClick={handleCancel} class="ol-btn ol-btn--secondary ol-btn-sm">
-        {_('common.cancel')}
+        {window._('common.cancel')}
       </button>
     </div>
   )

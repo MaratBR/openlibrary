@@ -26,21 +26,21 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetUserPinnedBooksResult) {
                         <h1 class="font-title text-4xl">{ user.Name }</h1>
                     </div>
                     <div class="flex gap-2">
-                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/user/%s/books", user.ID)) }>
+                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/users/%s/books", user.ID)) }>
                             <div class="text-2xl font-semibold">
                                 { commonutil.FormatInt(int(user.BooksTotal)) }
                             </div>
                             { _tc(l, "user.books", int(user.BooksTotal)) }
                         </a>
 
-                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/user/%s/followers", user.ID)) }>
+                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/users/%s/followers", user.ID)) }>
                             <div class="text-2xl font-semibold">
                                 { commonutil.FormatInt(int(user.Followers)) }
                             </div>
                             { _tc(l, "user.followers", int(user.Followers)) }
                         </a>
 
-                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/user/%s/following", user.ID)) }>
+                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/users/%s/following", user.ID)) }>
                             <div class="text-2xl font-semibold">
                                 { commonutil.FormatInt(int(user.Following)) }
                             </div>

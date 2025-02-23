@@ -10,6 +10,7 @@ update = "Update"
 report = "Report"
 cancel = "Cancel"
 search = "Search"
+ageRating = "Age rating"
 
 [time]
 justNow = "Just now"
@@ -35,6 +36,7 @@ logout = "Log out"
 [account]
 profile = "Profile"
 settings = "Settings"
+bookManager = "Book manager"
 
 [gender]
 m = "Male"
@@ -88,7 +90,6 @@ read = "Read"
 paused = "Paused"
 dnf = "Did not finish"
 
-
 [reviews]
 title = "Reviews"
 myReview = "My review"
@@ -103,6 +104,53 @@ library = "Library"
 search = "Search"
 logIn = "Log in"
 signUp = "Sign up"
+
+[ageRating]
+example = "Example"
+targetAudience = "Target audience"
+parentalGuidance = "Parental guidance"
+
+[ageRating."?"]
+rating = "Unknown rating or unrated"
+ratingDescription = "Content may or may now contain elements not suitable for children under the age of 18."
+examples = "Content that was left unrated"
+targetAudience = "Due to unknown nature of the work, children are discouraged from viewing this content"
+parentalGuidance = "Recommended parental guidance"
+
+[ageRating.G]
+rating = "General Audience"
+ratingDescription = "Content suitable for all ages. Contains no material that parents would find objectionable or offensive. May include mild fantasy violence but no realistic scenarios. No profanity, sexual content, drug use, or mature themes."
+examples = "Educational content, family entertainment, nature documentaries"
+targetAudience = "All ages, particularly suitable for young children"
+parentalGuidance = "No parental guidance necessary"
+
+[ageRating.PG]
+rating = "Parental Guidance Suggested"
+ratingDescription = "Some material may not be suitable for young children. May contain mild language, brief violence, mild scary moments, or suggestive content. No explicit content but some scenes might need parental explanation."
+examples = "Mild adventure stories, family comedies, sports documentaries"
+targetAudience = "General audience, but some guidance needed for children under 8"
+parentalGuidance = "Parents should consider whether content is appropriate for young children"
+
+[ageRating.PG-13]
+rating = "Parental Guidance for Children Under 13"
+ratingDescription = "Some material may be inappropriate for children under 13. May contain moderate violence, brief strong language, suggestive content, or drug references. No explicit sexual content or graphic violence."
+examples = "Teen dramas, action movies, social media platforms"
+targetAudience = "Teenagers and adults"
+parentalGuidance = "Parents strongly cautioned for children under 13"
+
+[ageRating.R]
+rating = "Restricted"
+ratingDescription = "Contains adult material. Anyone under 17 requires accompanying parent or adult guardian. May include strong language, intense violence, sexual content, drug use, or mature themes."
+examples = "Intense dramas, horror movies, war documentaries"
+targetAudience = "Adults and mature teenagers"
+parentalGuidance = "Not recommended for anyone under 17 without adult supervision"
+
+[ageRating.NC-17]
+rating = "Adults Only"
+ratingDescription = "Clearly adult content. No one 17 and under admitted. May contain explicit sexual content, graphic violence, or other content unsuitable for minors. Most challenging or controversial mature themes."
+examples = "Explicit adult content, extreme violence, graphic documentaries"
+targetAudience = "Adults only (18+)"
+parentalGuidance = "Not appropriate for anyone under 18 under any circumstances"
 
 [book]
 words = "{{.count}} words"
@@ -151,6 +199,47 @@ archiveDescription = "Books that you read or did not finish will appear here"
 
 #####################
 #                   #
+# BOOK MANAGER      #
+#                   #
+#####################
+
+[bookManager]
+home = "Home"
+books = "Your books"
+collections = "Collections"
+noBooks = "You have yet to write your first book! If you want to try yourself as as an author you can do that here... or not we're coal either way."
+writeYourFirstBook = "Write your first book"
+createNewBook = "Create new book"
+title = "Book manager"
+
+[bookManager.newBook]
+title = "New book"
+namePlaceholder = "Book name"
+next = "Next"
+create = "Create"
+selectRating = "Select age rating of the book"
+selectTags = "Select books tags"
+pleaseReview = "Please review the result below. The book will be created empty and until you create first chapter it wil not appear in search results."
+bookName = "Name"
+tags = "Tags"
+ageRating = "Age rating"
+stageLabel0 = "1. Name"
+stageLabel1 = "2. Age rating"
+stageLabel2 = "3. Tags"
+stageLabel3 = "4. Review"
+
+[bookManager.edit]
+cover = "Cover"
+generalInformation = "General information"
+name = "Name"
+summary = "Summary"
+tags = "Tags"
+save = "Save"
+ageRating = "Age rating"
+
+
+#####################
+#                   #
 # ADMIN PAGE        #
 #                   #
 #####################
@@ -195,7 +284,7 @@ generalInformation = "General information"
 avatar = "Avatar"
 accountManagement = "Account management"
 rolesAndPermissions = "Roles and permissions"
-providedByGravatar = "This user's avatar is provided by <a class=\"ol-link ol-link--primary\" target=\"_blank\" href=\"https://gravatar.com\">Gravatar</a>"
+providedByGravatar = "This user's avatar is provided by <a class=\"link link--primary\" target=\"_blank\" href=\"https://gravatar.com\">Gravatar</a>"
 resetPassword = "Reset password"
 userWasUpdated = "User was successfully updated"
 noUsers = "No users found, adjust your search query or create more tags"

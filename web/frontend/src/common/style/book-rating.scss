@@ -1,0 +1,27 @@
+.book-rating {
+    @apply p-2 rounded-sm inline-block min-w-9 text-center;
+    
+    &[data-rating] {
+        @apply bg-gray-500 text-white;
+    }
+
+    &[data-rating=G] {
+        @apply bg-[#006835] text-white;
+    }
+
+    &[data-rating=PG] {
+        @apply bg-[#f15a24] text-white;
+    }
+
+    &[data-rating=PG-13] {
+        @apply bg-[#955ea9] text-white;
+    }
+
+    &[data-rating=R] {
+        @apply bg-[#d8121a] text-white;
+    }
+
+    &[data-rating=NC-17] {
+        @apply bg-[#1b3e9b] text-white;
+    }
+}

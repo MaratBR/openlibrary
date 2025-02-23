@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { selfUserDtoSchema } from './modules/user/api'
+import { selfUserDtoSchema } from './modules/users/api'
 
 const serverDataSchema = z.object({
   serverPreload: z.boolean(),

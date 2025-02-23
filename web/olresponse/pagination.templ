@@ -35,17 +35,17 @@ templ Pagination(
         }
     }}
 
-    <nav role="listbox" class="ol-pagination">
+    <nav role="listbox" class="pagination">
         for i := page - left; i < page; i++ {
-            <a href={ getPageURL(ctx, i) } class="ol-pagination__item">
+            <a href={ getPageURL(ctx, i) } class="pagination__item">
                 { fmt.Sprintf("%d", i) }
             </a>
         }
-        <a href="#" class="ol-pagination__item ol-pagination__item--active">
+        <a href="#" class="pagination__item pagination__item--active">
             { fmt.Sprintf("%d", page) }
         </a>
         for i := page + 1; i <= page + right; i++ {
-            <a href={ getPageURL(ctx, i) } class="ol-pagination__item">
+            <a href={ getPageURL(ctx, i) } class="pagination__item">
                 { fmt.Sprintf("%d", i) }
             </a>
         }

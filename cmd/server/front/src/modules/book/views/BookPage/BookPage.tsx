@@ -37,7 +37,7 @@ export default function BookPage() {
           <div className="book-page-header">
             <h1 className="book-title">{data.name}</h1>
             <div className="book-author">
-              <NavLink className="link-default" to={`/user/${data.author.id}`}>
+              <NavLink className="link-default" to={`/users/${data.author.id}`}>
                 {data.author.name}
               </NavLink>
             </div>

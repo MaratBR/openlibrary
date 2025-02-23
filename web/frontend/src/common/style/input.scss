@@ -1,25 +1,25 @@
-.ol-input {
+.input {
     @apply 
         border-gray-400 dark:border-gray-600 border 
         rounded-sm px-3 w-full bg-background
         hover:border-black dark:hover:border-white
-        focus:outline focus:border-current text-foreground
+        focus:outline focus:outline-primary focus:border-primary text-foreground
         disabled:opacity-80 disabled:pointer-events-none;
 }
 
-input.ol-input, select.ol-input {
+input.input, select.input {
     @apply h-10;
 }
 
-textarea.ol-input {
+textarea.input {
     @apply pt-2;
 }
 
-.ol-input-dropdown {
+.input-dropdown {
     @apply hidden;
 }
 
-.ol-label {
+.label {
     @apply block text-sm text-foreground;
 
     &[for] {
@@ -27,11 +27,11 @@ textarea.ol-input {
     }
 }
 
-.ol-dropdown {
+.dropdown {
     @apply 
         border-gray-400 dark:border-gray-200 border 
         rounded-sm w-full bg-background relative
-        transition-all;
+        transition-all box-content;
 
     &__input {
         @apply outline-none w-full h-10 px-3 bg-transparent;
@@ -57,5 +57,19 @@ textarea.ol-input {
 
     &[data-open=true] &__input {
         @apply bg-secondary rounded-sm;
+    }
+}
+
+.form-control {
+    &--horizontal {
+        @apply md:grid md:grid-cols-[400px_1fr];
+    }
+
+    &__label {
+        @apply text-foreground p-2;
+    }
+
+    &__value {
+        @apply p-2;
     }
 }

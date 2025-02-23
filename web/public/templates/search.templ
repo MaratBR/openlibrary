@@ -47,7 +47,7 @@ templ SearchPage(
         }}
 
         <div class="ol-container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
-            <h1 class="ol-page-header">
+            <h1 class="page-header">
                 if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
                     {{ firstTag := explainedQuery.IncludeTags[0] }}
                     <span>{ firstTag.Name }</span>
@@ -57,7 +57,7 @@ templ SearchPage(
             </h1>
 
             <form class="mt-5">
-                <input id="search-input" name="q" class="ol-input p-6 rounded-full text-lg w-full" value={ explainedQuery.Query } />
+                <input id="search-input" name="q" class="input p-6 rounded-full text-lg w-full" value={ explainedQuery.Query } />
             </form>
 
             <div class="flex gap-2 my-4">
@@ -100,10 +100,10 @@ templ SearchPage(
                             </div>
                             
                             <div class="ol-book-search-card__right">
-                                <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="ol-link ol-book-search-card__link">{ book.Name }</a>                    
+                                <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="link ol-book-search-card__link">{ book.Name }</a>                    
                                 <br />
                                 by
-                                <a class="ol-link ol-book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>
+                                <a class="link ol-book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>
                                     { book.Author.Name }
                                 </a>
 
@@ -182,7 +182,7 @@ templ SimpleSearch() {
         <main class={ simpleSearchCSSRoot() }>
             <img src="/_/embed-assets/logo.svg" />
             <form method="get" action="/search">
-                <input placeholder={_t(l, "search.search")} class="w-96 ol-input rounded-full text-lg p-6" name="query" />
+                <input placeholder={_t(l, "search.search")} class="w-96 input rounded-full text-lg p-6" name="query" />
                 <div class="flex gap-2 justify-center mt-8">
                     <a href="/random" class="ol-btn ol-btn--secondary rounded-full">
                         {_t(l, "search.feelingLucky")}

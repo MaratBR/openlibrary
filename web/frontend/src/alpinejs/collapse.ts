@@ -1,4 +1,3 @@
-import { _ } from '@/common/i18n'
 import Alpine from 'alpinejs'
 
 Alpine.data('collapseContent', () => ({

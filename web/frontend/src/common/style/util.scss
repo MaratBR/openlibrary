@@ -13,10 +13,21 @@
 /**
  * Main page header
  */ 
-.ol-page-header {
+.page-header {
     @apply font-[500] text-3xl font-title;
 
     &--big {
         @apply text-4xl;
+    }
+}
+
+.ol-dl {
+    @apply grid grid-cols-[3fr_7fr];
+
+    dt {
+        @apply text-muted-foreground font-medium mt-4;
+    }
+
+    dd {
     }
 }

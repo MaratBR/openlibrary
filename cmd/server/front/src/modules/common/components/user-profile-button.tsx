@@ -30,7 +30,7 @@ export default function UserProfileButton() {
       </PopoverTrigger>
       <PopoverContent className="p-0" align="end">
         <div className="p-2 space-y-2">
-          <NavLink to={`/user/${user.id}`} className="menu-item" onClick={closePopover}>
+          <NavLink to={`/users/${user.id}`} className="menu-item" onClick={closePopover}>
             <User /> Profile
           </NavLink>
           <NavLink to={`/account/settings`} className="menu-item" onClick={closePopover}>

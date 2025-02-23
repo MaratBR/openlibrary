@@ -26,6 +26,8 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	bookService := app.NewBookService(db, tagsService, uploadService, readingListService, reviewsService)
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, uploadService, userService), h.cache)
 
+	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService)
+
 	h.r.Group(func(r chi.Router) {
 		r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
 			OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
@@ -60,7 +62,6 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		})
 
 		r.Route("/library", func(r chi.Router) {
-			r.Use()
 			c := newLibraryController(readingListService)
 			c.Register(r)
 		})
@@ -78,6 +79,11 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 			r.Get("/tags", apiTagsController.Tags)
 		})
-	})
 
+		newBookManagerController(bookManagerService).Register(r)
+	})
+}
+
+func redirectToLogin(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/login", http.StatusFound)
 }

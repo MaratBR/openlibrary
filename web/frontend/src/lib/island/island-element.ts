@@ -73,24 +73,44 @@ class OLIslandElement extends HTMLElement {
     this._isCreating = true
 
     this._showLoader()
-    const island = await this.getIsland()
+    let island: OLIsland
+    try {
+      ;[island] = await Promise.all([
+        this.getIsland(),
+        new Promise((resolve) => {
+          setTimeout(resolve, 300)
+        }),
+      ])
+    } catch (e: unknown) {
+      console.error('[ol-island] getIsland call failed, error:', e)
+      this._isCreating = false
+      return
+    }
+
     window.requestAnimationFrame(() => {
       if (!this.active) {
         console.warn('[ol-island] by the time island was ready it was already inactive')
         return
       }
 
-      this.childNodes.forEach((node) => {
-        if (node instanceof HTMLTemplateElement) {
-          return
-        }
-        node.remove()
-      })
-      this.dispatchEvent(new CustomEvent('island-before-mount'))
-      console.debug('[ol-island] mount', island)
-      this._unmount = island.mount(this, this._getData())
-      this.dispatchEvent(new CustomEvent('island-mount'))
-      this._isCreating = false
+      try {
+        this._clearContent()
+        this.dispatchEvent(new CustomEvent('island:before-mount'))
+        this._unmount = island.mount(this, this._getData())
+        console.debug('[ol-island] mount', island)
+        this.dispatchEvent(new CustomEvent('island:mount'))
+      } finally {
+        this._isCreating = false
+      }
+    })
+  }
+
+  private _clearContent() {
+    this.childNodes.forEach((node) => {
+      if (node instanceof HTMLTemplateElement) {
+        return
+      }
+      node.remove()
     })
   }
 
@@ -112,7 +132,10 @@ class OLIslandElement extends HTMLElement {
   }
 
   private _destroy() {
-    if (!this._unmount) return
+    if (!this._unmount) {
+      this._clearContent()
+      return
+    }
 
     this.dispatchEvent(new CustomEvent('island:before-destroy'))
     this._unmount()
@@ -129,7 +152,11 @@ class OLIslandElement extends HTMLElement {
 
     if (src) {
       const module: unknown = await import(src)
-      return getIslandFromModule(module)
+      const name = this.getAttribute('name') || 'default'
+      const island = getIslandFromModule(module, name)
+      if (island) return island
+      console.error(`[ol-island] module ${src}`, module)
+      throw new Error(`Island ${name} is not found in ${src}`)
     }
     throw new Error('Island src is not specified')
   }
@@ -156,10 +183,14 @@ declare global {
   }
 }
 
-function getIslandFromModule(module: unknown) {
+function getIslandFromModule(module: unknown, name: string): OLIsland | undefined {
   if (typeof module !== 'object') throw new Error('module is not an object')
   if (module === null) throw new Error('module is null')
   if (!Object.hasOwnProperty.call(module, 'default'))
     throw new Error('module has no default export')
-  return (module as { default: OLIsland }).default
+
+  let island: OLIsland | undefined = (module as Record<string, OLIsland>)[name]
+  if (island) return island
+  island = (module as { default: Record<string, OLIsland> }).default[name]
+  return island
 }

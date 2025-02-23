@@ -61,7 +61,7 @@ export default function BookReview({ review, isAuthor, isEditable, bookId }: Boo
       })}
     >
       <div className="book-review__user">
-        <NavLink to={`/user/${review.user.id}`} className="size-[84px]">
+        <NavLink to={`/users/${review.user.id}`} className="size-[84px]">
           <div className="inline-block overflow-hidden rounded-full bg-muted">
             <img className="w-21 h-21" src={review.user.avatar} aria-hidden="true" />
           </div>
@@ -70,7 +70,7 @@ export default function BookReview({ review, isAuthor, isEditable, bookId }: Boo
 
       <div className="book-review__content">
         <div className="book-review__username">
-          <NavLink className="link-default text-lg" to={`/user/${review.user.id}`}>
+          <NavLink className="link-default text-lg" to={`/users/${review.user.id}`}>
             {review.user.name}
           </NavLink>
           {isAuthor && <AuthorQuill />}

@@ -34,13 +34,13 @@ templ bookReview(
         id={fmt.Sprintf("review-%s", review.User.ID.String())}>
 
         <div>
-            <img class="ol-avatar" src={ review.User.Avatar } />
+            <img class="avatar" src={ review.User.Avatar } />
         </div>
 
 
         <div>
             <span class="mb-2 flex gap-1">
-                <a class="ol-link text-lg" href={ templ.SafeURL(fmt.Sprintf("/users/%s", review.User.ID)) }>{ review.User.Name }</a>
+                <a class="link text-lg" href={ templ.SafeURL(fmt.Sprintf("/users/%s", review.User.ID)) }>{ review.User.Name }</a>
                 if isAuthor {
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <g
@@ -115,7 +115,7 @@ templ BookMyReview(
                 @jsonTemplate("island-review-editor-data", ratingAndReview.Review.Value)
                 <div class="grid grid-cols-[110px_auto]" x-show="!edit&&!loading">
                     <div>
-                        <img class="ol-avatar" src={ review.User.Avatar } />
+                        <img class="avatar" src={ review.User.Avatar } />
                     </div>
 
                     <div>
@@ -143,7 +143,7 @@ templ BookMyReview(
                     x-show="edit"
                     :active="loading||edit"
                     @review:updated="onUpdated($event.detail)"
-                    @island-mount="onEditorReady()" />
+                    @island:mount="onEditorReady()" />
             </div>
         }
         
@@ -153,7 +153,7 @@ templ BookMyReview(
                     src="/_/assets/islands/review-editor.js" 
                     :active="loading||edit"
                     @review:updated="onUpdated($event.detail)"
-                    @island-mount="onEditorReady()" />
+                    @island:mount="onEditorReady()" />
             </div>
 
 

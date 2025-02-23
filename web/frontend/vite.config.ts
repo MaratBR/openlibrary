@@ -75,10 +75,15 @@ const ENTRIES = [
 
   'book-reader',
 
+  'bookmanager-common',
+
   'islands/book-card-preview',
   'islands/review-editor',
   'islands/search-filters',
   'islands/admin-password-reset',
+
+  'islands/bookmanager-new-book',
+  'islands/bookmanager-book',
 ]
 
 export default defineConfig({

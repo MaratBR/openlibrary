@@ -6,7 +6,7 @@ import { Editor, EditorOptions } from '@tiptap/core'
 import { httpUpdateReview, ratingSchema, ReviewDto, reviewDtoSchema } from './api'
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { PreactIslandProps } from '../common'
-import { _ } from '@/common/i18n'
+
 
 export default function ReviewEditor({ rootElement }: PreactIslandProps) {
   const rootEl = useRef<HTMLDivElement | null>(null)
@@ -77,7 +77,7 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
         class="ol-btn ol-btn--lg ol-btn--primary rounded-full mt-3"
         onClick={() => handleSave()}
       >
-        {_('common.save')}
+        {window._('common.save')}
       </button>
     </div>
   )

@@ -14,27 +14,27 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     }}
 
     @dashboardLayout(pageTitle) {
-        <div class="ol-admin-page-content relative">
+        <div class="admin-page-content relative">
             <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
-                <input value={ query.Query } x-model="q" class="ol-input w-64 mr-2" name="q" placeholder={ _t(l, "common.search") } />
+                <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ _t(l, "common.search") } />
                 <button type="submit" :disabled="q.trim()===''" class="ol-btn ol-btn--secondary">
                     <span class="material-symbols-outlined">search</span>
                 </button>
             </form>
 
 
-            <header class="ol-admin-page-header">
+            <header class="admin-page-header">
                 <h1 class="text-3xl font-title">{ pageTitle }</h1>
             </header>
 
             <div class="flex gap-3">
-                <a href="?usersFilter.role=admin" class="ol-link ol-link--primary">{ _t(l, "role.admin") }</a>|
-                <a href="?usersFilter.role=system" class="ol-link ol-link--primary">{ _t(l, "role.system") }</a>|
-                <a href="?usersFilter.role=moderator" class="ol-link ol-link--primary">{ _t(l, "role.moderator") }</a>|
-                <a href="?" class="ol-link ol-link--primary">{ _t(l, "user.allUsers") }</a>
+                <a href="?usersFilter.role=admin" class="link link--primary">{ _t(l, "role.admin") }</a>|
+                <a href="?usersFilter.role=system" class="link link--primary">{ _t(l, "role.system") }</a>|
+                <a href="?usersFilter.role=moderator" class="link link--primary">{ _t(l, "role.moderator") }</a>|
+                <a href="?" class="link link--primary">{ _t(l, "user.allUsers") }</a>
             </div>
 
-            <div class="ol-admin-card mt-4">
+            <div class="admin-card mt-4">
 
                 {{
                     pagination := olresponse.Pagination(resp.Page, uint32(resp.TotalPages), 9)
@@ -69,12 +69,12 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                         for _, user := range resp.Users {
                             <tr>
                                 <td>
-                                    <span class="ol-admin-id !text-xs">
+                                    <span class="admin-id !text-xs">
                                         { user.ID.String() }
                                     </span>
                                 </td>
                                 <td>
-                                    <a class="ol-link ol-link--primary" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) } target="_blank">
+                                    <a class="link link--primary" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) } target="_blank">
                                         { user.Name }
                                         <span class="material-symbols-outlined !text-sm">open_in_new</span>
                                     </a>
@@ -120,31 +120,31 @@ templ User(user *app.UserDetailsDto) {
     }}
 
     @dashboardLayout(user.Name) {
-        <div class="ol-admin-page-content">
-            <header class="ol-admin-page-header">
+        <div class="admin-page-content">
+            <header class="admin-page-header">
                 <h1 class="text-3xl flex items-center gap-1 font-title">
-                    <a href="/admin/users" class="ol-link">{ _t(l, "admin.users.title") }</a>
+                    <a href="/admin/users" class="link">{ _t(l, "admin.users.title") }</a>
                     <span class="mx-2 text-muted-foreground text-[0.8em]">/</span>
                     {user.Name}
                 </h1>
             </header>
 
-            <section class="ol-admin-card">
+            <section class="admin-card">
                 <form method="post">
                     @csrf.CSRFInputTempl(ctx)
 
                     @userFormSection("user-general-information", _t(l, "admin.users.generalInformation")) {
-                        <div class="ol-admin-form-field">
-                            <div class="ol-admin-form-field__label">
+                        <div class="admin-form-field">
+                            <div class="admin-form-field__label">
                                 <label>{ _t(l, "admin.users.name") }</label>
                             </div>
-                            <div class="ol-admin-form-field__value">
-                                <input  disabled name="name" class="ol-input" value={ user.Name } />
+                            <div class="admin-form-field__value">
+                                <input  disabled name="name" class="input" value={ user.Name } />
                             </div>
                         </div>
 
-                        <div class="ol-admin-form-field">
-                            <div class="ol-admin-form-field__label">
+                        <div class="admin-form-field">
+                            <div class="admin-form-field__label">
                                 <label>{ _t(l, "admin.users.gender") }</label>
                             </div>
                             {{
@@ -155,11 +155,11 @@ templ User(user *app.UserDetailsDto) {
                                     genderType = user.About.Gender
                                 }
                             }}
-                            <div class="ol-admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
+                            <div class="admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
                                 <select 
                                     x-model="genderType" 
                                     name="gender" 
-                                    class="ol-input">
+                                    class="input">
                                     <option
                                         if genderType == "" {
                                             selected
@@ -182,21 +182,21 @@ templ User(user *app.UserDetailsDto) {
                                         value="other">{ _t(l, "gender.o") }</option>
                                 </select>
 
-                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="ol-input mt-2" />
+                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="input mt-2" />
                             </div>
                         </div>
 
-                        <div class="ol-admin-form-field">
-                            <div class="ol-admin-form-field__label">
+                        <div class="admin-form-field">
+                            <div class="admin-form-field__label">
                                 <label>{ _t(l, "admin.users.about") }</label>
                             </div>
-                            <div class="ol-admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
-                                <textarea rows="8" name="about" class="ol-input">{user.About.Bio}</textarea>
+                            <div class="admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
+                                <textarea rows="8" name="about" class="input">{user.About.Bio}</textarea>
                             </div>
                         </div>
 
                         <div class="flex gap-2 mb-2">
-                            <img class="ol-avatar border size-32 rounded-none" src={ user.Avatar.LG } />
+                            <img class="avatar border size-32 rounded-none" src={ user.Avatar.LG } />
                             <p>
                                 @templ.Raw(l.MustLocalize(&i18n.LocalizeConfig{
                                     MessageID: "admin.users.providedByGravatar",
@@ -205,12 +205,12 @@ templ User(user *app.UserDetailsDto) {
                         </div>
                     }
                     @userFormSection("user-permissions", _t(l, "admin.users.rolesAndPermissions")) {
-                        <div class="ol-admin-form-field">
-                            <div class="ol-admin-form-field__label">
+                        <div class="admin-form-field">
+                            <div class="admin-form-field__label">
                                 <label>{ _t(l, "admin.users.role") }</label>
                             </div>
-                            <div class="ol-admin-form-field__value">
-                                <select name="role" class="ol-input">
+                            <div class="admin-form-field__value">
+                                <select name="role" class="input">
                                     for _, role := range app.AllRoles {
                                         <option 
                                             if role == user.Role {
@@ -222,7 +222,7 @@ templ User(user *app.UserDetailsDto) {
                                     }
                                 </select>
 
-                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="ol-input mt-2" />
+                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="input mt-2" />
                             </div>
                         </div>
                     }

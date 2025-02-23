@@ -3,19 +3,21 @@
 @import "./style/util.scss";
 
 @import "./style/button.scss";
-@import "./style/table.scss";
-@import "./style/input.scss";
 @import "./style/checkbox.scss";
+@import "./style/input.scss";
+@import "./style/table.scss";
 
+@import "./style/age-rating.scss";
 @import "./style/avatar.scss";
+@import "./style/book-rating.scss";
 @import "./style/loader.css";
 @import "./style/nav.scss";
 @import "./style/pagination.scss";
+@import "./style/star-rating.scss";
+@import "./style/tabs.scss";
 @import "./style/tag.scss";
 @import "./style/toast.scss";
 @import "./style/user-content.scss";
-@import "./style/star-rating.scss";
-
 
 @import "./style/library.scss";
 @import "./style/profile.scss";
@@ -31,11 +33,11 @@
     @apply border-border;
 }
 
-.ol-link {
+.link {
     @apply text-foreground/80 underline-offset-4 hover:text-foreground hover:underline focus:underline;
 }
 
-.ol-link--primary {
+.link--primary {
     @apply text-blue-600 hover:text-blue-900;
 }
 
