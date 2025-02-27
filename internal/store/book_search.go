@@ -56,7 +56,6 @@ type BookSearchRow struct {
 	ID                 int64              `db:"id"`
 	Name               string             `db:"name"`
 	Summary            string             `db:"summary"`
-	Favorites          int32              `db:"favorites"`
 	CreatedAt          pgtype.Timestamptz `db:"created_at"`
 	AgeRating          AgeRating          `db:"age_rating"`
 	Words              int                `db:"words"`
@@ -128,7 +127,6 @@ func createBookSearchSelect(req *BookSearchRequest) *goqu.SelectDataset {
 			goqu.I("books.words"),
 			goqu.I("books.chapters"),
 			goqu.I("books.tag_ids"),
-			goqu.I("books.favorites"),
 			goqu.I("books.cached_parent_tag_ids"),
 			goqu.I("books.author_user_id"),
 			goqu.I("books.has_cover"),

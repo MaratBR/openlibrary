@@ -24,7 +24,7 @@ Alpine.data('collapseContent', () => ({
   recalculate() {
     const el = this.$refs.content
     const maxHeight = +(this.$root.dataset.collapsibleHeight || '')
-    this.can = el.clientHeight > maxHeight
+    this.can = el.clientHeight + 20 > maxHeight
   },
 
   content: {

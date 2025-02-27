@@ -42,7 +42,7 @@ func (s *bookService) GetUserBooks(ctx context.Context, input GetUserBooksQuery)
 
 	hasMore := len(rows) == input.Limit+1
 	books := make([]PinnedBookDto, 0, min(len(rows), input.Limit))
-	for i := 0; i < len(rows); i++ {
+	for i := 0; i < min(len(rows), input.Limit); i++ {
 		books = append(books, PinnedBookDto{
 			ID:        rows[i].ID,
 			Name:      rows[i].Name,

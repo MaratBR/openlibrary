@@ -6,7 +6,7 @@ toolchain go1.23.3
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.1
-	github.com/a-h/templ v0.3.819
+	github.com/a-h/templ v0.3.833
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/andybalholm/brotli v1.1.1
 	github.com/doug-martin/goqu/v9 v9.19.0

@@ -1,7 +1,15 @@
 **/dist
+
+# data for db population
 /ao3-books
 /rr-books
+
+# js stuff
 **/node_modules
 
+# templ
 *_templ.txt
 *_templ.go
+
+# deps
+__vips/

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand/v2"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -58,7 +59,8 @@ func (s *Setup) Run(options SetupOptions) error {
 	// }
 
 	slog.Info("importing rr books")
-	err = massImport(context.Background(), options.BooksLocation, userIds, s.bookManagerService, s.tagsService)
+
+	err = massImport(context.Background(), options.BooksLocation, userIds, s.bookManagerService, s.tagsService, runtime.NumCPU())
 	if err != nil {
 		return err
 	}

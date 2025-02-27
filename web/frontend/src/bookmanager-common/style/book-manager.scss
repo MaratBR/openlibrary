@@ -9,12 +9,16 @@
 
             li {
                 & > a {
-                    @apply block font-medium p-2 rounded-md text-lg
-                        hover:bg-secondary hover:text-primary
+                    @apply block font-normal p-2 rounded-md text-lg
+                        hover:bg-secondary
                         active:bg-muted-2;
 
+                        &:not([data-link-active-full=true]) {
+                            @apply hover:text-primary hover:font-semibold;
+                        }
+
                         &[data-link-active-full=true] {
-                            @apply outline outline-2;
+                            @apply bg-secondary font-semibold;
                         }
                 }
             }

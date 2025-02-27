@@ -243,13 +243,13 @@ templ BookMyReview(
 
 templ collapsibleRawHtml(id, html string) {
     {{ 
-        canBeCollapsed := approximateLines(831, 18, html) >= 8
+        canBeCollapsed :=  approximateLines(831, 18, html) >= 8
     }}
 
    @collapsible(250, canBeCollapsed) {
-    <div id={id} class="contents __user-content" x-ignore>
-        @templ.Raw(html)
-    </div>
+        <div id={id} class="contents __user-content" x-ignore>
+            @templ.Raw(html)
+        </div>
    }
 }
 

@@ -17,6 +17,24 @@ apt install \
     libpng16-16 libpng-dev \
     libwebp7 libwebp-dev
 ```
+3. Install libvips
+```
+./scripts/install-vips.sh
+```
+
+# Install go tools
+
+```
+go install github.com/a-h/templ/cmd/templ@latest
+go install github.com/mitranim/gow@latest
+
+# Requires protoc installed
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latestoaded
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+```
 
 # protobuf
 

@@ -186,7 +186,6 @@ func (s *searchService) searchInternal(ctx context.Context, dbReq store.BookSear
 			Chapters:        int(book.Chapters),
 			WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 			Summary:         book.Summary,
-			Favorites:       book.Favorites,
 			Cover:           getBookCoverURL(s.uploadService, book.ID, book.HasCover),
 			Tags:            arrInt64ToInt64String(book.TagIds),
 		}

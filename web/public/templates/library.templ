@@ -93,7 +93,7 @@ templ librarySection(label string, books []app.BookLibraryDto) {
 templ libraryBookCard(bookID int64, name, cover string) {
     <a 
         href={ templ.SafeURL(fmt.Sprintf("/book/%d?ol.from=library", bookID)) } 
-        class="profile-book-card" 
+        class="profile-book-card w-[200px]" 
         data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
         @bookCover(cover, name, 300)
         <div class="profile-book-card__title">

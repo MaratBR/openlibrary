@@ -66,6 +66,12 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetUserPinnedBooksResult) {
                 for _, book := range pinnedBooks.Books {
                     @userProfilePinnedBookCard(book.ID, book.Name, book.Cover)
                 }
+                if pinnedBooks.HasMore {
+                    <a href={ templ.SafeURL(fmt.Sprintf("/users/%s/books", user.ID)) } class="flex flex-col items-center justify-center w-[200px] rounded-xl hover:text-primary">
+                        <span>Show more</span>
+                        <span class="material-symbols-outlined !text-4xl">arrow_right_alt</span>
+                    </a>
+                }
                 <div class="-ml-4" style="width: max(0px, calc((100vw - 120ch) / 2))"></div>
             </ul>
         </section>
@@ -83,7 +89,7 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetUserPinnedBooksResult) {
 templ userProfilePinnedBookCard(bookID int64, name, cover string) {
     <a 
         href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) } 
-        class="profile-book-card" 
+        class="profile-book-card w-[200px]" 
         data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
         @bookCover(cover, name, 300)
         <div class="profile-book-card__title">

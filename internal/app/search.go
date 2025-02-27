@@ -86,7 +86,6 @@ type BookSearchItem struct {
 	WordsPerChapter int                  `json:"wordsPerChapter"`
 	Chapters        int                  `json:"chapters"`
 	Summary         string               `json:"summary"`
-	Favorites       int32                `json:"favorites"`
 	Author          BookDetailsAuthorDto `json:"author"`
 	Cover           string               `json:"cover"`
 	Tags            []Int64String        `json:"tags"`

@@ -107,7 +107,7 @@ templ SearchPage(
                                     { book.Author.Name }
                                 </a>
 
-                                @collapsible(160, false) {
+                                @collapsible(160, true) {
                                     <ul class="ol-book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
                                         data-expand="false"
                                         :data-expand="expand"

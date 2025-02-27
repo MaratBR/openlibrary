@@ -47,7 +47,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
             </h1>
 
             if len(books.Books) == 0 {
-                <p class="mt-8">
+                <p class="my-8">
                     {_t(l, "bookManager.noBooks")}
                 </p>
                 <a class="ol-btn ol-btn--lg ol-btn--primary rounded-full" href="/books-manager/new?ol.from=books-manager&isFirst=1">

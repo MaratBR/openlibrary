@@ -5,9 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"math/big"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
@@ -15,41 +17,72 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func massImport(ctx context.Context, dir string, userIds []uuid.UUID, service app.BookManagerService, tagsService app.TagsService) error {
-	entries, err := os.ReadDir(dir)
+func massImport(ctx context.Context, dir string, userIds []uuid.UUID, service app.BookManagerService, tagsService app.TagsService, workers int) error {
+	var ch chan os.DirEntry
+	{
+		entries, err := os.ReadDir(dir)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		if workers < 1 {
+			workers = 1
+		}
+
+		ch = make(chan os.DirEntry, len(entries))
+		for _, entry := range entries {
+			ch <- entry
+		}
 	}
 
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
+	wg := new(sync.WaitGroup)
 
-		if !strings.HasSuffix(entry.Name(), ".json") {
-			continue
-		}
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				entry, ok := <-ch
+				if !ok {
+					break
+				}
 
-		file, err := os.Open(fmt.Sprintf("%s/%s", dir, entry.Name()))
-		if err != nil {
-			return err
-		}
+				if entry.IsDir() {
+					continue
+				}
 
-		var book royalroadapi.BookWithChapters
-		err = json.NewDecoder(file).Decode(&book)
-		if err != nil {
-			return err
-		}
+				if !strings.HasSuffix(entry.Name(), ".json") {
+					continue
+				}
 
-		randInt, _ := rand.Int(rand.Reader, big.NewInt(int64(len(userIds))))
-		randomUserId := userIds[int(randInt.Int64())]
-		err = importBook(ctx, service, tagsService, book, randomUserId)
+				fileName := fmt.Sprintf("%s/%s", dir, entry.Name())
+				file, err := os.Open(fileName)
+				if err != nil {
+					slog.Error("failed to open file", "file", fileName, "err", err)
+					continue
+				}
 
-		if err != nil {
-			return err
-		}
+				var book royalroadapi.BookWithChapters
+				err = json.NewDecoder(file).Decode(&book)
+				if err != nil {
+					slog.Error("failed to decode file", "file", fileName, "err", err)
+					continue
+				}
+
+				randInt, _ := rand.Int(rand.Reader, big.NewInt(int64(len(userIds))))
+				randomUserId := userIds[int(randInt.Int64())]
+				err = importBook(ctx, service, tagsService, book, randomUserId)
+
+				if err != nil {
+					slog.Error("failed to import book", "file", fileName, "err", err)
+					continue
+				}
+			}
+		}()
 	}
+	close(ch)
+	wg.Wait()
 
 	return nil
 }
