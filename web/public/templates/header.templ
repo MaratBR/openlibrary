@@ -34,7 +34,7 @@ templ siteHeaderLayout() {
     }}
 
     <nav class="z-40 bg-background sticky top-0 w-full h-[var(--header-height)] border-b" id="site-header">
-        <div id="site-header-inner" class="container max-w-[120ch] h-full flex gap-6" x-data="{userMenu:false}">
+        <div id="site-header-inner" class="ol-container max-w-[120ch] h-full flex gap-6" x-data="{userMenu:false}">
             <a href="/" class="my-1 flex items-center focus:outline focus:outline-2 outline-offset-[-2px]">
                 <img style="height:64px" src="/_/embed-assets/logo.svg" />
             </a>
@@ -72,7 +72,7 @@ templ siteHeaderLayout() {
 
         <noscript>
             <div class="fixed bottom-0 left-0 right-0">
-                <div class="container py-2 bg-yellow-100 border-yellow-600 border-2">
+                <div class="ol-container py-2 bg-yellow-100 border-yellow-600 border-2">
                     { _t(l, "special.noJavascript") }
                 </div>
             </div>

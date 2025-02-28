@@ -1,4 +1,4 @@
-.container {
+.ol-container {
     @apply max-w-[80ch] mx-auto px-2;
 
     &--big {
@@ -21,7 +21,7 @@
     }
 }
 
-.dl {
+.ol-dl {
     @apply grid grid-cols-[3fr_7fr];
 
     dt {

@@ -107,13 +107,15 @@ func (c *bookManagerController) createBook(w http.ResponseWriter, r *http.Reques
 }
 
 type updateBookRequest struct {
-	Name    string `in:"form=name"`
-	Summary string `in:"form=summary"`
-	Tags    string `in:"form=tags"`
-	Rating  string `in:"form=rating"`
+	Name              string `in:"form=name"`
+	Summary           string `in:"form=summary"`
+	Tags              string `in:"form=tags"`
+	Rating            string `in:"form=rating"`
+	IsPubliclyVisible bool   `in:"form=isPubliclyVisible"`
 }
 
 func (c *bookManagerController) updateBook(w http.ResponseWriter, r *http.Request) {
+	session := auth.RequireSession(r.Context())
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		writeBadRequest(w, r, err)
@@ -128,11 +130,13 @@ func (c *bookManagerController) updateBook(w http.ResponseWriter, r *http.Reques
 	summary := input.Summary
 
 	err = c.service.UpdateBook(r.Context(), app.UpdateBookCommand{
-		BookID:    bookID,
-		Tags:      tags,
-		Name:      name,
-		Summary:   summary,
-		AgeRating: rating,
+		BookID:            bookID,
+		UserID:            session.UserID,
+		Tags:              tags,
+		Name:              name,
+		Summary:           summary,
+		AgeRating:         rating,
+		IsPubliclyVisible: input.IsPubliclyVisible,
 	})
 	if err != nil {
 		writeApplicationError(w, r, err)

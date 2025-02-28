@@ -189,7 +189,7 @@ templ bookTags(tags []app.DefinedTagDto) {
                 x-cloak
             }
             class="nojs-hidden" role="button" x-show="len>10" @click="open=!open">
-            <span class="tag font-semibold nojs-hidden" x-text="i18n[open?'common.less':'common.more']">
+            <span class="ol-tag font-semibold nojs-hidden" x-text="i18n[open?'common.less':'common.more']">
                 {l.MustLocalize(&i18n.LocalizeConfig{
                     MessageID: "common.more",
                 })}

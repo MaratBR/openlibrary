@@ -11,7 +11,7 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
         {{
             data, _ := templ.JSONString(book)
         }}
-        <div class="container container--big" x-data="{tab:'general',cover:false}">
+        <div class="ol-container ol-container--big" x-data="{tab:'general',cover:false}">
             @i18nExtractKeys(l, []string{
                 "bookManager.edit.name",
                 "bookManager.edit.summary",

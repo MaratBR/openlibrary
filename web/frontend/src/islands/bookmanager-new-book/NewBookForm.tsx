@@ -121,7 +121,7 @@ export default function NewBookForm() {
         <div style={activeStage === 3 ? {} : { display: 'none' }}>
           <p>{window._('bookManager.newBook.pleaseReview')}</p>
 
-          <dl class="mt-4 dl">
+          <dl class="mt-4 ol-dl">
             <dt>{window._('bookManager.newBook.bookName')}:</dt>
             <dd>{name}</dd>
             <dt>{window._('bookManager.newBook.ageRating')}:</dt>

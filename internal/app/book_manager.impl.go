@@ -104,7 +104,12 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return err
 	}
 
-	err = validateBookSummary(input.Summary)
+	summaryData, err := ProcessContent(input.Summary)
+	if err != nil {
+		return err
+	}
+
+	err = validateBookSummary(summaryData.Sanitized)
 	if err != nil {
 		return err
 	}
@@ -120,7 +125,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		TagIds:             tags.TagIds,
 		CachedParentTagIds: tags.ParentTagIds,
 		AgeRating:          ageRatingDbValue(input.AgeRating),
-		Summary:            input.Summary,
+		Summary:            summaryData.Sanitized,
 		IsPubliclyVisible:  input.IsPubliclyVisible,
 	})
 }

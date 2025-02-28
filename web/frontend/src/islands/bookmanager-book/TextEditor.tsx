@@ -20,6 +20,7 @@ const TextEditor = ({ value }: TextEditorProps) => {
 
   useEffect(() => {
     editor.current = new Editor({
+      content: value.current,
       element: rootRef.current!,
       extensions: [Document, Paragraph, Bold, Italic, Strike, Underline, Text],
       onTransaction(props) {
@@ -68,7 +69,6 @@ const TextEditor = ({ value }: TextEditorProps) => {
       </div>
       <div
         ref={rootRef}
-        // contentEditable
         className={`__user-content [&>.tiptap]:min-h-32 [&>.tiptap]:p-4 [&>.tiptap]:!outline-none`}
       />
     </div>

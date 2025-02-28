@@ -35,7 +35,7 @@ templ Doc(
         @ServerData()
     </head>
     {{
-        bodyClasses := "m-0 font-text theme-default bg-background text-foreground h-screen"
+        bodyClasses := "m-0 font-text theme-default bg-background text-foreground min-h-screen"
         isDark := olhttp.GetUITheme(ctx) == "dark"
         if isDark {
             bodyClasses += " dark"
