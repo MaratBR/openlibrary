@@ -20,6 +20,8 @@
 @import "./style/user-content.scss";
 @import "./style/error.scss";
 @import "./style/animations.scss";
+@import "./style/switch.scss";
+
 
 @import "./style/library.scss";
 @import "./style/profile.scss";

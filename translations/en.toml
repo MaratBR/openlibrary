@@ -229,6 +229,8 @@ stageLabel2 = "3. Tags"
 stageLabel3 = "4. Review"
 
 [bookManager.edit]
+isPubliclyVisible = "Publicly visible"
+isPubliclyVisible_description = "When set, book will be visible to other users"
 cover = "Cover"
 generalInformation = "General information"
 name = "Name"
@@ -237,7 +239,6 @@ tags = "Tags"
 save = "Save"
 ageRating = "Age rating"
 editedSuccessfully = "Book {{.Name}} was updated successfully"
-
 
 #####################
 #                   #

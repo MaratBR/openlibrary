@@ -7,6 +7,7 @@ import TextEditor from './TextEditor'
 import TagsInput from '../search-filters/TagsInput'
 import CSRFInput from '@/components/CSRFInput'
 import AgeRatingInput from '@/components/AgeRatingInput'
+import Switch from '@/components/Switch'
 
 export default function GeneralInformation({ data: dataUnknown }: PreactIslandProps) {
   const data = useMemo(() => managerBookDetailsSchema.parse(dataUnknown), [dataUnknown])
@@ -14,6 +15,7 @@ export default function GeneralInformation({ data: dataUnknown }: PreactIslandPr
   const [name, setName] = useState(data.name)
   const [tags, setTags] = useState(data.tags)
   const [rating, setRating] = useState(data.ageRating)
+  const [isPubliclyVisible, setPubliclyVisible] = useState(data.isPubliclyVisible)
 
   const summaryRef = useRef(data.summary)
 
@@ -78,6 +80,20 @@ export default function GeneralInformation({ data: dataUnknown }: PreactIslandPr
         </div>
         <div class="form-control__value">
           <AgeRatingInput name="rating" value={rating} onChange={setRating} />
+        </div>
+      </div>
+
+      <div class="form-control form-control--horizontal">
+        <div class="form-control__label">
+          <label htmlFor="summary" className="label">
+            {window._('bookManager.edit.isPubliclyVisible')}
+          </label>
+          <p class="form-control__hint">
+            {window._('bookManager.edit.isPubliclyVisible_description')}
+          </p>
+        </div>
+        <div class="form-control__value">
+          <Switch name="isPubliclyVisible" value={isPubliclyVisible} onChange={setPubliclyVisible} />
         </div>
       </div>
 

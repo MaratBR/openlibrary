@@ -67,9 +67,17 @@ textarea.input {
 
     &__label {
         @apply text-foreground p-2;
+
+        & > label {
+            @apply mb-2;
+        }
     }
 
     &__value {
         @apply p-2;
+    }
+
+    &__hint {
+        @apply text-sm text-muted-foreground;
     }
 }
