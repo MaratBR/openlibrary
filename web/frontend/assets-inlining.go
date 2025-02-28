@@ -72,3 +72,7 @@ func (i inlineCSSAsset) Render(ctx context.Context, w io.Writer) error {
 func InlineCSSAsset(ctx context.Context, groupName, name string) templ.Component {
 	return inlineCSSAsset{groupName: groupName, name: name}
 }
+
+func InlineJSModuleAsset(ctx context.Context, groupName, name string) templ.Component {
+	return inlineCSSAsset{groupName: groupName, name: name}
+}

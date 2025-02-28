@@ -46,7 +46,7 @@ templ SearchPage(
             activeFilters := explainedQuery.ActiveFilters()
         }}
 
-        <div class="ol-container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
+        <div class="container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
             <h1 class="page-header">
                 if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
                     {{ firstTag := explainedQuery.IncludeTags[0] }}
@@ -114,7 +114,7 @@ templ SearchPage(
                                         x-data="{expand:false}">
                                         for _, tagId := range book.Tags {
                                             {{ tag := tags[int64(tagId)] }}
-                                            <li class="ol-tag">
+                                            <li class="tag">
                                                 <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", tagId)) }>
                                                     { tag.Name }
                                                 </a>

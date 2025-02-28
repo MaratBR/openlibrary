@@ -19,7 +19,7 @@ export default function NewBookForm() {
   }
 
   return (
-    <form class="grid grid-cols-[300px_1fr] gap-2" action="/books-manager/new" method="post">
+    <form class="anim-appear px-2 space-y-4 md:space-y-0 md:px-0 md:mt-20 md:grid md:grid-cols-[300px_1fr] md:gap-2" action="/books-manager/new" method="post">
       <CSRFInput />
 
       <ul class="flex flex-col pt-8 gap-2">
@@ -121,15 +121,15 @@ export default function NewBookForm() {
         <div style={activeStage === 3 ? {} : { display: 'none' }}>
           <p>{window._('bookManager.newBook.pleaseReview')}</p>
 
-          <dl class="mt-4 ol-dl">
+          <dl class="mt-4 dl">
             <dt>{window._('bookManager.newBook.bookName')}:</dt>
             <dd>{name}</dd>
             <dt>{window._('bookManager.newBook.ageRating')}:</dt>
             <dd>{rating}</dd>
             <dt>{window._('bookManager.newBook.tags')}:</dt>
-            <dd class="ol-tags items-start flex flex-wrap gap-2">
+            <dd class="tabs items-start flex flex-wrap gap-2">
               {tags.map((x) => (
-                <a class="ol-tag" key={x.id} href={`/tags/${x.id}`}>
+                <a class="tab" key={x.id} href={`/tags/${x.id}`}>
                   {x.name}
                 </a>
               ))}
@@ -142,7 +142,7 @@ export default function NewBookForm() {
             }}
             class="mt-8 ol-btn ol-btn--lg ol-btn--primary rounded-full"
           >
-            {loading ? <span class="loader loader--dark" /> : _('bookManager.newBook.create')}
+            {loading ? <span class="loader loader--dark" /> : window._('bookManager.newBook.create')}
           </button>
         </div>
       </section>

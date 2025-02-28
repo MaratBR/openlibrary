@@ -10,8 +10,8 @@ templ BookManagerNewBook() {
     }}
 
 	@bookManagerLayoutBase(_t(l, "bookManager.newBook.title"), false) {
-        <div class="ol-container ol-container--big">
-            <div class="pt-20">
+        <div class="container container--big">
+            <div class="pt-2">
                 @i18nExtractKeys(l, []string{
                     "bookManager.newBook.title",
                     "bookManager.newBook.namePlaceholder",
@@ -38,6 +38,7 @@ templ BookManagerNewBook() {
                         fmt.Sprintf("ageRating.%s.parentalGuidance", ageRating),
                     })
                 }
+                
                 <ol-island active="true" src="/_/assets/islands/bookmanager-new-book.js" />
             </div>
         </div>

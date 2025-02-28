@@ -4,5 +4,5 @@ import { useMemo } from 'preact/hooks'
 export default function CSRFInput() {
   const value = useMemo(() => getCsrfToken(), [])
 
-  return <input hidden value={value} />
+  return <input name="__csrf" hidden value={value} />
 }

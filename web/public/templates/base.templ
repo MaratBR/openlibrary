@@ -3,21 +3,44 @@ package templates
 import "github.com/MaratBR/openlibrary/web/olresponse"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/web/frontend"
+import "github.com/MaratBR/openlibrary/internal/flash"
 
 
 templ baseLayout(title string) {
     @htmlLayout(title) {
-        
         @siteHeader()
+        @flashMessages()
         { children... }
         @siteFooter()
         <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
     }
 }
 
+templ flashMessages() {
+    {{
+        messages := flash.GetFlashes(ctx)
+    }}
+
+    if len(messages) > 0 {
+        <div class="container container--big my-2">
+            for _, message := range messages {
+                <div x-data class="text-white bg-emerald-500 rounded-full p-2 relative">
+                    @message
+                    <div class="absolute right-2 top-0 bottom-0 flex items-center">
+                        <button @click="$root.remove()" class="flex items-center justify-center rounded-full transition-colors size-8 hover:bg-highlight">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
 templ baseLayoutNoFooter(title string) {
     @htmlLayout(title) {
         @siteHeader()
+        @flashMessages()
         { children... }
         <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
     }
@@ -43,7 +66,7 @@ templ siteFooter() {
     }}
 
     <footer id="site-footer" class="p-10">
-        <div class="ol-container">
+        <div class="container">
             <a href="https://github.com/MaratBR/openlibrary" class="text-muted-foreground hover:text-foreground" target="_blank">
                 Powered by <span class="font-[500] font-title">OpenLibrary</span> <br />
                 <span class="text-sm">v:{ version }</span>

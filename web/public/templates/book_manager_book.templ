@@ -11,7 +11,7 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
         {{
             data, _ := templ.JSONString(book)
         }}
-        <div class="ol-container ol-container--big" x-data="{tab:'general',cover:false}">
+        <div class="container container--big" x-data="{tab:'general',cover:false}">
             @i18nExtractKeys(l, []string{
                 "bookManager.edit.name",
                 "bookManager.edit.summary",
@@ -24,7 +24,7 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
                 <h1 class="page-header-text">{ book.Name }</h1>
             </header>
 
-            <ul role="tablist" class="tabs tabs--primary">
+            <ul role="tablist" class="tabs tabs--primary relative">
                 <li role="tab" class="tab tab--active" :class="{tab:1,'tab--active':tab==='general'}" @click="tab='general'">
                     {_t(l, "bookManager.edit.generalInformation")}
                 </li>
@@ -32,6 +32,8 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
                 <li role="tab" class="tab" :class="{tab:1,'tab--active':tab==='cover'}" @click="tab='cover';cover=true">
                     {_t(l, "bookManager.edit.cover")}
                 </li>
+
+                <hr class="absolute bottom-0 left-0 right-0" />
             </ul>
 
             <div class="my-5 p-4 border shadow-sm min-h-16">

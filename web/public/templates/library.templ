@@ -10,7 +10,7 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
     }}
 
     @baseLayout(_t(l, "library.title")) {
-        <main class="ol-container">
+        <main class="container">
             <header class="ol-library-header flex gap-4">
                 <h1 class="page-header page-header--big underline underline-offset-2">{_t(l, "library.title")}</h1>
                 <a href="/library/archive" class="page-header page-header--big text-muted-foreground hover:underline underline-offset-2">{_t(l, "library.archive")}</a>
@@ -48,7 +48,7 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
     }}
 
     @baseLayout(_t(l, "library.title")) {
-        <main class="ol-container">
+        <main class="container">
             <header class="ol-library-header flex gap-4">
                 <a href="/library" class="page-header page-header--big text-muted-foreground hover:underline underline-offset-2">{_t(l, "library.title")}</a>
                 <h1 class="page-header page-header--big underline underline-offset-2">{_t(l, "library.archive")}</h1>
@@ -108,7 +108,7 @@ templ LibraryAnon() {
     }}
 
     @baseLayout(_t(l, "library.title")) {
-        <main class="ol-container">
+        <main class="container">
             <header class="ol-library-header">
                 <h1 class="page-header page-header--big">{_t(l, "library.title")}</h1>
             </header>

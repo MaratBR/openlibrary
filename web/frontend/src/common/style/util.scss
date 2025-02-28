@@ -1,4 +1,4 @@
-.ol-container {
+.container {
     @apply max-w-[80ch] mx-auto px-2;
 
     &--big {
@@ -6,7 +6,7 @@
     }
 }
 
-.ol-container-padded-left {
+.container-padded-left {
     padding-left: max(0px, calc((100% - 120ch) / 2));
 }
 
@@ -21,7 +21,7 @@
     }
 }
 
-.ol-dl {
+.dl {
     @apply grid grid-cols-[3fr_7fr];
 
     dt {
@@ -29,5 +29,10 @@
     }
 
     dd {
+        @apply mt-4 border-b pb-2;
+
+        &:last-child {
+            @apply border-b-0;
+        }
     }
 }

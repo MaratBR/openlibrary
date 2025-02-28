@@ -31,10 +31,10 @@ textarea.input {
     @apply 
         border-gray-400 dark:border-gray-200 border 
         rounded-sm w-full bg-background relative
-        transition-all box-content;
+        transition-all;
 
     &__input {
-        @apply outline-none w-full h-10 px-3 bg-transparent;
+        @apply outline-none w-full h-10 px-3 mb-1 bg-transparent;
     }
 
     &__menu {
@@ -44,7 +44,7 @@ textarea.input {
     }
 
     &[data-open=true] {
-        @apply rounded-b-none m-[-5px] p-[5px];
+        @apply rounded-b-none;
     }
 
     &:not([data-open=true]) {

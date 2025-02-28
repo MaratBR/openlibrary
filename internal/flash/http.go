@@ -16,7 +16,11 @@ func Middleware(next http.Handler) http.Handler {
 }
 
 func Add(r *http.Request, message Message) {
-	collection := r.Context().Value("flash:collection").(*flashCollection)
+	collectionAny := r.Context().Value("flash:collection")
+	if collectionAny == nil {
+		panic("cannot find flash messages collection")
+	}
+	collection := collectionAny.(*flashCollection)
 	collection.arr = append(collection.arr, message)
 }
 

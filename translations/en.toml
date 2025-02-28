@@ -236,6 +236,7 @@ summary = "Summary"
 tags = "Tags"
 save = "Save"
 ageRating = "Age rating"
+editedSuccessfully = "Book {{.Name}} was updated successfully"
 
 
 #####################
