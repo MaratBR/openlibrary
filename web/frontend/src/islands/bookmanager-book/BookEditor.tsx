@@ -34,9 +34,11 @@ export default function BookEditor({ data: dataUnknown, rootElement }: PreactIsl
         <BookCover book={data} />
       </div>
 
-      <div class="ol-card mt-4" style={{ display: tab === 'chapters' ? 'block' : 'none' }}>
-        <Chapters data={data} rootElement={rootElement} />
-      </div>
+      {tab === 'chapters' && (
+        <div class="ol-card mt-4">
+          <Chapters data={data} rootElement={rootElement} />
+        </div>
+      )}
     </>
   )
 }

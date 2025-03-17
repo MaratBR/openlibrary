@@ -242,6 +242,13 @@ editedSuccessfully = "Book <b>{{.Name}}</b> was updated successfully"
 cropAndUploadCover = "Crop and upload"
 goToPage = "Go to page"
 clickOnImageToChange = "Click on image to change"
+chapters = "Chapters"
+addChapter = "Add chapter"
+noChapters = "No chapters yet"
+words = "Words"
+edit = "Edit"
+delete = "Delete"
+
 #####################
 #                   #
 # ADMIN PAGE        #
