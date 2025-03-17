@@ -13,6 +13,10 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
         }}
         <div class="ol-container ol-container--big" x-data="{tab:'general',cover:false}">
             @i18nExtractKeys(l, []string{
+                "bookManager.edit.generalInformation",
+                "bookManager.edit.cover",
+                "bookManager.edit.chapters",
+
                 "bookManager.edit.name",
                 "bookManager.edit.summary",
                 "bookManager.edit.tags",
@@ -20,37 +24,17 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
                 "bookManager.edit.ageRating",
                 "bookManager.edit.isPubliclyVisible",
                 "bookManager.edit.isPubliclyVisible_description",
+
+                "bookManager.edit.cropAndUploadCover",
+                "bookManager.edit.goToPage",
+                "bookManager.edit.clickOnImageToChange",
             })
 
-            <header class="page-header my-8">
-                <h1 class="page-header-text">{ book.Name }</h1>
-            </header>
-
-            <ul role="tablist" class="tabs tabs--primary relative">
-                <li role="tab" class="tab tab--active" :class="{tab:1,'tab--active':tab==='general'}" @click="tab='general'">
-                    {_t(l, "bookManager.edit.generalInformation")}
-                </li>
-
-                <li role="tab" class="tab" :class="{tab:1,'tab--active':tab==='cover'}" @click="tab='cover';cover=true">
-                    {_t(l, "bookManager.edit.cover")}
-                </li>
-
-                <hr class="absolute bottom-0 left-0 right-0" />
-            </ul>
-
-            <div class="my-5 p-4 border shadow-sm min-h-16">
-                <ol-island x-show="tab==='general'" active="true" src="/_/assets/islands/bookmanager-book.js" data={data} name="GeneralInformation">
-                    <template data-type="loader">
-                        <span class="loader mt-2"></span>
-                    </template>
-                </ol-island>
-
-                <ol-island x-show="tab==='cover'" :active="cover" src="/_/assets/islands/bookmanager-book.js" data={data} name="Cover">
-                    <template data-type="loader">
-                        <span class="loader mt-2"></span>
-                    </template>
-                </ol-island>
-            </div>
+            <ol-island x-show="tab==='general'" active="true" src="/_/assets/islands/bookmanager-book.js" data={data}>
+                <template data-type="loader">
+                    <span class="loader mt-2"></span>
+                </template>
+            </ol-island>
 
         </div>
     }

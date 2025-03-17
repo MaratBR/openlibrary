@@ -6,6 +6,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/reqid"
+	"github.com/MaratBR/openlibrary/internal/upload"
 	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/go-chi/chi/v5"
 )
@@ -13,20 +14,21 @@ import (
 func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	db := h.db
 
+	fileValidator := upload.NewFileValidator(h.cfg)
+
 	// application layer services
-	uploadService := app.NewUploadServiceFromApplicationConfig(h.cfg)
 
 	sessionService := app.NewCachedSessionService(app.NewSessionService(db), h.cache)
 	authService := app.NewAuthService(db, sessionService)
 
 	tagsService := app.NewTagsService(db)
-	readingListService := app.NewReadingListService(db, uploadService)
+	readingListService := app.NewReadingListService(db, h.uploadService)
 	userService := app.NewUserService(db)
 	reviewsService := app.NewCachedReviewsService(app.NewReviewsService(db, userService, bgServices.Book), h.cache)
-	bookService := app.NewBookService(db, tagsService, uploadService, readingListService, reviewsService)
-	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, uploadService, userService), h.cache)
+	bookService := app.NewBookService(db, tagsService, h.uploadService, readingListService, reviewsService)
+	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, h.uploadService, userService), h.cache)
 
-	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService)
+	bookManagerService := app.NewBookManagerService(db, tagsService, h.uploadService)
 
 	h.r.Group(func(r chi.Router) {
 		r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
@@ -81,6 +83,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		})
 
 		newBookManagerController(bookManagerService).Register(r)
+		newApiBookManagerController(bookManagerService, fileValidator).Register(r)
 	})
 }
 

@@ -106,7 +106,7 @@ module.exports = [
       'no-unused-vars': [
         2,
         {
-          args: 'after-used',
+          args: 'none',
           ignoreRestSiblings: true,
         },
       ],
@@ -174,7 +174,7 @@ module.exports = [
         {
           vars: 'all',
           varsIgnorePattern: '^_',
-          args: 'after-used',
+          args: 'none',
           argsIgnorePattern: '^_',
         },
       ],

@@ -7,6 +7,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/web/olresponse"
 )
 
 type apiBookController struct {
@@ -28,13 +29,13 @@ func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
 
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
 	if err != nil {
-		apiwriteBadRequest(w, err)
+		apiWriteBadRequest(w, err)
 		return
 	}
 
 	rating, err := olhttp.URLQueryParamInt64(r, "rating")
 	if err != nil {
-		apiwriteBadRequest(w, err)
+		apiWriteBadRequest(w, err)
 		return
 	}
 
@@ -48,7 +49,7 @@ func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiWriteOK(w)
+	olresponse.WriteOKResponse(w)
 }
 
 func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request) {
@@ -56,13 +57,13 @@ func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request)
 
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
 	if err != nil {
-		apiwriteBadRequest(w, err)
+		apiWriteBadRequest(w, err)
 		return
 	}
 
 	rating, err := olhttp.URLQueryParamInt64(r, "rating")
 	if err != nil {
-		apiwriteBadRequest(w, err)
+		apiWriteBadRequest(w, err)
 		return
 	}
 
@@ -76,7 +77,7 @@ func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	apiWriteOK(w)
+	olresponse.WriteOKResponse(w)
 }
 
 type createReviewRequest struct {
@@ -105,7 +106,9 @@ func (c *apiBookController) UpdateOrCreateReview(w http.ResponseWriter, r *http.
 		apiWriteApplicationError(w, err)
 		return
 	}
-	apiWriteJSON(w, review)
+
+	olresponse.WriteJSON(w, review)
+	olresponse.WriteJSONResponse(w, review)
 }
 
 func (c *apiBookController) DeleteReview(w http.ResponseWriter, r *http.Request) {
@@ -122,5 +125,5 @@ func (c *apiBookController) DeleteReview(w http.ResponseWriter, r *http.Request)
 		apiWriteApplicationError(w, err)
 		return
 	}
-	apiWriteOK(w)
+	olresponse.WriteOKResponse(w)
 }

@@ -1,0 +1,15 @@
+.ol-flashes {
+
+}
+
+.ol-flash {
+    @apply text-white bg-emerald-500 rounded-full p-2 relative;
+
+    &__closeContainer {
+        @apply absolute right-2 top-0 bottom-0 flex items-center;
+    }
+
+    &__close {
+        @apply size-8 flex items-center justify-center hover:bg-highlight rounded-full;   
+    }
+}

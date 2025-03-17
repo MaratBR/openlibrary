@@ -1,5 +1,5 @@
-.age-rating {
-    @apply py-2 px-4 bg-background rounded-md hover:bg-secondary text-lg font-medium cursor-pointer whitespace-nowrap;
+.ol-age-rating {
+    @apply py-2 px-4 bg-background rounded-md hover:bg-secondary text-lg font-medium whitespace-nowrap;
 
     &[data-rating] {
         @apply bg-gray-500 text-white;
@@ -26,10 +26,23 @@
     }
 }
 
-.age-rating-input {
+.ol-age-rating-input {
     @apply appearance-none w-0 h-0 hidden;
 
-    &:checked + .age-rating {
+    & + .ol-age-rating {
+        @apply cursor-pointer transition-shadow relative;
+
+        &::after {
+            content: ' ';
+            @apply absolute block inset-0 bg-transparent transition-colors rounded-md pointer-events-none;
+        }
+
+        &:hover::after {
+            @apply bg-white/30;
+        }
+    }
+
+    &:checked + .ol-age-rating {
         @apply ring-2 ring-offset-2 ring-primary;
     }
 }

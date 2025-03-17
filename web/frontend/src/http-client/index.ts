@@ -1,3 +1,5 @@
 import { httpClient } from './client'
+import { OLAPIResponse, OLNotification } from './OLAPIResponse'
 
-export { httpClient }
+export { httpClient, OLAPIResponse }
+export type { OLNotification }

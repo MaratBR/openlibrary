@@ -1,22 +1,33 @@
 import ky from 'ky'
 
+import './client-meta'
+import { getCookie } from './util'
+
 const originalFetch = window.fetch
 
 // Override the global fetch
-window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+window.fetch = async function (
+  input: Request | string | URL,
+  init?: globalThis.RequestInit,
+): Promise<Response> {
   // Create new init object if it doesn't exist
-  const modifiedInit: RequestInit = init ? { ...init } : {}
+  const modifiedInit: globalThis.RequestInit = init ? { ...init } : {}
 
-  // Create headers object if it doesn't exist
-  modifiedInit.headers = new Headers(modifiedInit.headers || {})
+  let headers: Headers
+
+  if (input instanceof Request) {
+    headers = input.headers
+  } else {
+    headers = new Headers(modifiedInit.headers)
+  }
 
   // Add CSRF token to headers if not already present
-  if (!modifiedInit.headers.has('x-csrf-token')) {
-    const token = getCsrfToken()
-    if (token) {
-      modifiedInit.headers.set('x-csrf-token', token)
-    }
+  const token = getCsrfToken()
+  if (token) {
+    headers.set('x-csrf-token', token)
   }
+
+  modifiedInit.headers = headers
 
   // Call original fetch with modified init object
   return originalFetch.call(window, input, modifiedInit)
@@ -24,18 +35,6 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
 
 export const httpClient = ky.create({
   timeout: 60000,
-  hooks: {
-    beforeRequest: [
-      (req) => {
-        if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
-          const csrfToken = getCsrfToken()
-          if (csrfToken) {
-            req.headers.set('x-csrf-token', csrfToken)
-          }
-        }
-      },
-    ],
-  },
 })
 
 export function getCsrfToken() {
@@ -44,10 +43,4 @@ export function getCsrfToken() {
   } catch {
     /* empty */
   }
-}
-
-function getCookie(name: string): string | undefined {
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop()!.split(';').shift()
 }

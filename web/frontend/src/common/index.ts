@@ -10,6 +10,7 @@ document.dispatchEvent(new CustomEvent('overlayscrollbars-ready'))
 
 import './__server__'
 import './delay'
+import './flashes'
 import '../lib/island'
 import '../toast/toast'
 

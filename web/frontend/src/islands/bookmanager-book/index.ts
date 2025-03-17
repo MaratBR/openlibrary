@@ -1,6 +1,4 @@
 import { PreactIsland } from '../common'
-import GeneralInformation from './GeneralInformation'
+import BookEditor from './BookEditor'
 
-export default {
-  GeneralInformation: new PreactIsland(GeneralInformation),
-}
+export default new PreactIsland(BookEditor)

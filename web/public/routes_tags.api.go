@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/web/olresponse"
 )
 
 type apiTagsController struct {
@@ -21,5 +22,5 @@ func (t *apiTagsController) Tags(w http.ResponseWriter, r *http.Request) {
 		apiWriteApplicationError(w, err)
 		return
 	}
-	apiWriteJSON(w, tags)
+	olresponse.WriteJSONResponse(w, tags)
 }

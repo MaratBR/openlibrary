@@ -8,6 +8,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/gofrs/uuid"
 )
 
@@ -73,5 +74,5 @@ func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	apiWriteJSON(w, &state.Value)
+	olresponse.WriteJSONResponse(w, &state.Value)
 }

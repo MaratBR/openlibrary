@@ -47,3 +47,5 @@ export function Tab({ value, children }: TabProps) {
     </div>
   )
 }
+
+export function TabPanel() {}

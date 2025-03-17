@@ -16,7 +16,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     @dashboardLayout(pageTitle) {
         <div class="admin-page-content relative">
             <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
-                <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ _t(l, "common.search") } />
+                <input value={ query.Query } x-model="q" class="ol-input w-64 mr-2" name="q" placeholder={ _t(l, "common.search") } />
                 <button type="submit" :disabled="q.trim()===''" class="ol-btn ol-btn--secondary">
                     <span class="material-symbols-outlined">search</span>
                 </button>
@@ -139,7 +139,7 @@ templ User(user *app.UserDetailsDto) {
                                 <label>{ _t(l, "admin.users.name") }</label>
                             </div>
                             <div class="admin-form-field__value">
-                                <input  disabled name="name" class="input" value={ user.Name } />
+                                <input  disabled name="name" class="ol-input" value={ user.Name } />
                             </div>
                         </div>
 
@@ -159,7 +159,7 @@ templ User(user *app.UserDetailsDto) {
                                 <select 
                                     x-model="genderType" 
                                     name="gender" 
-                                    class="input">
+                                    class="ol-input">
                                     <option
                                         if genderType == "" {
                                             selected
@@ -182,7 +182,7 @@ templ User(user *app.UserDetailsDto) {
                                         value="other">{ _t(l, "gender.o") }</option>
                                 </select>
 
-                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="input mt-2" />
+                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="ol-input mt-2" />
                             </div>
                         </div>
 
@@ -191,7 +191,7 @@ templ User(user *app.UserDetailsDto) {
                                 <label>{ _t(l, "admin.users.about") }</label>
                             </div>
                             <div class="admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
-                                <textarea rows="8" name="about" class="input">{user.About.Bio}</textarea>
+                                <textarea rows="8" name="about" class="ol-input">{user.About.Bio}</textarea>
                             </div>
                         </div>
 
@@ -210,7 +210,7 @@ templ User(user *app.UserDetailsDto) {
                                 <label>{ _t(l, "admin.users.role") }</label>
                             </div>
                             <div class="admin-form-field__value">
-                                <select name="role" class="input">
+                                <select name="role" class="ol-input">
                                     for _, role := range app.AllRoles {
                                         <option 
                                             if role == user.Role {
@@ -222,7 +222,7 @@ templ User(user *app.UserDetailsDto) {
                                     }
                                 </select>
 
-                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="input mt-2" />
+                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="ol-input mt-2" />
                             </div>
                         </div>
                     }

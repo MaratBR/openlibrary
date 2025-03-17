@@ -17,6 +17,7 @@
     "@types/alpinejs": "^3.13.11",
     "@types/animejs": "^3.1.13",
     "@types/node": "^22.10.5",
+    "@types/sanitize-html": "^2.13.0",
     "@types/toastify-js": "^1.12.3",
     "@typescript-eslint/eslint-plugin": "^8.20.0",
     "autoprefixer": "^10.4.20",
@@ -65,7 +66,9 @@
     "ky": "^1.7.4",
     "overlayscrollbars": "^2.10.1",
     "preact": "^10.25.4",
+    "preact-iso": "^2.9.0",
     "resize-observer-polyfill": "^1.5.1",
+    "sanitize-html": "^2.14.0",
     "simplebar": "^6.3.0",
     "toastify-js": "^1.12.0",
     "zod": "^3.24.1"

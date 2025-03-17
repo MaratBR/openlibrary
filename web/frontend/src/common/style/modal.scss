@@ -1,0 +1,8 @@
+.ol-modal {
+    @apply fixed z-50 inset-0 flex items-center justify-center
+        bg-black/20;
+
+    &__content {
+        @apply bg-background border shadow-sm;
+    }
+}

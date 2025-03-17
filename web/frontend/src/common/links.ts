@@ -1,3 +1,5 @@
+import { initFlashMessages } from './flashes'
+
 function initActiveLinks() {
   const links = document.querySelectorAll('a')
 
@@ -44,6 +46,7 @@ function isActive(link: HTMLAnchorElement): 'full' | 'path' | false {
 
 function init() {
   initActiveLinks()
+  initFlashMessages()
 }
 
 export function initAfterDOMReady() {

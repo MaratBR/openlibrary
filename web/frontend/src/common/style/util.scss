@@ -14,10 +14,14 @@
  * Main page header
  */ 
 .page-header {
-    @apply font-[500] text-3xl font-title;
+    @apply font-[500] text-3xl;
 
     &--big {
         @apply text-4xl;
+    }
+
+    &-text {
+        @apply font-title mb-4;
     }
 }
 

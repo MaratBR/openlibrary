@@ -1,37 +1,45 @@
-import { z } from 'zod'
-import { PreactIslandProps } from '../common'
-import { useMemo, useRef, useState } from 'preact/hooks'
-import { definedTagDtoSchema } from '../search-filters/api'
+import { useRef, useState } from 'preact/hooks'
 import TextEditor from './TextEditor'
 
 import TagsInput from '../search-filters/TagsInput'
-import CSRFInput from '@/components/CSRFInput'
 import AgeRatingInput from '@/components/AgeRatingInput'
 import Switch from '@/components/Switch'
+import { httpUpdateBook, ManagerBookDetails } from './api'
 
-export default function GeneralInformation({ data: dataUnknown }: PreactIslandProps) {
-  const data = useMemo(() => managerBookDetailsSchema.parse(dataUnknown), [dataUnknown])
-
+export default function GeneralInformation({ data: initialData }: { data: ManagerBookDetails }) {
+  const [data, setData] = useState(initialData)
   const [name, setName] = useState(data.name)
   const [tags, setTags] = useState(data.tags)
   const [rating, setRating] = useState(data.ageRating)
   const [isPubliclyVisible, setPubliclyVisible] = useState(data.isPubliclyVisible)
-
   const summaryRef = useRef(data.summary)
-
   const tagsInputRef = useRef<HTMLInputElement | null>(null)
   const summaryInputRef = useRef<HTMLInputElement | null>(null)
 
-  function handleSubmit(e: SubmitEvent) {
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e: SubmitEvent) {
     e.preventDefault()
-    tagsInputRef.current!.value = tags.map((tag) => tag.id).join(',')
-    summaryInputRef.current!.value = summaryRef.current
-    if (e.currentTarget instanceof HTMLFormElement) e.currentTarget.submit()
+    setLoading(true)
+    try {
+      const response = await httpUpdateBook(data.id, {
+        name,
+        tags: tags.map((x) => x.id),
+        rating,
+        summary: summaryRef.current,
+        isPubliclyVisible,
+      })
+      setData(response.data)
+      if (response.notifications) {
+        response.notifications.forEach(flash)
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <form method="post" action={`/books-manager/book/${data.id}`} onSubmit={handleSubmit}>
-      <CSRFInput />
+    <form onSubmit={handleSubmit}>
       <div class="form-control form-control--horizontal">
         <div class="form-control__label">
           <label htmlFor="summary" className="label">
@@ -42,7 +50,7 @@ export default function GeneralInformation({ data: dataUnknown }: PreactIslandPr
           <input
             value={name}
             onInput={(e) => setName((e.target as HTMLInputElement).value)}
-            class="input"
+            class="ol-input"
             name="name"
           />
         </div>
@@ -93,52 +101,19 @@ export default function GeneralInformation({ data: dataUnknown }: PreactIslandPr
           </p>
         </div>
         <div class="form-control__value">
-          <Switch name="isPubliclyVisible" value={isPubliclyVisible} onChange={setPubliclyVisible} />
+          <Switch
+            name="isPubliclyVisible"
+            value={isPubliclyVisible}
+            onChange={setPubliclyVisible}
+          />
         </div>
       </div>
 
       <div class="mt-4">
         <button class="ol-btn ol-btn--primary rounded-full">
-          {window._('bookManager.edit.save')}
+          {loading ? <span class="loader loader--dark" /> : window._('bookManager.edit.save')}
         </button>
       </div>
     </form>
   )
 }
-
-const bookCollectionDtoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  position: z.number(),
-  size: z.number(),
-})
-
-const bookChapterDtoSchema = z.object({
-  id: z.string(),
-  order: z.number().min(0).int(),
-  name: z.string(),
-  words: z.number(),
-  createdAt: z.string(),
-  summary: z.string(),
-})
-
-const managerBookDetailsSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  ageRating: z.string(),
-  adult: z.boolean(),
-  tags: z.array(definedTagDtoSchema),
-  words: z.number(),
-  wordsPerChapter: z.number(),
-  collections: z.array(bookCollectionDtoSchema),
-  chapters: z.array(bookChapterDtoSchema),
-  createdAt: z.string(),
-  author: z.object({
-    id: z.string(),
-    name: z.string(),
-  }),
-  summary: z.string(),
-  isPubliclyVisible: z.boolean(),
-  isBanned: z.boolean(),
-  cover: z.string(),
-})

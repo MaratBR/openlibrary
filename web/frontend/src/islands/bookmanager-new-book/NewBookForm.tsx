@@ -19,7 +19,11 @@ export default function NewBookForm() {
   }
 
   return (
-    <form class="anim-appear px-2 space-y-4 md:space-y-0 md:px-0 md:mt-20 md:grid md:grid-cols-[300px_1fr] md:gap-2" action="/books-manager/new" method="post">
+    <form
+      class="anim-appear px-2 space-y-4 md:space-y-0 md:px-0 md:mt-20 md:grid md:grid-cols-[300px_1fr] md:gap-2"
+      action="/books-manager/new"
+      method="post"
+    >
       <CSRFInput />
 
       <ul class="flex flex-col pt-8 gap-2">
@@ -53,7 +57,7 @@ export default function NewBookForm() {
             autofocus
             placeholder={window._('bookManager.newBook.namePlaceholder')}
             required
-            class="input"
+            class="ol-input"
             name="name"
           />
 
@@ -77,14 +81,14 @@ export default function NewBookForm() {
                   <input
                     key={ageRating}
                     id={id}
-                    class="age-rating-input"
+                    class="ol-age-rating-input"
                     name="ageRating"
                     value={ageRating}
                     type="radio"
                     checked={ageRating === rating}
                     onChange={() => setRating(ageRating)}
                   />
-                  <label data-rating={ageRating} class="age-rating" for={id}>
+                  <label data-rating={ageRating} class="ol-age-rating" for={id}>
                     {ageRating}
                   </label>
                 </Fragment>
@@ -142,7 +146,11 @@ export default function NewBookForm() {
             }}
             class="mt-8 ol-btn ol-btn--lg ol-btn--primary rounded-full"
           >
-            {loading ? <span class="loader loader--dark" /> : window._('bookManager.newBook.create')}
+            {loading ? (
+              <span class="loader loader--dark" />
+            ) : (
+              window._('bookManager.newBook.create')
+            )}
           </button>
         </div>
       </section>

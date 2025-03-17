@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'preact/hooks'
 import { DefinedTagDto, searchTags } from './api'
 import { DropdownCore } from './DropdownCore'
 
-
 export type TagsInputProps = {
   tags: DefinedTagDto[]
   // eslint-disable-next-line no-unused-vars

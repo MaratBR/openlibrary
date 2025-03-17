@@ -32,7 +32,7 @@ export default function PasswordReset({ rootElement }: PreactIslandProps) {
       <div class="relative mb-10 mr-2">
         <input
           name="password"
-          class="input"
+          class="ol-input"
           onInput={(e) => setValue((e.target as HTMLInputElement).value)}
           value={value}
         />

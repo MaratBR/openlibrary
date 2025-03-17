@@ -68,6 +68,14 @@ func arrInt64ToInt64String(v []int64) []Int64String {
 	return ints
 }
 
+func ArrInt64StringToInt64(v []Int64String) []int64 {
+	ints := make([]int64, len(v))
+	for i := range v {
+		ints[i] = int64(v[i])
+	}
+	return ints
+}
+
 func int64NullableDomainToDb(v Nullable[int64]) pgtype.Int8 {
 	return pgtype.Int8{Valid: v.Valid, Int64: v.Value}
 }

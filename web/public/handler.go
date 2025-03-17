@@ -20,11 +20,12 @@ type Handler struct {
 	_mutex   sync.Mutex
 	_started bool
 
-	r           chi.Router
-	db          app.DB
-	cfg         *koanf.Koanf
-	cache       *cache.Cache
-	csrfHandler *csrf.Handler
+	r             chi.Router
+	db            app.DB
+	cfg           *koanf.Koanf
+	cache         *cache.Cache
+	csrfHandler   *csrf.Handler
+	uploadService *app.UploadService
 }
 
 func NewHandler(
@@ -33,6 +34,7 @@ func NewHandler(
 	cache *cache.Cache,
 	csrfHandler *csrf.Handler,
 	bgServices *app.BackgroundServices,
+	uploadService *app.UploadService,
 ) *Handler {
 	if cache == nil {
 		panic("cache is nil")
@@ -45,10 +47,11 @@ func NewHandler(
 	}
 
 	h := &Handler{
-		db:          db,
-		cfg:         cfg,
-		cache:       cache,
-		csrfHandler: csrfHandler,
+		db:            db,
+		cfg:           cfg,
+		cache:         cache,
+		csrfHandler:   csrfHandler,
+		uploadService: uploadService,
 	}
 	h.initRouter()
 	h.setupRouter(bgServices)

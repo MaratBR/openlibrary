@@ -7,7 +7,6 @@ import { httpUpdateReview, ratingSchema, ReviewDto, reviewDtoSchema } from './ap
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { PreactIslandProps } from '../common'
 
-
 export default function ReviewEditor({ rootElement }: PreactIslandProps) {
   const rootEl = useRef<HTMLDivElement | null>(null)
   const editor = useRef<Editor | null>()
@@ -44,7 +43,7 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
     })
       .then((review) => {
         rootElement.dispatchEvent(new CustomEvent('review:updated', { detail: review }))
-        window.toast({ title: _('reviews.updated') })
+        window.toast({ title: window._('reviews.updated') })
       })
       .finally(() => {
         setSaving(false)

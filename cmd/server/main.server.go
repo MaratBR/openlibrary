@@ -54,7 +54,7 @@ func mainServer(
 	slog.Debug("connecting to cache")
 	cacheInstance := createCache(config)
 
-	slog.Debug("initializing csr handler")
+	slog.Debug("initializing csrf handler")
 	csrfHandler := csrf.NewHandler("CSRF HANDLER HERE")
 
 	// create router
@@ -84,7 +84,9 @@ func mainServer(
 	}
 	defer bgServices.Stop()
 
-	publicUIHandler := public.NewHandler(db, config, cacheInstance, csrfHandler, bgServices)
+	uploadService := app.NewUploadServiceFromApplicationConfig(config)
+
+	publicUIHandler := public.NewHandler(db, config, cacheInstance, csrfHandler, bgServices, uploadService)
 	adminHandler := admin.NewHandler(db, config, cacheInstance, bgServices)
 
 	err = publicUIHandler.Start()
@@ -129,12 +131,12 @@ func mainServer(
 		}()
 	}
 
-	// go func() {
-	// 	err := uploadService.InitBuckets(context.Background())
-	// 	if err != nil {
-	// 		slog.Error("failed to make main bucket", "err", err)
-	// 	}
-	// }()
+	go func() {
+		err := uploadService.InitBuckets(context.Background())
+		if err != nil {
+			slog.Error("failed to make main bucket", "err", err)
+		}
+	}()
 
 	go func() {
 		ip, err := getPublicIP()

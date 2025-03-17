@@ -21,20 +21,20 @@ templ flashMessages() {
         messages := flash.GetFlashes(ctx)
     }}
 
-    if len(messages) > 0 {
-        <div class="ol-container ol-container--big my-2">
-            for _, message := range messages {
-                <div x-data class="text-white bg-emerald-500 rounded-full p-2 relative">
-                    @message
-                    <div class="absolute right-2 top-0 bottom-0 flex items-center">
-                        <button @click="$root.remove()" class="flex items-center justify-center rounded-full transition-colors size-8 hover:bg-highlight">
-                            <span class="material-symbols-outlined">close</span>
-                        </button>
-                    </div>
+    <div class="ol-container ol-container--big my-2 empty:hidden">
+        for _, message := range messages {
+            <div x-data class="ol-flash">
+                @message
+                <div class="ol-flash__closeContainer">
+                    <button @click="$root.remove()" class="ol-flash__close">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
                 </div>
-            }
-        </div>
-    }
+            </div>
+        }
+
+        <div id="client-flashes" class="contents" />
+    </div>
 }
 
 templ baseLayoutNoFooter(title string) {

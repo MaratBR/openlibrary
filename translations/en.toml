@@ -238,8 +238,10 @@ summary = "Summary"
 tags = "Tags"
 save = "Save"
 ageRating = "Age rating"
-editedSuccessfully = "Book {{.Name}} was updated successfully"
-
+editedSuccessfully = "Book <b>{{.Name}}</b> was updated successfully"
+cropAndUploadCover = "Crop and upload"
+goToPage = "Go to page"
+clickOnImageToChange = "Click on image to change"
 #####################
 #                   #
 # ADMIN PAGE        #
