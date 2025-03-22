@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { resolve } from 'node:path'
 import { defineConfig, Plugin } from 'vite'
 import preact from '@preact/preset-vite'
@@ -86,7 +87,7 @@ const ENTRIES = [
   'islands/bookmanager-book',
 ]
 
-export default defineConfig({
+export default defineConfig((env) => ({
   plugins: [
     preact({
       devToolsEnabled: true,
@@ -112,12 +113,12 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      // eslint-disable-next-line no-undef
       '@': resolve(__dirname, './src'),
     },
   },
 
   build: {
+    minify: env.mode === 'production',
     rollupOptions: {
       output: {
         chunkFileNames: 'chunks/[hash].js',
@@ -142,9 +143,8 @@ export default defineConfig({
       name: 'ol-public-ui',
       formats: ['es'],
       entry: Object.fromEntries(
-        // eslint-disable-next-line no-undef
         ENTRIES.map((entry) => [entry, resolve(__dirname, 'src', entry, 'index.ts')]),
       ),
     },
   },
-})
+}))

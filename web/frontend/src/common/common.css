@@ -8,6 +8,7 @@
 @import "./style/table.scss";
 
 @import "./style/age-rating.scss";
+@import "./style/alert.scss";
 @import "./style/animations.scss";
 @import "./style/avatar.scss";
 @import "./style/book-rating.scss";

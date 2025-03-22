@@ -1,0 +1,7 @@
+.ol-alert {
+    @apply p-2 rounded-sm text-sm;
+
+    &--warning {
+        @apply bg-yellow-200 border-yellow-500 border;
+    }
+}

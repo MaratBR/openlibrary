@@ -248,6 +248,9 @@ noChapters = "No chapters yet"
 words = "Words"
 edit = "Edit"
 delete = "Delete"
+reorder = "Reorder"
+cancel = "Cancel"
+changesPending = "You have changed the order of {count} chapters"
 
 #####################
 #                   #

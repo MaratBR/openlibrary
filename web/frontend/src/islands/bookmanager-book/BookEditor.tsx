@@ -1,15 +1,17 @@
-import { useMemo, useState } from 'preact/hooks'
+import { useMemo } from 'preact/hooks'
 import { Tab, Tabs } from './Tabs'
 import { PreactIslandProps } from '../common'
 import GeneralInformation from './GeneralInformation'
 import { managerBookDetailsSchema } from './api'
 import BookCover from './BookCover'
 import Chapters from './Chapters'
+import { useHashQueryValue } from '@/lib/url-hooks'
 
 export default function BookEditor({ data: dataUnknown, rootElement }: PreactIslandProps) {
   const data = useMemo(() => managerBookDetailsSchema.parse(dataUnknown), [dataUnknown])
 
-  const [tab, setTab] = useState('general')
+  const [tabValue, setTab] = useHashQueryValue('tab')
+  const tab = tabValue || 'general'
 
   return (
     <>
@@ -26,16 +28,16 @@ export default function BookEditor({ data: dataUnknown, rootElement }: PreactIsl
         <Tab value="chapters">{window._('bookManager.edit.chapters')}</Tab>
       </Tabs>
 
-      <div class="ol-card mt-4" style={{ display: tab === 'general' ? 'block' : 'none' }}>
+      <div class="mt-4" style={{ display: tab === 'general' ? 'block' : 'none' }}>
         <GeneralInformation data={data} />
       </div>
 
-      <div class="ol-card mt-4" style={{ display: tab === 'cover' ? 'block' : 'none' }}>
+      <div class="mt-4" style={{ display: tab === 'cover' ? 'block' : 'none' }}>
         <BookCover book={data} />
       </div>
 
       {tab === 'chapters' && (
-        <div class="ol-card mt-4">
+        <div class="mt-4">
           <Chapters data={data} rootElement={rootElement} />
         </div>
       )}

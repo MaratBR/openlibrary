@@ -5,11 +5,12 @@ go 1.23
 toolchain go1.23.3
 
 require (
+	github.com/NYTimes/gziphandler v1.1.1
 	github.com/PuerkitoBio/goquery v1.10.1
 	github.com/a-h/templ v0.3.833
 	github.com/alexedwards/argon2id v1.0.0
-	github.com/andybalholm/brotli v1.1.1
 	github.com/doug-martin/goqu/v9 v9.19.0
+	github.com/ggicci/httpin v0.19.0
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-faker/faker/v4 v4.5.0
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -36,14 +37,12 @@ require (
 )
 
 require (
-	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
-	github.com/ggicci/httpin v0.19.0 // indirect
 	github.com/ggicci/owl v0.8.2 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect

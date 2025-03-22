@@ -79,3 +79,9 @@ export function httpUploadCover(req: UploadCoverRequest): Promise<UploadCoverRes
     .then((r) => r.json())
     .then(uploadCoverResponseSchema.parse)
 }
+
+export function httpUpdateChaptersOrder(bookId: string, order: string[]) {
+  return httpClient.post(`/_api/books-manager/book/${bookId}/chapters-order`, {
+    json: order,
+  })
+}

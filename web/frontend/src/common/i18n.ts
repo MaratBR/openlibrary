@@ -1,9 +1,24 @@
-export function translate(key: string) {
-  if (window.i18n) {
-    return window.i18n[key] ?? key
+export function translate(key: string, args?: Record<string, string>) {
+  if (!window.i18n) {
+    return key
   }
 
-  return key
+  let translation = window.i18n[key]
+
+  if (!translation) {
+    return key
+  }
+
+  if (args) {
+    // replace {{key}} with args[key]
+    for (const [key, value] of Object.entries(args)) {
+      translation = translation.replace(`{{${key}}}`, value)
+      translation = translation.replace(`{${key}}`, value)
+      translation = translation.replace(`{{.${key}}}`, value)
+    }
+  }
+
+  return translation
 }
 
 declare global {
