@@ -22,5 +22,5 @@ func (t *apiTagsController) Tags(w http.ResponseWriter, r *http.Request) {
 		apiWriteApplicationError(w, err)
 		return
 	}
-	olresponse.WriteJSONResponse(w, tags)
+	olresponse.NewAPIResponse(tags).Write(w)
 }

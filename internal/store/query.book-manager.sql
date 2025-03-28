@@ -67,3 +67,14 @@ update book_chapters
 set name = $2, content = $3, words = $4, summary = $5
 where id = $1
 returning book_chapters.book_id;
+
+-- name: GetChaptersOrder :many
+select id
+from book_chapters
+where book_id = $1
+order by "order";
+
+-- name: UpdateChaptersOrder :exec
+update book_chapters
+set "order" = $2
+where id = $1;

@@ -25,17 +25,17 @@ func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.R
 
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
 	if err != nil {
-		apiWriteUnprocessableEntity(w, "failed to parse bookId: "+err.Error())
+		apiWriteUnprocessableEntity(w, err)
 		return
 	}
 	if bookID == 0 {
-		apiWriteUnprocessableEntity(w, "bookId cannot be 0")
+		apiWriteUnprocessableEntity(w, errors.New("bookId cannot be 0"))
 		return
 	}
 
 	statusStr := r.URL.Query().Get("status")
 	if statusStr == "" {
-		apiWriteUnprocessableEntity(w, "status query parameter is missing")
+		apiWriteUnprocessableEntity(w, errors.New("status query parameter is missing"))
 		return
 	}
 
@@ -53,7 +53,7 @@ func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.R
 	case string(app.ReadingListStatusReading):
 		f = c.service.MarkAsReading
 	default:
-		apiWriteUnprocessableEntity(w, "invalid value for status: "+statusStr)
+		apiWriteUnprocessableEntity(w, errors.New("invalid value for status: "+statusStr))
 		return
 	}
 
@@ -74,5 +74,5 @@ func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	olresponse.WriteJSONResponse(w, &state.Value)
+	olresponse.NewAPIResponse(state.Value).Write(w)
 }

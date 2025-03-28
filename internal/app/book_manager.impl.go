@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
+	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/minio/minio-go/v7"
 )
@@ -128,6 +129,46 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		Summary:            summaryData.Sanitized,
 		IsPubliclyVisible:  input.IsPubliclyVisible,
 	})
+}
+
+// UpdateBookChaptersOrder updates the order of chapters in a book.
+func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+
+	queries := s.queries.WithTx(tx)
+
+	chapters, err := queries.GetChaptersOrder(ctx, input.BookID)
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return err
+	}
+
+	isEqualSet := commonutil.ContainsSameAndNoDuplicates(chapters, input.ChapterIDs)
+	if !isEqualSet {
+		rollbackTx(ctx, tx)
+		return ErrTypeChaptersReorder.New("chapters do not match")
+	}
+
+	for i, chapterID := range input.ChapterIDs {
+		err = queries.UpdateChaptersOrder(ctx, store.UpdateChaptersOrderParams{
+			ID:    chapterID,
+			Order: int32(i + 1),
+		})
+		if err != nil {
+			rollbackTx(ctx, tx)
+			return err
+		}
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error) {

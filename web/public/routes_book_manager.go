@@ -24,8 +24,10 @@ func (c *bookManagerController) Register(r chi.Router) {
 	r.Route("/books-manager", func(r chi.Router) {
 		r.Get("/", c.index)
 		r.Get("/new", c.newBook)
-		r.With(httpin.NewInput(&createBookRequest{})).Post("/new", c.createBook)
 		r.Get("/book/{bookID}", c.book)
+
+		r.With(httpin.NewInput(&createBookRequest{})).Post("/new", c.createBook)
+
 	})
 }
 

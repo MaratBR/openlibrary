@@ -59,6 +59,33 @@ func (q *Queries) GetChapterOrder(ctx context.Context, bookID int64) ([]GetChapt
 	return items, nil
 }
 
+const getChaptersOrder = `-- name: GetChaptersOrder :many
+select id
+from book_chapters
+where book_id = $1
+order by "order"
+`
+
+func (q *Queries) GetChaptersOrder(ctx context.Context, bookID int64) ([]int64, error) {
+	rows, err := q.db.Query(ctx, getChaptersOrder, bookID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getLastChapterOrder = `-- name: GetLastChapterOrder :one
 select cast(coalesce(max("order"), 0) as int4) as last_order
 from book_chapters
@@ -318,4 +345,20 @@ func (q *Queries) UpdateBookChapter(ctx context.Context, arg UpdateBookChapterPa
 	var book_id int64
 	err := row.Scan(&book_id)
 	return book_id, err
+}
+
+const updateChaptersOrder = `-- name: UpdateChaptersOrder :exec
+update book_chapters
+set "order" = $2
+where id = $1
+`
+
+type UpdateChaptersOrderParams struct {
+	ID    int64
+	Order int32
+}
+
+func (q *Queries) UpdateChaptersOrder(ctx context.Context, arg UpdateChaptersOrderParams) error {
+	_, err := q.db.Exec(ctx, updateChaptersOrder, arg.ID, arg.Order)
+	return err
 }

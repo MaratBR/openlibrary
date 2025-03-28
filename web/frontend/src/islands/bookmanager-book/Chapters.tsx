@@ -3,6 +3,7 @@ import { PreactIslandProps } from '../common'
 import { httpUpdateChaptersOrder, managerBookDetailsSchema } from './api'
 import { twMerge } from 'tailwind-merge'
 import clsx from 'clsx'
+import { ErrorDisplay } from '@/components/error'
 
 type Chapter = {
   id: string
@@ -36,7 +37,7 @@ function SortableChapterItem({
     <div
       className={twMerge(
         clsx(
-          'ol-card relative p-4 mb-2 before:absolute before:block before:bg-primary before:w-2 before:h-full before:left-0 before:top-0 before:invisible',
+          'ol-card relative p-4 mb-2 before:absolute before:block before:bg-primary before:w-2 before:h-full before:left-0 before:top-0 before:invisible overflow-hidden',
           {
             'before:visible': isModified,
           },
@@ -163,7 +164,13 @@ export default function Chapters({ data: dataUnknown }: PreactIslandProps) {
   }, [isReordering, chapters, originalOrder])
 
   return (
-    <div class="chapters-container">
+    <>
+      {savingOrderError && (
+        <div class="mb-4">
+          <ErrorDisplay error={savingOrderError} />
+        </div>
+      )}
+
       <div class="flex justify-between items-center mb-4">
         <span />
         <div class="flex gap-2">
@@ -221,6 +228,6 @@ export default function Chapters({ data: dataUnknown }: PreactIslandProps) {
       ) : (
         <div class="text-center py-8 text-gray-500">{window._('bookManager.edit.noChapters')}</div>
       )}
-    </div>
+    </>
   )
 }

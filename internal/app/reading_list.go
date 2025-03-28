@@ -57,8 +57,6 @@ type ReadingListService interface {
 	MarkAsPaused(ctx context.Context, userID uuid.UUID, bookID int64) error
 	MarkAsReading(ctx context.Context, userID uuid.UUID, bookID int64) error
 	MarkAsReadingWithChapterID(ctx context.Context, userID uuid.UUID, bookID int64, chapterID int64) error
-
 	GetStatus(ctx context.Context, userID uuid.UUID, bookID int64) (Nullable[BookReadingListDto], error)
-
 	GetReadingListBooks(ctx context.Context, query GetReadingListItemsQuery) ([]BookLibraryDto, error)
 }

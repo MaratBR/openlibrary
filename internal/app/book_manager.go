@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrTypeBookSanitizationFailed = AppErrors.NewType("content_sanitization_failed")
+	ErrTypeChaptersReorder        = AppErrors.NewType("chapters_reorder")
 )
 
 type CreateBookCommand struct {
@@ -161,10 +162,16 @@ type UploadBookCoverResult struct {
 	URL string
 }
 
+type UpdateBookChaptersOrders struct {
+	BookID     int64
+	ChapterIDs []int64
+}
+
 type BookManagerService interface {
 	CreateBook(ctx context.Context, input CreateBookCommand) (int64, error)
 	UpdateBook(ctx context.Context, input UpdateBookCommand) error
 	UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (UploadBookCoverResult, error)
+	UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error
 
 	GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error)
 	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error)

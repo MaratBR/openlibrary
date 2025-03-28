@@ -14,7 +14,11 @@ func URLQueryParamInt64(r *http.Request, name string) (int64, error) {
 	if len(value) == 0 {
 		return 0, nil
 	}
-	return strconv.ParseInt(value, 10, 64)
+	intValue, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return 0, errTypeInvalidInt64.Wrap(err, "failed to parse int64 query parameter "+name)
+	}
+	return intValue, nil
 }
 
 func URLQueryParamUUID(r *http.Request, name string) (uuid.UUID, error) {

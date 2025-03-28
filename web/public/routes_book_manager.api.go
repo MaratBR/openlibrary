@@ -27,6 +27,7 @@ func (c *apiBookManagerController) Register(r chi.Router) {
 	r.Route("/_api/books-manager", func(r chi.Router) {
 		r.With(httpin.NewInput(&updateBookRequest{})).Post("/book/{bookID}", c.updateBook)
 		r.With(httpin.NewInput(&uploadCoverInput{})).Post("/book/{bookID}/cover", c.uploadCover)
+		r.With(httpin.NewInput(&updateBookChaptersOrderRequest{})).Post("/book/{bookID}/chapters-order", c.updateBookChaptersOrder)
 
 	})
 }
@@ -81,7 +82,7 @@ func (c *apiBookManagerController) updateBook(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	response := olresponse.NewJSONResponse(bookResult.Book)
+	response := olresponse.NewAPIResponse(bookResult.Book)
 	response.AddNotification(olresponse.NewNotification(
 		l.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "bookManager.edit.editedSuccessfully",
@@ -133,6 +134,30 @@ func (c *apiBookManagerController) uploadCover(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	response := olresponse.NewJSONResponse(result.URL)
+	response := olresponse.NewAPIResponse(result.URL)
 	response.Write(w)
+}
+
+type updateBookChaptersOrderRequest struct {
+	Chapters []app.Int64String `in:"body=json"`
+}
+
+func (c *apiBookManagerController) updateBookChaptersOrder(w http.ResponseWriter, r *http.Request) {
+	input := r.Context().Value(httpin.Input).(*updateBookChaptersOrderRequest)
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	err = c.service.UpdateBookChaptersOrder(r.Context(), app.UpdateBookChaptersOrders{
+		BookID:     bookID,
+		ChapterIDs: app.ArrInt64StringToInt64(input.Chapters),
+	})
+
+	if err != nil {
+		apiWriteApplicationError(w, err)
+	} else {
+		apiWriteOK(w)
+	}
 }

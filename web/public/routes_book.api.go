@@ -49,7 +49,7 @@ func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	olresponse.WriteOKResponse(w)
+	olresponse.NewAPIResponseOK().Write(w)
 }
 
 func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +77,7 @@ func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	olresponse.WriteOKResponse(w)
+	olresponse.NewAPIResponseOK().Write(w)
 }
 
 type createReviewRequest struct {
@@ -88,12 +88,12 @@ type createReviewRequest struct {
 func (c *apiBookController) UpdateOrCreateReview(w http.ResponseWriter, r *http.Request) {
 	request := createReviewRequest{}
 	if err := readJSON(r, &request); err != nil {
-		apiWriteUnprocessableEntity(w, err.Error())
+		apiWriteUnprocessableEntity(w, err)
 		return
 	}
 	bookID, err := commonutil.URLParamInt64(r, "bookID")
 	if err != nil {
-		apiWriteUnprocessableEntity(w, err.Error())
+		apiWriteUnprocessableEntity(w, err)
 		return
 	}
 	review, err := c.reviewService.UpdateReview(r.Context(), app.UpdateReviewCommand{
@@ -107,14 +107,13 @@ func (c *apiBookController) UpdateOrCreateReview(w http.ResponseWriter, r *http.
 		return
 	}
 
-	olresponse.WriteJSON(w, review)
-	olresponse.WriteJSONResponse(w, review)
+	olresponse.NewAPIResponse(review).Write(w)
 }
 
 func (c *apiBookController) DeleteReview(w http.ResponseWriter, r *http.Request) {
 	bookID, err := commonutil.URLParamInt64(r, "bookID")
 	if err != nil {
-		apiWriteUnprocessableEntity(w, err.Error())
+		apiWriteUnprocessableEntity(w, err)
 		return
 	}
 	err = c.reviewService.DeleteReview(r.Context(), app.DeleteReviewCommand{
@@ -125,5 +124,5 @@ func (c *apiBookController) DeleteReview(w http.ResponseWriter, r *http.Request)
 		apiWriteApplicationError(w, err)
 		return
 	}
-	olresponse.WriteOKResponse(w)
+	olresponse.NewAPIResponseOK().Write(w)
 }

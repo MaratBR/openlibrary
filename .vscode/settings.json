@@ -8,6 +8,7 @@
         "goqu",
         "gziphandler",
         "httpin",
+        "iden",
         "Koanf",
         "Minio",
         "mult",

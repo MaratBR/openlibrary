@@ -12,7 +12,7 @@ func Write500(
 	w.WriteHeader(http.StatusInternalServerError)
 
 	if PreferredMimeTypeIsJSON(r) {
-		writeErrorJSON(err, w)
+		NewAPIError(err).Write(w)
 	} else {
 		err500(err).Render(r.Context(), w)
 	}
