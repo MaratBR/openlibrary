@@ -7,13 +7,12 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/flash"
-	i18nProvider "github.com/MaratBR/openlibrary/internal/i18n-provider"
+	"github.com/MaratBR/openlibrary/internal/i18n"
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/ggicci/httpin"
 	"github.com/gofrs/uuid"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type usersController struct {
@@ -129,11 +128,9 @@ func (c *usersController) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	l := i18nProvider.GetLocalizer(r.Context())
+	l := i18n.GetLocalizer(r.Context())
 
-	flash.Add(r, flash.Text(l.MustLocalize(&i18n.LocalizeConfig{
-		MessageID: "admin.users.userWasUpdated",
-	})))
+	flash.Add(r, flash.Text(l.T("admin.users.userWasUpdated")))
 
 	c.sendUserEditForm(w, r, userID)
 }

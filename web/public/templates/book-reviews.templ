@@ -1,11 +1,10 @@
 package templates
 
-import "github.com/nicksnyder/go-i18n/v2/i18n"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/gofrs/uuid"
 import "github.com/MaratBR/openlibrary/internal/auth"
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
 import "strconv"
 
 templ bookTopReviews(
@@ -78,7 +77,7 @@ templ BookMyReview(
 ) {
     {{
         _, authorized := auth.GetSession(ctx)
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
     
     <section id={ fmt.Sprintf("book-%d-my-review", bookID) } data-book-id={ fmt.Sprintf("%d", bookID) } class="my-2" x-data="{
@@ -161,9 +160,7 @@ templ BookMyReview(
                 if authorized {
                     <div class="flex flex-col items-center">
                         <span class="mt-3 block text-3xl font-title font-semibold">
-                            @templ.Raw(l.MustLocalize(&i18n.LocalizeConfig{
-                                MessageID: "book.whatDoYouThink",
-                            }))
+                            @templ.Raw(l.T("book.whatDoYouThink"))
                         </span>
                         <div class="flex gap-6 items-center mt-4">
                             {{
@@ -173,17 +170,12 @@ templ BookMyReview(
                                 )
                                 if ratingAndReview.Rating.Valid {
                                     initialValue = float64(ratingAndReview.Rating.Value)
-                                    text = l.MustLocalize(&i18n.LocalizeConfig{
-                                        MessageID: "book.youRated",
-                                        TemplateData: map[string]string{
+                                    text = l.TData("book.youRated", map[string]string{
                                             "rating": strconv.FormatFloat(initialValue/2, 'f', -1, 32),
-                                        },
-                                    })
+                                        })
                                 } else {
                                     initialValue = 0.0
-                                    text = l.MustLocalize(&i18n.LocalizeConfig{
-                                        MessageID: "book.rateBook",
-                                    })
+                                    text = l.T("book.rateBook")
                                 }
                             }}
                             <div class="flex flex-col items-center" x-data={ fmt.Sprintf("{rating:%f}", initialValue) }>
@@ -196,11 +188,8 @@ templ BookMyReview(
                                     }))
                                 `, bookID))
                                 @i18nKeys(map[string]string{
-                                    "book.youRated": l.MustLocalize(&i18n.LocalizeConfig{
-                                        MessageID: "book.youRated",
-                                        TemplateData: map[string]string{
-                                            "rating": "$",
-                                        },
+                                    "book.youRated": l.TData("book.youRated", map[string]string{
+                                        "rating": "$",
                                     }),
                                 })
                                 @i18nExtractKeys(l, []string{
@@ -216,9 +205,7 @@ templ BookMyReview(
                             </div>
                             <button class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full" @click="requestEditing()">
                                 <span x-show="!loading">
-                                    { l.MustLocalize(&i18n.LocalizeConfig{
-                                        MessageID: "book.writeReview",
-                                    }) }
+                                    { l.T("book.writeReview") }
                                 </span>
                                 <span x-cloak x-show="loading" class="loader mx-8"></span>
                             </button>
@@ -226,14 +213,10 @@ templ BookMyReview(
                     </div>
                 } else {
                     <span class="mt-3 block text-3xl font-title font-semibold">
-                        @templ.Raw(l.MustLocalize(&i18n.LocalizeConfig{
-                            MessageID: "book.whatDoYouThink",
-                        }))
+                        @templ.Raw(l.T("book.whatDoYouThink"))
                     </span>
                     <a class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full mt-4" href="/login">
-                        { l.MustLocalize(&i18n.LocalizeConfig{
-                            MessageID: "book.writeReviewLogin",
-                        }) }
+                        { l.T("book.writeReviewLogin") }
                     </a>
                 }
             </div>
@@ -255,7 +238,7 @@ templ collapsibleRawHtml(id, html string) {
 
 templ collapsible(height int, canBeCollapsed bool) {
     {{ 
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
 
     <div 

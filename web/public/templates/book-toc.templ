@@ -2,7 +2,7 @@ package templates
 
 import "context"
 import "github.com/MaratBR/openlibrary/internal/app"
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "fmt"
 
@@ -11,7 +11,7 @@ templ BookTOC(
     bookID int64,
     chapters []app.BookChapterDto,
 ) {
-    {{ l := i18nProvider.GetLocalizer(ctx) }}
+    {{ l := i18n.GetLocalizer(ctx) }}
 
     <div class="contents" id="slot-book-toc" x-cloak x-show="tab==='toc'">
         <ul class="ol-book-toc" role="listbox">

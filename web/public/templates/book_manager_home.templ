@@ -1,6 +1,6 @@
 package templates
 
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/web/olresponse"
 import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/app"
@@ -37,7 +37,7 @@ templ BookManager() {
 
 templ BookManagerBooks(books app.GetUserBooksResult) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
     
     @bookManagerMainPage("books") {
@@ -89,7 +89,7 @@ templ BookManagerCollections() {
 
 templ bookManagerMainPage(tab string) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
     
     @bookManagerLayout(_t(l, "bookManager.title")) {

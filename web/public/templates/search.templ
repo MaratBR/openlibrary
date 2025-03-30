@@ -3,7 +3,7 @@ package templates
 import "context"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/web/olresponse"
 
 
@@ -13,7 +13,7 @@ templ SearchPage(
     explainedQuery app.DetailedBookSearchQuery,
 ) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
         tags := make(map[int64]app.DefinedTagDto, len(result.Tags))
         for _, tag := range result.Tags {
             tags[tag.ID] = tag
@@ -151,7 +151,7 @@ templ SearchPage(
 }
 
 templ searchNoResultsCard() {
-    {{ l := i18nProvider.GetLocalizer(ctx) }}
+    {{ l := i18n.GetLocalizer(ctx) }}
 
     <div class="my-8 px-12 text-lg overflow-hidden rounded-xl grid grid-cols-[auto_1fr] bg-[#dee0e2] dark:bg-[#211f1d] max-w-[600px]">
         <div>
@@ -176,7 +176,7 @@ css simpleSearchCSSRoot() {
 
 templ SimpleSearch() {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
     @htmlLayout(_t(l, "search.search")) {
         <main class={ simpleSearchCSSRoot() }>

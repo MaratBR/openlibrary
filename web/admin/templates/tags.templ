@@ -5,7 +5,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "net/url"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/web/olresponse"
 
 type TagsSearchRequest struct {
@@ -16,7 +16,7 @@ type TagsSearchRequest struct {
 
 templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
         pagination := olresponse.Pagination(result.Page, result.TotalPages, 9)
     }}
 
@@ -173,7 +173,7 @@ templ tagsPagination(result *app.ListTagsResult) {
 }
 
 templ Tag(tag app.TagDetailsItemDto) {
-    {{ l := i18nProvider.GetLocalizer(ctx) }}
+    {{ l := i18n.GetLocalizer(ctx) }}
 
     @dashboardLayout("Admin - " + tag.Name) {
         <div class="admin-page-content">

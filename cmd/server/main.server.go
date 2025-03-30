@@ -11,7 +11,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/csrf"
-	i18nProvider "github.com/MaratBR/openlibrary/internal/i18n-provider"
+	i18n "github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/admin"
 	"github.com/MaratBR/openlibrary/web/frontend"
@@ -40,11 +40,13 @@ func mainServer(
 	var err error
 
 	slog.Debug("initializing localizer provider")
-	localizerProvider := i18nProvider.NewLocaleProvider(
+	localizerProvider := i18n.NewLocaleProvider(
 		language.English,
 		cliParams.Dev,
-		[]string{
-			"translations/en.toml",
+		map[language.Tag][]string{
+			language.English: {
+				"translations/en.toml",
+			},
 		},
 	)
 

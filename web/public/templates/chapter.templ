@@ -1,8 +1,7 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
-import "github.com/nicksnyder/go-i18n/v2/i18n"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "fmt"
 import "strconv"
@@ -17,7 +16,7 @@ templ Chapter(
     readerSettings ReaderSettings,
 ) {
     {{
-        _ = i18nProvider.GetLocalizer(ctx)
+        _ = i18n.GetLocalizer(ctx)
         chapter := chapterWithDetails.Chapter
     }}
 
@@ -109,18 +108,15 @@ templ readerSettingsUI(settings ReaderSettings) {
 
 templ ChapterContentSection(chapter *app.ChapterDto, readerSettings ReaderSettings) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
 
     <header class="ol-book-reader__header">
         <h1 class="text-3xl font-title">{ chapter.Name }</h1>
     
         <p class="mt-2 text-muted-foreground">
-            { l.MustLocalize(&i18n.LocalizeConfig{
-                MessageID: "book.words",
-                TemplateData: map[string]string{
-                    "count": commonutil.FormatInt(int(chapter.Words)),
-                },
+            { l.TData("book.words", map[string]string{
+                "count": commonutil.FormatInt(int(chapter.Words)),
             }) }
         </p>
     </header>

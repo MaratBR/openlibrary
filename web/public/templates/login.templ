@@ -1,7 +1,6 @@
 package templates
 
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
-import "github.com/nicksnyder/go-i18n/v2/i18n"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/csrf"
 
 type LoginData struct {
@@ -12,7 +11,7 @@ type LoginData struct {
 
 templ Login(data LoginData) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
 
     @htmlLayout("Login") {
@@ -36,27 +35,21 @@ templ Login(data LoginData) {
 
                     <div class="mb-4">
                         <label for="username" class="ol-label">
-                            { l.MustLocalize(&i18n.LocalizeConfig{
-                                MessageID: "login.username",
-                            }) }
+                            { l.T("login.username") }
                         </label>
                         <input name="username" id="username" value={ data.InitialLogin } class="ol-input" type="text" />
                     </div>
 
                     <div class="mb-4">
                         <label for="password" class="ol-label">
-                            { l.MustLocalize(&i18n.LocalizeConfig{
-                                MessageID: "login.password",
-                            }) }
+                            { l.T("login.password") }
                         </label>
                         <input name="password" id="password" class="ol-input" type="password" />
                     </div>
 
                     <div class="flex gap-2 justify-center">
                         <button type="submit" class="ol-btn ol-btn--lg ol-btn--primary rounded-full">
-                            { l.MustLocalize(&i18n.LocalizeConfig{
-                                MessageID: "login.login",
-                            }) }
+                            { l.T("login.login") }
                         </button>
                     </div>
 

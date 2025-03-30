@@ -1,12 +1,12 @@
 package templates
 
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 
 templ BookManagerNewBook() {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
 
 	@bookManagerLayoutBase(_t(l, "bookManager.newBook.title"), false) {

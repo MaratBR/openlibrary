@@ -1,35 +1,28 @@
 package templates
 
-import "github.com/nicksnyder/go-i18n/v2/i18n"
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/auth"
 import "fmt"
 
 templ siteHeader() {
-    {{ l := i18nProvider.GetLocalizer(ctx) }}
+    {{ l := i18n.GetLocalizer(ctx) }}
 
     @siteHeaderLayout() {
         <a class="ol-nav-link" href="/">
-            {l.MustLocalize(&i18n.LocalizeConfig{
-                MessageID: "nav.home",
-            })}
+            {l.T("nav.home")}
         </a>
         <a class="ol-nav-link" href="/library">
-            {l.MustLocalize(&i18n.LocalizeConfig{
-                MessageID: "nav.library",
-            })}
+            {l.T("nav.library")}
         </a>
         <a class="ol-nav-link" href="/search">
-            {l.MustLocalize(&i18n.LocalizeConfig{
-                MessageID: "nav.search",
-            })}
+            {l.T("nav.search")}
         </a>
     }
 }
 
 templ siteHeaderLayout() {
     {{ 
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
         session, isAuthorized := auth.GetSession(ctx)
     }}
 

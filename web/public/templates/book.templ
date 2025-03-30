@@ -3,8 +3,7 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "encoding/json"
-import "github.com/nicksnyder/go-i18n/v2/i18n"
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "crypto/md5"
 
 templ BookPage(
@@ -14,7 +13,7 @@ templ BookPage(
     topReviews []app.ReviewDto,
 ) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
         tab := "reviews"
     }}
     
@@ -41,9 +40,7 @@ templ BookPage(
                     }
                     :data-active="tab==='reviews'"
                     class="cursor-pointer font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
-                    { l.MustLocalize(&i18n.LocalizeConfig{
-                        MessageID: "reviews.title",
-                    }) }
+                    { l.T("reviews.title") }
                 </span>
                 <span role="tab" data-no-instant
                     @click.prevent="tab='toc'"
@@ -52,9 +49,7 @@ templ BookPage(
                     }
                     :data-active="tab==='toc'"
                     class="cursor-pointer font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
-                    { l.MustLocalize(&i18n.LocalizeConfig{
-                        MessageID: "book.toc",
-                    }) }
+                    { l.T("book.toc") }
                 </span>
             </header>
 
@@ -170,7 +165,7 @@ templ bookCover(cover, bookName string, height int) {
 } 
 
 templ bookTags(tags []app.DefinedTagDto) {
-    {{ l := i18nProvider.GetLocalizer(ctx) }}
+    {{ l := i18n.GetLocalizer(ctx) }}
     <ul 
         if len(tags) > 10 {
             data-hidden
@@ -189,9 +184,7 @@ templ bookTags(tags []app.DefinedTagDto) {
             }
             class="nojs-hidden" role="button" x-show="len>10" @click="open=!open">
             <span class="ol-tag font-semibold nojs-hidden" x-text="i18n[open?'common.less':'common.more']">
-                {l.MustLocalize(&i18n.LocalizeConfig{
-                    MessageID: "common.more",
-                })}
+                {l.T("common.more")}
             </span>
         </li>
     </ul>

@@ -3,8 +3,9 @@ package templates
 import (
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/a-h/templ"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/eduardolat/goeasyi18n"
 )
 
 func i18nExtractKeys(l *i18n.Localizer, keys []string) templ.ComponentScript {
@@ -17,18 +18,14 @@ func i18nExtractKeys(l *i18n.Localizer, keys []string) templ.ComponentScript {
 }
 
 func _t(l *i18n.Localizer, key string) string {
-	value, err := l.Localize(&i18n.LocalizeConfig{MessageID: key})
-	if err != nil {
-		return key
-	}
+	value := l.T(key)
 	return value
 }
 
 func _tt(l *i18n.Localizer, key string, params any) string {
-	value, err := l.Localize(&i18n.LocalizeConfig{MessageID: key, TemplateData: params})
-	if err != nil {
-		return key
-	}
+	value := l.T(key, goeasyi18n.Options{
+		Data: params,
+	})
 	return value
 }
 
@@ -41,26 +38,26 @@ func relativeTime(l *i18n.Localizer, t time.Time) string {
 
 	if s > 24*3600.0 {
 		d := int(s / 3600.0 / 24.0)
-		v, err := l.Localize(&i18n.LocalizeConfig{MessageID: "time.days", PluralCount: d, TemplateData: map[string]interface{}{"count": d}})
-		if err != nil {
-			return "ERROR:" + err.Error()
-		}
+		v := l.T("time.days", goeasyi18n.Options{
+			Count: &d,
+			Data:  map[string]interface{}{"count": d},
+		})
 		return v
 	}
 
 	if s > 3600.0 {
 		h := int(s / 3600.0)
-		v, err := l.Localize(&i18n.LocalizeConfig{MessageID: "time.hours", PluralCount: h, TemplateData: map[string]interface{}{"count": h}})
-		if err != nil {
-			return "ERROR:" + err.Error()
-		}
+		v := l.T("time.hours", goeasyi18n.Options{
+			Count: &h,
+			Data:  map[string]interface{}{"count": h},
+		})
 		return v
 	}
 
 	m := int(s / 60.0)
-	v, err := l.Localize(&i18n.LocalizeConfig{MessageID: "time.minutes", PluralCount: m, TemplateData: map[string]interface{}{"count": m}})
-	if err != nil {
-		return "ERROR:" + err.Error()
-	}
+	v := l.T("time.minutes", goeasyi18n.Options{
+		Count: &m,
+		Data:  map[string]interface{}{"count": m},
+	})
 	return v
 }

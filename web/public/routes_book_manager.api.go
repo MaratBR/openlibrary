@@ -5,13 +5,12 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
-	i18nProvider "github.com/MaratBR/openlibrary/internal/i18n-provider"
+	"github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/upload"
 	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type apiBookManagerController struct {
@@ -71,7 +70,7 @@ func (c *apiBookManagerController) updateBook(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	l := i18nProvider.GetLocalizer(r.Context())
+	l := i18n.GetLocalizer(r.Context())
 
 	bookResult, err := c.service.GetBook(r.Context(), app.ManagerGetBookQuery{
 		ActorUserID: session.UserID,
@@ -84,11 +83,8 @@ func (c *apiBookManagerController) updateBook(w http.ResponseWriter, r *http.Req
 
 	response := olresponse.NewAPIResponse(bookResult.Book)
 	response.AddNotification(olresponse.NewNotification(
-		l.MustLocalize(&i18n.LocalizeConfig{
-			MessageID: "bookManager.edit.editedSuccessfully",
-			TemplateData: map[string]string{
-				"Name": name,
-			},
+		l.TData("bookManager.edit.editedSuccessfully", map[string]string{
+			"Name": name,
 		}),
 		olresponse.NotificationInfo,
 	))

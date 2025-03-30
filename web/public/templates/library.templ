@@ -1,12 +1,12 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
 
 templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
 
     @baseLayout(_t(l, "library.title")) {
@@ -44,7 +44,7 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
 
 templ LibraryArchive(read, dnf []app.BookLibraryDto) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
 
     @baseLayout(_t(l, "library.title")) {
@@ -104,7 +104,7 @@ templ libraryBookCard(bookID int64, name, cover string) {
 
 templ LibraryAnon() {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
 
     @baseLayout(_t(l, "library.title")) {

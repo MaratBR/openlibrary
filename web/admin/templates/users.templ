@@ -1,15 +1,14 @@
 package templates
 
-import "github.com/MaratBR/openlibrary/internal/i18n-provider"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/web/olresponse"
-import "github.com/nicksnyder/go-i18n/v2/i18n"
 import "github.com/MaratBR/openlibrary/internal/csrf"
 
 templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     {{ 
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
         pageTitle := _t(l, "admin.users.title")
     }}
 
@@ -116,7 +115,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
 
 templ User(user *app.UserDetailsDto) {
     {{
-        l := i18nProvider.GetLocalizer(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
 
     @dashboardLayout(user.Name) {
@@ -198,9 +197,7 @@ templ User(user *app.UserDetailsDto) {
                         <div class="flex gap-2 mb-2">
                             <img class="avatar border size-32 rounded-none" src={ user.Avatar.LG } />
                             <p>
-                                @templ.Raw(l.MustLocalize(&i18n.LocalizeConfig{
-                                    MessageID: "admin.users.providedByGravatar",
-                                }))
+                                @templ.Raw(l.T("admin.users.providedByGravatar"))
                             </p>
                         </div>
                     }
