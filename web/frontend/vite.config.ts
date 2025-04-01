@@ -85,6 +85,7 @@ const ENTRIES = [
 
   'islands/bookmanager-new-book',
   'islands/bookmanager-book',
+  'islands/bookmanager-chapter',
 ]
 
 export default defineConfig((env) => ({

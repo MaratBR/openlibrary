@@ -7,7 +7,7 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @baseLayoutNoFooter(_t(l, "bookManager.title") + " - " + book.Name) {
+    @bookManagerLayout(_t(l, "bookManager.title") + " - " + book.Name) {
         {{
             data, _ := templ.JSONString(book)
         }}

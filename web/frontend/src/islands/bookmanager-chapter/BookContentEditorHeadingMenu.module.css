@@ -1,0 +1,3 @@
+.root {
+    @apply rounded-sm hover:bg-highlight;
+}

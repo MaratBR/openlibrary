@@ -25,6 +25,7 @@ func (c *bookManagerController) Register(r chi.Router) {
 		r.Get("/", c.index)
 		r.Get("/new", c.newBook)
 		r.Get("/book/{bookID}", c.book)
+		r.Get("/book/{bookID}/chapter/{chapterID}", c.chapter)
 
 		r.With(httpin.NewInput(&createBookRequest{})).Post("/new", c.createBook)
 
@@ -127,4 +128,35 @@ func (c *bookManagerController) sendBookEditorPage(bookID int64, w http.Response
 	}
 
 	templates.BookManagerBook(&book.Book).Render(r.Context(), w)
+}
+
+func (c *bookManagerController) chapter(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		writeBadRequest(w, r, err)
+		return
+	}
+	chapterID, err := olhttp.URLParamInt64(r, "chapterID")
+	if err != nil {
+		writeBadRequest(w, r, err)
+		return
+	}
+	c.sendChapterEditorPage(bookID, chapterID, w, r)
+}
+
+func (c *bookManagerController) sendChapterEditorPage(bookID, chapterID int64, w http.ResponseWriter, r *http.Request) {
+	session := auth.RequireSession(r.Context())
+
+	chapter, err := c.service.GetChapter(r.Context(), app.ManagerGetChapterQuery{
+		UserID:    session.UserID,
+		BookID:    bookID,
+		ChapterID: chapterID,
+	})
+
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	templates.ChapterEditor(chapter.Chapter).Render(r.Context(), w)
 }

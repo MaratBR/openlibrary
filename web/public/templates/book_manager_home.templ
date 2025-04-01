@@ -25,6 +25,7 @@ templ bookManagerLayoutBase(title string, sitebar bool) {
 
 templ bookManagerLayout(title string) {
     @bookManagerLayoutBase(title, true) {
+        @renderUISettings()
         { children... }
     }
 }

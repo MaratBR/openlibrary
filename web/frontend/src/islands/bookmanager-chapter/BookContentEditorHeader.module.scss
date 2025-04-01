@@ -1,0 +1,21 @@
+.section {
+    @apply flex gap-2 flex-nowrap;
+}
+
+.btn {
+    @apply flex items-center p-2;
+
+    :global(.material-symbols-outlined) {
+        @apply select-none;
+    }
+
+    &:has(input:checked) {
+        @apply text-primary;
+    }
+}
+
+label.btn {
+    input {
+        @apply hidden;
+    }
+}

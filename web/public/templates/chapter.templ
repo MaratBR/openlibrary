@@ -5,19 +5,16 @@ import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "fmt"
 import "strconv"
-
-type ReaderSettings struct {
-    FontSize int
-}
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ Chapter(
     chapterWithDetails app.ChapterWithDetails,
     book app.BookDetailsDto,
-    readerSettings ReaderSettings,
 ) {
     {{
         _ = i18n.GetLocalizer(ctx)
         chapter := chapterWithDetails.Chapter
+        uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
     }}
 
     @htmlLayout(chapter.Name) {
@@ -37,7 +34,7 @@ templ Chapter(
 
         <div
             x-data="bookReader"
-            data-font-size={ strconv.Itoa(readerSettings.FontSize) }
+            data-font-size={ strconv.Itoa(uiSettings.FontSize) }
             class="ol-book-reader grid grid-cols-[1fr_auto]">
             <div class="relative pb-10">
                 <aside class="z-10 absolute top-0 bottom-0 right-0">
@@ -48,7 +45,7 @@ templ Chapter(
                     </div>
                 </aside>
                 <div class="ol-book-reader__chapter relative">
-                    @ChapterContentSection(&chapter, readerSettings)
+                    @ChapterContentSection(&chapter, uiSettings)
 
                     <section class="grid grid-cols-2 mt-4 bg-background sticky bottom-0 py-1">
                         if chapter.PrevChapter.Valid {
@@ -77,7 +74,7 @@ templ Chapter(
 
             <div class="w-[400px] border-l" x-cloak x-bind="settings">
                 <div class="sticky top-[var(--header-height)] h-[100%-var(--header-height)]">
-                    @readerSettingsUI(readerSettings)
+                    @readerSettingsUI(uiSettings)
                 </div>
             </div>
         </div>
@@ -86,7 +83,7 @@ templ Chapter(
     }
 }
 
-templ readerSettingsUI(settings ReaderSettings) {
+templ readerSettingsUI(settings uiSettings) {
     <div class="p-3 space-y-4">
         <section>
             <span>Font size</span>
@@ -106,7 +103,7 @@ templ readerSettingsUI(settings ReaderSettings) {
     </div>
 }
 
-templ ChapterContentSection(chapter *app.ChapterDto, readerSettings ReaderSettings) {
+templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
@@ -122,7 +119,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, readerSettings ReaderSettin
     </header>
 
     <article class="__user-content ol-book-reader__content" { templ.Attributes{
-        "style": fmt.Sprintf("--book-font-size:%dpx", readerSettings.FontSize),
+        "style": fmt.Sprintf("--book-font-size:%dpx", uiSettings.FontSize),
     }... } :style="`--book-font-size:${fontSize}px`">
         <div class="contents" x-ignore id="book-reader-content">
             @templ.Raw(chapter.Content)

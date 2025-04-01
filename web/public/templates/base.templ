@@ -4,17 +4,8 @@ import "github.com/MaratBR/openlibrary/web/olresponse"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/flash"
-
-
-templ baseLayout(title string) {
-    @htmlLayout(title) {
-        @siteHeader()
-        @flashMessages()
-        { children... }
-        @siteFooter()
-        <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
-    }
-}
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "fmt"
 
 templ flashMessages() {
     {{
@@ -37,27 +28,11 @@ templ flashMessages() {
     </div>
 }
 
-templ baseLayoutNoFooter(title string) {
-    @htmlLayout(title) {
-        @siteHeader()
-        @flashMessages()
-        { children... }
-        <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
-    }
-}
-
-templ htmlLayout(title string) {
-    @olresponse.Doc(ctx, olresponse.DocSettings{
-        Title: title,
-        Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
-        CSS: []string{ "/_/assets/common.css" },
-        InstantClick: false,
-        AppendToHead: templ.Join(
-            frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
-        ),
-    }) {
-        { children... }
-    }
+templ renderUISettings() {
+    {{
+        uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
+    }}
+    @templ.Raw(fmt.Sprintf("<style>:root{--book-font-size:%dpx}</style>", uiSettings.FontSize))
 }
 
 templ siteFooter() {
@@ -73,4 +48,39 @@ templ siteFooter() {
             </a>
         </div>
     </footer>
+}
+
+templ htmlLayout(title string) {
+    @olresponse.Doc(ctx, olresponse.DocSettings{
+        Title: title,
+        Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
+        CSS: []string{ "/_/assets/common.css" },
+        InstantClick: false,
+        AppendToHead: templ.Join(
+            frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
+        ),
+    }) {
+        @renderUISettings()
+        { children... }
+    }
+}
+
+templ baseLayout(title string) {
+    @htmlLayout(title) {
+        @siteHeader()
+        @flashMessages()
+        { children... }
+        @siteFooter()
+        <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
+    }
+}
+
+
+templ baseLayoutNoFooter(title string) {
+    @htmlLayout(title) {
+        @siteHeader()
+        @flashMessages()
+        { children... }
+        <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
+    }
 }
