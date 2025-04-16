@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
+	"github.com/gofrs/uuid"
 	"github.com/minio/minio-go/v7"
 )
 
@@ -18,6 +20,7 @@ type bookManagerService struct {
 	queries       *store.Queries
 	db            DB
 	tagsService   TagsService
+	usersService  UserService
 	uploadService *UploadService
 }
 
@@ -25,150 +28,22 @@ const (
 	BOOK_COVER_DIRECTORY = "book-covers"
 )
 
-// UploadBookCover implements BookManagerService.
-func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (result UploadBookCoverResult, err error) {
-	file, err := io.ReadAll(input.File)
-	if err != nil {
-		return
-	}
-
-	imgBytes, err := imgconvert.ConvertToJPEG(file)
-	if err != nil {
-		return
-	}
-
-	imgBytes, err = imgconvert.Resize(imgBytes, 300, 300)
-	if err != nil {
-		return
-	}
-
-	path := fmt.Sprintf("%s/%d.jpeg", BOOK_COVER_DIRECTORY, input.BookID)
-	_, err = s.uploadService.Client.PutObject(
-		ctx,
-		s.uploadService.PublicBucket,
-		path,
-		bytes.NewReader(imgBytes),
-		int64(len(imgBytes)),
-		minio.PutObjectOptions{ContentType: "image/jpeg"},
-	)
-	if err != nil {
-		return
-	}
-
-	err = s.queries.BookSetHasCover(ctx, store.BookSetHasCoverParams{
-		ID:       input.BookID,
-		HasCover: true,
+func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error) {
+	books, err := s.queries.ManagerGetUserBooks(ctx, store.ManagerGetUserBooksParams{
+		AuthorUserID: uuidDomainToDb(input.UserID),
+		Limit:        int32(input.Limit),
+		Offset:       int32(input.Offset),
 	})
 	if err != nil {
-		return
+		return GetUserBooksResult{}, err
 	}
 
-	result.URL = getBookCoverURL(s.uploadService, input.BookID, true)
-
-	return
-}
-
-func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCommand) (int64, error) {
-	err := validateBookName(input.Name)
+	userBooks, err := s.aggregateUserBooks(ctx, books)
 	if err != nil {
-		return 0, err
+		return GetUserBooksResult{}, err
 	}
 
-	err = validateBookSummary(input.Summary)
-	if err != nil {
-		return 0, err
-	}
-
-	tags, err := s.tagsService.FindParentTagIds(ctx, input.Tags)
-	if err != nil {
-		return 0, err
-	}
-
-	id := GenID()
-	err = s.queries.InsertBook(ctx, store.InsertBookParams{
-		ID:                 id,
-		Name:               input.Name,
-		AuthorUserID:       uuidDomainToDb(input.UserID),
-		CreatedAt:          timeToTimestamptz(time.Now()),
-		TagIds:             tags.TagIds,
-		CachedParentTagIds: tags.ParentTagIds,
-		AgeRating:          ageRatingDbValue(input.AgeRating),
-		Summary:            input.Summary,
-		IsPubliclyVisible:  input.IsPubliclyVisible,
-	})
-	return id, err
-}
-
-func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCommand) error {
-	err := validateBookName(input.Name)
-	if err != nil {
-		return err
-	}
-
-	summaryData, err := ProcessContent(input.Summary)
-	if err != nil {
-		return err
-	}
-
-	err = validateBookSummary(summaryData.Sanitized)
-	if err != nil {
-		return err
-	}
-
-	tags, err := s.tagsService.FindParentTagIds(ctx, input.Tags)
-	if err != nil {
-		return err
-	}
-
-	return s.queries.UpdateBook(ctx, store.UpdateBookParams{
-		ID:                 input.BookID,
-		Name:               input.Name,
-		TagIds:             tags.TagIds,
-		CachedParentTagIds: tags.ParentTagIds,
-		AgeRating:          ageRatingDbValue(input.AgeRating),
-		Summary:            summaryData.Sanitized,
-		IsPubliclyVisible:  input.IsPubliclyVisible,
-	})
-}
-
-// UpdateBookChaptersOrder updates the order of chapters in a book.
-func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error {
-	tx, err := s.db.Begin(ctx)
-	if err != nil {
-		return err
-	}
-
-	queries := s.queries.WithTx(tx)
-
-	chapters, err := queries.GetChaptersOrder(ctx, input.BookID)
-	if err != nil {
-		rollbackTx(ctx, tx)
-		return err
-	}
-
-	isEqualSet := commonutil.ContainsSameAndNoDuplicates(chapters, input.ChapterIDs)
-	if !isEqualSet {
-		rollbackTx(ctx, tx)
-		return ErrTypeChaptersReorder.New("chapters do not match")
-	}
-
-	for i, chapterID := range input.ChapterIDs {
-		err = queries.UpdateChaptersOrder(ctx, store.UpdateChaptersOrderParams{
-			ID:    chapterID,
-			Order: int32(i + 1),
-		})
-		if err != nil {
-			rollbackTx(ctx, tx)
-			return err
-		}
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return GetUserBooksResult{Books: userBooks}, nil
 }
 
 func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error) {
@@ -243,22 +118,150 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 	}, nil
 }
 
-func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error) {
-	books, err := s.queries.ManagerGetUserBooks(ctx, store.ManagerGetUserBooksParams{
-		AuthorUserID: uuidDomainToDb(input.UserID),
-		Limit:        int32(input.Limit),
-		Offset:       int32(input.Offset),
+func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCommand) (int64, error) {
+	err := validateBookName(input.Name)
+	if err != nil {
+		return 0, err
+	}
+
+	err = validateBookSummary(input.Summary)
+	if err != nil {
+		return 0, err
+	}
+
+	tags, err := s.tagsService.FindParentTagIds(ctx, input.Tags)
+	if err != nil {
+		return 0, err
+	}
+
+	id := GenID()
+	err = s.queries.InsertBook(ctx, store.InsertBookParams{
+		ID:                 id,
+		Name:               input.Name,
+		AuthorUserID:       uuidDomainToDb(input.UserID),
+		CreatedAt:          timeToTimestamptz(time.Now()),
+		TagIds:             tags.TagIds,
+		CachedParentTagIds: tags.ParentTagIds,
+		AgeRating:          ageRatingDbValue(input.AgeRating),
+		Summary:            input.Summary,
+		IsPubliclyVisible:  input.IsPubliclyVisible,
+	})
+	return id, err
+}
+
+func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCommand) error {
+	err := validateBookName(input.Name)
+	if err != nil {
+		return err
+	}
+
+	summaryData, err := ProcessContent(input.Summary)
+	if err != nil {
+		return err
+	}
+
+	err = validateBookSummary(summaryData.Sanitized)
+	if err != nil {
+		return err
+	}
+
+	tags, err := s.tagsService.FindParentTagIds(ctx, input.Tags)
+	if err != nil {
+		return err
+	}
+
+	return s.queries.UpdateBook(ctx, store.UpdateBookParams{
+		ID:                 input.BookID,
+		Name:               input.Name,
+		TagIds:             tags.TagIds,
+		CachedParentTagIds: tags.ParentTagIds,
+		AgeRating:          ageRatingDbValue(input.AgeRating),
+		Summary:            summaryData.Sanitized,
+		IsPubliclyVisible:  input.IsPubliclyVisible,
+	})
+}
+
+// UploadBookCover implements BookManagerService.
+func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (result UploadBookCoverResult, err error) {
+	file, err := io.ReadAll(input.File)
+	if err != nil {
+		return
+	}
+
+	imgBytes, err := imgconvert.ConvertToJPEG(file)
+	if err != nil {
+		return
+	}
+
+	imgBytes, err = imgconvert.Resize(imgBytes, 300, 300)
+	if err != nil {
+		return
+	}
+
+	path := fmt.Sprintf("%s/%d.jpeg", BOOK_COVER_DIRECTORY, input.BookID)
+	_, err = s.uploadService.Client.PutObject(
+		ctx,
+		s.uploadService.PublicBucket,
+		path,
+		bytes.NewReader(imgBytes),
+		int64(len(imgBytes)),
+		minio.PutObjectOptions{ContentType: "image/jpeg"},
+	)
+	if err != nil {
+		return
+	}
+
+	err = s.queries.BookSetHasCover(ctx, store.BookSetHasCoverParams{
+		ID:       input.BookID,
+		HasCover: true,
 	})
 	if err != nil {
-		return GetUserBooksResult{}, err
+		return
 	}
 
-	userBooks, err := s.aggregateUserBooks(ctx, books)
+	result.URL = getBookCoverURL(s.uploadService, input.BookID, true)
+
+	return
+}
+
+// UpdateBookChaptersOrder updates the order of chapters in a book.
+func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error {
+	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return GetUserBooksResult{}, err
+		return err
 	}
 
-	return GetUserBooksResult{Books: userBooks}, nil
+	queries := s.queries.WithTx(tx)
+
+	chapters, err := queries.GetChaptersOrder(ctx, input.BookID)
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return err
+	}
+
+	isEqualSet := commonutil.ContainsSameAndNoDuplicates(chapters, input.ChapterIDs)
+	if !isEqualSet {
+		rollbackTx(ctx, tx)
+		return ErrTypeChaptersReorder.New("chapters do not match")
+	}
+
+	for i, chapterID := range input.ChapterIDs {
+		err = queries.UpdateChaptersOrder(ctx, store.UpdateChaptersOrderParams{
+			ID:    chapterID,
+			Order: int32(i + 1),
+		})
+		if err != nil {
+			rollbackTx(ctx, tx)
+			return err
+		}
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []store.ManagerGetUserBooksRow) ([]ManagerAuthorBookDto, error) {
@@ -356,28 +359,6 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 		return CreateBookChapterResult{}, err
 	}
 	return CreateBookChapterResult{ID: id}, nil
-}
-
-func (s *bookManagerService) UpdateBookChapter(ctx context.Context, input UpdateBookChapterCommand) error {
-	content, err := ProcessContent(input.Content)
-	if err != nil {
-		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
-	}
-	bookID, err := s.queries.UpdateBookChapter(ctx, store.UpdateBookChapterParams{
-		ID:      input.ID,
-		Name:    input.Name,
-		Content: content.Sanitized,
-		Words:   content.Words,
-		Summary: input.Summary,
-	})
-	if err != nil {
-		return err
-	}
-	err = s.queries.RecalculateBookStats(ctx, bookID)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderChaptersCommand) error {
@@ -502,6 +483,130 @@ func (s *bookManagerService) GetChapter(ctx context.Context, query ManagerGetCha
 	}, nil
 }
 
-func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService) BookManagerService {
-	return &bookManagerService{queries: store.New(db), tagsService: tagsService, db: db, uploadService: uploadService}
+// GetDraft implements BookManagerService.
+func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) (DraftDto, error) {
+	draft, err := s.queries.GetDraftById(ctx, query.DraftID)
+	if err != nil {
+		if err == store.ErrNoRows {
+			return DraftDto{}, ErrDraftNotFound
+		}
+		return DraftDto{}, wrapUnexpectedDBError(err)
+	}
+
+	user, err := s.usersService.GetUserSelfData(ctx, uuidDbToDomain(draft.CreatedBy))
+	if err != nil {
+		return DraftDto{}, wrapUnexpectedAppError(err)
+	}
+
+	return DraftDto{
+		ID:          draft.ID,
+		ChapterName: draft.ChapterName,
+		Content:     draft.Content,
+		CreatedAt:   draft.CreatedAt.Time,
+		UpdatedAt:   draft.UpdatedAt.Time,
+		ChapterID:   draft.ChapterID,
+		CreatedBy: struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		}{
+			ID:   user.ID,
+			Name: user.Name,
+		},
+	}, nil
+}
+
+func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error {
+	content, err := ProcessContent(cmd.Content)
+
+	if err != nil {
+		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
+	}
+
+	err = s.queries.UpdateDraft(ctx, store.UpdateDraftParams{
+		ID:              cmd.DraftID,
+		Content:         content.Sanitized,
+		ChapterName:     cmd.Name,
+		Summary:         cmd.Summary,
+		IsAdultOverride: cmd.IsAdultOverride,
+		Words:           content.Words,
+	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	return nil
+}
+
+// DeleteDraft implements BookManagerService.
+func (s *bookManagerService) DeleteDraft(ctx context.Context, cmd DeleteDraftCommand) error {
+	// TODO (authorization)
+	err := s.queries.DeleteDraft(ctx, cmd.DraftID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// PublishDraft implements BookManagerService.
+func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftCommand) error {
+	var (
+		bookID int64
+	)
+
+	// get the draft and update the chapter
+	draft, err := s.queries.GetDraftById(ctx, cmd.DraftID)
+	if err != nil {
+		if err == store.ErrNoRows {
+			return ErrDraftNotFound
+		}
+		return wrapUnexpectedDBError(err)
+	}
+
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	// update the chapter and mark draft as published
+	queries := s.queries.WithTx(tx)
+
+	bookID, err = queries.UpdateBookChapter(ctx, store.UpdateBookChapterParams{
+		ID:      draft.ChapterID,
+		Name:    draft.ChapterName,
+		Summary: draft.Summary,
+		Content: draft.Content,
+		Words:   draft.Words,
+	})
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return wrapUnexpectedDBError(err)
+	}
+
+	err = queries.MarkDraftAsPublished(ctx, cmd.DraftID)
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return wrapUnexpectedDBError(err)
+	}
+
+	err = tx.Commit(ctx)
+
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	s.recalculateBookStats(ctx, bookID)
+
+	return nil
+}
+
+// UpdateDraft implements BookManagerService.
+
+func (s *bookManagerService) recalculateBookStats(ctx context.Context, bookID int64) {
+	err := s.queries.RecalculateBookStats(ctx, bookID)
+	if err != nil {
+		slog.Error("failed to recalculate book stats", "err", err, "bookID", bookID)
+	}
+}
+
+func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService) BookManagerService {
+	return &bookManagerService{queries: store.New(db), tagsService: tagsService, db: db, uploadService: uploadService, usersService: usersService}
 }

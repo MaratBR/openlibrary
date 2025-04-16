@@ -35,4 +35,8 @@
         @apply underline-offset-4 text-blue-600 underline hover:text-blue-800;
     }
 
+    img.ProseMirror-selectednode {
+        @apply outline outline-4 outline-primary;
+    }
+
 }

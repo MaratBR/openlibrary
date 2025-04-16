@@ -116,6 +116,13 @@ func Value[T any](v T) Nullable[T] {
 	return Nullable[T]{Value: v, Valid: true}
 }
 
+func NullableFromPtr[T any](ptr *T) Nullable[T] {
+	if ptr == nil {
+		return Null[T]()
+	}
+	return Value(*ptr)
+}
+
 func (v Nullable[T]) MarshalJSON() ([]byte, error) {
 	if !v.Valid {
 		return []byte("null"), nil

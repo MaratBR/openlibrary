@@ -4,13 +4,17 @@
     }
 
     &__header {
-        top: calc(var(--header-height) + 16px);
-        box-shadow: 0 0 16px 0 var(--tw-shadow-color);
-        @apply bg-background z-10 sticky mt-4 mb-6 px-8 py-2 shadow-gray-200 min-h-16 rounded-sm flex gap-2 flex-wrap;
+        top: var(--header-height);
+        box-shadow: 0 8px 8px 0 var(--tw-shadow-color);
+        overflow-x: auto;
+
+        @apply
+            sticky left-0 right-0 
+            bg-background z-10 mb-10 py-2 shadow-gray-200 min-h-16;
     }
 
     &__content {
-        @apply font-book mb-16;
+        @apply font-book mb-16 px-8 md:px-0;
         font-size: var(--book-font-size);
 
         .ProseMirror {

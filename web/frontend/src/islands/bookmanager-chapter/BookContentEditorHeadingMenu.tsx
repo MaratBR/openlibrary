@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'preact/hooks'
+import { PopupController } from '@/lib/popup-anchor'
+import { createPortal } from 'preact/compat'
+import { useEffect, useRef, useState } from 'preact/hooks'
 
 type Heading = number | null
 
@@ -45,6 +47,29 @@ export default function BookContentEditorHeadingMenu({
 }) {
   const [open, setOpen] = useState(false)
 
+  const popupRef = useRef<HTMLDivElement | null>(null)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
+
+  const popupController = useRef<PopupController | null>(null)
+
+  useEffect(() => {
+    if (!popupRef.current) throw new Error('popupRef is null')
+    if (!buttonRef.current) throw new Error('buttonRef is null')
+    popupController.current = new PopupController(buttonRef.current, popupRef.current, {
+      anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+      targetOrigin: { vertical: 'top', horizontal: 'left' },
+    })
+    return () => {
+      popupController.current?.dispose()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!popupController.current || !open) return
+
+    popupController.current.update()
+  }, [open])
+
   useEffect(() => {
     if (!open) return
 
@@ -70,7 +95,7 @@ export default function BookContentEditorHeadingMenu({
 
   const items = HEADINGS.map((h, i) => (
     <li
-      class="px-2 min-h-8 text-left flex items-center hover:bg-highlight"
+      class="px-2 min-h-8 text-left flex items-center hover:bg-highlight cursor-pointer font-book"
       style={{ height: '1.5em', fontSize: h.size }}
       role="listitem"
       key={i}
@@ -87,16 +112,21 @@ export default function BookContentEditorHeadingMenu({
 
   return (
     <button
+      ref={buttonRef}
       onClick={() => setOpen((x) => !x)}
       class="ol-btn ol-btn--ghost font-book text-lg relative text-foreground"
     >
       <span>{window._(displayed.key)}</span>
-      <div
-        style={open ? {} : { display: 'none' }}
-        class="ol-card border-none rounded-none shadow-md p-0 absolute top-full left-0"
-      >
-        <ul>{items}</ul>
-      </div>
+      {createPortal(
+        <div
+          ref={popupRef}
+          style={{ display: open ? 'block' : 'none' }}
+          class="ol-card border-none rounded-none shadow-md p-0 fixed top-full left-0 z-10"
+        >
+          <ul>{items}</ul>
+        </div>,
+        document.body,
+      )}
     </button>
   )
 }

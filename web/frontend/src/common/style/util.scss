@@ -1,8 +1,12 @@
 .ol-container {
-    @apply max-w-[80ch] mx-auto px-2;
+    --ol-container-width: 80rch;
+
+    width: min(100vw, var(--ol-container-width));
+
+    @apply mx-auto px-2;
 
     &--big {
-        @apply max-w-[120ch];
+        --ol-container-width: 120rch;
     }
 }
 

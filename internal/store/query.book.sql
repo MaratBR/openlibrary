@@ -61,3 +61,9 @@ from books
 where is_publicly_visible and age_rating not in ('R', 'NC-17') and not is_banned and chapters > 0
 order by random()
 limit $1;
+
+
+-- name: GetChapterBookID :one
+select book_id
+from book_chapters
+where id = $1;

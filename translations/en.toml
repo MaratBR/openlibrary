@@ -17,15 +17,15 @@ justNow = "Just now"
 
 [time.minutes]
 one = "1 minute ago"
-other = "{{.count}} minutes ago"
+many = "{{.count}} minutes ago"
 
 [time.hours]
 one = "1 hour ago"
-other = "{{.count}} hours ago"
+many = "{{.count}} hours ago"
 
 [time.days]
 one = "1 day ago"
-other = "{{.count}} days ago"
+many = "{{.count}} days ago"
 
 [login]
 username = "Username"
@@ -69,19 +69,19 @@ allUsers = "All users"
 
 [user.books]
 one = "book"
-other = "books"
+many = "books"
 
 [user.favorites]
 one = "favorite"
-other = "favorites"
+many = "favorites"
 
 [user.followers]
 one = "follower"
-other = "followers"
+many = "followers"
 
 [user.following]
 one = "following"
-other = "following"
+many = "following"
 
 [readingList]
 want_to_read = "Want to read"

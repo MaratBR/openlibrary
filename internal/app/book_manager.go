@@ -11,6 +11,7 @@ import (
 var (
 	ErrTypeBookSanitizationFailed = AppErrors.NewType("content_sanitization_failed")
 	ErrTypeChaptersReorder        = AppErrors.NewType("chapters_reorder")
+	ErrDraftNotFound              = AppErrors.NewType("draft_not_found", ErrTraitEntityNotFound).New("draft not found")
 )
 
 type CreateBookCommand struct {
@@ -97,14 +98,6 @@ type CreateBookChapterResult struct {
 	ID int64
 }
 
-type UpdateBookChapterCommand struct {
-	ID              int64
-	Name            string
-	Content         string
-	IsAdultOverride bool
-	Summary         string
-}
-
 type ReorderChaptersCommand struct {
 	UserID     uuid.UUID
 	BookID     int64
@@ -167,17 +160,62 @@ type UpdateBookChaptersOrders struct {
 	ChapterIDs []int64
 }
 
+type GetDraftQuery struct {
+	UserID    uuid.UUID
+	DraftID   int64
+	ChapterID int64
+	BookID    int64
+}
+
+type DraftDto struct {
+	ID          int64     `json:"id,string"`
+	ChapterName string    `json:"chapterName"`
+	Content     string    `json:"content"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	ChapterID   int64     `json:"chapterId"`
+	CreatedBy   struct {
+		ID   uuid.UUID `json:"id"`
+		Name string    `json:"name"`
+	} `json:"createdBy"`
+}
+
+type UpdateDraftCommand struct {
+	Content         string
+	Summary         string
+	Name            string
+	IsAdultOverride bool
+	DraftID         int64
+	ChapterID       int64
+	BookID          int64
+	UserID          uuid.UUID
+}
+
+type DeleteDraftCommand struct {
+	DraftID int64
+	UserID  uuid.UUID
+}
+
+type PublishDraftCommand struct {
+	DraftID int64
+	UserID  uuid.UUID
+}
+
 type BookManagerService interface {
+	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error)
+	GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error)
 	CreateBook(ctx context.Context, input CreateBookCommand) (int64, error)
 	UpdateBook(ctx context.Context, input UpdateBookCommand) error
 	UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (UploadBookCoverResult, error)
-	UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error
 
-	GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error)
-	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error)
+	UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error
 	CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterResult, error)
-	UpdateBookChapter(ctx context.Context, input UpdateBookChapterCommand) error
 	ReorderChapters(ctx context.Context, input ReorderChaptersCommand) error
 	GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChapterResult, error)
 	GetChapter(ctx context.Context, query ManagerGetChapterQuery) (ManagerGetChapterResult, error)
+
+	GetDraft(ctx context.Context, query GetDraftQuery) (DraftDto, error)
+	UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error
+	DeleteDraft(ctx context.Context, cmd DeleteDraftCommand) error
+	PublishDraft(ctx context.Context, cmd PublishDraftCommand) error
 }

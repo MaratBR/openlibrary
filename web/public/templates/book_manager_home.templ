@@ -16,6 +16,7 @@ templ bookManagerLayoutBase(title string, sitebar bool) {
             frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
         ),
     }) {
+        @renderUISettings()
         if sitebar {
             @siteHeader()
         }
@@ -25,7 +26,12 @@ templ bookManagerLayoutBase(title string, sitebar bool) {
 
 templ bookManagerLayout(title string) {
     @bookManagerLayoutBase(title, true) {
-        @renderUISettings()
+        { children... }
+    }
+}
+
+templ bookManagerLayoutNoSiteBar(title string) {
+    @bookManagerLayoutBase(title, false) {
         { children... }
     }
 }

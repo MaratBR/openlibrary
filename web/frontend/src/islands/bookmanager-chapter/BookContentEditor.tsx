@@ -3,6 +3,8 @@ import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import TextStyle from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
 import TextAlign from '@tiptap/extension-text-align'
+import Image from '@tiptap/extension-image'
+import Dropcursor from '@tiptap/extension-dropcursor'
 
 import StarterKit from '@tiptap/starter-kit'
 import { useEffect, useRef } from 'preact/hooks'
@@ -41,7 +43,9 @@ export default function BookContentEditor({ content }: BookContentEditorProps) {
   return (
     <div class="ol-book-editor">
       <BookContentEditorHeader editorRef={editor} editorUpdateEvent={editorUpdateEvent.current} />
-      <div class="__user-content ol-book-editor__content ol-container" ref={root} />
+      <article class="ol-container">
+        <div class="__user-content ol-book-editor__content" ref={root} />
+      </article>
     </div>
   )
 }
@@ -66,6 +70,10 @@ function createEditor(editorElement: HTMLElement, options?: Partial<EditorOption
         types: ['heading', 'paragraph'],
       }),
       Underline,
+      Image.configure({
+        inline: true,
+      }),
+      Dropcursor,
     ],
     ...options,
   })

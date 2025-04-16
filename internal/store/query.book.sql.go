@@ -266,6 +266,19 @@ func (q *Queries) GetBooksCollections(ctx context.Context, dollar_1 []int64) ([]
 	return items, nil
 }
 
+const getChapterBookID = `-- name: GetChapterBookID :one
+select book_id
+from book_chapters
+where id = $1
+`
+
+func (q *Queries) GetChapterBookID(ctx context.Context, id int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getChapterBookID, id)
+	var book_id int64
+	err := row.Scan(&book_id)
+	return book_id, err
+}
+
 const getRandomPublicBookIDs = `-- name: GetRandomPublicBookIDs :many
 select id
 from books

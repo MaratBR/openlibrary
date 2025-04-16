@@ -5,8 +5,11 @@ import "encoding/json"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 
 templ ChapterEditor(chapter app.ManagerBookChapterDetailsDto) {
-    @bookManagerLayout(chapter.Name) {
-        <div class="ol-container ol-container--big">
+    @bookManagerLayoutNoSiteBar(chapter.Name) {
+        @siteHeaderLayout() {
+            <h1 class="h-full flex items-center font-semibold">{chapter.Name}</h1>
+        }
+
         {{
             l := i18n.GetLocalizer(ctx)
             jsonBytes, _ := json.Marshal(chapter)
@@ -33,6 +36,5 @@ templ ChapterEditor(chapter app.ManagerBookChapterDetailsDto) {
             "editor.publishDraftDescription",
         })
         <ol-island data={string(jsonBytes)} active="true" src="/_/assets/islands/bookmanager-chapter.js" />
-        </div>
     }
 }

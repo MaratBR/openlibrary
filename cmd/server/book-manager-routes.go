@@ -181,15 +181,15 @@ func (c *bookManagerController) CreateChapter(w http.ResponseWriter, r *http.Req
 	writeJSON(w, createChapterResponse{ID: chapter.ID})
 }
 
-type updateChapterRequest struct {
+type updateDraftRequest struct {
 	Content         string `json:"content"`
 	Name            string `json:"name"`
 	IsAdultOverride bool   `json:"isAdultOverride"`
 	Summary         string `json:"summary"`
 }
 
-func (c *bookManagerController) UpdateChapter(w http.ResponseWriter, r *http.Request) {
-	_, err := urlParamInt64(r, "bookID")
+func (c *bookManagerController) UpdateDraft(w http.ResponseWriter, r *http.Request) {
+	bookID, err := urlParamInt64(r, "bookID")
 	if err != nil {
 		writeBadRequest(err, w)
 		return
@@ -199,8 +199,13 @@ func (c *bookManagerController) UpdateChapter(w http.ResponseWriter, r *http.Req
 		writeBadRequest(err, w)
 		return
 	}
+	draftID, err := urlQueryParamInt64(r, "draftID")
+	if err != nil {
+		writeBadRequest(err, w)
+		return
+	}
 
-	body, err := getJSON[updateChapterRequest](r)
+	body, err := getJSON[updateDraftRequest](r)
 	if err != nil {
 		writeBadRequest(err, w)
 		return
@@ -214,8 +219,10 @@ func (c *bookManagerController) UpdateChapter(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	err = c.service.UpdateBookChapter(r.Context(), app.UpdateBookChapterCommand{
-		ID:              chapterID,
+	err = c.service.UpdateDraft(r.Context(), app.UpdateDraftCommand{
+		BookID:          bookID,
+		ChapterID:       chapterID,
+		DraftID:         draftID,
 		Name:            body.Name,
 		Content:         body.Content,
 		IsAdultOverride: body.IsAdultOverride,

@@ -364,6 +364,20 @@ type DefinedTag struct {
 	LowercasedName string
 }
 
+type Draft struct {
+	ID              int64
+	CreatedBy       pgtype.UUID
+	ChapterID       int64
+	ChapterName     string
+	Content         string
+	Words           int32
+	Summary         string
+	IsAdultOverride bool
+	PublishedAt     pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
+	CreatedAt       pgtype.Timestamptz
+}
+
 type Rating struct {
 	UserID    pgtype.UUID
 	BookID    int64

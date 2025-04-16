@@ -94,73 +94,80 @@ export default function BookContentEditorHeader({
 
   return (
     <header class="ol-book-editor__header">
-      <section class={styles.section}>
-        <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
-          <input type="checkbox" id="bold" checked={state.bold} onInput={toggleBold} />
-          <span class="material-symbols-outlined">format_bold</span>
-        </label>
+      <div class="ol-container flex items-center gap-2 px-0">
+        <section class={styles.section}>
+          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+            <input type="checkbox" id="bold" checked={state.bold} onInput={toggleBold} />
+            <span class="material-symbols-outlined">format_bold</span>
+          </label>
 
-        <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
-          <input type="checkbox" id="italic" checked={state.italic} onInput={toggleItalic} />
-          <span class="material-symbols-outlined">format_italic</span>
-        </label>
+          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+            <input type="checkbox" id="italic" checked={state.italic} onInput={toggleItalic} />
+            <span class="material-symbols-outlined">format_italic</span>
+          </label>
 
-        <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
-          <input
-            type="checkbox"
-            id="underline"
-            checked={state.underline}
-            onInput={toggleUnderline}
-          />
-          <span class="material-symbols-outlined">format_underlined</span>
-        </label>
-      </section>
+          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+            <input
+              type="checkbox"
+              id="underline"
+              checked={state.underline}
+              onInput={toggleUnderline}
+            />
+            <span class="material-symbols-outlined">format_underlined</span>
+          </label>
+        </section>
 
-      <section class={styles.section}>
-        <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
-          <input
-            type="checkbox"
-            id="left"
-            checked={state.textAlign === 'left'}
-            onInput={() => toggleTextAlign('left')}
-          />
-          <span class="material-symbols-outlined">format_align_left</span>
-        </label>
-        <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
-          <input
-            type="checkbox"
-            id="center"
-            checked={state.textAlign === 'center'}
-            onInput={() => toggleTextAlign('center')}
-          />
-          <span class="material-symbols-outlined">format_align_center</span>
-        </label>
-        <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
-          <input
-            type="checkbox"
-            id="right"
-            checked={state.textAlign === 'right'}
-            onInput={() => toggleTextAlign('right')}
-          />
-          <span class="material-symbols-outlined">format_align_right</span>
-        </label>
-      </section>
-      <BookContentEditorHeadingMenu
-        heading={state.typography}
-        onChange={(heading) => {
-          if (editorRef.current) {
-            if (heading === null) {
-              editorRef.current.chain().focus().setParagraph().run()
-            } else {
-              editorRef.current
-                .chain()
-                .focus()
-                .setHeading({ level: heading as Level })
-                .run()
+        <div class={styles.divider} />
+
+        <section class={styles.section}>
+          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+            <input
+              type="checkbox"
+              id="left"
+              checked={state.textAlign === 'left'}
+              onInput={() => toggleTextAlign('left')}
+            />
+            <span class="material-symbols-outlined">format_align_left</span>
+          </label>
+          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+            <input
+              type="checkbox"
+              id="center"
+              checked={state.textAlign === 'center'}
+              onInput={() => toggleTextAlign('center')}
+            />
+            <span class="material-symbols-outlined">format_align_center</span>
+          </label>
+          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+            <input
+              type="checkbox"
+              id="right"
+              checked={state.textAlign === 'right'}
+              onInput={() => toggleTextAlign('right')}
+            />
+            <span class="material-symbols-outlined">format_align_right</span>
+          </label>
+        </section>
+
+        <div class={styles.divider} />
+
+        <BookContentEditorHeadingMenu
+          heading={state.typography}
+          onChange={(heading) => {
+            if (editorRef.current) {
+              if (heading === null) {
+                editorRef.current.chain().focus().setParagraph().run()
+              } else {
+                editorRef.current
+                  .chain()
+                  .focus()
+                  .setHeading({ level: heading as Level })
+                  .run()
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+      </div>
     </header>
   )
 }

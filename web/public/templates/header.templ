@@ -26,41 +26,50 @@ templ siteHeaderLayout() {
         session, isAuthorized := auth.GetSession(ctx)
     }}
 
-    <nav class="z-40 bg-background sticky top-0 w-full h-[var(--header-height)] border-b" id="site-header">
-        <div id="site-header-inner" class="ol-container max-w-[120ch] h-full flex gap-6" x-data="{userMenu:false}">
-            <a href="/" class="my-1 flex items-center focus:outline focus:outline-2 outline-offset-[-2px]">
-                <img style="height:64px" src="/_/embed-assets/logo.svg" />
-            </a>
+    @siteHeaderRoot() {
+        <a href="/" class="my-1 flex items-center focus:outline focus:outline-2 outline-offset-[-2px]">
+            <img style="height:64px" src="/_/embed-assets/logo.svg" />
+        </a>
 
-            { children... }
+        { children... }
 
-            <div class="mx-auto"></div>
+        <div class="mx-auto"></div>
 
-            if isAuthorized {
-                {{ user := auth.RequireUser(ctx) }}
-                <div class="relative h-full">
-                    <div @click="userMenu=true" role="button" class="flex items-center h-full">
-                        <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
-                    </div>
-                    <div x-cloak @click.outside="userMenu=false" x-show="userMenu" x-transition class="absolute top-full right-0 bg-background border-border border py-1 space-y-1 min-w-40">
-                        <a class="p-2 block hover:bg-secondary hover:font-medium" href="/books-manager">
-                            { _t(l, "account.bookManager") }
-                        </a>
-                        <a class="p-2 block hover:bg-secondary hover:font-medium" href={ templ.SafeURL(fmt.Sprintf("/users/%s", session.UserID)) }>
-                            { _t(l, "account.profile") }
-                        </a>
-                        <a class="p-2 block hover:bg-secondary hover:font-medium" href="/account/settings">
-                            { _t(l, "account.settings") }
-                        </a>
-                    </div>
+        if isAuthorized {
+            {{ user := auth.RequireUser(ctx) }}
+            <div class="relative h-full">
+                <div @click="userMenu=true" role="button" class="flex items-center h-full">
+                    <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
                 </div>
-            } else {
-                <a class="ol-nav-link" href="/login">
-                    { _t(l, "login.login") }
-                    <span class="material-symbols-outlined">login</span>
-                </a>
-            }
+                <div x-cloak @click.outside="userMenu=false" x-show="userMenu" x-transition class="absolute top-full right-0 bg-background border-border border py-1 space-y-1 min-w-40">
+                    <a class="p-2 block hover:bg-secondary hover:font-medium" href="/books-manager">
+                        { _t(l, "account.bookManager") }
+                    </a>
+                    <a class="p-2 block hover:bg-secondary hover:font-medium" href={ templ.SafeURL(fmt.Sprintf("/users/%s", session.UserID)) }>
+                        { _t(l, "account.profile") }
+                    </a>
+                    <a class="p-2 block hover:bg-secondary hover:font-medium" href="/account/settings">
+                        { _t(l, "account.settings") }
+                    </a>
+                </div>
+            </div>
+        } else {
+            <a class="ol-nav-link" href="/login">
+                { _t(l, "login.login") }
+                <span class="material-symbols-outlined">login</span>
+            </a>
+        }
+    }
 
+}
+
+templ siteHeaderRoot() {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    <nav class="z-40 bg-background sticky top-0 w-full h-[var(--header-height)] border-b" id="site-header">
+        <div id="site-header-inner" class="ol-container ol-container--big max-w-[120ch] h-full flex gap-6" x-data="{userMenu:false}">
+            { children... }
         </div>
 
         <noscript>
@@ -71,4 +80,5 @@ templ siteHeaderLayout() {
             </div>
         </noscript>
     </nav>
+
 }
