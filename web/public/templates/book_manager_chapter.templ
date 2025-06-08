@@ -3,16 +3,30 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/app"
 import "encoding/json"
 import "github.com/MaratBR/openlibrary/internal/i18n"
+import "fmt"
 
-templ ChapterEditor(chapter app.ManagerBookChapterDetailsDto) {
-    @bookManagerLayoutNoSiteBar(chapter.Name) {
+templ ChapterEditor(bookID int64, draft app.DraftDto) {
+    @bookManagerLayoutNoSiteBar(draft.ChapterName) {
         @siteHeaderLayout() {
-            <h1 class="h-full flex items-center font-semibold">{chapter.Name}</h1>
+            <header class="chapter-editor-page__header">
+                {draft.ChapterName} 
+                <span class="chapter-editor-page__draft">Draft by {draft.CreatedBy.Name}</span>
+                <a class="chapter-editor-page__drafts-list-link" href={ templ.URL(
+                    fmt.Sprintf("/books-manager/book/%d/chapter/%d/drafts", bookID, draft.ChapterID),
+                ) }>To list of drafts</a>
+
+            <div class="mx-auto" />
+
+                <div class="flex gap-1">
+                    <button id="actions:saveAndPublish" class="ol-btn ol-btn--secondary rounded-full">Save and publish</button>
+                    <button id="actions:save" class="ol-btn ol-btn--primary rounded-full">Save</button>
+                </div>
+            </header>
         }
 
         {{
             l := i18n.GetLocalizer(ctx)
-            jsonBytes, _ := json.Marshal(chapter)
+            jsonBytes, _ := json.Marshal(draft)
         }}
         @i18nExtractKeys(l, []string{
             "editor.p",
@@ -35,6 +49,6 @@ templ ChapterEditor(chapter app.ManagerBookChapterDetailsDto) {
             "editor.publishDraft",
             "editor.publishDraftDescription",
         })
-        <ol-island data={string(jsonBytes)} active="true" src="/_/assets/islands/bookmanager-chapter.js" />
+        <ol-island data={string(jsonBytes)} active="true" src="/_/assets/islands/bookmanager.js" name="Chapter" />
     }
 }

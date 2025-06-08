@@ -21,7 +21,7 @@ func (q *Queries) DeleteDraft(ctx context.Context, id int64) error {
 }
 
 const getDraftById = `-- name: GetDraftById :one
-select id, created_by, chapter_id, chapter_name, content, words, summary, is_adult_override, published_at, updated_at, created_at
+select id, created_by, chapter_id, chapter_name, content, words, summary, is_adult_override, updated_at, created_at
 from drafts 
 where id = $1
 `
@@ -38,11 +38,25 @@ func (q *Queries) GetDraftById(ctx context.Context, id int64) (Draft, error) {
 		&i.Words,
 		&i.Summary,
 		&i.IsAdultOverride,
-		&i.PublishedAt,
 		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getLatestDraftID = `-- name: GetLatestDraftID :one
+select id
+from drafts
+where chapter_id = $1
+order by coalesce(updated_at, created_at) desc
+limit 1
+`
+
+func (q *Queries) GetLatestDraftID(ctx context.Context, chapterID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getLatestDraftID, chapterID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
 
 const insertDraft = `-- name: InsertDraft :exec

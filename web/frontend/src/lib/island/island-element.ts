@@ -169,7 +169,6 @@ class OLIslandElement extends HTMLElement {
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
   protected onActiveChanged(_active: boolean) {
     // no-op
   }
@@ -186,8 +185,8 @@ declare global {
 function getIslandFromModule(module: unknown, name: string): OLIsland | undefined {
   if (typeof module !== 'object') throw new Error('module is not an object')
   if (module === null) throw new Error('module is null')
-  if (!Object.hasOwnProperty.call(module, 'default'))
-    throw new Error('module has no default export')
+  if (!Object.hasOwnProperty.call(module, name))
+    throw new Error(`module has no export with name ${name}`)
 
   let island: OLIsland | undefined = (module as Record<string, OLIsland>)[name]
   if (island) return island

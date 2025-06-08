@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/joomcode/errorx"
 )
 
 var (
 	ErrTypeBookSanitizationFailed = AppErrors.NewType("content_sanitization_failed")
 	ErrTypeChaptersReorder        = AppErrors.NewType("chapters_reorder")
-	ErrDraftNotFound              = AppErrors.NewType("draft_not_found", ErrTraitEntityNotFound).New("draft not found")
+	ErrDraftNotFound              = AppErrors.NewType("draft_not_found", errorx.NotFound(), ErrTraitEntityNotFound).New("draft not found")
+	ErrTypeChapterDoesNotExist    = AppErrors.NewType("chapter_not_found", ErrTraitEntityNotFound)
 )
 
 type CreateBookCommand struct {
@@ -201,6 +203,16 @@ type PublishDraftCommand struct {
 	UserID  uuid.UUID
 }
 
+type GetLatestDraftQuery struct {
+	ChapterID int64
+	UserID    uuid.UUID
+}
+
+type CreateDraftCommand struct {
+	ChapterID int64
+	UserID    uuid.UUID
+}
+
 type BookManagerService interface {
 	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error)
 	GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error)
@@ -218,4 +230,6 @@ type BookManagerService interface {
 	UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error
 	DeleteDraft(ctx context.Context, cmd DeleteDraftCommand) error
 	PublishDraft(ctx context.Context, cmd PublishDraftCommand) error
+	CreateDraft(ctx context.Context, cmd CreateDraftCommand) (int64, error)
+	GetLatestDraft(ctx context.Context, cmd GetLatestDraftQuery) (Nullable[int64], error)
 }

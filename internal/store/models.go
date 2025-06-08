@@ -373,7 +373,6 @@ type Draft struct {
 	Words           int32
 	Summary         string
 	IsAdultOverride bool
-	PublishedAt     pgtype.Timestamptz
 	UpdatedAt       pgtype.Timestamptz
 	CreatedAt       pgtype.Timestamptz
 }

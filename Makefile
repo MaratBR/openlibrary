@@ -1,5 +1,4 @@
 OUT_DIR := build
-PGX_MIGRATIONS := file://internal/store/migrations
 EXE := $(OUT_DIR)/openlibrary-server
 
 LOCAL_DB_HOST := localhost
@@ -7,6 +6,8 @@ LOCAL_DB_USER := postgres
 LOCAL_DB_PASSWORD := postgres
 LOCAL_DB_PORT := 5432
 LOCAL_DB := postgres://$(LOCAL_DB_USER):$(LOCAL_DB_PASSWORD)@$(LOCAL_DB_HOST):$(LOCAL_DB_PORT)/openlibrary?sslmode=disable
+PGX_MIGRATIONS := file://internal/store/migrations
+MIGRATE_ARGS := -source=$(PGX_MIGRATIONS) -database=$(LOCAL_DB)
 
 build-server:
 	go build -o $(EXE) ./cmd/server
@@ -30,7 +31,10 @@ reset-db:
 	PGPASSWORD=$(LOCAL_DB_PASSWORD) psql -p $(LOCAL_DB_PORT) -h $(LOCAL_DB_HOST) -U $(LOCAL_DB_USER) -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'openlibrary' AND pid <> pg_backend_pid();"
 	PGPASSWORD=$(LOCAL_DB_PASSWORD) psql -p $(LOCAL_DB_PORT) -h $(LOCAL_DB_HOST) -U $(LOCAL_DB_USER) -c "DROP DATABASE IF EXISTS openlibrary"
 	PGPASSWORD=$(LOCAL_DB_PASSWORD) psql -p $(LOCAL_DB_PORT) -h $(LOCAL_DB_HOST) -U $(LOCAL_DB_USER) -c "CREATE DATABASE openlibrary"
-	migrate -source=$(PGX_MIGRATIONS) -database=$(LOCAL_DB) up
+	migrate $(MIGRATE_ARGS) up
+
+migrate-db-down-1:
+	migrate $(MIGRATE_ARGS) down 1 
 
 templ:
 	templ generate

@@ -10,6 +10,7 @@ import (
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
+	"github.com/joomcode/errorx"
 )
 
 type bookManagerController struct {
@@ -22,13 +23,13 @@ func newBookManagerController(service app.BookManagerService) *bookManagerContro
 
 func (c *bookManagerController) Register(r chi.Router) {
 	r.Route("/books-manager", func(r chi.Router) {
+		r.Use(redirectToLoginOnUnauthorized)
+
 		r.Get("/", c.index)
 		r.Get("/new", c.newBook)
 		r.Get("/book/{bookID}", c.book)
 		r.Get("/book/{bookID}/chapter/{chapterID}", c.chapter)
-
 		r.With(httpin.NewInput(&createBookRequest{})).Post("/new", c.createBook)
-
 	})
 }
 
@@ -36,12 +37,7 @@ func (c *bookManagerController) index(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	tab := query.Get("tab")
 
-	session, ok := auth.GetSession(r.Context())
-
-	if !ok {
-		redirectToLogin(w, r)
-		return
-	}
+	session := auth.RequireSession(r.Context())
 
 	if tab == "" {
 		templates.BookManager().Render(r.Context(), w)
@@ -141,22 +137,86 @@ func (c *bookManagerController) chapter(w http.ResponseWriter, r *http.Request) 
 		writeBadRequest(w, r, err)
 		return
 	}
-	c.sendChapterEditorPage(bookID, chapterID, w, r)
+
+	var draftID int64
+
+	draftID, err = olhttp.URLQueryParamInt64(r, "draft_id")
+
+	// if no draft id - find latest one or create new one
+	if err != nil || draftID == 0 {
+		c.redirectToLatestDraftOrCreateIt(bookID, chapterID, w, r)
+		return
+	}
+
+	c.sendChapterEditorPage(bookID, chapterID, draftID, w, r)
 }
 
-func (c *bookManagerController) sendChapterEditorPage(bookID, chapterID int64, w http.ResponseWriter, r *http.Request) {
+func (c *bookManagerController) redirectToLatestDraftOrCreateIt(bookID, chapterID int64, w http.ResponseWriter, r *http.Request) {
+	var draftID int64
 	session := auth.RequireSession(r.Context())
 
-	chapter, err := c.service.GetChapter(r.Context(), app.ManagerGetChapterQuery{
-		UserID:    session.UserID,
-		BookID:    bookID,
+	{
+		draftIDNullable, err := c.service.GetLatestDraft(r.Context(), app.GetLatestDraftQuery{ChapterID: chapterID, UserID: session.UserID})
+		if err != nil {
+			writeApplicationError(w, r, err)
+			return
+		}
+		if draftIDNullable.Valid {
+			draftID = draftIDNullable.Value
+		}
+	}
+
+	if draftID == 0 {
+		newDraftID, err := c.service.CreateDraft(r.Context(), app.CreateDraftCommand{
+			ChapterID: chapterID,
+			UserID:    session.UserID,
+		})
+
+		if err != nil {
+			writeApplicationError(w, r, err)
+			return
+		}
+
+		c.redirectToDraft(bookID, chapterID, newDraftID, w, r)
+	} else {
+		c.redirectToDraft(bookID, chapterID, draftID, w, r)
+	}
+}
+
+func (_ *bookManagerController) redirectToDraft(bookID, chapterID, draftID int64, w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, fmt.Sprintf("/books-manager/book/%d/chapter/%d?draft_id=%d", bookID, chapterID, draftID), http.StatusFound)
+}
+
+func (c *bookManagerController) sendChapterEditorPage(bookID, chapterID, draftID int64, w http.ResponseWriter, r *http.Request) {
+	session := auth.RequireSession(r.Context())
+
+	// chapter, err := c.service.GetChapter(r.Context(), app.ManagerGetChapterQuery{
+	// 	UserID:    session.UserID,
+	// 	BookID:    bookID,
+	// 	ChapterID: chapterID,
+	// })
+
+	// if err != nil {
+	// 	writeApplicationError(w, r, err)
+	// 	return
+	// }
+
+	draft, err := c.service.GetDraft(r.Context(), app.GetDraftQuery{
+		DraftID:   draftID,
 		ChapterID: chapterID,
+		BookID:    bookID,
+		UserID:    session.UserID,
 	})
 
 	if err != nil {
+		if errorx.IsNotFound(err) {
+			c.redirectToLatestDraftOrCreateIt(bookID, chapterID, w, r)
+			return
+		}
+
 		writeApplicationError(w, r, err)
 		return
 	}
 
-	templates.ChapterEditor(chapter.Chapter).Render(r.Context(), w)
+	templates.ChapterEditor(bookID, draft).Render(r.Context(), w)
 }

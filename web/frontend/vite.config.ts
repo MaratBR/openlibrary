@@ -83,9 +83,7 @@ const ENTRIES = [
   'islands/search-filters',
   'islands/admin-password-reset',
 
-  'islands/bookmanager-new-book',
-  'islands/bookmanager-book',
-  'islands/bookmanager-chapter',
+  'islands/bookmanager',
 ]
 
 export default defineConfig((env) => ({

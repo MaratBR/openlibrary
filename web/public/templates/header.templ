@@ -17,6 +17,7 @@ templ siteHeader() {
         <a class="ol-nav-link" href="/search">
             {l.T("nav.search")}
         </a>
+        <div class="mx-auto" />
     }
 }
 
@@ -33,15 +34,13 @@ templ siteHeaderLayout() {
 
         { children... }
 
-        <div class="mx-auto"></div>
-
         if isAuthorized {
             {{ user := auth.RequireUser(ctx) }}
-            <div class="relative h-full">
+            <div class="relative h-full min-w-12">
                 <div @click="userMenu=true" role="button" class="flex items-center h-full">
                     <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
                 </div>
-                <div x-cloak @click.outside="userMenu=false" x-show="userMenu" x-transition class="absolute top-full right-0 bg-background border-border border py-1 space-y-1 min-w-40">
+                <div x-cloak @click.outside="userMenu=false" x-show="userMenu" class="absolute top-full right-0 bg-background border-border border py-1 space-y-1 min-w-40">
                     <a class="p-2 block hover:bg-secondary hover:font-medium" href="/books-manager">
                         { _t(l, "account.bookManager") }
                     </a>
@@ -67,7 +66,7 @@ templ siteHeaderRoot() {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    <nav class="z-40 bg-background sticky top-0 w-full h-[var(--header-height)] border-b" id="site-header">
+    <nav class="z-40 w-full bg-background sticky top-0 h-[var(--header-height)] border-b" id="site-header">
         <div id="site-header-inner" class="ol-container ol-container--big max-w-[120ch] h-full flex gap-6" x-data="{userMenu:false}">
             { children... }
         </div>

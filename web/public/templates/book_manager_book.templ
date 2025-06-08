@@ -38,7 +38,7 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
                 "bookManager.edit.clickOnImageToChange",
             })
 
-            <ol-island x-show="tab==='general'" active="true" src="/_/assets/islands/bookmanager-book.js" data={data}>
+            <ol-island x-show="tab==='general'" active="true" src="/_/assets/islands/bookmanager.js" name="Book" data={data}>
                 <template data-type="loader">
                     <span class="loader mt-2"></span>
                 </template>

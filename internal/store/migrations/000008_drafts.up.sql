@@ -7,7 +7,6 @@ create table drafts (
     words int4 not null default 0,
     summary text not null default '',
     is_adult_override boolean not null default false,
-    published_at timestamptz null,
     updated_at timestamptz null,
     created_at timestamptz not null default now()
 );

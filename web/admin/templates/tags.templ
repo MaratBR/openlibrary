@@ -22,13 +22,13 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
 
 
     @dashboardLayout("Tags") {
-        <div class="admin-page-content">
-            <header class="admin-page-header">
+        <div class="ol-admin-page-content">
+            <header class="ol-admin-page-header">
                 <h1 class="text-4xl font-title mb-3">Tags</h1>
                 <p>View list of tags and create new tags or edit existing ones.</p>
             </header>
 
-            <section class="admin-card">
+            <section class="ol-admin-card">
                 <form method="get">
                     <input name="p" type="number" value={ fmt.Sprintf("%d", result.Page) } aria-hidden="true" class="hidden" />
 
@@ -82,7 +82,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                         for _, tag := range result.Tags {
                             <tr>
                                 <td>
-                                    <span class="admin-id">
+                                    <span class="ol-admin-id">
                                         { fmt.Sprintf("%d", tag.ID) }
                                     </span>
                                 </td>
@@ -176,13 +176,13 @@ templ Tag(tag app.TagDetailsItemDto) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
     @dashboardLayout("Admin - " + tag.Name) {
-        <div class="admin-page-content">
-            <header class="admin-page-header">
+        <div class="ol-admin-page-content">
+            <header class="ol-admin-page-header">
                 <h1 class="my-6 font-title text-5xl">
                     { tag.Name }
                 </h1>
 
-                <article class="admin-card">
+                <article class="ol-admin-card">
                     if tag.Description == "" {
                         <p class="text-muted-foreground">
                             { _t(l, "admin.tags.noDescription") }
@@ -193,7 +193,7 @@ templ Tag(tag app.TagDetailsItemDto) {
                 </article>
             </header>
 
-            <div class="admin-card">
+            <div class="ol-admin-card">
                 <div class="space-y-2">
                     @tagParam(_t(l, "admin.tags.adult"), tableBoolValue(tag.IsAdult))
                     @tagParam(_t(l, "admin.tags.spoiler"), tableBoolValue(tag.IsSpoiler))

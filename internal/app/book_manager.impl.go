@@ -607,6 +607,53 @@ func (s *bookManagerService) recalculateBookStats(ctx context.Context, bookID in
 	}
 }
 
+// GetLatestDraft implements BookManagerService.
+func (s *bookManagerService) GetLatestDraft(ctx context.Context, cmd GetLatestDraftQuery) (Nullable[int64], error) {
+	draftID, err := s.queries.GetLatestDraftID(ctx, cmd.ChapterID)
+	if err != nil {
+		if err == store.ErrNoRows {
+			return Null[int64](), nil
+		}
+		return Nullable[int64]{}, wrapUnexpectedDBError(err)
+	}
+
+	return Value(draftID), nil
+}
+
+// CreateDraft implements BookManagerService.
+func (s *bookManagerService) CreateDraft(ctx context.Context, cmd CreateDraftCommand) (int64, error) {
+	chapter, err := s.queries.GetBookChapterWithDetails(ctx, store.GetBookChapterWithDetailsParams{
+		ID:     cmd.ChapterID,
+		BookID: 0,
+	})
+
+	if err != nil {
+		if err == store.ErrNoRows {
+			return 0, ErrTypeChapterDoesNotExist.New("chapter not found")
+		}
+
+		return 0, wrapUnexpectedDBError(err)
+	}
+
+	id := GenID()
+
+	err = s.queries.InsertDraft(ctx, store.InsertDraftParams{
+		ID:          id,
+		CreatedBy:   uuidDomainToDb(cmd.UserID),
+		ChapterID:   cmd.ChapterID,
+		ChapterName: chapter.Name,
+		Content:     chapter.Content,
+		UpdatedAt:   timeToTimestamptz(time.Now()),
+		CreatedAt:   timeToTimestamptz(time.Now()),
+	})
+
+	if err != nil {
+		return 0, wrapUnexpectedDBError(err)
+	}
+
+	return id, nil
+}
+
 func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService) BookManagerService {
 	return &bookManagerService{queries: store.New(db), tagsService: tagsService, db: db, uploadService: uploadService, usersService: usersService}
 }

@@ -1,0 +1,28 @@
+.ol-book-editor {
+    &__chapter {
+        @apply mx-auto max-w-[70ch] px-2;
+    }
+
+    &__header {
+        top: var(--header-height);
+        box-shadow: 0 8px 8px 0 var(--tw-shadow-color);
+        overflow-x: auto;
+
+        @apply
+            sticky left-0 right-0 
+            bg-background z-10 mb-10 py-2 shadow-gray-200 min-h-16;
+    }
+
+    &__content {
+        @apply font-book mb-16 px-8 md:px-0;
+        font-size: var(--book-font-size);
+
+        .ProseMirror {
+            @apply focus-visible:outline-none focus:outline-none;
+
+            &::selection {
+                @apply bg-primary/20;
+            }
+        }
+    }
+}

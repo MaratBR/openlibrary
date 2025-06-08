@@ -1,0 +1,25 @@
+.section {
+    @apply flex gap-2 flex-nowrap;
+}
+
+.divider {
+    @apply bg-muted-foreground opacity-20 w-[1px] h-[50%];
+}
+
+.btn {
+    @apply flex items-center p-2;
+
+    :global(.material-symbols-outlined) {
+        @apply select-none;
+    }
+
+    &:has(input:checked) {
+        @apply text-primary;
+    }
+}
+
+label.btn {
+    input {
+        @apply hidden;
+    }
+}

@@ -80,7 +80,7 @@ left join book_chapters prev_chapter on prev_chapter.book_id = bc.book_id and pr
 left join book_chapters next_chapter on next_chapter.book_id = bc.book_id and next_chapter."order" = bc."order" + 1
 join books on bc.book_id = books.id
 join users on users.id = books.author_user_id
-where bc.id = $1 and bc.book_id = $2
+where bc.id = $1 and (bc.book_id = $2 or $2 = 0)
 `
 
 type GetBookChapterWithDetailsParams struct {

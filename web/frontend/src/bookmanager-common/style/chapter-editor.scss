@@ -1,0 +1,17 @@
+.chapter-editor-page {
+    &__header {
+        @apply h-full flex items-center font-semibold w-full;
+    }
+
+    &__draft, &__drafts-list-link {
+        @apply inline-flex items-center px-2 rounded-full bg-secondary text-secondary-foreground h-8 ml-2;
+    }
+
+    &__drafts-list-link {
+        @apply transition-all;
+
+        &:hover {
+            @apply bg-slate-800 text-white;
+        }
+    }
+}

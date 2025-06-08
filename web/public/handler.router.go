@@ -44,16 +44,20 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		searchController := newSearchController(searchService, bookService)
 		tagsController := newTagsController(tagsService)
 
+		// public auth pages
 		r.HandleFunc("/login", authController.LogIn)
 		r.HandleFunc("/logout", authController.LogOut)
 
+		// book page and its fragments
 		r.Get("/book/{bookID}", bookController.GetBook)
 		r.Get("/book/{bookID}/__fragment/preview-card", bookController.GetBookPreview)
 		r.Get("/book/{bookID}/__fragment/toc", bookController.GetBookTOC)
 		r.Get("/book/{bookID}/__fragment/review", bookController.GetBookReview)
 
+		// chapters page
 		r.Get("/book/{bookID}/chapters/{chapterID}", chapterController.GetChapter)
 
+		// search controller
 		searchController.Register(r)
 
 		r.Get("/tag/{tagID}", tagsController.TagPage)
@@ -89,4 +93,17 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
+func redirectToLoginOnUnauthorized(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, ok := auth.GetSession(r.Context())
+
+		if !ok {
+			redirectToLogin(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

@@ -20,3 +20,10 @@ delete from drafts where id = $1;
 update drafts
 set published_at = now()
 where id = $1;
+
+-- name: GetLatestDraftID :one
+select id
+from drafts
+where chapter_id = $1
+order by coalesce(updated_at, created_at) desc
+limit 1;

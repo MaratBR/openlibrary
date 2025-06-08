@@ -12,6 +12,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	i18n "github.com/MaratBR/openlibrary/internal/i18n"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/admin"
 	"github.com/MaratBR/openlibrary/web/frontend"
@@ -61,6 +62,7 @@ func mainServer(
 
 	// create router
 	r := chi.NewRouter()
+	r.Use(olhttp.MakeRecoveryMiddleware())
 	r.Use(csrfHandler.Middleware)
 	r.Use(localizerProvider.Middleware)
 
