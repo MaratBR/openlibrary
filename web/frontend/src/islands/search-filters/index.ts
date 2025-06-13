@@ -1,4 +1,4 @@
-import { PreactIsland } from '../common'
+import { PreactIsland } from '../common/preact-island'
 import SearchFilters from './SearchFilters'
 
 const island = new PreactIsland(SearchFilters)

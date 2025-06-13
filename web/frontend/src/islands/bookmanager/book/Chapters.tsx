@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'preact/hooks'
-import { PreactIslandProps } from '../common'
 import { httpUpdateChaptersOrder, managerBookDetailsSchema } from './api'
 import { twMerge } from 'tailwind-merge'
 import clsx from 'clsx'
 import { ErrorDisplay } from '@/components/error'
+import { PreactIslandProps } from '@/islands/common/preact-island'
 
 type Chapter = {
   id: string
@@ -143,6 +143,12 @@ export default function Chapters({ data: dataUnknown }: PreactIslandProps) {
         setSavingOrderError(undefined)
         setIsReordering(false)
         setOriginalOrder(newOrder)
+        setChapters((chapters) =>
+          chapters.map((c, index) => ({
+            ...c,
+            order: index + 1,
+          })),
+        )
       })
       .catch((error) => setSavingOrderError(error))
       .finally(() => {

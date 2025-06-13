@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
-import { PreactIslandProps } from '../common'
+import { PreactIslandProps } from '../common/preact-island'
 import { evaluatePasswordStrength, generateStrongPassword } from '@/lib/password'
 
 import clsx from 'clsx'

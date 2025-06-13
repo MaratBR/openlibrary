@@ -1,7 +1,9 @@
 -- name: GetDraftById :one
-select *
-from drafts 
-where id = $1;
+select drafts.*, books.id as book_id, books.name as book_name
+from drafts
+join book_chapters on book_chapters.id = drafts.chapter_id
+join books on books.id = book_chapters.book_id
+where drafts.id = $1;
 
 -- name: InsertDraft :exec
 insert into drafts (
@@ -11,6 +13,11 @@ values ($1, $2, $3, $4, $5, $6, $7);
 -- name: UpdateDraft :exec
 update drafts
 set chapter_name = $2, is_adult_override = $3, words = $4, content = $5, summary = $6, updated_at = now()
+where id = $1;
+
+-- name: UpdateDraftContent :exec
+update drafts
+set content = $2, updated_at = now()
 where id = $1;
 
 -- name: DeleteDraft :exec

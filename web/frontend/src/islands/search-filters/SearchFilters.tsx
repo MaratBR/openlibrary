@@ -8,7 +8,7 @@ import {
 import TagsInput from './TagsInput'
 
 import RangeInput from './RangeInput'
-import { PreactIslandProps } from '../common'
+import { PreactIslandProps } from '../common/preact-island'
 import { z } from 'zod'
 
 const dataSchema = z

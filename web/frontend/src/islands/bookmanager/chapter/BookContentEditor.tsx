@@ -4,25 +4,54 @@ import TextStyle from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
 import TextAlign from '@tiptap/extension-text-align'
 import Image from '@tiptap/extension-image'
-import Dropcursor from '@tiptap/extension-dropcursor'
 
 import StarterKit from '@tiptap/starter-kit'
-import { useEffect, useRef } from 'preact/hooks'
+import { useEffect, useMemo, useRef } from 'preact/hooks'
 import './BookManagerEditor.scss'
 import Heading from '@tiptap/extension-heading'
 import { createEvent } from '@/lib/event'
 import BookContentEditorHeader from './BookContentEditorHeader'
 import Underline from '@tiptap/extension-underline'
+import { debounce } from '@/common/util/debounce'
+import { RefObject } from 'preact'
 
 export type BookContentEditorProps = {
   content: string
+  onContentChanged: (editor: Editor) => void
+  onBeforeContentChanged?: () => void
+  contentChangedDebounce: number
+  editorRef?: RefObject<Editor>
 }
 
-export default function BookContentEditor({ content }: BookContentEditorProps) {
+export default function BookContentEditor({
+  content,
+  onContentChanged,
+  contentChangedDebounce,
+  onBeforeContentChanged,
+  editorRef,
+}: BookContentEditorProps) {
   const editor = useRef<Editor | null>(null)
   const root = useRef<HTMLDivElement | null>(null)
 
   const editorUpdateEvent = useRef(createEvent<Editor>())
+
+  const handleContentChanged = useMemo(
+    () =>
+      debounce((editor: Editor) => {
+        refs.current.onBeforeContentChangedCalled = false
+        refs.current.onContentChanged(editor)
+      }, contentChangedDebounce),
+    [contentChangedDebounce],
+  )
+  const refs = useRef({
+    handleContentChanged,
+    onBeforeContentChangedCalled: false,
+    onBeforeContentChanged,
+    onContentChanged,
+  })
+  refs.current.onContentChanged = onContentChanged
+  refs.current.onBeforeContentChanged = onBeforeContentChanged
+  refs.current.handleContentChanged = handleContentChanged
 
   const propsRef = useRef({ content })
   propsRef.current.content = content
@@ -33,12 +62,22 @@ export default function BookContentEditor({ content }: BookContentEditorProps) {
       content: propsRef.current.content,
       onUpdate: ({ editor }) => {
         editorUpdateEvent.current.fire(editor)
+
+        refs.current.handleContentChanged(editor)
+        if (!refs.current.onBeforeContentChangedCalled) {
+          refs.current.onBeforeContentChangedCalled = true
+          if (refs.current.onBeforeContentChanged) refs.current.onBeforeContentChanged()
+        }
       },
       onTransaction: ({ editor }) => {
         editorUpdateEvent.current.fire(editor)
       },
     })
   }, [])
+
+  useEffect(() => {
+    if (editorRef) editorRef.current = editor.current
+  }, [editorRef])
 
   return (
     <div class="ol-book-editor">
@@ -73,7 +112,6 @@ function createEditor(editorElement: HTMLElement, options?: Partial<EditorOption
       Image.configure({
         inline: true,
       }),
-      Dropcursor,
     ],
     ...options,
   })

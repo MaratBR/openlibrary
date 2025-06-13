@@ -10,7 +10,6 @@ import (
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
-	"github.com/joomcode/errorx"
 )
 
 type bookManagerController struct {
@@ -138,22 +137,9 @@ func (c *bookManagerController) chapter(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var draftID int64
-
-	draftID, err = olhttp.URLQueryParamInt64(r, "draft_id")
-
-	// if no draft id - find latest one or create new one
-	if err != nil || draftID == 0 {
-		c.redirectToLatestDraftOrCreateIt(bookID, chapterID, w, r)
-		return
-	}
-
-	c.sendChapterEditorPage(bookID, chapterID, draftID, w, r)
-}
-
-func (c *bookManagerController) redirectToLatestDraftOrCreateIt(bookID, chapterID int64, w http.ResponseWriter, r *http.Request) {
-	var draftID int64
 	session := auth.RequireSession(r.Context())
+
+	var draftID int64
 
 	{
 		draftIDNullable, err := c.service.GetLatestDraft(r.Context(), app.GetLatestDraftQuery{ChapterID: chapterID, UserID: session.UserID})
@@ -177,14 +163,10 @@ func (c *bookManagerController) redirectToLatestDraftOrCreateIt(bookID, chapterI
 			return
 		}
 
-		c.redirectToDraft(bookID, chapterID, newDraftID, w, r)
-	} else {
-		c.redirectToDraft(bookID, chapterID, draftID, w, r)
+		draftID = newDraftID
 	}
-}
 
-func (_ *bookManagerController) redirectToDraft(bookID, chapterID, draftID int64, w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, fmt.Sprintf("/books-manager/book/%d/chapter/%d?draft_id=%d", bookID, chapterID, draftID), http.StatusFound)
+	c.sendChapterEditorPage(bookID, chapterID, draftID, w, r)
 }
 
 func (c *bookManagerController) sendChapterEditorPage(bookID, chapterID, draftID int64, w http.ResponseWriter, r *http.Request) {
@@ -209,11 +191,6 @@ func (c *bookManagerController) sendChapterEditorPage(bookID, chapterID, draftID
 	})
 
 	if err != nil {
-		if errorx.IsNotFound(err) {
-			c.redirectToLatestDraftOrCreateIt(bookID, chapterID, w, r)
-			return
-		}
-
 		writeApplicationError(w, r, err)
 		return
 	}

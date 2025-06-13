@@ -32,7 +32,7 @@ func (c *userController) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pinnedBooks, err := c.bookService.GetUserBooks(r.Context(), app.GetUserBooksQuery{
+	pinnedBooks, err := c.bookService.GetPinnedBooks(r.Context(), app.GetPinnedUserBooksQuery{
 		UserID: user.ID,
 		Limit:  6,
 	})

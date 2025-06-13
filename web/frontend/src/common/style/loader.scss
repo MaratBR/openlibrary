@@ -1,4 +1,25 @@
-.loader {
+@mixin loader {
+
+}
+
+.with-loader {
+  position: relative;
+  color: transparent !important;
+
+  & > * {
+    opacity: 0 !important;
+  }
+
+  &::after {
+    content: ' ';
+    position: absolute !important;
+    left: 50%;
+    top: 50%;
+    transform: translate(calc(-50% - 32px), -50%);
+  }
+}
+
+.loader, .with-loader::after {
   --loader-color: var(--foreground);
 
   display: block;

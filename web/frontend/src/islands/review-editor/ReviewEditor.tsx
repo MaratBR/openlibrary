@@ -5,7 +5,7 @@ import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import { Editor, EditorOptions } from '@tiptap/core'
 import { httpUpdateReview, ratingSchema, ReviewDto, reviewDtoSchema } from './api'
 import { useEffect, useRef, useState } from 'preact/hooks'
-import { PreactIslandProps } from '../common'
+import { PreactIslandProps } from '../common/preact-island'
 
 export default function ReviewEditor({ rootElement }: PreactIslandProps) {
   const rootEl = useRef<HTMLDivElement | null>(null)

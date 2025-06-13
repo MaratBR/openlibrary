@@ -1,5 +1,5 @@
 .tabs {
-    @apply flex p-1 border rounded-xl gap-1;
+    @apply flex gap-1 shadow-md;
 
     .tab {
         @apply p-2 cursor-pointer;
@@ -7,7 +7,7 @@
 
     &--primary {
         .tab {
-            @apply text-lg font-medium relative hover:bg-secondary transition-colors rounded-xl py-1;
+            @apply text-lg font-medium relative hover:bg-secondary transition-colors py-2;
 
             &--active {
                 @apply text-primary after:scale-y-100 bg-primary/10;

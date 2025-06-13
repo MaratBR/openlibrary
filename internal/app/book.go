@@ -66,7 +66,30 @@ type PinnedBookDto struct {
 	IsPinned        bool      `json:"isPinned"`
 }
 
-type GetUserPinnedBooksResult struct {
+type GetUserBooksQuery struct {
+	UserID      uuid.UUID
+	ActorUserID Nullable[uuid.UUID]
+	Limit       int
+	Offset      int
+}
+
+type SearchUserBooksQuery struct {
+	UserID      uuid.UUID
+	ActorUserID Nullable[uuid.UUID]
+	Limit       int
+	Offset      int
+}
+
+type SearchUserBooksResult struct {
+}
+
+type GetPinnedUserBooksQuery struct {
+	UserID uuid.UUID
+	Limit  int
+	Offset int
+}
+
+type GetPinnedUserBooksResult struct {
 	Books   []PinnedBookDto `json:"books"`
 	HasMore bool            `json:"hasMore"`
 }
@@ -75,7 +98,7 @@ type BookService interface {
 	GetBook(ctx context.Context, query GetBookQuery) (BookDetailsDto, error)
 	GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]BookChapterDto, error)
 	GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error)
-
-	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserPinnedBooksResult, error)
 	GetRandomBookID(ctx context.Context) (Nullable[int64], error)
+	GetPinnedBooks(ctx context.Context, input GetPinnedUserBooksQuery) (GetPinnedUserBooksResult, error)
+	SearchBooks(ctx context.Context, input SearchUserBooksQuery) (SearchUserBooksResult, error)
 }

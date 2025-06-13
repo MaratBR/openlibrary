@@ -2,18 +2,30 @@ package olresponse
 
 import "context"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 
 
 templ Doc(
     ctx context.Context, 
     settings DocSettings,
 ) {
+    {{
+        var lang string
+        l, ok := i18n.TryGetLocalizer(ctx)
+        if ok {
+            lang = l.Lang().String()
+        }
+    }}
+
     <!doctype html>
-    <html lang="en" class="theme-default">
+    <html lang={lang} class="theme-default">
     <head>
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        if l.Passthrough() {
+            <meta name="openlibrary-debug-meta:localizer-passthrough-mode" content="true" />
+        }
         <title>{ settings.Title }</title>
         for _, scriptPath := range settings.Scripts {
             <script data-no-instant defer type="module" src={ scriptPath }></script>

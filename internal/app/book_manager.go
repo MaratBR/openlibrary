@@ -62,12 +62,6 @@ type ManagerGetBookResult struct {
 	Book ManagerBookDetailsDto
 }
 
-type GetUserBooksQuery struct {
-	UserID uuid.UUID
-	Limit  int
-	Offset int
-}
-
 type ManagerAuthorBookDto struct {
 	ID                int64               `json:"id,string"`
 	Name              string              `json:"name"`
@@ -175,11 +169,15 @@ type DraftDto struct {
 	Content     string    `json:"content"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
-	ChapterID   int64     `json:"chapterId"`
+	ChapterID   int64     `json:"chapterId,string"`
 	CreatedBy   struct {
 		ID   uuid.UUID `json:"id"`
 		Name string    `json:"name"`
 	} `json:"createdBy"`
+	Book struct {
+		ID   int64  `json:"id,string"`
+		Name string `json:"name"`
+	} `json:"book"`
 }
 
 type UpdateDraftCommand struct {
@@ -191,6 +189,14 @@ type UpdateDraftCommand struct {
 	ChapterID       int64
 	BookID          int64
 	UserID          uuid.UUID
+}
+
+type UpdateDraftContentCommand struct {
+	Content   string
+	DraftID   int64
+	ChapterID int64
+	BookID    int64
+	UserID    uuid.UUID
 }
 
 type DeleteDraftCommand struct {
@@ -228,6 +234,8 @@ type BookManagerService interface {
 
 	GetDraft(ctx context.Context, query GetDraftQuery) (DraftDto, error)
 	UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error
+	UpdateDraftContent(ctx context.Context, cmd UpdateDraftContentCommand) error
+
 	DeleteDraft(ctx context.Context, cmd DeleteDraftCommand) error
 	PublishDraft(ctx context.Context, cmd PublishDraftCommand) error
 	CreateDraft(ctx context.Context, cmd CreateDraftCommand) (int64, error)

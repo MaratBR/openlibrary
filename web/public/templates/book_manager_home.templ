@@ -16,6 +16,7 @@ templ bookManagerLayoutBase(title string, sitebar bool) {
             frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
         ),
     }) {
+        <style>body{min-width: 1000px;}</style>
         @renderUISettings()
         if sitebar {
             @siteHeader()

@@ -1,4 +1,10 @@
+const i18nShowKeys = new URLSearchParams(window.location.search).has('i18n.show-keys')
+
 export function translate(key: string, args?: Record<string, string>) {
+  if (i18nShowKeys) {
+    return key
+  }
+
   if (!window.i18n) {
     return key
   }

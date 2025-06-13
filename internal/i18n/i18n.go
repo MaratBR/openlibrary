@@ -196,25 +196,54 @@ func (p *LocaleProvider) statChanged() bool {
 }
 
 func (p *LocaleProvider) CreateLocalizer(r *http.Request) *Localizer {
-	accept := r.Header.Get("Accept-Language")
-	preferredLanguages, _, _ := language.ParseAcceptLanguage(accept)
-	var tag language.Tag
-	if len(preferredLanguages) > 0 {
-		tag = preferredLanguages[0]
-	} else {
-		tag = p.defaultLanguage
-	}
+	tag, passthrough := getLanguageTag(r, p.defaultLanguage)
 	i18nInstance := p.getI18N()
-	localizer := newLocalizer(i18nInstance, tag)
+	localizer := newLocalizer(i18nInstance, tag, passthrough)
 	return localizer
 }
 
+func getLanguageTag(r *http.Request, defaultLang language.Tag) (language.Tag, bool) {
+	langQueryParam := r.URL.Query().Get("lang")
+
+	if langQueryParam != "" {
+		if langQueryParam == "KEYS" {
+			return language.English, true
+		}
+
+		tag, err := language.Parse(langQueryParam)
+		if err == nil {
+			return tag, false
+		}
+	}
+
+	accept := r.Header.Get("Accept-Language")
+	preferredLanguages, _, _ := language.ParseAcceptLanguage(accept)
+	if len(preferredLanguages) > 0 {
+		return preferredLanguages[0], false
+	} else {
+		return defaultLang, false
+	}
+}
+
 type Localizer struct {
-	i18n *goeasyi18n.I18n
-	lang language.Tag
+	i18n        *goeasyi18n.I18n
+	lang        language.Tag
+	passthrough bool
+}
+
+func (l *Localizer) Lang() language.Tag {
+	return l.lang
+}
+
+func (l *Localizer) Passthrough() bool {
+	return l.passthrough
 }
 
 func (l *Localizer) T(key string, params ...goeasyi18n.Options) string {
+	if l.passthrough {
+		return key
+	}
+
 	v := l.i18n.T(l.lang.String(), key, params...)
 	if v == "" {
 		return key
@@ -228,10 +257,11 @@ func (l *Localizer) TData(key string, data any) string {
 	})
 }
 
-func newLocalizer(i18n *goeasyi18n.I18n, lang language.Tag) *Localizer {
+func newLocalizer(i18n *goeasyi18n.I18n, lang language.Tag, passthrough bool) *Localizer {
 	return &Localizer{
-		i18n: i18n,
-		lang: lang,
+		i18n:        i18n,
+		lang:        lang,
+		passthrough: passthrough,
 	}
 }
 
@@ -249,4 +279,12 @@ func (p *LocaleProvider) Middleware(next http.Handler) http.Handler {
 
 func GetLocalizer(c context.Context) *Localizer {
 	return c.Value(localizerKey).(*Localizer)
+}
+
+func TryGetLocalizer(c context.Context) (*Localizer, bool) {
+	l := c.Value(localizerKey)
+	if l == nil {
+		return nil, false
+	}
+	return l.(*Localizer), true
 }

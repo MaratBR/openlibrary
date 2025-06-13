@@ -21,14 +21,31 @@ func (q *Queries) DeleteDraft(ctx context.Context, id int64) error {
 }
 
 const getDraftById = `-- name: GetDraftById :one
-select id, created_by, chapter_id, chapter_name, content, words, summary, is_adult_override, updated_at, created_at
-from drafts 
-where id = $1
+select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.is_adult_override, drafts.updated_at, drafts.created_at, books.id as book_id, books.name as book_name
+from drafts
+join book_chapters on book_chapters.id = drafts.chapter_id
+join books on books.id = book_chapters.book_id
+where drafts.id = $1
 `
 
-func (q *Queries) GetDraftById(ctx context.Context, id int64) (Draft, error) {
+type GetDraftByIdRow struct {
+	ID              int64
+	CreatedBy       pgtype.UUID
+	ChapterID       int64
+	ChapterName     string
+	Content         string
+	Words           int32
+	Summary         string
+	IsAdultOverride bool
+	UpdatedAt       pgtype.Timestamptz
+	CreatedAt       pgtype.Timestamptz
+	BookID          int64
+	BookName        string
+}
+
+func (q *Queries) GetDraftById(ctx context.Context, id int64) (GetDraftByIdRow, error) {
 	row := q.db.QueryRow(ctx, getDraftById, id)
-	var i Draft
+	var i GetDraftByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedBy,
@@ -40,6 +57,8 @@ func (q *Queries) GetDraftById(ctx context.Context, id int64) (Draft, error) {
 		&i.IsAdultOverride,
 		&i.UpdatedAt,
 		&i.CreatedAt,
+		&i.BookID,
+		&i.BookName,
 	)
 	return i, err
 }
@@ -123,5 +142,21 @@ func (q *Queries) UpdateDraft(ctx context.Context, arg UpdateDraftParams) error 
 		arg.Content,
 		arg.Summary,
 	)
+	return err
+}
+
+const updateDraftContent = `-- name: UpdateDraftContent :exec
+update drafts
+set content = $2, updated_at = now()
+where id = $1
+`
+
+type UpdateDraftContentParams struct {
+	ID      int64
+	Content string
+}
+
+func (q *Queries) UpdateDraftContent(ctx context.Context, arg UpdateDraftContentParams) error {
+	_, err := q.db.Exec(ctx, updateDraftContent, arg.ID, arg.Content)
 	return err
 }

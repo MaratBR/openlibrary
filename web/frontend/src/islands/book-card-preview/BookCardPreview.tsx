@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { z } from 'zod'
-import { PreactIslandProps } from '../common'
+import { PreactIslandProps } from '../common/preact-island'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { createPortal, CSSProperties } from 'preact/compat'
 import BookCardPreviewContent from './BookCardPreviewContent'

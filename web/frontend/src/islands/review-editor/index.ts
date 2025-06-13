@@ -1,4 +1,4 @@
-import { PreactIsland } from '../common'
+import { PreactIsland } from '../common/preact-island.tsx'
 import ReviewEditor from './ReviewEditor.tsx'
 import './ReviewEditor.scss'
 

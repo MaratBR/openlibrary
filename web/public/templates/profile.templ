@@ -5,7 +5,7 @@ import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
 
-templ User(user *app.UserDetailsDto, pinnedBooks app.GetUserPinnedBooksResult) {
+templ User(user *app.UserDetailsDto, pinnedBooks app.GetPinnedUserBooksResult) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}

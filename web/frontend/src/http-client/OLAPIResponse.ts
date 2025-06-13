@@ -10,6 +10,8 @@ const anyArray = z.array(z.any())
 
 export type OLNotification = z.infer<typeof notificationSchema>
 
+const NO_BODY_SCHEMA = z.literal('ok')
+
 export class OLAPIResponse<T> {
   private readonly response: Response
   private _notifications?: OLNotification[] = undefined
@@ -23,6 +25,12 @@ export class OLAPIResponse<T> {
     const resp = new OLAPIResponse<T>(response, schema)
     await resp._loadData()
     return resp
+  }
+
+  public static async createNoBody(
+    response: Response,
+  ): Promise<OLAPIResponse<z.infer<typeof NO_BODY_SCHEMA>>> {
+    return OLAPIResponse.create(response, NO_BODY_SCHEMA)
   }
 
   private constructor(response: Response, schema: ZodSchema<T>) {
