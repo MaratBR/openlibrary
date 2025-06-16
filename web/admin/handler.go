@@ -8,6 +8,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
+	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
 )
@@ -26,10 +27,16 @@ type Handler struct {
 	cache *cache.Cache
 }
 
-func NewHandler(db app.DB, cfg *koanf.Koanf, cache *cache.Cache, bgServices *app.BackgroundServices) *Handler {
+func NewHandler(
+	db app.DB,
+	cfg *koanf.Koanf,
+	cache *cache.Cache,
+	bgServices *app.BackgroundServices,
+	esClient *elasticsearch.TypedClient,
+) *Handler {
 	h := &Handler{db: db, cfg: cfg, cache: cache}
 	h.initRouter()
-	h.setupRouter(bgServices)
+	h.setupRouter(bgServices, esClient)
 	return h
 }
 

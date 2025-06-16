@@ -11,12 +11,14 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/csrf"
+	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
 	i18n "github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/admin"
 	"github.com/MaratBR/openlibrary/web/frontend"
 	"github.com/MaratBR/openlibrary/web/public"
+	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
 	"golang.org/x/text/language"
@@ -57,6 +59,13 @@ func mainServer(
 	slog.Debug("connecting to cache")
 	cacheInstance := createCache(config)
 
+	slog.Debug("connecting to elasticsearh client")
+	esClient, err := setupElasticsearch(config)
+	if err != nil {
+		panic(err)
+	}
+	_ = esClient
+
 	slog.Debug("initializing csrf handler")
 	csrfHandler := csrf.NewHandler("CSRF HANDLER HERE")
 
@@ -91,7 +100,7 @@ func mainServer(
 	uploadService := app.NewUploadServiceFromApplicationConfig(config)
 
 	publicUIHandler := public.NewHandler(db, config, cacheInstance, csrfHandler, bgServices, uploadService)
-	adminHandler := admin.NewHandler(db, config, cacheInstance, bgServices)
+	adminHandler := admin.NewHandler(db, config, cacheInstance, bgServices, esClient)
 
 	err = publicUIHandler.Start()
 	if err != nil {
@@ -187,4 +196,26 @@ func createCache(config *koanf.Koanf) *cache.Cache {
 	}
 	cacheInstance := cache.New(cacheBackend)
 	return cacheInstance
+}
+
+func setupElasticsearch(config *koanf.Koanf) (*elasticsearch.TypedClient, error) {
+	elasticsearchURL := config.String("elasticsearch.url")
+	if elasticsearchURL == "" {
+		slog.Error("elasticsearch.url is empty")
+		os.Exit(1)
+	}
+
+	client, err := elasticsearch.NewTypedClient(elasticsearch.Config{
+		Addresses: []string{elasticsearchURL},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = elasticstore.Setup(context.Background(), client)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }

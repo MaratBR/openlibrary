@@ -25,6 +25,9 @@ bucket = "openlibrary"
 public-bucket = "openlibrary-public"
 secure = false
 
+[elasticsearch]
+url = "http://localhost:9200"
+
 [cache]
 # type = "redis"
 # type = "memory"

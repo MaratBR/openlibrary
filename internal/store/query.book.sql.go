@@ -11,6 +11,63 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getAllBooks = `-- name: GetAllBooks :many
+select id, name, summary, author_user_id, created_at, age_rating, cached_parent_tag_ids, is_publicly_visible, chapters, words
+from books
+where id > $1
+order by id asc
+limit $2
+`
+
+type GetAllBooksParams struct {
+	ID    int64
+	Limit int32
+}
+
+type GetAllBooksRow struct {
+	ID                 int64
+	Name               string
+	Summary            string
+	AuthorUserID       pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	AgeRating          AgeRating
+	CachedParentTagIds []int64
+	IsPubliclyVisible  bool
+	Chapters           int32
+	Words              int32
+}
+
+func (q *Queries) GetAllBooks(ctx context.Context, arg GetAllBooksParams) ([]GetAllBooksRow, error) {
+	rows, err := q.db.Query(ctx, getAllBooks, arg.ID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllBooksRow
+	for rows.Next() {
+		var i GetAllBooksRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Summary,
+			&i.AuthorUserID,
+			&i.CreatedAt,
+			&i.AgeRating,
+			&i.CachedParentTagIds,
+			&i.IsPubliclyVisible,
+			&i.Chapters,
+			&i.Words,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getBook = `-- name: GetBook :one
 select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, users.name as author_name
 from books

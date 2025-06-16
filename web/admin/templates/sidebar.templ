@@ -23,6 +23,10 @@ templ sidebar() {
                 <span class="material-symbols-outlined">person</span>
                 <span>{ _t(l, "admin.sidebar.users") }</span>
             }
+            @sidebarItem("/admin/books") {
+                <span class="material-symbols-outlined">newsstand</span>
+                <span>{ _t(l, "admin.sidebar.books") }</span>
+            }
             @sidebarItem("/admin/tags") {
                 <span class="material-symbols-outlined">tag</span>
                 <span>{ _t(l, "admin.sidebar.tags") }</span>
@@ -30,6 +34,10 @@ templ sidebar() {
             @sidebarItem("/admin/site-settings") {
                 <span class="material-symbols-outlined">discover_tune</span>
                 <span>{ _t(l, "admin.sidebar.siteSettings") }</span>
+            }
+            @sidebarItem("/admin/debug") {
+                <span class="material-symbols-outlined">bug_report</span>
+                <span>{ _t(l, "admin.sidebar.debugActions") }</span>
             }
         </ul>
 

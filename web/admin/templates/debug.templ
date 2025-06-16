@@ -1,0 +1,27 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/csrf"
+
+type DebugAction struct {
+    Name string 
+    ID string
+}
+
+templ DebugActions(actions []DebugAction) {
+    @dashboardLayout("OpenLibrary debug actions") {
+        <div class="p-4 pt-16">
+            <form method="post">
+                <select required name="act" class="ol-input">
+                    for _, act := range actions {
+                        <option disabled selected value="">Chose an action to perform</option>
+                        <option value={ act.ID }>{ act.Name }</option>
+                    }
+                </select>
+
+                @csrf.CSRFInputTempl(ctx)
+
+                <button class="ol-btn ol-btn--outline mt-4" type="submit">Perform</button>
+            </form>
+        </div>
+    }
+}

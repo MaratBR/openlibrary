@@ -10,11 +10,12 @@ import (
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 )
 
-func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
+func (h *Handler) setupRouter(bgServices *app.BackgroundServices, esClient *elasticsearch.TypedClient) {
 	h.setupAutoRedirect()
 
 	h.r.NotFound(adminNotFound)
@@ -68,8 +69,13 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 				r.Get("/", c.Users)
 				r.Get("/{id}", c.User)
 				r.With(httpin.NewInput(updateUserRequest{})).Post("/{id}", c.UserUpdate)
-
 			})
+
+			{
+				fullReindexService := app.NewBookFullReindexService(h.db, esClient)
+				c := newDebugController(fullReindexService)
+				r.Handle("/debug", http.HandlerFunc(c.Actions))
+			}
 		})
 	})
 

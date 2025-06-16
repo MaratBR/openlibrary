@@ -24,6 +24,15 @@ services:
       - s3_data:/data
     command: server /data --console-address ":9001"
 
+  elastic:
+    image: elasticsearch:9.0.2
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      xpack.security.enabled: false
+      discovery.type: single-node
+
 volumes:
   s3_data:
   db_data:
