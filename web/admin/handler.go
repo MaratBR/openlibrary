@@ -36,7 +36,7 @@ func NewHandler(
 ) *Handler {
 	h := &Handler{db: db, cfg: cfg, cache: cache}
 	h.initRouter()
-	h.setupRouter(bgServices, esClient)
+	h.setupRouter(bgServices)
 	return h
 }
 

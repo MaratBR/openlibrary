@@ -4,6 +4,7 @@
         "commonutil",
         "denormalized",
         "Dexie",
+        "elasticstore",
         "fasttemplate",
         "favourite",
         "goeasyi",

@@ -17,11 +17,12 @@ import (
 )
 
 type bookManagerService struct {
-	queries       *store.Queries
-	db            DB
-	tagsService   TagsService
-	usersService  UserService
-	uploadService *UploadService
+	queries            *store.Queries
+	db                 DB
+	tagsService        TagsService
+	usersService       UserService
+	uploadService      *UploadService
+	bookReindexService BookReindexService
 }
 
 const (
@@ -146,6 +147,16 @@ func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 		Summary:            input.Summary,
 		IsPubliclyVisible:  input.IsPubliclyVisible,
 	})
+	if err != nil {
+		return 0, wrapUnexpectedDBError(err)
+	}
+
+	err = s.bookReindexService.Reindex(ctx, id)
+	if err != nil {
+		// TODO wrap error
+		return id, err
+	}
+
 	return id, err
 }
 
@@ -170,7 +181,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return err
 	}
 
-	return s.queries.UpdateBook(ctx, store.UpdateBookParams{
+	err = s.queries.UpdateBook(ctx, store.UpdateBookParams{
 		ID:                 input.BookID,
 		Name:               input.Name,
 		TagIds:             tags.TagIds,
@@ -179,6 +190,17 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		Summary:            summaryData.Sanitized,
 		IsPubliclyVisible:  input.IsPubliclyVisible,
 	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	err = s.bookReindexService.Reindex(ctx, input.BookID)
+	if err != nil {
+		// TODO wrap error
+		return err
+	}
+
+	return nil
 }
 
 // UploadBookCover implements BookManagerService.
@@ -712,6 +734,13 @@ func (s *bookManagerService) authorizeDraftCreate(userID uuid.UUID, chapterID in
 	return nil
 }
 
-func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService) BookManagerService {
-	return &bookManagerService{queries: store.New(db), tagsService: tagsService, db: db, uploadService: uploadService, usersService: usersService}
+func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService, bookReindexService BookReindexService) BookManagerService {
+	return &bookManagerService{
+		queries:            store.New(db),
+		tagsService:        tagsService,
+		db:                 db,
+		uploadService:      uploadService,
+		usersService:       usersService,
+		bookReindexService: bookReindexService,
+	}
 }

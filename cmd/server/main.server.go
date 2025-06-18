@@ -42,6 +42,10 @@ func mainServer(
 
 	var err error
 
+	// --------------------------------------
+	// initialize dependencies
+	// --------------------------------------
+
 	slog.Debug("initializing localizer provider")
 	localizerProvider := i18n.NewLocaleProvider(
 		language.English,
@@ -69,7 +73,10 @@ func mainServer(
 	slog.Debug("initializing csrf handler")
 	csrfHandler := csrf.NewHandler("CSRF HANDLER HERE")
 
-	// create router
+	// --------------------------------------
+	// initialize web server
+	// --------------------------------------
+
 	r := chi.NewRouter()
 	r.Use(olhttp.MakeRecoveryMiddleware())
 	r.Use(csrfHandler.Middleware)
@@ -88,9 +95,10 @@ func mainServer(
 	r.Mount("/_/embed-assets/", http.StripPrefix("/_/embed-assets/", embedAssetsHandler))
 	r.Mount("/_/assets/", http.StripPrefix("/_/assets/", assetsHandler))
 
+	// --------------------------------------
 	// create and start background services
-	bgServices := app.NewBackgroundServices(db)
-
+	// --------------------------------------
+	bgServices := app.NewBackgroundServices(db, esClient)
 	err = bgServices.Start()
 	if err != nil {
 		panic("failed to start background services: " + err.Error())

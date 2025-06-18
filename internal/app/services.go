@@ -1,12 +1,16 @@
 package app
 
+import "github.com/elastic/go-elasticsearch/v9"
+
 type BackgroundServices struct {
-	Book BookBackgroundService
+	Book        BookBackgroundService
+	BookReindex BookReindexService
 }
 
-func NewBackgroundServices(db DB) *BackgroundServices {
+func NewBackgroundServices(db DB, esClient *elasticsearch.TypedClient) *BackgroundServices {
 	return &BackgroundServices{
-		Book: NewBookBackgroundService(db),
+		Book:        NewBookBackgroundService(db),
+		BookReindex: NewBookFullReindexService(db, esClient),
 	}
 }
 

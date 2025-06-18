@@ -16,11 +16,11 @@ type debugActionDescriptor struct {
 }
 
 type debugController struct {
-	fullReindexService *app.BookFullReindexService
+	fullReindexService app.BookReindexService
 	actions            map[string]debugActionDescriptor
 }
 
-func newDebugController(fullReindexService *app.BookFullReindexService) *debugController {
+func newDebugController(fullReindexService app.BookReindexService) *debugController {
 	c := &debugController{
 		fullReindexService: fullReindexService,
 		actions: map[string]debugActionDescriptor{

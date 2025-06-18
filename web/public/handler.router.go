@@ -28,7 +28,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	bookService := app.NewBookService(db, tagsService, h.uploadService, readingListService, reviewsService)
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, h.uploadService, userService), h.cache)
 
-	bookManagerService := app.NewBookManagerService(db, tagsService, h.uploadService, userService)
+	bookManagerService := app.NewBookManagerService(db, tagsService, h.uploadService, userService, bgServices.BookReindex)
 
 	h.r.Group(func(r chi.Router) {
 		r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{

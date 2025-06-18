@@ -16,7 +16,7 @@ func mainPopulate(config *koanf.Koanf) {
 	tagsService := app.NewTagsService(db)
 	uploadService := app.NewUploadServiceFromApplicationConfig(config)
 	userService := app.NewUserService(db)
-	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService, userService)
+	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService, userService, app.NewDummyBookReindexService())
 	reviewsService := app.NewReviewsService(db, userService, app.NewDummyBookBackgroundService())
 
 	slog.Info("populating database with random data...")

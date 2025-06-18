@@ -6,6 +6,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/elastic/go-elasticsearch/v9/typedapi/indices/create"
 	"github.com/elastic/go-elasticsearch/v9/typedapi/types"
+	"github.com/k3a/html2text"
 )
 
 type BookIndex struct {
@@ -17,6 +18,10 @@ type BookIndex struct {
 	Chapters        int32   `json:"chapters"`
 	Words           int32   `json:"words"`
 	WordsPerChapter int32   `json:"wordsPerChapter"`
+}
+
+func (c *BookIndex) Normalize() {
+	c.Description = html2text.HTML2Text(c.Description)
 }
 
 const (
