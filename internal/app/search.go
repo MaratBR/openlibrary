@@ -99,13 +99,15 @@ type BookSearchResultMeta struct {
 }
 
 type BookSearchResult struct {
-	TookUS     int64                `json:"took"`
-	Meta       BookSearchResultMeta `json:"cache"`
-	Books      []BookSearchItem     `json:"books"`
-	PageSize   uint32
-	Page       uint32
-	TotalPages uint32
-	Tags       []DefinedTagDto
+	TookUSTotal int64
+	TookUS      int64
+	Meta        BookSearchResultMeta
+	Books       []BookSearchItem
+	PageSize    uint32
+	Page        uint32
+	TotalPages  uint32
+	Total       int64
+	Tags        []DefinedTagDto
 }
 
 type BookExtremes struct {

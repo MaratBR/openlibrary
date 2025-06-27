@@ -26,7 +26,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	userService := app.NewUserService(db)
 	reviewsService := app.NewCachedReviewsService(app.NewReviewsService(db, userService, bgServices.Book), h.cache)
 	bookService := app.NewBookService(db, tagsService, h.uploadService, readingListService, reviewsService)
-	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, h.uploadService, userService), h.cache)
+	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, h.uploadService, userService, h.esClient), h.cache)
 
 	bookManagerService := app.NewBookManagerService(db, tagsService, h.uploadService, userService, bgServices.BookReindex)
 

@@ -39,4 +39,20 @@
         @apply outline outline-4 outline-primary;
     }
 
+    table {
+        border-collapse: collapse;
+
+        td, th {
+            @apply border-border border p-2;
+
+            &:empty {
+                @apply p-0;
+            }
+        }
+
+        th {
+            @apply font-bold;
+        }
+    }
+
 }

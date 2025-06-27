@@ -10,6 +10,7 @@ func getPageURL(ctx context.Context, page uint32) templ.SafeURL {
     u := new(url.URL)
     *u = *r.URL
     query := u.Query()
+    query.Del("__fragment")
     query.Set("p", fmt.Sprintf("%d", page))
     u.RawQuery = query.Encode()
     return templ.SafeURL(u.String())
@@ -18,34 +19,68 @@ func getPageURL(ctx context.Context, page uint32) templ.SafeURL {
 templ Pagination(
     page, totalPages, size uint32,
 ) {
+    @PaginationImpl(PaginationImplProps{
+        Page: page,
+        TotalPages: totalPages,
+        Size: size,
+    })
+}
+
+type PaginationImplProps struct {
+    Page uint32
+    TotalPages uint32
+    Size uint32
+    UseAlpineJsAjax bool
+}
+
+templ PaginationImpl(
+    opts PaginationImplProps,
+) {
     {{
-        remaining := size - 1
+        remaining := opts.Size - 1
         left := remaining / 2
-        if left > page - 1  {
-            left = page - 1
+        if left > opts.Page - 1  {
+            left = opts.Page - 1
         }
         remaining -= left
         right := remaining
-        if page + right > totalPages {
-            right = totalPages - page
+        if opts.Page + right > opts.TotalPages {
+            right = opts.TotalPages - opts.Page
         }
         remaining -= right
-        if remaining > 0 && left < page - 1 {
-            left += min(remaining, page - 1 - left)
+        if remaining > 0 && left < opts.Page - 1 {
+            left += min(remaining, opts.Page - 1 - left)
         }
     }}
 
-    <nav role="listbox" class="pagination">
-        for i := page - left; i < page; i++ {
-            <a href={ getPageURL(ctx, i) } class="pagination__item">
+    <nav role="listbox" class="pagination" x-data="{
+        link: {
+            'x-on:click': (event) => {
+                event.preventDefault();
+                const url = new URL(event.target.href);
+                const s = new URLSearchParams(url.search);
+                s.set('__fragment', '');
+                url.search = '?' + s.toString();
+                $ajax(url.toString(), { target: 'PaginationAjaxSlot' })
+            }
+        }
+    }">
+        for i := opts.Page - left; i < opts.Page; i++ {
+            {{
+                href := getPageURL(ctx, i)
+            }}
+            <a x-bind="link" href={ href } class="pagination__item">
                 { fmt.Sprintf("%d", i) }
             </a>
         }
         <a href="#" class="pagination__item pagination__item--active">
-            { fmt.Sprintf("%d", page) }
+            { fmt.Sprintf("%d", opts.Page) }
         </a>
-        for i := page + 1; i <= page + right; i++ {
-            <a href={ getPageURL(ctx, i) } class="pagination__item">
+        for i := opts.Page + 1; i <= opts.Page + right; i++ {
+            {{
+                href := getPageURL(ctx, i)
+            }}
+            <a x-bind="link" href={ href } class="pagination__item">
                 { fmt.Sprintf("%d", i) }
             </a>
         }

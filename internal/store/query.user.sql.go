@@ -244,6 +244,37 @@ func (q *Queries) GetUserModerationSettings(ctx context.Context, id pgtype.UUID)
 	return i, err
 }
 
+const getUserNames = `-- name: GetUserNames :many
+select name, id
+from users
+where id = any($1::uuid[])
+`
+
+type GetUserNamesRow struct {
+	Name string
+	ID   pgtype.UUID
+}
+
+func (q *Queries) GetUserNames(ctx context.Context, ids []pgtype.UUID) ([]GetUserNamesRow, error) {
+	rows, err := q.db.Query(ctx, getUserNames, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserNamesRow
+	for rows.Next() {
+		var i GetUserNamesRow
+		if err := rows.Scan(&i.Name, &i.ID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserPrivacySettings = `-- name: GetUserPrivacySettings :one
 select
     privacy_hide_stats,

@@ -6,6 +6,7 @@ import "fmt"
 import "github.com/gofrs/uuid"
 import "github.com/MaratBR/openlibrary/internal/auth"
 import "strconv"
+import "net/url"
 
 templ bookTopReviews(
     reviews []app.ReviewDto, 
@@ -87,13 +88,13 @@ templ BookMyReview(
         requestEditing() {
             this.loading = true;
             this.start = Date.now();
-            this.$refs.myReview.style.height=`${this.$refs.myReview.clientHeight}px`;
+            if(this.$refs.myReview) this.$refs.myReview.style.height=`${this.$refs.myReview.clientHeight}px`;
         },
         onEditorReady() {
             window.delay(Math.max(0, 300-(Date.now()-this.start))).then(() => {
                 this.loading = false;
                 this.edit = true;
-                this.$refs.myReview.style.removeProperty('height');
+                if (this.$refs.myReview) this.$refs.myReview.style.removeProperty('height');
             })
         },
         onUpdated(review) {
@@ -215,7 +216,13 @@ templ BookMyReview(
                     <span class="mt-3 block text-3xl font-title font-semibold">
                         @templ.Raw(l.T("book.whatDoYouThink"))
                     </span>
-                    <a class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full mt-4" href="/login">
+                    {{
+                        query := url.Values{
+                            "next": []string{fmt.Sprintf("/book/%d", bookID)},
+                        }
+                        href := "/login?" + query.Encode()
+                    }}
+                    <a class="ol-btn ol-btn--outline ol-btn--lg text-lg p-6 rounded-full mt-4" href={templ.URL(href)}>
                         { l.T("book.writeReviewLogin") }
                     </a>
                 }

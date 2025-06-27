@@ -153,3 +153,8 @@ where id = $1;
 update users
 set "role" = $2
 where id = $1;
+
+-- name: GetUserNames :many
+select name, id
+from users
+where id = any(sqlc.arg(ids)::uuid[]);

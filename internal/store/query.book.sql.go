@@ -274,6 +274,38 @@ func (q *Queries) GetBookCollections(ctx context.Context, bookID int64) ([]GetBo
 	return items, nil
 }
 
+const getBookSearchRelatedData = `-- name: GetBookSearchRelatedData :many
+select created_at, has_cover, id
+from books
+where id = any($1::int8[])
+`
+
+type GetBookSearchRelatedDataRow struct {
+	CreatedAt pgtype.Timestamptz
+	HasCover  bool
+	ID        int64
+}
+
+func (q *Queries) GetBookSearchRelatedData(ctx context.Context, ids []int64) ([]GetBookSearchRelatedDataRow, error) {
+	rows, err := q.db.Query(ctx, getBookSearchRelatedData, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBookSearchRelatedDataRow
+	for rows.Next() {
+		var i GetBookSearchRelatedDataRow
+		if err := rows.Scan(&i.CreatedAt, &i.HasCover, &i.ID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getBooksCollections = `-- name: GetBooksCollections :many
 select collections.id, collections.name, collections.books_count as size, collection_books.book_id, collection_books."order" as position, collections.created_at, users.name as user_name, collections.user_id
 from collections

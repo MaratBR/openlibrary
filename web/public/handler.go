@@ -12,6 +12,7 @@ import (
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/NYTimes/gziphandler"
+	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
 )
@@ -22,6 +23,7 @@ type Handler struct {
 
 	r             chi.Router
 	db            app.DB
+	esClient      *elasticsearch.TypedClient
 	cfg           *koanf.Koanf
 	cache         *cache.Cache
 	csrfHandler   *csrf.Handler
@@ -35,6 +37,7 @@ func NewHandler(
 	csrfHandler *csrf.Handler,
 	bgServices *app.BackgroundServices,
 	uploadService *app.UploadService,
+	esClient *elasticsearch.TypedClient,
 ) *Handler {
 	if cache == nil {
 		panic("cache is nil")
@@ -45,6 +48,9 @@ func NewHandler(
 	if db == nil {
 		panic("db is nil")
 	}
+	if esClient == nil {
+		panic("esClient is nil")
+	}
 
 	h := &Handler{
 		db:            db,
@@ -52,6 +58,7 @@ func NewHandler(
 		cache:         cache,
 		csrfHandler:   csrfHandler,
 		uploadService: uploadService,
+		esClient:      esClient,
 	}
 	h.initRouter()
 	h.setupRouter(bgServices)

@@ -107,7 +107,7 @@ func mainServer(
 
 	uploadService := app.NewUploadServiceFromApplicationConfig(config)
 
-	publicUIHandler := public.NewHandler(db, config, cacheInstance, csrfHandler, bgServices, uploadService)
+	publicUIHandler := public.NewHandler(db, config, cacheInstance, csrfHandler, bgServices, uploadService, esClient)
 	adminHandler := admin.NewHandler(db, config, cacheInstance, bgServices, esClient)
 
 	err = publicUIHandler.Start()

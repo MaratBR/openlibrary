@@ -60,6 +60,14 @@ func arrUuidDomainToDb(v []uuid.UUID) []pgtype.UUID {
 	return uuids
 }
 
+func arrUuidDomainToString(v []uuid.UUID) []string {
+	uuids := make([]string, len(v))
+	for i := range v {
+		uuids[i] = v[i].String()
+	}
+	return uuids
+}
+
 func arrInt64ToInt64String(v []int64) []Int64String {
 	ints := make([]Int64String, len(v))
 	for i := range v {

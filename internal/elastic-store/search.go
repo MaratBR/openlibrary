@@ -25,6 +25,7 @@ func (r Range) Has() bool {
 }
 
 type SearchRequest struct {
+	Query           string
 	IncludeUsers    []string
 	ExcludeUsers    []string
 	IncludeTags     []int64
@@ -34,6 +35,7 @@ type SearchRequest struct {
 	WordsPerChapter Range
 	Page            int32
 	PageSize        int32
+	IncludeHidden   bool
 }
 
 type SearchRow struct {
@@ -42,8 +44,9 @@ type SearchRow struct {
 }
 
 type SearchResult struct {
-	Hits []SearchRow
-	Took int64
+	Hits   []SearchRow
+	TookMS int64
+	Total  int64
 }
 
 func createNumberRangeQuery(rng Range) *types.NumberRangeQuery {
@@ -51,11 +54,11 @@ func createNumberRangeQuery(rng Range) *types.NumberRangeQuery {
 
 	if rng.Min.Valid {
 		value := types.Float64(float64(rng.Min.Int32))
-		rangeQuery.From = &value
+		rangeQuery.Gte = &value
 	}
 	if rng.Max.Valid {
 		value := types.Float64(float64(rng.Max.Int32))
-		rangeQuery.To = &value
+		rangeQuery.Lte = &value
 	}
 
 	return rangeQuery
@@ -67,6 +70,14 @@ func Search(
 	req SearchRequest,
 ) (SearchResult, error) {
 	must := []types.Query{}
+
+	if req.Query != "" {
+		must = append(must, types.Query{
+			QueryString: &types.QueryStringQuery{
+				Query: req.Query,
+			},
+		})
+	}
 
 	rangeQueries := map[string]types.RangeQuery{}
 
@@ -201,7 +212,8 @@ func Search(
 	}
 
 	return SearchResult{
-		Hits: results,
-		Took: resp.Took,
+		Hits:   results,
+		TookMS: resp.Took,
+		Total:  resp.Hits.Total.Value,
 	}, nil
 }

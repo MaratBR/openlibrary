@@ -6,18 +6,19 @@ import (
 	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/elastic/go-elasticsearch/v9/typedapi/indices/create"
 	"github.com/elastic/go-elasticsearch/v9/typedapi/types"
+	"github.com/gofrs/uuid"
 	"github.com/k3a/html2text"
 )
 
 type BookIndex struct {
-	Name            string  `json:"name"`
-	Description     string  `json:"description"`
-	Rating          string  `json:"rating"`
-	AuthorID        string  `json:"authorId"`
-	Tags            []int64 `json:"tags"`
-	Chapters        int32   `json:"chapters"`
-	Words           int32   `json:"words"`
-	WordsPerChapter int32   `json:"wordsPerChapter"`
+	Name            string    `json:"name"`
+	Description     string    `json:"description"`
+	Rating          string    `json:"rating"`
+	AuthorID        uuid.UUID `json:"authorId"`
+	Tags            []int64   `json:"tags"`
+	Chapters        int32     `json:"chapters"`
+	Words           int32     `json:"words"`
+	WordsPerChapter int32     `json:"wordsPerChapter"`
 }
 
 func (c *BookIndex) Normalize() {
@@ -41,6 +42,8 @@ func createBookIndex(ctx context.Context, client *elasticsearch.TypedClient) err
 		return nil
 	}
 
+	maxResultWindow := 100000
+
 	_, err = client.Indices.Create(BOOKS_INDEX_NAME).
 		Request(&create.Request{
 			Mappings: &types.TypeMapping{
@@ -55,6 +58,9 @@ func createBookIndex(ctx context.Context, client *elasticsearch.TypedClient) err
 					"words":           types.NewIntegerNumberProperty(),
 					"wordsPerChapter": types.NewIntegerNumberProperty(),
 				},
+			},
+			Settings: &types.IndexSettings{
+				MaxResultWindow: &maxResultWindow,
 			},
 		}).
 		Do(ctx)

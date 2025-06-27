@@ -74,3 +74,8 @@ from books
 where id > $1
 order by id asc
 limit $2;
+
+-- name: GetBookSearchRelatedData :many
+select created_at, has_cover, id
+from books
+where id = any(sqlc.arg(ids)::int8[]);

@@ -1,6 +1,5 @@
 package templates 
 
-import "context"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
@@ -8,21 +7,14 @@ import "github.com/MaratBR/openlibrary/web/olresponse"
 
 
 templ SearchPage(
-    ctx context.Context,
     result *app.BookSearchResult,
     explainedQuery app.DetailedBookSearchQuery,
 ) {
     {{
         l := i18n.GetLocalizer(ctx)
-        tags := make(map[int64]app.DefinedTagDto, len(result.Tags))
-        for _, tag := range result.Tags {
-            tags[tag.ID] = tag
-        }
     }}
 
     @baseLayout("Search") {
-        @jsonTemplate("data-search-explained-query", explainedQuery)
-
         @i18nExtractKeys(l, []string{
             "common.more",
             "common.less",
@@ -42,112 +34,133 @@ templ SearchPage(
             "search.genres",
         })
 
-        {{ 
-            activeFilters := explainedQuery.ActiveFilters()
-        }}
-
         <div class="ol-container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
-            <h1 class="page-header">
-                if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
-                    {{ firstTag := explainedQuery.IncludeTags[0] }}
-                    <span>{ firstTag.Name }</span>
-                } else {
-                    <span>{ _t(l, "search.search") }</span>
-                }
-            </h1>
-
-            <form class="mt-5">
-                <input id="search-input" name="q" class="ol-input p-6 rounded-full text-lg w-full" value={ explainedQuery.Query } />
-            </form>
-
-            <div class="flex gap-2 my-4">
-                <button @click="openFilters=!openFilters" class="ol-btn ol-btn--lg ol-btn--secondary rounded-full">
-                    <span class="material-symbols-outlined">filter_list</span>
-                    {_t(l, "search.filters")}
-                    if activeFilters > 0 {
-                        ({ formatInt32(int32(activeFilters)) })
-                    }
-                </button>
-            </div>
-
-
-            <section class="search-filters" x-cloak x-show="openFilters" x-collapse>
-                <div class="p-4">
-                    <ol-island data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
-                </div>
-            </section>
-
-            {{
-                var pagination templ.Component
-                if result.TotalPages > 1 {
-                    pagination = olresponse.Pagination(result.Page, result.TotalPages, 9)
-                } else {
-                    pagination = templ.NopComponent
-                }
-            }}
-
-            if len(result.Books) == 0 {
-                @searchNoResultsCard()
-            } else {
-                @pagination
-                <ul role="listbox" id="results" class="ol-book-search-results">
-                    for _, book := range result.Books {
-                        <li role="listitem" id={ fmt.Sprintf("book-%d", book.ID) } class="ol-book-search-card">
-                            <div class="ol-book-search-card__left">
-                                <a class="ol-book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
-                                    @bookCover(book.Cover, book.Name, 200)
-                                </a>
-                            </div>
-                            
-                            <div class="ol-book-search-card__right">
-                                <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="link ol-book-search-card__link">{ book.Name }</a>                    
-                                <br />
-                                by
-                                <a class="link ol-book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>
-                                    { book.Author.Name }
-                                </a>
-
-                                @collapsible(160, true) {
-                                    <ul class="ol-book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
-                                        data-expand="false"
-                                        :data-expand="expand"
-                                        x-data="{expand:false}">
-                                        for _, tagId := range book.Tags {
-                                            {{ tag := tags[int64(tagId)] }}
-                                            <li class="ol-tag">
-                                                <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", tagId)) }>
-                                                    { tag.Name }
-                                                </a>
-                                            </li>
-                                        }
-
-                                        <li 
-                                            if len(book.Tags) <= 6 {
-                                                x-show="false" x-cloak
-                                            }
-                                            @click="expand=!expand" class="ol-book-search-card__tags__more">
-                                            <span x-text="i18n[expand?'common.less':'common.more']">{ _t(l, "common.more") }</span>
-                                        </li>
-                                    </ul>
-
-                                    if book.Summary != "" {
-                                        <div class="ol-book-search-card__summary __user-content" x-ignore>
-                                            @templ.Raw(book.Summary)
-                                        </div>
-                                    }
-                                }
-                            </div>
-                        </li>
-                    }
-                </ul>
-                <div class="pt-4">
-                    @pagination
-                </div>
-            }
-
-            
+            @SearchResultFragment(result, explainedQuery)
         </div>
     }
+}
+
+templ SearchResultFragment(
+    result *app.BookSearchResult,
+    explainedQuery app.DetailedBookSearchQuery,
+) {
+
+    {{
+        l := i18n.GetLocalizer(ctx)
+        var pagination templ.Component
+        if result.TotalPages > 1 {
+            pagination = olresponse.PaginationImpl(olresponse.PaginationImplProps{
+                Page: result.Page,
+                TotalPages: result.TotalPages,
+                Size: 9,
+                UseAlpineJsAjax: true,
+            })
+        } else {
+            pagination = templ.NopComponent
+        }
+        activeFilters := explainedQuery.ActiveFilters()
+    }}
+
+
+    <main id="PaginationAjaxSlot">
+        @jsonTemplate("data-search-explained-query", explainedQuery)
+
+        <h1 class="page-header">
+            if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
+                {{ firstTag := explainedQuery.IncludeTags[0] }}
+                <span>{ firstTag.Name }</span>
+            } else {
+                <span>{ _t(l, "search.search") }</span>
+            }
+        </h1>
+
+        <form class="mt-5">
+            <input id="search-input" name="q" class="ol-input p-6 rounded-full text-lg w-full" value={ explainedQuery.Query } />
+        </form>
+
+        <div class="flex gap-2 my-4">
+            <button @click="openFilters=!openFilters" class="ol-btn ol-btn--lg ol-btn--secondary rounded-full">
+                <span class="material-symbols-outlined">filter_list</span>
+                {_t(l, "search.filters")}
+                if activeFilters > 0 {
+                    ({ formatInt32(int32(activeFilters)) })
+                }
+            </button>
+        </div>
+
+
+        <section class="search-filters" x-cloak x-show="openFilters" x-collapse>
+            <div class="p-4">
+                <ol-island data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
+            </div>
+        </section>
+
+        if len(result.Books) == 0 {
+            @searchNoResultsCard()
+        } else {
+            @pagination
+            <ul role="listbox" id="results" class="ol-book-search-results">
+                {{
+                    l := i18n.GetLocalizer(ctx)
+                    tags := make(map[int64]app.DefinedTagDto, len(result.Tags))
+                    for _, tag := range result.Tags {
+                        tags[tag.ID] = tag
+                    }
+                }}
+                for _, book := range result.Books {
+                    <li role="listitem" id={ fmt.Sprintf("book-%d", book.ID) } class="ol-book-search-card">
+                        <div class="ol-book-search-card__left">
+                            <a class="ol-book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
+                                @bookCover(book.Cover, book.Name, 200)
+                            </a>
+                        </div>
+                        
+                        <div class="ol-book-search-card__right">
+                            <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="link ol-book-search-card__link">{ book.Name }</a>                    
+                            <br />
+                            by
+                            <a class="link ol-book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>
+                                { book.Author.Name }
+                            </a>
+
+                            @collapsible(160, true) {
+                                <ul class="ol-book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
+                                    data-expand="false"
+                                    :data-expand="expand"
+                                    x-data="{expand:false}">
+                                    for _, tagId := range book.Tags {
+                                        {{ tag := tags[int64(tagId)] }}
+                                        <li class="ol-tag">
+                                            <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", tagId)) }>
+                                                { tag.Name }
+                                            </a>
+                                        </li>
+                                    }
+
+                                    <li 
+                                        if len(book.Tags) <= 6 {
+                                            x-show="false" x-cloak
+                                        }
+                                        @click="expand=!expand" class="ol-book-search-card__tags__more">
+                                        <span x-text="i18n[expand?'common.less':'common.more']">{ _t(l, "common.more") }</span>
+                                    </li>
+                                </ul>
+
+                                if book.Summary != "" {
+                                    <div class="ol-book-search-card__summary __user-content" x-ignore>
+                                        @templ.Raw(book.Summary)
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+            <div class="pt-4">
+                @pagination
+            </div>
+        }
+    </main>
 }
 
 templ searchNoResultsCard() {

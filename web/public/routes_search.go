@@ -75,11 +75,14 @@ func (c *searchController) search(w http.ResponseWriter, r *http.Request) {
 	}
 
 	explainedQuery, err := c.service.ExplainSearchQuery(r.Context(), query)
-
 	if err != nil {
 		writeApplicationError(w, r, err)
 		return
 	}
 
-	writeTemplate(w, r.Context(), templates.SearchPage(r.Context(), result, explainedQuery))
+	if r.URL.Query().Has("__fragment") {
+		writeTemplate(w, r.Context(), templates.SearchResultFragment(result, explainedQuery))
+	} else {
+		writeTemplate(w, r.Context(), templates.SearchPage(result, explainedQuery))
+	}
 }
