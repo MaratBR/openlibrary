@@ -69,8 +69,8 @@ type PinnedBookDto struct {
 type GetUserBooksQuery struct {
 	UserID      uuid.UUID
 	ActorUserID Nullable[uuid.UUID]
-	Limit       int
-	Offset      int
+	Page        uint32
+	PageSize    uint32
 }
 
 type SearchUserBooksQuery struct {

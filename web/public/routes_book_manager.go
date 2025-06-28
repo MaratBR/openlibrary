@@ -42,10 +42,16 @@ func (c *bookManagerController) index(w http.ResponseWriter, r *http.Request) {
 		templates.BookManager().Render(r.Context(), w)
 		return
 	} else if tab == "books" {
+		page, _ := olhttp.URLQueryParamInt64(r, "p")
+		if page < 1 {
+			page = 1
+		} else {
+			page = 10000
+		}
 		books, err := c.service.GetUserBooks(r.Context(), app.GetUserBooksQuery{
-			UserID: session.UserID,
-			Limit:  50,
-			Offset: 0,
+			UserID:   session.UserID,
+			PageSize: 20,
+			Page:     uint32(page),
 		})
 		if err != nil {
 			writeApplicationError(w, r, err)

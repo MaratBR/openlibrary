@@ -2,7 +2,6 @@ package public
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -31,10 +30,6 @@ func writeApplicationError(w http.ResponseWriter, r *http.Request, err error) {
 func writeUnauthorizedError(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusUnauthorized)
 	w.Write([]byte("unauthorized"))
-}
-
-func readJSON(r *http.Request, v interface{}) error {
-	return json.NewDecoder(r.Body).Decode(v)
 }
 
 func getInt32FromQuery(values url.Values, key string) app.Int32 {

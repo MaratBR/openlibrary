@@ -3,7 +3,7 @@ import TextStyle from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import { Editor, EditorOptions } from '@tiptap/core'
-import { httpUpdateReview, ratingSchema, ReviewDto, reviewDtoSchema } from './api'
+import { httpGetReview, httpUpdateReview, ratingSchema, ReviewDto, reviewDtoSchema } from './api'
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { PreactIslandProps } from '../common/preact-island'
 
@@ -33,8 +33,16 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
     })
   }, [])
 
+  useEffect(() => {
+    httpGetReview(bookId).then((resp) => {
+      if (resp.data.rating) setRating(resp.data.rating)
+    })
+  }, [bookId])
+
+  const formValid = rating !== 0
+
   function handleSave() {
-    if (saving) return
+    if (saving || !formValid) return
     setSaving(true)
 
     httpUpdateReview(bookId, {
@@ -75,6 +83,7 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
       <button
         class="ol-btn ol-btn--lg ol-btn--primary rounded-full mt-3"
         onClick={() => handleSave()}
+        disabled={!formValid}
       >
         {window._('common.save')}
       </button>
@@ -89,7 +98,7 @@ function RatingInput({
 }: {
   scale?: number
   value: number
-  // eslint-disable-next-line no-unused-vars
+
   onInput: (value: number) => void
 }) {
   const rootElement = useRef<HTMLDivElement | null>(null)

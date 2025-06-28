@@ -78,6 +78,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 			apiTagsController := newAPITagsController(tagsService)
 
 			r.Post("/reviews/rating", apiBookController.RateBook)
+			r.Get("/reviews/{bookID}", apiBookController.GetReview)
 			r.Post("/reviews/{bookID}", apiBookController.UpdateOrCreateReview)
 			r.Delete("/reviews/{bookID}", apiBookController.DeleteReview)
 

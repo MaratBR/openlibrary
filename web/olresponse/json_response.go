@@ -75,8 +75,11 @@ func (r *apiError) WriteHttpBody(w http.ResponseWriter) {
 
 	if errx, ok := r.err.(*errorx.Error); ok {
 		resp.Message = errx.Message()
-		resp.Cause = errx.Cause().Error()
+		cause := errx.Cause()
 		resp.Code = errx.Type().FullName()
+		if cause != nil {
+			resp.Cause = cause.Error()
+		}
 	} else {
 		resp.Code = "UNKNOWN"
 		resp.Message = r.err.Error()

@@ -6,11 +6,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
-	"github.com/joomcode/errorx"
 )
 
 var (
-	errNsUrlParams             = errorx.NewNamespace("url_parameters")
+	errNsUrlParams             = httpErrors.NewSubNamespace("url_params")
 	errTypeInvalidInt64        = errNsUrlParams.NewType("int64")
 	errInvalidInt64EmptyString = errTypeInvalidInt64.New("invalid int64: empty string")
 	errTypeInvalidUUID         = errNsUrlParams.NewType("uuid")

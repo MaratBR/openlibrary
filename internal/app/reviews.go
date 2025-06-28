@@ -60,8 +60,8 @@ type ReviewDto struct {
 }
 
 type RatingAndReview struct {
-	Rating Nullable[RatingValue]
-	Review Nullable[ReviewDto]
+	Rating Nullable[RatingValue] `json:"rating"`
+	Review Nullable[ReviewDto]   `json:"review"`
 }
 
 type GetBookReviewsResult struct {

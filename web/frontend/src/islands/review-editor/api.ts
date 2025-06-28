@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { KyResponse } from 'ky'
-import { httpClient } from '@/http-client'
+import { httpClient, OLAPIResponse } from '@/http-client'
 
 export const ratingSchema = z.union([
   z.literal(1),
@@ -31,6 +31,11 @@ export const reviewDtoSchema = z.object({
 
 export type ReviewDto = z.infer<typeof reviewDtoSchema>
 
+export const ratingAndReviewSchema = z.object({
+  rating: ratingSchema.nullable(),
+  review: reviewDtoSchema.nullable(),
+})
+
 export type CreateReviewRequest = {
   rating: RatingValue
   content: string
@@ -47,4 +52,10 @@ export function httpUpdateReview(bookId: string, request: CreateReviewRequest): 
 
 export async function httpDeleteReview(bookId: string): Promise<KyResponse> {
   return await httpClient.delete(`/_api/reviews/${bookId}`)
+}
+
+export async function httpGetReview(bookId: string) {
+  return httpClient
+    .get(`/_api/reviews/${bookId}`)
+    .then((r) => OLAPIResponse.create(r, ratingAndReviewSchema))
 }

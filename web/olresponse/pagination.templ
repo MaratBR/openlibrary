@@ -53,23 +53,12 @@ templ PaginationImpl(
         }
     }}
 
-    <nav role="listbox" class="pagination" x-data="{
-        link: {
-            'x-on:click': (event) => {
-                event.preventDefault();
-                const url = new URL(event.target.href);
-                const s = new URLSearchParams(url.search);
-                s.set('__fragment', '');
-                url.search = '?' + s.toString();
-                $ajax(url.toString(), { target: 'PaginationAjaxSlot' })
-            }
-        }
-    }">
+    <nav role="listbox" class="pagination">
         for i := opts.Page - left; i < opts.Page; i++ {
             {{
                 href := getPageURL(ctx, i)
             }}
-            <a x-bind="link" href={ href } class="pagination__item">
+            <a href={ href } class="pagination__item">
                 { fmt.Sprintf("%d", i) }
             </a>
         }
@@ -80,7 +69,7 @@ templ PaginationImpl(
             {{
                 href := getPageURL(ctx, i)
             }}
-            <a x-bind="link" href={ href } class="pagination__item">
+            <a href={ href } class="pagination__item">
                 { fmt.Sprintf("%d", i) }
             </a>
         }

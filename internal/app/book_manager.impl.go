@@ -30,10 +30,21 @@ const (
 )
 
 func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error) {
+	var (
+		limit  int32
+		offset int32
+	)
+
+	limit = int32(input.PageSize)
+	offset = int32((input.Page - 1) * input.PageSize)
+	if offset < 0 {
+		offset = 0
+	}
+
 	books, err := s.queries.ManagerGetUserBooks(ctx, store.ManagerGetUserBooksParams{
 		AuthorUserID: uuidDomainToDb(input.UserID),
-		Limit:        int32(input.Limit),
-		Offset:       int32(input.Offset),
+		Limit:        limit,
+		Offset:       offset,
 	})
 	if err != nil {
 		return GetUserBooksResult{}, err

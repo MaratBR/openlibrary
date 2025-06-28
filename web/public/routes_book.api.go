@@ -52,6 +52,26 @@ func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
 	olresponse.NewAPIResponseOK().Write(w)
 }
 
+func (c *apiBookController) GetReview(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	review, err := c.reviewService.GetReview(r.Context(), app.GetReviewQuery{
+		BookID: bookID,
+		UserID: auth.RequireSession(r.Context()).UserID,
+	})
+
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+
+	olresponse.NewAPIResponse(review).Write(w)
+}
+
 func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 
@@ -87,11 +107,11 @@ type createReviewRequest struct {
 
 func (c *apiBookController) UpdateOrCreateReview(w http.ResponseWriter, r *http.Request) {
 	request := createReviewRequest{}
-	if err := readJSON(r, &request); err != nil {
+	if err := olhttp.ReadJSONBody(r, &request); err != nil {
 		apiWriteUnprocessableEntity(w, err)
 		return
 	}
-	bookID, err := commonutil.URLParamInt64(r, "bookID")
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		apiWriteUnprocessableEntity(w, err)
 		return

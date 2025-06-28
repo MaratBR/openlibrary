@@ -79,7 +79,9 @@ type ManagerAuthorBookDto struct {
 }
 
 type GetUserBooksResult struct {
-	Books []ManagerAuthorBookDto
+	Books      []ManagerAuthorBookDto
+	TotalPages uint32
+	Page       uint32
 }
 
 type CreateBookChapterCommand struct {
