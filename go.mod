@@ -1,6 +1,6 @@
 module github.com/MaratBR/openlibrary
 
-go 1.23
+go 1.23.0
 
 toolchain go1.23.3
 
@@ -11,6 +11,7 @@ require (
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/doug-martin/goqu/v9 v9.19.0
 	github.com/eduardolat/goeasyi18n v1.3.0
+	github.com/elastic/go-elasticsearch/v9 v9.0.0
 	github.com/ggicci/httpin v0.19.0
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-faker/faker/v4 v4.5.0
@@ -31,7 +32,7 @@ require (
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/urfave/cli/v3 v3.0.0-beta1
 	golang.org/x/net v0.33.0
-	golang.org/x/text v0.21.0
+	golang.org/x/text v0.22.0
 	golang.org/x/time v0.8.0
 	google.golang.org/protobuf v1.35.2
 )
@@ -43,7 +44,6 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.7.0 // indirect
-	github.com/elastic/go-elasticsearch/v9 v9.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/ggicci/owl v0.8.2 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
@@ -60,7 +60,6 @@ require (
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -72,8 +71,8 @@ require (
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
