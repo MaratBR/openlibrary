@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
@@ -47,7 +48,7 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 		Offset:       offset,
 	})
 	if err != nil {
-		return GetUserBooksResult{}, err
+		return GetUserBooksResult{}, wrapUnexpectedDBError(err)
 	}
 
 	userBooks, err := s.aggregateUserBooks(ctx, books)
@@ -55,7 +56,15 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 		return GetUserBooksResult{}, err
 	}
 
-	return GetUserBooksResult{Books: userBooks}, nil
+	count, err := s.queries.ManagerGetUserBooksCount(ctx, uuidDomainToDb(input.UserID))
+
+	totalPages := uint32(math.Ceil(float64(count) / float64(input.PageSize)))
+
+	if err != nil {
+		return GetUserBooksResult{}, wrapUnexpectedDBError(err)
+	}
+
+	return GetUserBooksResult{Books: userBooks, PageSize: input.PageSize, TotalPages: totalPages, Page: input.Page}, nil
 }
 
 func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error) {

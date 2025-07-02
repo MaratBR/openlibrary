@@ -17,9 +17,15 @@ export default function BookEditor({ data: dataUnknown, rootElement }: PreactIsl
     <>
       <header class="page-header my-8">
         <h1 class="page-header-text">{data.name}</h1>
-        <a href={`/book/${data.id}`} class="ol-btn ol-btn--lg ol-btn--secondary rounded-full">
-          {window._('bookManager.edit.goToPage')}
-        </a>
+        <div class="text-sm">
+          <a href="/books-manager?tab=books" class="link">
+            {window._('bookManager.edit.backToBooksManager')}
+          </a>
+          &nbsp;|&nbsp;
+          <a href={`/book/${data.id}`} class="link">
+            {window._('bookManager.edit.goToPage')}
+          </a>
+        </div>
       </header>
 
       <Tabs onChange={setTab} type="primary" value={tab}>

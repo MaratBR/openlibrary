@@ -1,5 +1,5 @@
 .tabs {
-    @apply flex gap-1 shadow-md;
+    @apply flex border rounded-lg p-1 gap-1;
 
     .tab {
         @apply p-2 cursor-pointer;
@@ -7,10 +7,26 @@
 
     &--primary {
         .tab {
-            @apply text-lg font-medium relative hover:bg-secondary transition-colors py-2;
+            @apply 
+                text-lg font-medium 
+                relative 
+                py-3 px-2 -m-1
+                hover:bg-secondary 
+                transition-all
+                rounded-lg;
+
+            &:first-child {
+                @apply rounded-r-none;
+            }
+
+            &:last-child {
+                @apply rounded-l-none;
+            }
 
             &--active {
-                @apply text-primary after:scale-y-100 bg-primary/10;
+                @apply 
+                    text-primary after:scale-y-100 bg-primary/10 !rounded-lg
+                    m-0 py-2 px-1;
             }
         }
     }

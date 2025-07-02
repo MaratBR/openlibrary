@@ -39,3 +39,23 @@
 
 
 }
+
+.ol-btn-group {
+    @apply flex items-stretch;
+
+    .ol-btn:not(:first-child):not(:last-child) {
+        @apply rounded-none;
+    }
+
+    .ol-btn:not(:last-child) {
+        @apply border-r-0;
+    }
+
+    .ol-btn:first-child {
+        @apply rounded-r-none;
+    }
+
+    .ol-btn:last-child {
+        @apply rounded-l-none;
+    }
+}

@@ -81,6 +81,7 @@ type ManagerAuthorBookDto struct {
 type GetUserBooksResult struct {
 	Books      []ManagerAuthorBookDto
 	TotalPages uint32
+	PageSize   uint32
 	Page       uint32
 }
 

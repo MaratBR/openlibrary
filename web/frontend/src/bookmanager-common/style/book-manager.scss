@@ -1,20 +1,22 @@
 .book-manager {
-    @apply grid grid-cols-[30ch_1fr];
+    @apply min-h-[calc(100vh-var(--header-height))] relative;
+    --bm-sidebar-width: 200px;
+    padding-left: var(--bm-sidebar-width);
 
     &__menu {
-        @apply pt-4;
+        @apply border border-border border-y-0 w-[var(--bm-sidebar-width)] left-0 top-0 bottom-0 absolute bg-background;
 
         ul {
-            @apply flex flex-col items-stretch gap-2;
+            @apply sticky top-[var(--header-height)] flex flex-col items-stretch gap-2;
 
             li {
                 & > a {
-                    @apply block font-normal p-2 rounded-md text-lg
+                    @apply block font-normal p-2 text-lg
                         hover:bg-secondary
                         active:bg-muted-2;
 
                         &:not([data-link-active-full=true]) {
-                            @apply hover:text-primary hover:font-semibold;
+                            @apply hover:text-primary;
                         }
 
                         &[data-link-active-full=true] {

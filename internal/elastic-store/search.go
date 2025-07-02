@@ -64,6 +64,44 @@ func createNumberRangeQuery(rng Range) *types.NumberRangeQuery {
 	return rangeQuery
 }
 
+func createAndTermQuery(term string, values []types.FieldValue) types.Query {
+	subQueries := make([]types.Query, len(values))
+	for i := 0; i < len(values); i++ {
+		subQueries[i] = types.Query{
+			Term: map[string]types.TermQuery{
+				"tags": {
+					Value: values[i],
+				},
+			},
+		}
+	}
+
+	return types.Query{
+		Bool: &types.BoolQuery{
+			Must: subQueries,
+		},
+	}
+}
+
+func createNegativeAndTermQuery(term string, values []types.FieldValue) types.Query {
+	subQueries := make([]types.Query, len(values))
+	for i := 0; i < len(values); i++ {
+		subQueries[i] = types.Query{
+			Term: map[string]types.TermQuery{
+				"tags": {
+					Value: values[i],
+				},
+			},
+		}
+	}
+
+	return types.Query{
+		Bool: &types.BoolQuery{
+			MustNot: subQueries,
+		},
+	}
+}
+
 func Search(
 	ctx context.Context,
 	client *elasticsearch.TypedClient,
@@ -102,13 +140,7 @@ func Search(
 		for i := 0; i < len(req.IncludeUsers); i++ {
 			ids[i] = req.IncludeUsers[i]
 		}
-		must = append(must, types.Query{
-			Terms: &types.TermsQuery{
-				TermsQuery: map[string]types.TermsQueryField{
-					"authorId": ids,
-				},
-			},
-		})
+		must = append(must, createAndTermQuery("authorId", ids))
 	}
 
 	if len(req.ExcludeUsers) > 0 {
@@ -116,19 +148,7 @@ func Search(
 		for i := 0; i < len(req.ExcludeUsers); i++ {
 			ids[i] = req.ExcludeUsers[i]
 		}
-		must = append(must, types.Query{
-			Bool: &types.BoolQuery{
-				MustNot: []types.Query{
-					{
-						Terms: &types.TermsQuery{
-							TermsQuery: map[string]types.TermsQueryField{
-								"authorId": ids,
-							},
-						},
-					},
-				},
-			},
-		})
+		must = append(must, createNegativeAndTermQuery("authorId", ids))
 	}
 
 	if len(req.IncludeTags) > 0 {
@@ -136,13 +156,7 @@ func Search(
 		for i := 0; i < len(req.IncludeTags); i++ {
 			ids[i] = req.IncludeTags[i]
 		}
-		must = append(must, types.Query{
-			Terms: &types.TermsQuery{
-				TermsQuery: map[string]types.TermsQueryField{
-					"tags": ids,
-				},
-			},
-		})
+		must = append(must, createAndTermQuery("tags", ids))
 	}
 
 	if len(req.ExcludeTags) > 0 {
@@ -150,19 +164,7 @@ func Search(
 		for i := 0; i < len(req.ExcludeTags); i++ {
 			ids[i] = req.ExcludeTags[i]
 		}
-		must = append(must, types.Query{
-			Bool: &types.BoolQuery{
-				MustNot: []types.Query{
-					{
-						Terms: &types.TermsQuery{
-							TermsQuery: map[string]types.TermsQueryField{
-								"tags": ids,
-							},
-						},
-					},
-				},
-			},
-		})
+		must = append(must, createNegativeAndTermQuery("tags", ids))
 	}
 
 	size := int(req.PageSize)
@@ -171,7 +173,7 @@ func Search(
 		from = 0
 	}
 
-	resp, err := client.Search().Request(&search.Request{
+	esReq := &search.Request{
 		Query: &types.Query{
 			Bool: &types.BoolQuery{
 				Must: must,
@@ -179,7 +181,8 @@ func Search(
 		},
 		From: &from,
 		Size: &size,
-	}).Do(ctx)
+	}
+	resp, err := client.Search().Request(esReq).Do(ctx)
 
 	if err != nil {
 		return SearchResult{}, err

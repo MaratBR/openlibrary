@@ -45,7 +45,7 @@ func (c *bookManagerController) index(w http.ResponseWriter, r *http.Request) {
 		page, _ := olhttp.URLQueryParamInt64(r, "p")
 		if page < 1 {
 			page = 1
-		} else {
+		} else if page > 10000 {
 			page = 10000
 		}
 		books, err := c.service.GetUserBooks(r.Context(), app.GetUserBooksQuery{

@@ -41,6 +41,11 @@ where author_user_id = $1
 order by books.created_at desc
 limit $2 offset $3;
 
+-- name: ManagerGetUserBooksCount :one
+select count(1)
+from books
+where author_user_id = $1;
+
 -- name: SetChapterOrder :exec
 update book_chapters
 set "order" = $2

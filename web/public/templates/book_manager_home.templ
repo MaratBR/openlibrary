@@ -49,7 +49,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
     }}
     
     @bookManagerMainPage("books") {
-        <header class="my-8">
+        <header class="py-8">
             <h1 class="page-header mb-4">
                 {_t(l, "bookManager.books")}
             </h1>
@@ -62,16 +62,18 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
                     {_t(l, "bookManager.writeYourFirstBook")}
                 </a>
             } else {
-                <a class="ol-btn ol-btn--lg ol-btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
+                <a class="mb-4 ol-btn ol-btn--lg ol-btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
                     <span class="material-symbols-outlined">edit</span>
                     {_t(l, "bookManager.createNewBook")}
                 </a>
 
-                <section class="mt-4 flex flex-wrap gap-4">
+                @olresponse.Pagination(books.Page, books.TotalPages, 10)
+                <section class="my-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     for _, book := range books.Books {
                         @bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover)
                     }
                 </section>
+                @olresponse.Pagination(books.Page, books.TotalPages, 10)
             }
         </header>
     }

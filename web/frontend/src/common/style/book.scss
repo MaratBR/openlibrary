@@ -25,7 +25,7 @@
 //                   //
 // ----------------- //
 .ol-book-toc {
-    @apply grid grid-cols-2 mt-3;
+    @apply md:grid md:grid-cols-2 mt-3;
 
     &__item {
         @apply p-2 text-lg grid grid-cols-[48px_auto] hover:bg-secondary focus:outline focus:outline-2;

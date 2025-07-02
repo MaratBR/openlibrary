@@ -37,6 +37,7 @@ logout = "Log out"
 profile = "Profile"
 settings = "Settings"
 bookManager = "Book manager"
+admin = "Admin dashboard"
 
 [gender]
 m = "Male"
@@ -170,6 +171,9 @@ myReview = "My review"
 ratingSaved = "Your rating was saved"
 thankYouForRating = "Thank you for your contribution!"
 
+emptyToc = "There is no table of contents for this book"
+emptyTocContent = "This books appears to be empty or all of its content is hidden. If you came across this books through search that might be a software error. If you are the author of this book, you can add a chapter from book manager or make chapters public"
+
 [search]
 filters = "Filters"
 search = "Search"
@@ -240,6 +244,7 @@ save = "Save"
 ageRating = "Age rating"
 editedSuccessfully = "Book <b>{{.Name}}</b> was updated successfully"
 cropAndUploadCover = "Crop and upload"
+backToBooksManager = "Back to books manager"
 goToPage = "Go to page"
 clickOnImageToChange = "Click on image to change"
 chapters = "Chapters"

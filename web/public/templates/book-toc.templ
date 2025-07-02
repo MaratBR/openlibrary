@@ -14,33 +14,41 @@ templ BookTOC(
     {{ l := i18n.GetLocalizer(ctx) }}
 
     <div class="contents" id="slot-book-toc" x-cloak x-show="tab==='toc'">
-        <ul class="ol-book-toc" role="listbox">
-            for i, chapter := range chapters {
-                <li role="listitem">
-                    <a
-                        href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
-                        class="ol-book-toc__item">
-                        <span>{ commonutil.FormatInt(i + 1) }</span>
-                        <div>
-                            <div class="mb-1">
-                                { chapter.Name }
+        if len(chapters) == 0 {
+            <section id="empty_toc" class="mt-4 p-2 border rounded-lg">
+                <h1 class="font-title text-xl font-semibold mb-2">{_t(l, "book.emptyToc")}</h1>
+                <p>{_t(l, "book.emptyTocContent")}</p>
+            </section>
+        } else {
+            <ul class="ol-book-toc" role="listbox">
+                for i, chapter := range chapters {
+                    <li role="listitem">
+                        <a
+                            href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
+                            class="ol-book-toc__item">
+                            <span>{ commonutil.FormatInt(i + 1) }</span>
+                            <div>
+                                <div class="mb-1">
+                                    { chapter.Name }
+                                </div>
+                                <span class="text-sm text-muted-foreground">
+                                    {relativeTime(l, chapter.CreatedAt)},&nbsp;
+                                    { _tt(l, "book.words", map[string]string{
+                                        "count": commonutil.FormatInt(chapter.Words),
+                                    }) }
+                                </span>
                             </div>
-                            <span class="text-sm text-muted-foreground">
-                                {relativeTime(l, chapter.CreatedAt)},&nbsp;
-                                { _tt(l, "book.words", map[string]string{
-                                    "count": commonutil.FormatInt(chapter.Words),
-                                }) }
-                            </span>
-                        </div>
-                    </a>
+                        </a>
 
-                    // if chapter.Summary != "" {
-                    //     <article class="ml-4 mt-1 mb-4 text-sm __user-content" x-ignore>
-                    //         @templ.Raw( chapter.Summary )
-                    //     </article>
-                    // }
-                </li>
-            }
-        </ul>
+                        // if chapter.Summary != "" {
+                        //     <article class="ml-4 mt-1 mb-4 text-sm __user-content" x-ignore>
+                        //         @templ.Raw( chapter.Summary )
+                        //     </article>
+                        // }
+                    </li>
+                }
+            </ul>
+        }
+        
     </div>
 }

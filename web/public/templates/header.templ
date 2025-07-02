@@ -36,7 +36,7 @@ templ siteHeaderLayout() {
 
         if isAuthorized {
             {{ user := auth.RequireUser(ctx) }}
-            <div class="relative h-full min-w-12">
+            <div class="relative h-full min-w-12 max-w-24">
                 <div @click="userMenu=true" role="button" class="flex items-center h-full">
                     <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
                 </div>
@@ -50,6 +50,13 @@ templ siteHeaderLayout() {
                     <a class="p-2 block hover:bg-secondary hover:font-medium" href="/account/settings">
                         { _t(l, "account.settings") }
                     </a>
+                    if user.Role.IsAdmin() {
+                        <hr />
+                        <a class="p-2 flex items-center hover:bg-secondary hover:font-medium" href="/admin" target="_blank">
+                            <span class="material-symbols-outlined">open_in_new</span>
+                            { _t(l, "account.admin") }
+                        </a>
+                    }
                 </div>
             </div>
         } else {

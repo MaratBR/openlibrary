@@ -24,6 +24,10 @@ var (
 	}
 )
 
+func (r UserRole) IsAdmin() bool {
+	return r == RoleAdmin || r == RoleSystem
+}
+
 func ParseUserRole(role string) (UserRole, error) {
 	switch role {
 	case "user":

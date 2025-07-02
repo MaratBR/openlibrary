@@ -259,6 +259,19 @@ func (q *Queries) ManagerGetUserBooks(ctx context.Context, arg ManagerGetUserBoo
 	return items, nil
 }
 
+const managerGetUserBooksCount = `-- name: ManagerGetUserBooksCount :one
+select count(1)
+from books
+where author_user_id = $1
+`
+
+func (q *Queries) ManagerGetUserBooksCount(ctx context.Context, authorUserID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, managerGetUserBooksCount, authorUserID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const recalculateBookStats = `-- name: RecalculateBookStats :exec
 update books
 set words = stat.words, chapters = stat.chapters
