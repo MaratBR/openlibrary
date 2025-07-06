@@ -8,8 +8,8 @@ export default function Modal({ open, children }: ModalProps) {
   if (!open) return null
 
   return createPortal(
-    <div class="ol-modal">
-      <div class="ol-modal__content">{children}</div>
+    <div class="modal">
+      <div class="modal__content">{children}</div>
     </div>,
     document.body,
   )

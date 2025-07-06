@@ -50,7 +50,7 @@ export default function GeneralInformation({ data: initialData }: { data: Manage
           <input
             value={name}
             onInput={(e) => setName((e.target as HTMLInputElement).value)}
-            class="ol-input"
+            class="input"
             name="name"
           />
         </div>
@@ -110,7 +110,7 @@ export default function GeneralInformation({ data: initialData }: { data: Manage
       </div>
 
       <div class="mt-4">
-        <button class="ol-btn ol-btn--primary rounded-full">
+        <button class="btn btn--primary rounded-full">
           {loading ? <span class="loader loader--dark" /> : window._('bookManager.edit.save')}
         </button>
       </div>

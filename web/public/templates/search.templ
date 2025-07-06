@@ -34,7 +34,7 @@ templ SearchPage(
             "search.genres",
         })
 
-        <div class="container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
+        <div class="ol-container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
             @SearchResultFragment(result, explainedQuery)
         </div>
     }
@@ -91,7 +91,7 @@ templ SearchResultFragment(
 
         <section class="search-filters" x-cloak x-show="openFilters" x-collapse>
             <div class="p-4">
-                <island data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
+                <ol-island data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
             </div>
         </section>
 
@@ -193,7 +193,8 @@ templ SimpleSearch() {
     }}
     @htmlLayout(_t(l, "search.search")) {
         <main class={ simpleSearchCSSRoot() }>
-            <img src="/_/embed-assets/logo.svg" />
+            <img class="dark:hidden" src="/_/embed-assets/logo.svg" />
+            <img class="hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
             <form method="get" action="/search">
                 <input placeholder={_t(l, "search.search")} class="w-96 input rounded-full text-lg p-6" name="query" />
                 <div class="flex gap-2 justify-center mt-8">
@@ -205,6 +206,10 @@ templ SimpleSearch() {
                     </button>
                 </div>
             </form>
+
+            <footer class="fixed bottom-4 left-0 right-0 flex justify-center">
+                @themeSwitcher()
+            </footer>
         </main>
     }
 }

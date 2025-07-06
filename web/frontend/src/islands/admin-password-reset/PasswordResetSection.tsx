@@ -32,7 +32,7 @@ export default function PasswordReset({ rootElement }: PreactIslandProps) {
       <div class="relative mb-10 mr-2">
         <input
           name="password"
-          class="ol-input"
+          class="input"
           onInput={(e) => setValue((e.target as HTMLInputElement).value)}
           value={value}
         />
@@ -47,7 +47,7 @@ export default function PasswordReset({ rootElement }: PreactIslandProps) {
           {window._(`passwordStrength.${pwdEval.strength}`)}
         </div>
       </div>
-      <button onClick={handleCancel} class="ol-btn ol-btn--secondary ol-btn-sm">
+      <button onClick={handleCancel} class="btn btn--secondary btn-sm">
         {window._('common.cancel')}
       </button>
     </div>

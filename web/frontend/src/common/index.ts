@@ -1,5 +1,6 @@
 import './i18n'
 import './util'
+import './cookies'
 
 import { OverlayScrollbars } from 'overlayscrollbars'
 import 'overlayscrollbars/overlayscrollbars.css'

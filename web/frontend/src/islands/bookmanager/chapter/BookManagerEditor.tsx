@@ -80,7 +80,7 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
             disabled={saveAndPublishMutation.isPending}
             onClick={() => saveAndPublish()}
             id="actions:saveAndPublish"
-            class={clsx('ol-btn ol-btn--secondary rounded-full', {
+            class={clsx('btn btn--secondary rounded-full', {
               'with-loader': saveAndPublishMutation.isPending,
             })}
           >
@@ -90,7 +90,7 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
             disabled={savingMutation.isPending}
             onClick={() => save()}
             id="actions:save"
-            class={clsx('w-28 ol-btn ol-btn--primary rounded-full', {
+            class={clsx('w-28 btn btn--primary rounded-full', {
               'with-loader': savingMutation.isPending || beforeSaving,
             })}
           >

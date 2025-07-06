@@ -75,13 +75,13 @@ function SortableChapterItem({
             <a
               target="_blank"
               href={`/books-manager/book/${bookId}/chapter/${chapter.id}`}
-              class="ol-btn ol-btn--secondary"
+              class="btn btn--secondary"
               rel="noreferrer"
             >
               {window._('bookManager.edit.edit')}
               <span class="material-symbols-outlined">open_in_new</span>
             </a>
-            <button disabled={isReordering} class="ol-btn ol-btn--destructive">
+            <button disabled={isReordering} class="btn btn--destructive">
               {window._('bookManager.edit.delete')}
             </button>
           </div>
@@ -182,22 +182,22 @@ export default function Chapters({ data: dataUnknown }: PreactIslandProps) {
         <div class="flex gap-2">
           {!isReordering ? (
             <>
-              <button class="ol-btn ol-btn--secondary rounded-full" onClick={handleStartReordering}>
+              <button class="btn btn--secondary rounded-full" onClick={handleStartReordering}>
                 {window._('bookManager.edit.reorder')}
               </button>
-              <button class="ol-btn ol-btn--primary rounded-full">
+              <button class="btn btn--primary rounded-full">
                 {window._('bookManager.edit.addChapter')}
               </button>
             </>
           ) : (
             <>
               <button
-                class="ol-btn ol-btn--secondary rounded-full"
+                class="btn btn--secondary rounded-full"
                 onClick={handleCancelReordering}
               >
                 {window._('bookManager.edit.cancel')}
               </button>
-              <button class="ol-btn ol-btn--primary  rounded-full" onClick={handleSaveOrder}>
+              <button class="btn btn--primary  rounded-full" onClick={handleSaveOrder}>
                 {isSavingOrder ? (
                   <span class="loader loader--dark" />
                 ) : (

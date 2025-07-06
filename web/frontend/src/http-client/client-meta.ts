@@ -1,5 +1,3 @@
-import { getCookie } from './util'
-
 const rndId = () => Math.random().toString(16).substring(2)
 
 function isLocalStorageAvailable() {
@@ -25,7 +23,7 @@ function init() {
       deviceId = rndId()
       window.localStorage.setItem(DEVICE_ID_KEY, deviceId)
     } else {
-      deviceId = getCookie(DEVICE_ID_KEY) || ''
+      deviceId = window.getCookie(DEVICE_ID_KEY) || ''
       if (deviceId === '') {
         deviceId = rndId()
       }

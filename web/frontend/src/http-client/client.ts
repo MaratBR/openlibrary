@@ -1,7 +1,6 @@
 import ky from 'ky'
 
 import './client-meta'
-import { getCookie } from './util'
 
 const originalFetch = window.fetch
 
@@ -39,7 +38,7 @@ export const httpClient = ky.create({
 
 export function getCsrfToken() {
   try {
-    return getCookie('csrf')
+    return window.getCookie('csrf')
   } catch {
     /* empty */
   }

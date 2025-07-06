@@ -28,7 +28,10 @@
     @apply md:grid md:grid-cols-2 mt-3;
 
     &__item {
-        @apply p-2 text-lg grid grid-cols-[48px_auto] hover:bg-secondary focus:outline focus:outline-2;
+        @apply 
+            p-2 text-lg grid grid-cols-[48px_auto] rounded-lg 
+            hover:bg-secondary 
+            active:outline-1 active:outline;
     }
 }
 

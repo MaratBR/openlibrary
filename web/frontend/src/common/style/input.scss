@@ -29,7 +29,7 @@ textarea.input {
 
 .dropdown {
     @apply 
-        border-gray-400 dark:border-gray-200 border 
+        border-gray-400 dark:border-gray-600 border 
         rounded-sm w-full bg-background relative
         transition-all;
 
@@ -39,7 +39,7 @@ textarea.input {
 
     &__menu {
         @apply hidden absolute left-[-1px] right-[-1px] top-full bg-background z-30
-            border-gray-400 dark:border-gray-200 border border-t-0
+            border-gray-400 dark:border-gray-600 border border-t-0
             rounded-b-sm;
     }
 

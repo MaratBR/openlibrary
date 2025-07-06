@@ -75,7 +75,7 @@ func (c *bookManagerController) newBook(w http.ResponseWriter, r *http.Request) 
 type createBookRequest struct {
 	Name   string `in:"form=name"`
 	Tags   string `in:"form=tags"`
-	Rating string `in:"form=rating"`
+	Rating string `in:"form=ageRating"`
 }
 
 func (c *bookManagerController) createBook(w http.ResponseWriter, r *http.Request) {

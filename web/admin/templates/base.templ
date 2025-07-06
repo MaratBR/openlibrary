@@ -4,8 +4,8 @@ import "github.com/MaratBR/openlibrary/web/olresponse"
 import "github.com/MaratBR/openlibrary/internal/flash"
 
 templ logo() {
-    <img class="h-20" src="/_/embed-assets/logo-dark.svg" />
-
+    <img class="h-20 dark:hidden" src="/_/embed-assets/logo.svg" />
+    <img class="h-20 dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
 }
 
 

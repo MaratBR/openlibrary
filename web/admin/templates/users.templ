@@ -238,7 +238,7 @@ templ User(user *app.UserDetailsDto) {
                                 "common.cancel",
                             })
                             <div class="mt-2 max-w-128" x-cloak x-show="open">
-                                <island @island:destroy="open=false" x-ref="pwdInput" preload :active="open" src="/_/assets/islands/admin-password-reset.js" />
+                                <ol-island @island:destroy="open=false" x-ref="pwdInput" preload :active="open" src="/_/assets/islands/admin-password-reset.js" />
                             </div>
                         </div>   
                     }

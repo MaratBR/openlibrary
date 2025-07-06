@@ -33,11 +33,11 @@ const TextEditor = ({ value }: TextEditorProps) => {
 
   return (
     <div className="border-gray-400 dark:border-gray-600 border rounded-lg shadow-sm">
-      <div className="border-b p-2 bg-gray-50 flex gap-1 rounded-t-lg">
+      <div className="border-b p-2 bg-background flex gap-1 rounded-t-lg">
         <button
           type="button"
           onClick={() => editor.current?.chain().toggleBold().run()}
-          className="size-8 rounded hover:bg-gray-200"
+          className="size-8 rounded hover:bg-secondary"
           title="Bold"
         >
           <strong>B</strong>
@@ -45,7 +45,7 @@ const TextEditor = ({ value }: TextEditorProps) => {
         <button
           type="button"
           onClick={() => editor.current?.chain().focus().toggleItalic().run()}
-          className="size-8 rounded hover:bg-gray-200"
+          className="size-8 rounded hover:bg-secondary"
           title="Italic"
         >
           <em>I</em>
@@ -53,7 +53,7 @@ const TextEditor = ({ value }: TextEditorProps) => {
         <button
           type="button"
           onClick={() => editor.current?.chain().focus().toggleStrike().run()}
-          className="size-8 rounded hover:bg-gray-200"
+          className="size-8 rounded hover:bg-secondary"
           title="Strike-through"
         >
           <span className="line-through">S</span>
@@ -61,7 +61,7 @@ const TextEditor = ({ value }: TextEditorProps) => {
         <button
           type="button"
           onClick={() => editor.current?.chain().focus().toggleUnderline().run()}
-          className="size-8 rounded hover:bg-gray-200"
+          className="size-8 rounded hover:bg-secondary"
           title="Underline"
         >
           <span className="underline">U</span>

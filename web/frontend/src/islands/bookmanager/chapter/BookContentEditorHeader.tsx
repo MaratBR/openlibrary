@@ -96,17 +96,17 @@ export default function BookContentEditorHeader({
     <header class="ol-book-editor__header">
       <div class="ol-container flex items-center gap-2 px-0">
         <section class={styles.section}>
-          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+          <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input type="checkbox" id="bold" checked={state.bold} onInput={toggleBold} />
             <span class="material-symbols-outlined">format_bold</span>
           </label>
 
-          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+          <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input type="checkbox" id="italic" checked={state.italic} onInput={toggleItalic} />
             <span class="material-symbols-outlined">format_italic</span>
           </label>
 
-          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+          <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input
               type="checkbox"
               id="underline"
@@ -120,7 +120,7 @@ export default function BookContentEditorHeader({
         <div class={styles.divider} />
 
         <section class={styles.section}>
-          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+          <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input
               type="checkbox"
               id="left"
@@ -129,7 +129,7 @@ export default function BookContentEditorHeader({
             />
             <span class="material-symbols-outlined">format_align_left</span>
           </label>
-          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+          <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input
               type="checkbox"
               id="center"
@@ -138,7 +138,7 @@ export default function BookContentEditorHeader({
             />
             <span class="material-symbols-outlined">format_align_center</span>
           </label>
-          <label role="button" class={`ol-btn ol-btn--ghost ${styles.btn}`}>
+          <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input
               type="checkbox"
               id="right"

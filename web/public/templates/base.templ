@@ -6,13 +6,14 @@ import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/flash"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "fmt"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 
 templ flashMessages() {
     {{
         messages := flash.GetFlashes(ctx)
     }}
 
-    <div class="container container--big my-2 empty:hidden">
+    <div class="ol-container ol-container--big my-2 empty:hidden">
         for _, message := range messages {
             <div x-data class="flash">
                 @message
@@ -41,7 +42,7 @@ templ siteFooter() {
     }}
 
     <footer id="site-footer" class="p-10">
-        <div class="container">
+        <div class="ol-container">
             <a href="https://github.com/MaratBR/openlibrary" class="text-muted-foreground hover:text-foreground" target="_blank">
                 Powered by <span class="font-[500] font-title">OpenLibrary</span> <br />
                 <span class="text-sm">v:{ version }</span>
@@ -85,6 +86,34 @@ templ baseLayoutNoFooter(title string) {
     }
 }
 
+// system (default) -> light -> dark 
+script toggleTheme() {
+    let theme = getCookie('ui_theme');
+    switch (theme) {
+        case 'light':
+            theme = 'dark';
+            break;
+        case 'dark':
+            theme = '';
+            break;
+        case 'system':
+        default:
+            theme = 'light'
+            break;
+    }
+    document.cookie = 'ui_theme=' + theme
+    document.body.classList.toggle('dark', theme === 'dark');
+}
+
 templ themeSwitcher() {
-    
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    <button 
+        onclick={toggleTheme()}
+        class="btn btn--secondary rounded-full size-12" 
+        aria-label={_t(l, "uiTheme.switchTheme")}>
+        <span class="material-symbols-outlined dark:!hidden">light_mode</span>
+        <span class="material-symbols-outlined !hidden dark:!inline-block">dark_mode</span>
+    </button>
 }

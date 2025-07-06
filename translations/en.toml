@@ -12,6 +12,13 @@ cancel = "Cancel"
 search = "Search"
 ageRating = "Age rating"
 
+[uiTheme]
+dark = "Dark"
+light = "Light"
+system = "System"
+
+switchTheme = "Switch theme"
+
 [time]
 justNow = "Just now"
 

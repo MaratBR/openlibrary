@@ -149,7 +149,7 @@ export function ImageResizer({
         </div>
 
         <div class="absolute right-4 bottom-4 flex z-10">
-          <button class="ol-btn ol-btn--secondary" onClick={handleResizeAndCrop}>
+          <button class="btn btn--secondary" onClick={handleResizeAndCrop}>
             {loading ? <span class="loader" /> : window._('bookManager.edit.cropAndUploadCover')}
           </button>
         </div>

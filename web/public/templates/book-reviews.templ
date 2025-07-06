@@ -138,7 +138,7 @@ templ BookMyReview(
                     <span class="loader m-0"></span>
                 </div>
                 
-                <island
+                <ol-island
                     src="/_/assets/islands/review-editor.js" 
                     x-show="edit"
                     :active="loading||edit"
@@ -149,7 +149,7 @@ templ BookMyReview(
         
         if !ratingAndReview.Review.Valid {
             <div x-show="edit" x-cloak class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden">
-                <island 
+                <ol-island 
                     src="/_/assets/islands/review-editor.js" 
                     :active="loading||edit"
                     @review:updated="onUpdated($event.detail)"

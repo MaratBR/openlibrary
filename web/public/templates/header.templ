@@ -29,7 +29,8 @@ templ siteHeaderLayout() {
 
     @siteHeaderRoot() {
         <a href="/" class="my-1 flex items-center focus:outline focus:outline-2 outline-offset-[-2px]">
-            <img style="height:64px" src="/_/embed-assets/logo.svg" />
+            <img style="height:64px" class="dark:hidden" src="/_/embed-assets/logo.svg" />
+            <img style="height:64px" class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
         </a>
 
         { children... }
@@ -74,13 +75,13 @@ templ siteHeaderRoot() {
         l := i18n.GetLocalizer(ctx)
     }}
     <nav class="z-40 w-full bg-background sticky top-0 h-[var(--header-height)] border-b" id="site-header">
-        <div id="site-header-inner" class="container container--big max-w-[120ch] h-full w-full flex gap-6 px-0" x-data="{userMenu:false}">
+        <div id="site-header-inner" class="ol-container ol-container--big max-w-[120ch] h-full w-full flex gap-6 px-0" x-data="{userMenu:false}">
             { children... }
         </div>
 
         <noscript>
             <div class="fixed bottom-0 left-0 right-0">
-                <div class="container py-2 bg-yellow-100 border-yellow-600 border-2">
+                <div class="ol-container py-2 bg-yellow-100 border-yellow-600 border-2">
                     { _t(l, "special.noJavascript") }
                 </div>
             </div>
