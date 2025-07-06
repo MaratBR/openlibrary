@@ -36,16 +36,16 @@ templ Chapter(
         <div
             x-data="bookReader"
             data-font-size={ strconv.Itoa(uiSettings.FontSize) }
-            class="ol-book-reader grid grid-cols-[1fr_auto]">
+            class="book-reader grid grid-cols-[1fr_auto]">
             <div class="relative pb-10">
                 <aside class="z-10 absolute top-0 bottom-0 right-0">
                     <div class="flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2">
-                        <button x-bind="toggleButton" class="ol-btn ol-btn--icon ol-btn--ghost">
+                        <button x-bind="toggleButton" class="btn btn--icon btn--ghost">
                             <span class="material-symbols-outlined">settings</span>
                         </button>
                     </div>
                 </aside>
-                <div class="ol-book-reader__chapter relative">
+                <div class="book-reader__chapter relative">
                     @ChapterContentSection(&chapter, uiSettings)
 
                     <section class="grid grid-cols-2 mt-4 bg-background sticky bottom-0 py-1">
@@ -109,7 +109,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings) {
         l := i18n.GetLocalizer(ctx)
     }}
 
-    <header class="ol-book-reader__header">
+    <header class="book-reader__header">
         <h1 class="text-3xl font-title">{ chapter.Name }</h1>
     
         <p class="mt-2 text-muted-foreground">
@@ -119,7 +119,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings) {
         </p>
     </header>
 
-    <article class="__user-content ol-book-reader__content" { templ.Attributes{
+    <article class="__user-content book-reader__content" { templ.Attributes{
         "style": fmt.Sprintf("--book-font-size:%dpx", uiSettings.FontSize),
     }... } :style="`--book-font-size:${fontSize}px`">
         <div class="contents" x-ignore id="book-reader-content">

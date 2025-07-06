@@ -1,4 +1,4 @@
-.ol-input {
+.input {
     @apply 
         border-gray-400 dark:border-gray-600 border 
         rounded-sm px-3 w-full bg-background
@@ -7,19 +7,19 @@
         disabled:opacity-80 disabled:pointer-events-none;
 }
 
-input.ol-input, select.ol-input {
+input.input, select.input {
     @apply h-10;
 }
 
-textarea.ol-input {
+textarea.input {
     @apply pt-2;
 }
 
-.ol-input-dropdown {
+.input-dropdown {
     @apply hidden;
 }
 
-.ol-label {
+.label {
     @apply block text-sm text-foreground;
 
     &[for] {
@@ -27,7 +27,7 @@ textarea.ol-input {
     }
 }
 
-.ol-dropdown {
+.dropdown {
     @apply 
         border-gray-400 dark:border-gray-200 border 
         rounded-sm w-full bg-background relative

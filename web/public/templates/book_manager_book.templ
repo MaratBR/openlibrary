@@ -11,7 +11,7 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
         {{
             data, _ := templ.JSONString(book)
         }}
-        <div class="ol-container ol-container--big" x-data="{tab:'general',cover:false}">
+        <div class="container container--big" x-data="{tab:'general',cover:false}">
             @i18nExtractKeys(l, []string{
                 "bookManager.edit.generalInformation",
                 "bookManager.edit.cover",
@@ -39,11 +39,11 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
                 "bookManager.edit.clickOnImageToChange",
             })
 
-            <ol-island x-show="tab==='general'" active="true" src="/_/assets/islands/bookmanager.js" name="Book" data={data}>
+            <island x-show="tab==='general'" active="true" src="/_/assets/islands/bookmanager.js" name="Book" data={data}>
                 <template data-type="loader">
                     <span class="loader mt-2"></span>
                 </template>
-            </ol-island>
+            </island>
 
         </div>
     }

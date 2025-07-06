@@ -12,12 +12,12 @@ templ flashMessages() {
         messages := flash.GetFlashes(ctx)
     }}
 
-    <div class="ol-container ol-container--big my-2 empty:hidden">
+    <div class="container container--big my-2 empty:hidden">
         for _, message := range messages {
-            <div x-data class="ol-flash">
+            <div x-data class="flash">
                 @message
-                <div class="ol-flash__closeContainer">
-                    <button @click="$root.remove()" class="ol-flash__close">
+                <div class="flash__closeContainer">
+                    <button @click="$root.remove()" class="flash__close">
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -41,7 +41,7 @@ templ siteFooter() {
     }}
 
     <footer id="site-footer" class="p-10">
-        <div class="ol-container">
+        <div class="container">
             <a href="https://github.com/MaratBR/openlibrary" class="text-muted-foreground hover:text-foreground" target="_blank">
                 Powered by <span class="font-[500] font-title">OpenLibrary</span> <br />
                 <span class="text-sm">v:{ version }</span>
@@ -83,4 +83,8 @@ templ baseLayoutNoFooter(title string) {
         { children... }
         <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
     }
+}
+
+templ themeSwitcher() {
+    
 }

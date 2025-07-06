@@ -20,12 +20,12 @@ templ BookTOC(
                 <p>{_t(l, "book.emptyTocContent")}</p>
             </section>
         } else {
-            <ul class="ol-book-toc" role="listbox">
+            <ul class="book-toc" role="listbox">
                 for i, chapter := range chapters {
                     <li role="listitem">
                         <a
                             href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
-                            class="ol-book-toc__item">
+                            class="book-toc__item">
                             <span>{ commonutil.FormatInt(i + 1) }</span>
                             <div>
                                 <div class="mb-1">

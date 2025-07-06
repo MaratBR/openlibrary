@@ -3,7 +3,7 @@
 // BOOK PAGE         //
 //                   //
 // ----------------- //
-.ol-book-page {
+.book-page {
     @apply md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[100ch] py-4;
 
     &__left {
@@ -24,7 +24,7 @@
 // BOOK TOC          //
 //                   //
 // ----------------- //
-.ol-book-toc {
+.book-toc {
     @apply md:grid md:grid-cols-2 mt-3;
 
     &__item {
@@ -37,10 +37,10 @@
 // BOOK SEARCH PAGE  //
 //                   //
 // ----------------- //
-.ol-book-search-results {
+.book-search-results {
 }
 
-.ol-book-search-card {
+.book-search-card {
     @apply md:grid md:grid-cols-[165px_1fr] border-b-2 md:border-b md:pb-2 md:pt-4;
 
     &__left {
@@ -80,7 +80,7 @@
 }
 
 
-.ol-book-cover {
+.book-cover {
     @apply overflow-hidden h-[calc(200px*var(--cover-scale,1))] inline-block rounded-r-xl;
 
     img {

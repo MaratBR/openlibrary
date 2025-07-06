@@ -76,7 +76,7 @@ templ BookPage(
 }
 
 templ bookRatingBadge(rating app.AgeRating) {
-    <span class="ol-age-rating" data-rating={string(rating)}>
+    <span class="age-rating" data-rating={string(rating)}>
         {string(rating)}
     </span>
 }
@@ -115,16 +115,16 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
     @baseLayout(book.Name) {
         <div 
             id="book" 
-            class="ol-book-page" 
+            class="book-page" 
             x-data={ convertBookDetailsToAlpineState(&book, readingList) }>
             @serverData(map[string]any{
                 "bookId": fmt.Sprintf("%d", book.ID),
             })
-            <div class="ol-book-page__left">
+            <div class="book-page__left">
                 @bookCover(book.Cover, book.Name, 300)
                 @bookReadingList(book.ID, readingList)
             </div>
-            <div class="ol-book-page__right">
+            <div class="book-page__right">
                 <header>
                     <h1 class="page-header">{book.Name}</h1>
                     <p>
@@ -141,7 +141,7 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
 }
 
 templ bookRating(book *app.BookDetailsDto) {
-    <a id="rating-card" href="#reviews" class="ol-book-page__rating-card">
+    <a id="rating-card" href="#reviews" class="book-page__rating-card">
         @starRating(book.Rating.Value, 0.5)
         <div class="text-xs inline-block">
             {formatInt32(book.Votes)} votes <br />
@@ -157,7 +157,7 @@ templ bookCover(cover, bookName string, height int) {
         }
     }}
 
-    <div class="ol-book-cover" { templ.Attributes{
+    <div class="book-cover" { templ.Attributes{
             "style": fmt.Sprintf("height:%dpx", height),
         }... }>
         <img loading="lazy" src={ cover } />
@@ -183,7 +183,7 @@ templ bookTags(tags []app.DefinedTagDto) {
                 x-cloak
             }
             class="nojs-hidden" role="button" x-show="len>10" @click="open=!open">
-            <span class="ol-tag font-semibold nojs-hidden" x-text="i18n[open?'common.less':'common.more']">
+            <span class="tag font-semibold nojs-hidden" x-text="i18n[open?'common.less':'common.more']">
                 {l.T("common.more")}
             </span>
         </li>

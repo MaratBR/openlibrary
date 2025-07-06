@@ -1,4 +1,4 @@
-.ol-tag {
+.tag {
     @apply 
         inline-block overflow-hidden rounded-lg p-1 !shadow-none bg-secondary border border-secondary transition-colors
         hover:border-slate-300
@@ -13,15 +13,15 @@
     }
 }
 
-.ol-tags {
+.tags {
     &--sm {
-        .ol-tag {
+        .tag {
             @apply text-sm p-1;
         }
     }
 
     &--xs {
-        .ol-tag {
+        .tag {
             @apply text-xs p-0.5;
         }
     }

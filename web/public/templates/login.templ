@@ -34,21 +34,21 @@ templ Login(data LoginData) {
                     @csrf.CSRFInputTempl(ctx)
 
                     <div class="mb-4">
-                        <label for="username" class="ol-label">
+                        <label for="username" class="label">
                             { l.T("login.username") }
                         </label>
-                        <input name="username" id="username" value={ data.InitialLogin } class="ol-input" type="text" />
+                        <input name="username" id="username" value={ data.InitialLogin } class="input" type="text" />
                     </div>
 
                     <div class="mb-4">
-                        <label for="password" class="ol-label">
+                        <label for="password" class="label">
                             { l.T("login.password") }
                         </label>
-                        <input name="password" id="password" class="ol-input" type="password" />
+                        <input name="password" id="password" class="input" type="password" />
                     </div>
 
                     <div class="flex gap-2 justify-center">
-                        <button type="submit" class="ol-btn ol-btn--lg ol-btn--primary rounded-full">
+                        <button type="submit" class="btn btn--lg btn--primary rounded-full">
                             { l.T("login.login") }
                         </button>
                     </div>

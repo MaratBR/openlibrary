@@ -36,7 +36,7 @@ templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadi
                     x-cloak
                 }
                 x-show="rl !== null" 
-                class="ol-btn ol-btn--outline ol-btn--lg rounded-full w-full"
+                class="btn btn--outline btn--lg rounded-full w-full"
                 @click="open=true">
                 <span class="material-symbols-outlined">edit</span> 
                 <span x-text="rl ? (i18n['readingList.' + rl.status] ?? rl.status) : ''">
@@ -49,7 +49,7 @@ templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadi
                 if readingListStatus.Valid {
                     x-cloak
                 }
-                @click="status('want_to_read')" x-show="rl === null" class="ol-btn ol-btn--primary ol-btn--lg rounded-full w-full nojs-hidden">
+                @click="status('want_to_read')" x-show="rl === null" class="btn btn--primary btn--lg rounded-full w-full nojs-hidden">
                 {l.T("readingList.want_to_read")}
             </button>
 
@@ -60,12 +60,12 @@ templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadi
                             :disabled={ fmt.Sprintf("rl !== null && rl.status === '%s'", status) }
                             @click={ fmt.Sprintf("status('%s')", status) }
                             x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }
-                            class="ol-btn ol-btn--outline rounded-full w-full border border-border" />
+                            class="btn btn--outline rounded-full w-full border border-border" />
                     </li>
                 }
             </ul>
         } else {
-            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", bookID)))) } class="ol-btn ol-btn--primary ol-btn--lg rounded-full w-full">
+            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", bookID)))) } class="btn btn--primary btn--lg rounded-full w-full">
                 {l.T("readingList.want_to_read")}
             </a>
         }

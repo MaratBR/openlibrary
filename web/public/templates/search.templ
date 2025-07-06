@@ -34,7 +34,7 @@ templ SearchPage(
             "search.genres",
         })
 
-        <div class="ol-container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
+        <div class="container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
             @SearchResultFragment(result, explainedQuery)
         </div>
     }
@@ -75,11 +75,11 @@ templ SearchResultFragment(
         </h1>
 
         <form class="mt-5">
-            <input id="search-input" name="q" class="ol-input p-6 rounded-full text-lg w-full" value={ explainedQuery.Query } />
+            <input id="search-input" name="q" class="input p-6 rounded-full text-lg w-full" value={ explainedQuery.Query } />
         </form>
 
         <div class="flex gap-2 my-4">
-            <button @click="openFilters=!openFilters" class="ol-btn ol-btn--lg ol-btn--secondary rounded-full">
+            <button @click="openFilters=!openFilters" class="btn btn--lg btn--secondary rounded-full">
                 <span class="material-symbols-outlined">filter_list</span>
                 {_t(l, "search.filters")}
                 if activeFilters > 0 {
@@ -91,7 +91,7 @@ templ SearchResultFragment(
 
         <section class="search-filters" x-cloak x-show="openFilters" x-collapse>
             <div class="p-4">
-                <ol-island data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
+                <island data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
             </div>
         </section>
 
@@ -99,7 +99,7 @@ templ SearchResultFragment(
             @searchNoResultsCard()
         } else {
             @pagination
-            <ul role="listbox" id="results" class="ol-book-search-results">
+            <ul role="listbox" id="results" class="book-search-results">
                 {{
                     l := i18n.GetLocalizer(ctx)
                     tags := make(map[int64]app.DefinedTagDto, len(result.Tags))
@@ -108,29 +108,29 @@ templ SearchResultFragment(
                     }
                 }}
                 for _, book := range result.Books {
-                    <li role="listitem" id={ fmt.Sprintf("book-%d", book.ID) } class="ol-book-search-card">
-                        <div class="ol-book-search-card__left">
-                            <a class="ol-book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
+                    <li role="listitem" id={ fmt.Sprintf("book-%d", book.ID) } class="book-search-card">
+                        <div class="book-search-card__left">
+                            <a class="book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
                                 @bookCover(book.Cover, book.Name, 200)
                             </a>
                         </div>
                         
-                        <div class="ol-book-search-card__right">
-                            <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="link ol-book-search-card__link">{ book.Name }</a>                    
+                        <div class="book-search-card__right">
+                            <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="link book-search-card__link">{ book.Name }</a>                    
                             <br />
                             by
-                            <a class="link ol-book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>
+                            <a class="link book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>
                                 { book.Author.Name }
                             </a>
 
                             @collapsible(160, true) {
-                                <ul class="ol-book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
+                                <ul class="book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
                                     data-expand="false"
                                     :data-expand="expand"
                                     x-data="{expand:false}">
                                     for _, tagId := range book.Tags {
                                         {{ tag := tags[int64(tagId)] }}
-                                        <li class="ol-tag">
+                                        <li class="tag">
                                             <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", tagId)) }>
                                                 { tag.Name }
                                             </a>
@@ -141,13 +141,13 @@ templ SearchResultFragment(
                                         if len(book.Tags) <= 6 {
                                             x-show="false" x-cloak
                                         }
-                                        @click="expand=!expand" class="ol-book-search-card__tags__more">
+                                        @click="expand=!expand" class="book-search-card__tags__more">
                                         <span x-text="i18n[expand?'common.less':'common.more']">{ _t(l, "common.more") }</span>
                                     </li>
                                 </ul>
 
                                 if book.Summary != "" {
-                                    <div class="ol-book-search-card__summary __user-content" x-ignore>
+                                    <div class="book-search-card__summary __user-content" x-ignore>
                                         @templ.Raw(book.Summary)
                                     </div>
                                 }
@@ -197,10 +197,10 @@ templ SimpleSearch() {
             <form method="get" action="/search">
                 <input placeholder={_t(l, "search.search")} class="w-96 input rounded-full text-lg p-6" name="query" />
                 <div class="flex gap-2 justify-center mt-8">
-                    <a href="/random" class="ol-btn ol-btn--secondary rounded-full">
+                    <a href="/random" class="btn btn--secondary rounded-full">
                         {_t(l, "search.feelingLucky")}
                     </a>
-                    <button type="submit" class="ol-btn ol-btn--secondary rounded-full">
+                    <button type="submit" class="btn btn--secondary rounded-full">
                         {_t(l, "search.doSearch")}
                     </button>
                 </div>

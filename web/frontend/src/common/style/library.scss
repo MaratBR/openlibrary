@@ -1,12 +1,12 @@
-.ol-library-header {
+.library-header {
     @apply my-8;
 }
 
-.ol-library-body {
+.library-body {
     @apply pb-10 space-y-12;
 }
 
-.ol-library-section {
+.library-section {
     @apply relative;
 
     &__header {

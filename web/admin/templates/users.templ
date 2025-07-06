@@ -13,16 +13,16 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     }}
 
     @dashboardLayout(pageTitle) {
-        <div class="ol-admin-page-content relative">
+        <div class="admin-page-content relative">
             <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
-                <input value={ query.Query } x-model="q" class="ol-input w-64 mr-2" name="q" placeholder={ _t(l, "common.search") } />
-                <button type="submit" :disabled="q.trim()===''" class="ol-btn ol-btn--secondary">
+                <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ _t(l, "common.search") } />
+                <button type="submit" :disabled="q.trim()===''" class="btn btn--secondary">
                     <span class="material-symbols-outlined">search</span>
                 </button>
             </form>
 
 
-            <header class="ol-admin-page-header">
+            <header class="admin-page-header">
                 <h1 class="text-3xl font-title">{ pageTitle }</h1>
             </header>
 
@@ -33,7 +33,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                 <a href="?" class="link link--primary">{ _t(l, "user.allUsers") }</a>
             </div>
 
-            <div class="ol-admin-card mt-4">
+            <div class="admin-card mt-4">
 
                 {{
                     pagination := olresponse.Pagination(resp.Page, uint32(resp.TotalPages), 9)
@@ -41,7 +41,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
 
                 @pagination
                 
-                <table class="ol-table -mx-4 my-2" style="width: calc(100% + 32px);">
+                <table class="table -mx-4 my-2" style="width: calc(100% + 32px);">
                     <thead>
                         <tr>
                             <th class="w-64">ID</th>
@@ -68,7 +68,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                         for _, user := range resp.Users {
                             <tr>
                                 <td>
-                                    <span class="ol-admin-id !text-xs">
+                                    <span class="admin-id !text-xs">
                                         { user.ID.String() }
                                     </span>
                                 </td>
@@ -93,11 +93,11 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                 </td>
                                 <td>
                                     <div class="flex gap-1">
-                                        <a aria-label={ edit } class="ol-btn ol-btn--secondary ol-btn--sm" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s", user.ID)) }>
+                                        <a aria-label={ edit } class="btn btn--secondary btn--sm" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s", user.ID)) }>
                                             <span class="material-symbols-outlined">edit</span>
                                         </a>
 
-                                        <a aria-label={ delete } class="ol-btn ol-btn--secondary ol-btn--sm text-destructive hover:bg-destructive/10" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s/delete", user.ID)) }>
+                                        <a aria-label={ delete } class="btn btn--secondary btn--sm text-destructive hover:bg-destructive/10" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s/delete", user.ID)) }>
                                             <span class="material-symbols-outlined">delete</span>
                                         </a>
                                     </div>
@@ -119,8 +119,8 @@ templ User(user *app.UserDetailsDto) {
     }}
 
     @dashboardLayout(user.Name) {
-        <div class="ol-admin-page-content">
-            <header class="ol-admin-page-header">
+        <div class="admin-page-content">
+            <header class="admin-page-header">
                 <h1 class="text-3xl flex items-center gap-1 font-title">
                     <a href="/admin/users" class="link">{ _t(l, "admin.users.title") }</a>
                     <span class="mx-2 text-muted-foreground text-[0.8em]">/</span>
@@ -128,22 +128,22 @@ templ User(user *app.UserDetailsDto) {
                 </h1>
             </header>
 
-            <section class="ol-admin-card">
+            <section class="admin-card">
                 <form method="post">
                     @csrf.CSRFInputTempl(ctx)
 
                     @userFormSection("user-general-information", _t(l, "admin.users.generalInformation")) {
-                        <div class="ol-admin-form-field">
-                            <div class="ol-admin-form-field__label">
+                        <div class="admin-form-field">
+                            <div class="admin-form-field__label">
                                 <label>{ _t(l, "admin.users.name") }</label>
                             </div>
-                            <div class="ol-admin-form-field__value">
-                                <input  disabled name="name" class="ol-input" value={ user.Name } />
+                            <div class="admin-form-field__value">
+                                <input  disabled name="name" class="input" value={ user.Name } />
                             </div>
                         </div>
 
-                        <div class="ol-admin-form-field">
-                            <div class="ol-admin-form-field__label">
+                        <div class="admin-form-field">
+                            <div class="admin-form-field__label">
                                 <label>{ _t(l, "admin.users.gender") }</label>
                             </div>
                             {{
@@ -154,11 +154,11 @@ templ User(user *app.UserDetailsDto) {
                                     genderType = user.About.Gender
                                 }
                             }}
-                            <div class="ol-admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
+                            <div class="admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
                                 <select 
                                     x-model="genderType" 
                                     name="gender" 
-                                    class="ol-input">
+                                    class="input">
                                     <option
                                         if genderType == "" {
                                             selected
@@ -181,16 +181,16 @@ templ User(user *app.UserDetailsDto) {
                                         value="other">{ _t(l, "gender.o") }</option>
                                 </select>
 
-                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="ol-input mt-2" />
+                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="input mt-2" />
                             </div>
                         </div>
 
-                        <div class="ol-admin-form-field">
-                            <div class="ol-admin-form-field__label">
+                        <div class="admin-form-field">
+                            <div class="admin-form-field__label">
                                 <label>{ _t(l, "admin.users.about") }</label>
                             </div>
-                            <div class="ol-admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
-                                <textarea rows="8" name="about" class="ol-input">{user.About.Bio}</textarea>
+                            <div class="admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
+                                <textarea rows="8" name="about" class="input">{user.About.Bio}</textarea>
                             </div>
                         </div>
 
@@ -202,12 +202,12 @@ templ User(user *app.UserDetailsDto) {
                         </div>
                     }
                     @userFormSection("user-permissions", _t(l, "admin.users.rolesAndPermissions")) {
-                        <div class="ol-admin-form-field">
-                            <div class="ol-admin-form-field__label">
+                        <div class="admin-form-field">
+                            <div class="admin-form-field__label">
                                 <label>{ _t(l, "admin.users.role") }</label>
                             </div>
-                            <div class="ol-admin-form-field__value">
-                                <select name="role" class="ol-input">
+                            <div class="admin-form-field__value">
+                                <select name="role" class="input">
                                     for _, role := range app.AllRoles {
                                         <option 
                                             if role == user.Role {
@@ -219,14 +219,14 @@ templ User(user *app.UserDetailsDto) {
                                     }
                                 </select>
 
-                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="ol-input mt-2" />
+                                <input name="genderOther" x-cloak x-show="genderType==='other'" class="input mt-2" />
                             </div>
                         </div>
                     }
 
                     @userFormSection("user-account-management", _t(l, "admin.users.accountManagement")) {
                         <div x-data="{open:false,pwd:''}">
-                            <div role="button" @click="open=true;$refs.pwdInput.dispatchEvent(new CustomEvent('island:custom:generate-password'))" class="ol-btn ol-btn--outline select-none">
+                            <div role="button" @click="open=true;$refs.pwdInput.dispatchEvent(new CustomEvent('island:custom:generate-password'))" class="btn btn--outline select-none">
                                 { _t(l, "admin.users.resetPassword") }
                             </div>
 
@@ -238,12 +238,12 @@ templ User(user *app.UserDetailsDto) {
                                 "common.cancel",
                             })
                             <div class="mt-2 max-w-128" x-cloak x-show="open">
-                                <ol-island @island:destroy="open=false" x-ref="pwdInput" preload :active="open" src="/_/assets/islands/admin-password-reset.js" />
+                                <island @island:destroy="open=false" x-ref="pwdInput" preload :active="open" src="/_/assets/islands/admin-password-reset.js" />
                             </div>
                         </div>   
                     }
 
-                    <button type="submit" class="ol-btn ol-btn--lg ol-btn--primary rounded-full mt-6">
+                    <button type="submit" class="btn btn--lg btn--primary rounded-full mt-6">
                         { _t(l, "common.save") }
                     </button>
                 </form>

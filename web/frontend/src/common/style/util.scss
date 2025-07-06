@@ -1,12 +1,12 @@
-.ol-container {
-    --ol-container-width: 80rch;
+.container {
+    --container-width: 80rch;
 
-    width: min(100vw, var(--ol-container-width));
+    width: min(100vw, var(--container-width));
 
     @apply mx-auto;
 
     &--big {
-        --ol-container-width: 120rch;
+        --container-width: 120rch;
     }
 }
 
@@ -29,7 +29,7 @@
     }
 }
 
-.ol-dl {
+.dl {
     @apply grid grid-cols-[3fr_7fr];
 
     dt {

@@ -22,13 +22,13 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
 
 
     @dashboardLayout("Tags") {
-        <div class="ol-admin-page-content">
-            <header class="ol-admin-page-header">
+        <div class="admin-page-content">
+            <header class="admin-page-header">
                 <h1 class="text-4xl font-title mb-3">Tags</h1>
                 <p>View list of tags and create new tags or edit existing ones.</p>
             </header>
 
-            <section class="ol-admin-card">
+            <section class="admin-card">
                 <form method="get">
                     <input name="p" type="number" value={ fmt.Sprintf("%d", result.Page) } aria-hidden="true" class="hidden" />
 
@@ -38,8 +38,8 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                                 if searchRequest.OnlyParentTags {
                                     checked
                                 } 
-                                id="chk_onlyParentTags" name="onlyParentTags" type="checkbox" class="ol-checkbox" />
-                            <label class="ol-label" for="chk_onlyParentTags">{ _t(l, "admin.tags.onlyParentTags") }</label>
+                                id="chk_onlyParentTags" name="onlyParentTags" type="checkbox" class="checkbox" />
+                            <label class="label" for="chk_onlyParentTags">{ _t(l, "admin.tags.onlyParentTags") }</label>
                         </div>
 
                         <div class="flex items-center gap-2">
@@ -47,11 +47,11 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                                 if searchRequest.OnlyAdultTags {
                                     checked
                                 } 
-                                id="chk_onlyAdultTags" name="onlyAdultTags" type="checkbox" class="ol-checkbox" />
-                            <label class="ol-label" for="chk_onlyAdultTags">{ _t(l, "admin.tags.onlyAdultTags") }</label>
+                                id="chk_onlyAdultTags" name="onlyAdultTags" type="checkbox" class="checkbox" />
+                            <label class="label" for="chk_onlyAdultTags">{ _t(l, "admin.tags.onlyAdultTags") }</label>
                         </div>
 
-                        <button type="submit" class="ol-btn ol-btn--primary rounded-full">
+                        <button type="submit" class="btn btn--primary rounded-full">
                             { _t(l, "common.apply") }
                         </button>
                     </div>
@@ -59,7 +59,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
 
                 @pagination
 
-                <table id="slot-tags-table" class="-mx-4 my-4 ol-table">
+                <table id="slot-tags-table" class="-mx-4 my-4 table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -82,7 +82,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                         for _, tag := range result.Tags {
                             <tr>
                                 <td>
-                                    <span class="ol-admin-id">
+                                    <span class="admin-id">
                                         { fmt.Sprintf("%d", tag.ID) }
                                     </span>
                                 </td>
@@ -176,13 +176,13 @@ templ Tag(tag app.TagDetailsItemDto) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
     @dashboardLayout("Admin - " + tag.Name) {
-        <div class="ol-admin-page-content">
-            <header class="ol-admin-page-header">
+        <div class="admin-page-content">
+            <header class="admin-page-header">
                 <h1 class="my-6 font-title text-5xl">
                     { tag.Name }
                 </h1>
 
-                <article class="ol-admin-card">
+                <article class="admin-card">
                     if tag.Description == "" {
                         <p class="text-muted-foreground">
                             { _t(l, "admin.tags.noDescription") }
@@ -193,7 +193,7 @@ templ Tag(tag app.TagDetailsItemDto) {
                 </article>
             </header>
 
-            <div class="ol-admin-card">
+            <div class="admin-card">
                 <div class="space-y-2">
                     @tagParam(_t(l, "admin.tags.adult"), tableBoolValue(tag.IsAdult))
                     @tagParam(_t(l, "admin.tags.spoiler"), tableBoolValue(tag.IsSpoiler))
@@ -201,7 +201,7 @@ templ Tag(tag app.TagDetailsItemDto) {
             </div>
 
             <div class="flex gap-2 mt-10">
-                <button class="ol-btn ol-btn--lg ol-btn--destructive" x-init @click="alert('not implemented')">
+                <button class="btn btn--lg btn--destructive" x-init @click="alert('not implemented')">
                     { _t(l, "common.delete") }
                 </button>
             </div>

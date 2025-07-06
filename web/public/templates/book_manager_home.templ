@@ -58,11 +58,11 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
                 <p class="my-8">
                     {_t(l, "bookManager.noBooks")}
                 </p>
-                <a class="ol-btn ol-btn--lg ol-btn--primary rounded-full" href="/books-manager/new?ol.from=books-manager&isFirst=1">
+                <a class="btn btn--lg btn--primary rounded-full" href="/books-manager/new?ol.from=books-manager&isFirst=1">
                     {_t(l, "bookManager.writeYourFirstBook")}
                 </a>
             } else {
-                <a class="mb-4 ol-btn ol-btn--lg ol-btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
+                <a class="mb-4 btn btn--lg btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
                     <span class="material-symbols-outlined">edit</span>
                     {_t(l, "bookManager.createNewBook")}
                 </a>
@@ -103,7 +103,7 @@ templ bookManagerMainPage(tab string) {
     }}
     
     @bookManagerLayout(_t(l, "bookManager.title")) {
-        <div class="ol-container ol-container--big book-manager">
+        <div class="container container--big book-manager">
             <aside class="book-manager__menu">
                 <ul>
                     <li>

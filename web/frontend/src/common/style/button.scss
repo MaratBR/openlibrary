@@ -1,4 +1,4 @@
-.ol-btn {
+.btn {
     @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
     @apply h-10 px-4 py-2;
 
@@ -40,22 +40,22 @@
 
 }
 
-.ol-btn-group {
+.btn-group {
     @apply flex items-stretch;
 
-    .ol-btn:not(:first-child):not(:last-child) {
+    .btn:not(:first-child):not(:last-child) {
         @apply rounded-none;
     }
 
-    .ol-btn:not(:last-child) {
+    .btn:not(:last-child) {
         @apply border-r-0;
     }
 
-    .ol-btn:first-child {
+    .btn:first-child {
         @apply rounded-r-none;
     }
 
-    .ol-btn:last-child {
+    .btn:last-child {
         @apply rounded-l-none;
     }
 }

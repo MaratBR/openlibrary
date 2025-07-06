@@ -1,4 +1,4 @@
-.ol-age-rating {
+.age-rating {
     @apply py-2 px-4 bg-background rounded-md hover:bg-secondary text-lg font-medium whitespace-nowrap;
 
     &[data-rating] {
@@ -26,10 +26,10 @@
     }
 }
 
-.ol-age-rating-input {
+.age-rating-input {
     @apply appearance-none w-0 h-0 hidden;
 
-    & + .ol-age-rating {
+    & + .age-rating {
         @apply cursor-pointer transition-shadow relative;
 
         &::after {
@@ -42,7 +42,7 @@
         }
     }
 
-    &:checked + .ol-age-rating {
+    &:checked + .age-rating {
         @apply ring-2 ring-offset-2 ring-primary;
     }
 }

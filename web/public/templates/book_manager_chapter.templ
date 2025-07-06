@@ -50,6 +50,6 @@ templ ChapterEditor(bookID int64, draft app.DraftDto) {
             "editor.publishDraft",
             "editor.publishDraftDescription",
         })
-        <ol-island data={string(jsonBytes)} active="true" src="/_/assets/islands/bookmanager.js" name="Chapter" />
+        <island data={string(jsonBytes)} active="true" src="/_/assets/islands/bookmanager.js" name="Chapter" />
     }
 }
