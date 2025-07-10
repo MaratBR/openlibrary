@@ -1,10 +1,29 @@
 package templates
 
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "math/rand"
+import "fmt"
+
+
 templ NotFoundPage() {
-    @baseLayout("404") {
-        <div class="ol-container my-12">
-            <span class="font-title text-4xl">404</span>
-            <p>Page not found</p>
-        </div>
+    {{
+        l := i18n.GetLocalizer(ctx)
+        catID := rand.Int() % 100
+    }}
+    @baseLayoutNoFooter("404") {
+        <main class="ol-container py-12">
+            <h1 class="text-8xl mb-2 font-title text-center md:text-left">404</h1>
+            <div class="ml-4">
+                <h1 class="text-4xl font-title text-center md:text-left">{_t(l, "pageNotFound.text")}</h1>
+                <p class="my-8">Meanwhile here is an image of a cat</p>
+                <picture>
+                    <!-- yes, we are doing fallback for cats, but not for book covers, cats are important -->
+                    <source srcset={fmt.Sprintf("/_/assets/cats/avif/cat%d.avif", catID)} type="image/avif">
+                    <source srcset={fmt.Sprintf("/_/assets/cats/avif/cat%d.webp", catID)} type="image/webp">
+                    <img class="rounded-xl" style="max-width: 300px;" alt="image of a cat" src={fmt.Sprintf("/_/assets/cats/cat%d.jpg", catID)} />
+                </picture>
+                <p class="mt-2 text-xs opacity-40 hover:opacity-100">Image source: <a class="link" target="_blank" href="https://cataas.com/">https://cataas.com/</a></p>
+            </div>
+        </main>
     }
 }

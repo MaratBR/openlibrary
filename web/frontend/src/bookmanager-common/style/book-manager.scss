@@ -4,14 +4,14 @@
     padding-left: var(--bm-sidebar-width);
 
     &__menu {
-        @apply border border-border border-y-0 w-[var(--bm-sidebar-width)] left-0 top-0 bottom-0 absolute bg-background;
+        @apply border-r border-border w-[var(--bm-sidebar-width)] left-0 top-0 bottom-0 absolute bg-background;
 
         ul {
             @apply sticky top-[var(--header-height)] flex flex-col items-stretch gap-2;
 
             li {
                 & > a {
-                    @apply block font-normal p-2 text-lg
+                    @apply block font-normal p-2 text-lg rounded-l-full pl-5
                         hover:bg-secondary
                         active:bg-muted-2;
 

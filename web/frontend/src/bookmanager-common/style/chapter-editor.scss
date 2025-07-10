@@ -1,6 +1,10 @@
 .chapter-editor-page {
     &__header {
-        @apply h-full flex items-center font-semibold w-full;
+        @apply h-full flex items-center w-full;
+    }
+
+    &__header-text {
+        @apply font-semibold;
     }
 
     &__draft, &__drafts-list-link {

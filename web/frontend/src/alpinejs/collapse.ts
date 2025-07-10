@@ -43,7 +43,7 @@ Alpine.data('collapseContent', () => ({
 
   buttonLabel: {
     'x-text'() {
-      return this.expand ? _('common.less') : _('common.more')
+      return this.expand ? window._('common.less') : window._('common.more')
     },
   },
 

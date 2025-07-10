@@ -80,10 +80,10 @@ export default function BookContentEditor({
   }, [editorRef])
 
   return (
-    <div class="ol-book-editor">
+    <div class="book-editor">
       <BookContentEditorHeader editorRef={editor} editorUpdateEvent={editorUpdateEvent.current} />
       <article class="ol-container">
-        <div class="__user-content ol-book-editor__content" ref={root} />
+        <div class="__user-content book-editor__content" ref={root} />
       </article>
     </div>
   )

@@ -13,3 +13,5 @@
 
 # deps
 __vips/
+
+build/

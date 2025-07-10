@@ -41,13 +41,11 @@ templ siteFooter() {
         version := app.AppVersion()
     }}
 
-    <footer id="site-footer" class="p-10">
-        <div class="ol-container">
-            <a href="https://github.com/MaratBR/openlibrary" class="text-muted-foreground hover:text-foreground" target="_blank">
-                Powered by <span class="font-[500] font-title">OpenLibrary</span> <br />
-                <span class="text-sm">v:{ version }</span>
-            </a>
-        </div>
+    <footer id="site-footer" class="ol-container p-10">
+        <a href="https://github.com/MaratBR/openlibrary" class="text-muted-foreground hover:text-foreground" target="_blank">
+            Powered by <span class="font-[500] font-title">OpenLibrary</span> <br />
+            <span class="text-sm">v:{ version }</span>
+        </a>
     </footer>
 }
 

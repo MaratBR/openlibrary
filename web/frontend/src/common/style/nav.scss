@@ -1,7 +1,73 @@
+.site-header {
+    @apply z-40 w-full bg-background sticky top-0 h-[var(--header-height)] border-b;
+
+    &__inner {
+        @apply max-w-[120ch] mx-auto h-full;
+
+        @apply lg:flex lg:items-stretch;
+    }
+
+    &__logo {
+        // main site logo
+        @apply focus:outline focus:outline-2 outline-offset-[-2px] lg:mr-4;
+    }
+
+    &__mobile-open {
+        @apply p-2 active:outline absolute right-2 top-1 bottom-1 lg:hidden;
+    }
+}
+
+.site-nav {
+    top: var(--header-height);
+    @apply bg-background flex flex-col gap-2 fixed z-50 w-screen shadow-lg invisible transition-all opacity-0;
+    transform: translateY(-20px);
+
+    @apply lg:visible lg:static lg:shadow-none lg:flex-row lg:bg-transparent lg:transition-none lg:transform-none lg:opacity-100; 
+
+    &[data-open=true] {
+        @apply visible opacity-100;
+        transform: translateY(0px);
+    }
+}
+
+.site-nav-overlay {
+    @apply lg:hidden hidden fixed inset-0 z-30;
+
+    &[data-open=true] {
+        @apply block;
+    }
+}
+
+.nav-links {
+    @apply flex flex-col;
+
+    @apply lg:flex-row lg:mr-auto;
+}
+
+.nav-link-login {
+    @apply lg:ml-auto;
+}
+
 .nav-link {
     @apply 
-        h-full inline-flex items-center font-medium text-foreground/80 text-[1rem] px-5 
+        h-full inline-flex items-center font-medium text-foreground/80 text-[1rem] px-5 min-h-12
         hover:text-foreground hover:bg-accent
         focus:outline -outline-offset-2
         active:text-primary;
+    
+    &__icon {
+        @apply mr-2;   
+    }
+}
+
+.nav-user {
+    @apply 
+        relative h-full ml-4 mt-0
+        md:min-w-12 md:max-w-24;
+
+    &__menu {
+        @apply 
+            bg-background 
+            lg:absolute lg:top-full lg:right-0 lg:border-border lg:border lg:py-1 lg:space-y-1 lg:min-w-40;
+    }
 }

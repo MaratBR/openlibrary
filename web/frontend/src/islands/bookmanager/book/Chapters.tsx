@@ -37,7 +37,7 @@ function SortableChapterItem({
     <div
       className={twMerge(
         clsx(
-          'ol-card relative p-4 mb-2 before:absolute before:block before:bg-primary before:w-2 before:h-full before:left-0 before:top-0 before:invisible overflow-hidden',
+          'card relative p-4 mb-2 before:absolute before:block before:bg-primary before:w-2 before:h-full before:left-0 before:top-0 before:invisible overflow-hidden',
           {
             'before:visible': isModified,
           },

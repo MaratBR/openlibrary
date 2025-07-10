@@ -5,87 +5,85 @@ import "github.com/MaratBR/openlibrary/internal/auth"
 import "fmt"
 
 templ siteHeader() {
-    {{ l := i18n.GetLocalizer(ctx) }}
-
     @siteHeaderLayout() {
-        <a class="nav-link" href="/">
-            {l.T("nav.home")}
-        </a>
-        <a class="nav-link" href="/library">
-            {l.T("nav.library")}
-        </a>
-        <a class="nav-link" href="/search">
-            {l.T("nav.search")}
-        </a>
-        <div class="mx-auto" />
+        <button class="site-header__mobile-open" @click="navOpen=!navOpen">
+            <svg class="size-6" xmlns="http://www.w3.org/2000/svg" viewBox="F0 0 24 24"><title>menu</title><path class="fill-foreground" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+        </button>
+
+        <nav
+            x-cloak
+            id="site-nav" 
+            class="site-nav"
+            :data-open="navOpen">
+            { children... }
+
+            {{ 
+                l := i18n.GetLocalizer(ctx)
+                _, isAuthorized := auth.GetSession(ctx)
+            }}
+            if isAuthorized {
+                <ul class="nav-links">
+                    <a role="listitem" class="nav-link" href="/">
+                        <span class="nav-link__icon material-symbols-outlined">home</span>{l.T("nav.home")}
+                    </a>
+                    <a role="listitem" class="nav-link" href="/library">
+                        <span class="nav-link__icon material-symbols-outlined">newsstand</span>{l.T("nav.library")}
+                    </a>
+                    <a role="listitem" class="nav-link" href="/search">
+                        <span class="nav-link__icon material-symbols-outlined">search</span>{l.T("nav.search")}
+                    </a>
+                </ul>
+            } else {
+                <a class="nav-link nav-link-login" href="/login">
+                    { _t(l, "login.login") }
+                    <span class="material-symbols-outlined">login</span>
+                </a>
+            }
+        </nav>
+        <div class="site-nav-overlay" @click="navOpen=false" :data-open="navOpen" />
     }
 }
 
 templ siteHeaderLayout() {
-    {{ 
-        l := i18n.GetLocalizer(ctx)
-        session, isAuthorized := auth.GetSession(ctx)
-    }}
-
-    @siteHeaderRoot() {
-        <a href="/" class="my-1 flex items-center focus:outline focus:outline-2 outline-offset-[-2px]">
-            <img style="height:64px" class="dark:hidden" src="/_/embed-assets/logo.svg" />
-            <img style="height:64px" class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
-        </a>
-
-        { children... }
-
-        if isAuthorized {
-            {{ user := auth.RequireUser(ctx) }}
-            <div class="relative h-full min-w-12 max-w-24">
-                <div @click="userMenu=true" role="button" class="flex items-center h-full">
-                    <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
-                </div>
-                <div x-cloak @click.outside="userMenu=false" x-show="userMenu" class="absolute top-full right-0 bg-background border-border border py-1 space-y-1 min-w-40">
-                    <a class="p-2 block hover:bg-secondary hover:font-medium" href="/books-manager">
-                        { _t(l, "account.bookManager") }
-                    </a>
-                    <a class="p-2 block hover:bg-secondary hover:font-medium" href={ templ.SafeURL(fmt.Sprintf("/users/%s", session.UserID)) }>
-                        { _t(l, "account.profile") }
-                    </a>
-                    <a class="p-2 block hover:bg-secondary hover:font-medium" href="/account/settings">
-                        { _t(l, "account.settings") }
-                    </a>
-                    if user.Role.IsAdmin() {
-                        <hr />
-                        <a class="p-2 flex items-center hover:bg-secondary hover:font-medium" href="/admin" target="_blank">
-                            <span class="material-symbols-outlined">open_in_new</span>
-                            { _t(l, "account.admin") }
-                        </a>
-                    }
-                </div>
-            </div>
-        } else {
-            <a class="nav-link" href="/login">
-                { _t(l, "login.login") }
-                <span class="material-symbols-outlined">login</span>
+    <header class="site-header" id="site-header">
+        <div class="site-header__inner" x-data="{navOpen:false}">
+            <a href="/" class="site-header__logo">
+                <img style="height:64px" class="dark:hidden" src="/_/embed-assets/logo.svg" />
+                <img style="height:64px" class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
             </a>
-        }
-    }
-
-}
-
-templ siteHeaderRoot() {
-    {{
-        l := i18n.GetLocalizer(ctx)
-    }}
-    <nav class="z-40 w-full bg-background sticky top-0 h-[var(--header-height)] border-b" id="site-header">
-        <div id="site-header-inner" class="ol-container ol-container--big max-w-[120ch] h-full w-full flex gap-6 px-0" x-data="{userMenu:false}">
             { children... }
         </div>
+    </header>
 
-        <noscript>
-            <div class="fixed bottom-0 left-0 right-0">
-                <div class="ol-container py-2 bg-yellow-100 border-yellow-600 border-2">
-                    { _t(l, "special.noJavascript") }
-                </div>
-            </div>
-        </noscript>
-    </nav>
+        
+}
 
+templ navUser() {
+    {{
+        user := auth.RequireUser(ctx)
+        l := i18n.GetLocalizer(ctx)
+    }}
+    <div class="nav-user" x-data="{userMenu:false}">
+        <div @click="userMenu=true" role="button" class="flex items-center h-full">
+            <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
+        </div>
+        <div x-cloak @click.outside="userMenu=false" x-show="userMenu" class="nav-user__menu">
+            <a class="p-2 block hover:bg-secondary hover:font-medium" href="/books-manager">
+                { _t(l, "account.bookManager") }
+            </a>
+            <a class="p-2 block hover:bg-secondary hover:font-medium" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) }>
+                { _t(l, "account.profile") }
+            </a>
+            <a class="p-2 block hover:bg-secondary hover:font-medium" href="/account/settings">
+                { _t(l, "account.settings") }
+            </a>
+            if user.Role.IsAdmin() {
+                <hr />
+                <a class="p-2 flex items-center hover:bg-secondary hover:font-medium" href="/admin" target="_blank">
+                    <span class="material-symbols-outlined">open_in_new</span>
+                    { _t(l, "account.admin") }
+                </a>
+            }
+        </div>
+    </div>
 }

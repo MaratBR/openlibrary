@@ -77,7 +77,7 @@ export default function BookContentEditorHeadingMenu({
       window.requestAnimationFrame(() => {
         if (
           event.target instanceof Element &&
-          !event.target.closest('.ol-card') &&
+          !event.target.closest('.card') &&
           // only close if we clicked at element that currently exists in DOM
           document.body.contains(event.target)
         ) {
@@ -121,7 +121,7 @@ export default function BookContentEditorHeadingMenu({
         <div
           ref={popupRef}
           style={{ display: open ? 'block' : 'none' }}
-          class="ol-card border-none rounded-none shadow-md p-0 fixed top-full left-0 z-10"
+          class="card border-none rounded-none shadow-md p-0 fixed top-full left-0 z-10"
         >
           <ul>{items}</ul>
         </div>,

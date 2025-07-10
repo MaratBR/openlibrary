@@ -19,6 +19,9 @@ system = "System"
 
 switchTheme = "Switch theme"
 
+[pageNotFound]
+text = "Page not found"
+
 [time]
 justNow = "Just now"
 
@@ -177,6 +180,9 @@ youRated = "You rated this book {{.rating}}"
 myReview = "My review"
 ratingSaved = "Your rating was saved"
 thankYouForRating = "Thank you for your contribution!"
+
+notFound = "Book not found"
+notFoundText = "We could not find the book you requested. Either it does not exist, was deleted, or is no longer available due a moderator action."
 
 emptyToc = "There is no table of contents for this book"
 emptyTocContent = "This books appears to be empty or all of its content is hidden. If you came across this books through search that might be a software error. If you are the author of this book, you can add a chapter from book manager or make chapters public"

@@ -8,6 +8,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/joomcode/errorx"
 )
 
 type bookController struct {
@@ -35,8 +36,14 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 	userID := auth.GetNullableUserID(r.Context())
 	book, err := b.service.GetBook(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
 	if err != nil {
-		w.WriteHeader(404)
-		w.Write([]byte(err.Error()))
+
+		if errorx.IsOfType(err, app.ErrTypeBookNotFound) || errorx.IsOfType(err, app.ErrTypeBookPrivated) {
+			// send 404 page
+			writeTemplate(w, r.Context(), templates.BookNotFoundPage())
+		} else {
+			writeApplicationError(w, r, err)
+			// send generic application error
+		}
 		return
 	}
 

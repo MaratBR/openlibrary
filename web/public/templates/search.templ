@@ -34,7 +34,7 @@ templ SearchPage(
             "search.genres",
         })
 
-        <div class="ol-container my-12" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
+        <div class="ol-container my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
             @SearchResultFragment(result, explainedQuery)
         </div>
     }

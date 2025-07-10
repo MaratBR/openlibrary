@@ -93,6 +93,7 @@ func mainServer(
 	frontend.AttachAssetsInliningHandler(assetsFS, "assets", r)
 
 	r.Mount("/_/embed-assets/", http.StripPrefix("/_/embed-assets/", embedAssetsHandler))
+	r.Mount("/_/assets/cats", http.StripPrefix("/_/assets/cats", http.FileServer(http.Dir("./cats"))))
 	r.Mount("/_/assets/", http.StripPrefix("/_/assets/", assetsHandler))
 
 	// --------------------------------------

@@ -93,7 +93,7 @@ export default function BookContentEditorHeader({
   }
 
   return (
-    <header class="ol-book-editor__header">
+    <header class="book-editor__header">
       <div class="ol-container flex items-center gap-2 px-0">
         <section class={styles.section}>
           <label role="button" class={`btn btn--ghost ${styles.btn}`}>

@@ -195,17 +195,17 @@ declare global {
   }
 }
 
-window.toast = toast
+window.toast = (...args) => {}
 
-const btn = document.createElement('button')
-btn.textContent = 'Toast'
-btn.setAttribute(
-  'style',
-  'position: fixed; right: 32px; bottom: 10px; z-index:10000; background-color: #222; color: #fff; padding: 10px; border-radius: 4px; cursor: pointer;',
-)
-btn.addEventListener('click', () => {
-  toast({ title: 'Title', text: 'Lorem ipsum dolor sit amet', options: { duration: 5000 } })
-})
-document.addEventListener('DOMContentLoaded', () => {
-  document.body.appendChild(btn)
-})
+// const btn = document.createElement('button')
+// btn.textContent = 'Toast'
+// btn.setAttribute(
+//   'style',
+//   'position: fixed; right: 32px; bottom: 10px; z-index:10000; background-color: #222; color: #fff; padding: 10px; border-radius: 4px; cursor: pointer;',
+// )
+// btn.addEventListener('click', () => {
+//   toast({ title: 'Title', text: 'Lorem ipsum dolor sit amet', options: { duration: 5000 } })
+// })
+// document.addEventListener('DOMContentLoaded', () => {
+//   document.body.appendChild(btn)
+// })

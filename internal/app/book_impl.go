@@ -63,6 +63,10 @@ func getWordsPerChapter(words, chapters int) int {
 func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDetailsDto, error) {
 	book, err := s.queries.GetBook(ctx, query.ID)
 	if err != nil {
+		if err == store.ErrNoRows {
+			return BookDetailsDto{}, ErrTypeBookNotFound.New(fmt.Sprintf("book with id %d not found", query.ID))
+		}
+
 		return BookDetailsDto{}, err
 	}
 
@@ -72,7 +76,7 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 		BookAuthorID:      uuidDbToDomain(book.AuthorUserID),
 	})
 	if !userPermissionState.CanView {
-		return BookDetailsDto{}, ErrGenericForbidden
+		return BookDetailsDto{}, ErrTypeBookPrivated.New(fmt.Sprintf("book %d cannot be seen", book.ID))
 	}
 
 	ageRating := ageRatingFromDbValue(book.AgeRating)

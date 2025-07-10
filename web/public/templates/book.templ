@@ -6,6 +6,22 @@ import "encoding/json"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "crypto/md5"
 
+templ BookNotFoundPage() {
+    {{
+        l := i18n.GetLocalizer(ctx)
+        title := _t(l, "book.notFound")
+        text := _t(l, "book.notFoundText")
+    }}
+    @baseLayout(title) {
+        <main class="ol-container py-12">
+            <h1 class="text-8xl mb-2 font-title text-center md:text-left">404</h1>
+            <h1 class="ml-4 text-4xl font-title text-center md:text-left">{title}</h1>
+
+            <p class="ml-4 mt-10 px-2">{text}</p>
+        </main>
+    }
+}
+
 templ BookPage(
     book app.BookDetailsDto,
     ratingAndReview app.RatingAndReview,

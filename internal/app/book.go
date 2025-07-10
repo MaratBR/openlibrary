@@ -7,6 +7,11 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+var (
+	ErrTypeBookNotFound = AppErrors.NewType("book404", ErrTraitEntityNotFound)
+	ErrTypeBookPrivated = AppErrors.NewType("access_denied_book_private", ErrTraitForbidden)
+)
+
 type BookDetailsDto struct {
 	ID              int64                 `json:"id,string"`
 	Name            string                `json:"name"`
