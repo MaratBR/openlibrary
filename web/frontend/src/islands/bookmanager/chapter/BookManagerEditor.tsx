@@ -4,7 +4,7 @@ import { PreactIslandProps } from '@/islands/common/preact-island'
 import { DraftDtoSchema } from '../contracts'
 import { Editor } from '@tiptap/core'
 import { z } from 'zod'
-import { httpUpdateDraft } from './api'
+import { httpUpdateAndPublishDraft, httpUpdateDraft } from './api'
 import { createPortal } from 'preact/compat'
 import clsx from 'clsx'
 import { useMutation } from '@tanstack/react-query'
@@ -37,7 +37,7 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
   const saveAndPublishMutation = useMutation({
     mutationFn: async (content: string) => {
       const d = window.delay(500)
-      await httpUpdateDraft(bookId, draft.chapterId, draft.id, content)
+      await httpUpdateAndPublishDraft(bookId, draft.chapterId, draft.id, content)
       await d
     },
   })

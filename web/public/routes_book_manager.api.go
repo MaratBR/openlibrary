@@ -30,6 +30,8 @@ func (c *apiBookManagerController) Register(r chi.Router) {
 		r.With(httpin.NewInput(&uploadCoverInput{})).Post("/book/{bookID}/cover", c.uploadCover)
 		r.With(httpin.NewInput(&updateBookChaptersOrderRequest{})).Post("/book/{bookID}/chapters-order", c.updateBookChaptersOrder)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}", c.updateDraftContent)
+		r.Post("/book/{bookID}/{chapterID}/{draftID}/publish", c.updateDraftContentAndPublish)
+
 	})
 }
 
@@ -182,8 +184,49 @@ func (c *apiBookManagerController) updateDraftContent(w http.ResponseWriter, r *
 		return
 	}
 
-	if r.Body == nil {
-		println("BODY IS NIL")
+	contentBytes, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	session := auth.RequireSession(r.Context())
+
+	err = c.service.UpdateDraftContent(r.Context(), app.UpdateDraftContentCommand{
+		BookID:    bookID,
+		ChapterID: chapterID,
+		DraftID:   draftID,
+		UserID:    session.UserID,
+		Content:   string(contentBytes),
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+
+	apiWriteOK(w)
+}
+
+func (c *apiBookManagerController) updateDraftContentAndPublish(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	chapterID, err := olhttp.URLParamInt64(r, "chapterID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	draftID, err := olhttp.URLParamInt64(r, "draftID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "text/plain" {
+		apiWriteBadRequest(w, errors.New("Content-Type must be text/plain"))
 		return
 	}
 
@@ -206,6 +249,14 @@ func (c *apiBookManagerController) updateDraftContent(w http.ResponseWriter, r *
 	if err != nil {
 		apiWriteApplicationError(w, err)
 		return
+	}
+
+	err = c.service.PublishDraft(r.Context(), app.PublishDraftCommand{
+		DraftID: draftID,
+		UserID:  session.UserID,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
 	}
 
 	apiWriteOK(w)

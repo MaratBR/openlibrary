@@ -103,42 +103,39 @@ templ bookManagerMainPage(tab string) {
     }}
     
     @bookManagerLayout(_t(l, "bookManager.title")) {
-        <div class="ol-container ol-container--big book-manager">
-            <aside class="book-manager__menu">
+        <div class="ol-container ol-container--big side-tabs">
+            <aside class="side-tabs__menu">
                 <ul>
-                    <li>
-                        <a 
-                            if tab == "" {
-                                data-link-active-full="true"
-                            }
-                            href="?">
-                            { _t(l, "bookManager.home") }
-                        </a>
-                    </li>
+                    <a href="/books-manager"
+                        if tab == "" {
+                            class="side-tabs__tab side-tabs__tab--active"
+                        } else {
+                            class="side-tabs__tab"
+                        }>
+                        { _t(l, "bookManager.home") }
+                    </a>
 
-                    <li>
-                        <a
-                            if tab == "books" {
-                                data-link-active-full="true"
-                            }
-                            href="?tab=books">
-                            { _t(l, "bookManager.books") }
-                        </a>
-                    </li>
+                    <a href="?tab=books"
+                        if tab == "books" {
+                            class="side-tabs__tab side-tabs__tab--active"
+                        } else {
+                            class="side-tabs__tab"
+                        }>
+                        { _t(l, "bookManager.books") }
+                    </a>
 
-                    <li>
-                        <a
-                            if tab == "collections" {
-                                data-link-active-full="true"
-                            }
-                            href="?tab=collections">
-                            { _t(l, "bookManager.collections") }
-                        </a>
-                    </li>
+                    <a href="?tab=collections"
+                        if tab == "collections" {
+                            class="side-tabs__tab side-tabs__tab--active"
+                        } else {
+                            class="side-tabs__tab"
+                        }>
+                        { _t(l, "bookManager.collections") }
+                    </a>
                 </ul>
             </aside>
 
-            <div class="book-manager__body">
+            <div class="side-tabs__body">
                 { children... }
             </div>
 

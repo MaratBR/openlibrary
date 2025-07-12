@@ -8,5 +8,14 @@ create table drafts (
     summary text not null default '',
     is_adult_override boolean not null default false,
     updated_at timestamptz null,
-    created_at timestamptz not null default now()
+    created_at timestamptz not null default now(),
+    published_at timestamptz null
+);
+
+create table draft_log (
+    id int8 primary key,
+    draft_id int8 not null references drafts(id),
+    created_at timestamptz not null default now(),
+    user_id uuid null references users(id),
+    payload jsonb not null
 );

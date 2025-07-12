@@ -9,7 +9,7 @@
 
     &__logo {
         // main site logo
-        @apply focus:outline focus:outline-2 outline-offset-[-2px] lg:mr-4;
+        @apply px-2 inline-block focus:outline focus:outline-2 outline-offset-[-2px] lg:mr-4 active:bg-secondary;
     }
 
     &__mobile-open {
@@ -28,6 +28,10 @@
         @apply visible opacity-100;
         transform: translateY(0px);
     }
+
+    &__user {
+        @apply lg:ml-auto;
+    }
 }
 
 .site-nav-overlay {
@@ -42,10 +46,6 @@
     @apply flex flex-col;
 
     @apply lg:flex-row lg:mr-auto;
-}
-
-.nav-link-login {
-    @apply lg:ml-auto;
 }
 
 .nav-link {
@@ -65,9 +65,13 @@
         relative h-full ml-4 mt-0
         md:min-w-12 md:max-w-24;
 
+    &__btn {
+        @apply lg:h-full;
+    }
+
     &__menu {
         @apply 
-            bg-background 
-            lg:absolute lg:top-full lg:right-0 lg:border-border lg:border lg:py-1 lg:space-y-1 lg:min-w-40;
+            bg-secondary rounded-lg p-2 mr-4 mb-4
+            lg:bg-background lg:rounded-none lg:p-0 lg:absolute lg:top-full lg:right-0 lg:border-border lg:border lg:py-1 lg:space-y-1 lg:min-w-40;
     }
 }

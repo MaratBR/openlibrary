@@ -222,6 +222,10 @@ type CreateDraftCommand struct {
 	UserID    uuid.UUID
 }
 
+type GetBookDraftsQuery struct {
+	Page int
+}
+
 type BookManagerService interface {
 	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error)
 	GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error)
@@ -236,9 +240,9 @@ type BookManagerService interface {
 	GetChapter(ctx context.Context, query ManagerGetChapterQuery) (ManagerGetChapterResult, error)
 
 	GetDraft(ctx context.Context, query GetDraftQuery) (DraftDto, error)
+	// GetBookDrafts(ctx context.Context, query GetBookDraftsQuery)
 	UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error
 	UpdateDraftContent(ctx context.Context, cmd UpdateDraftContentCommand) error
-
 	DeleteDraft(ctx context.Context, cmd DeleteDraftCommand) error
 	PublishDraft(ctx context.Context, cmd PublishDraftCommand) error
 	CreateDraft(ctx context.Context, cmd CreateDraftCommand) (int64, error)

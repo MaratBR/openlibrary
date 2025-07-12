@@ -4,12 +4,12 @@ import { createContext, PropsWithChildren, useContext, useRef } from 'preact/com
 export type TabsProps = PropsWithChildren<{
   value?: string
   type: string
-  // eslint-disable-next-line no-unused-vars
+
   onChange: (value: string) => void
 }>
 
 const TabValueContext = createContext('')
-// eslint-disable-next-line no-unused-vars
+
 const TabCallbackContext = createContext<{ current: (value: string) => void }>({
   current: () => {},
 })

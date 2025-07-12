@@ -19,26 +19,31 @@ templ siteHeader() {
 
             {{ 
                 l := i18n.GetLocalizer(ctx)
+            }}
+            <ul class="nav-links">
+                <a role="listitem" class="nav-link" href="/">
+                    <span class="nav-link__icon material-symbols-outlined">home</span>{l.T("nav.home")}
+                </a>
+                <a role="listitem" class="nav-link" href="/library">
+                    <span class="nav-link__icon material-symbols-outlined">newsstand</span>{l.T("nav.library")}
+                </a>
+                <a role="listitem" class="nav-link" href="/search">
+                    <span class="nav-link__icon material-symbols-outlined">search</span>{l.T("nav.search")}
+                </a>
+            </ul>
+            {{
                 _, isAuthorized := auth.GetSession(ctx)
             }}
-            if isAuthorized {
-                <ul class="nav-links">
-                    <a role="listitem" class="nav-link" href="/">
-                        <span class="nav-link__icon material-symbols-outlined">home</span>{l.T("nav.home")}
+            <div class="site-nav__user">
+                if isAuthorized {
+                    @navUser()
+                } else {
+                    <a class="nav-link" href="/login">
+                        { _t(l, "login.login") }
+                        <span class="material-symbols-outlined">login</span>
                     </a>
-                    <a role="listitem" class="nav-link" href="/library">
-                        <span class="nav-link__icon material-symbols-outlined">newsstand</span>{l.T("nav.library")}
-                    </a>
-                    <a role="listitem" class="nav-link" href="/search">
-                        <span class="nav-link__icon material-symbols-outlined">search</span>{l.T("nav.search")}
-                    </a>
-                </ul>
-            } else {
-                <a class="nav-link nav-link-login" href="/login">
-                    { _t(l, "login.login") }
-                    <span class="material-symbols-outlined">login</span>
-                </a>
-            }
+                }
+            </div>
         </nav>
         <div class="site-nav-overlay" @click="navOpen=false" :data-open="navOpen" />
     }
@@ -64,9 +69,9 @@ templ navUser() {
         l := i18n.GetLocalizer(ctx)
     }}
     <div class="nav-user" x-data="{userMenu:false}">
-        <div @click="userMenu=true" role="button" class="flex items-center h-full">
+        <button @click="userMenu=true" class="nav-user__btn">
             <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
-        </div>
+        </button>
         <div x-cloak @click.outside="userMenu=false" x-show="userMenu" class="nav-user__menu">
             <a class="p-2 block hover:bg-secondary hover:font-medium" href="/books-manager">
                 { _t(l, "account.bookManager") }
