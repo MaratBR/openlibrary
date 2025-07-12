@@ -66,3 +66,7 @@ where
     not exists (select 1 from defined_tags where synonym_of = d.id) and
     not exists (select 1 from books where tag_ids @> array[d.id]);
 
+-- name: UpdateTag :exec
+update defined_tags
+set name = $2, description = $3, is_adult = $4, is_spoiler = $5, tag_type = $6, synonym_of = $7
+where id = $1;

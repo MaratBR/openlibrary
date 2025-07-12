@@ -57,9 +57,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 			r.Route("/tags", func(r chi.Router) {
 				c := newTagsController(h.db, h.cfg, tagsService)
-
-				r.Get("/", c.Home)
-				r.Get("/tag-details/{id}", c.Tag)
+				c.Setup(r)
 			})
 
 			r.Route("/users", func(r chi.Router) {

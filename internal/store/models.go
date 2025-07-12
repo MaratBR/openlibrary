@@ -375,6 +375,15 @@ type Draft struct {
 	IsAdultOverride bool
 	UpdatedAt       pgtype.Timestamptz
 	CreatedAt       pgtype.Timestamptz
+	PublishedAt     pgtype.Timestamptz
+}
+
+type DraftLog struct {
+	ID        int64
+	DraftID   int64
+	CreatedAt pgtype.Timestamptz
+	UserID    pgtype.UUID
+	Payload   []byte
 }
 
 type Rating struct {

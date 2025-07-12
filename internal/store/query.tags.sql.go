@@ -322,3 +322,32 @@ func (q *Queries) SearchDefinedTagsWithType(ctx context.Context, arg SearchDefin
 	}
 	return items, nil
 }
+
+const updateTag = `-- name: UpdateTag :exec
+update defined_tags
+set name = $2, description = $3, is_adult = $4, is_spoiler = $5, tag_type = $6, synonym_of = $7
+where id = $1
+`
+
+type UpdateTagParams struct {
+	ID          int64
+	Name        string
+	Description string
+	IsAdult     bool
+	IsSpoiler   bool
+	TagType     TagType
+	SynonymOf   pgtype.Int8
+}
+
+func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) error {
+	_, err := q.db.Exec(ctx, updateTag,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.IsAdult,
+		arg.IsSpoiler,
+		arg.TagType,
+		arg.SynonymOf,
+	)
+	return err
+}

@@ -2,34 +2,10 @@ package app
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
+
+	"github.com/gofrs/uuid"
 )
-
-type TagsCategory uint8
-
-const (
-	TagsCategoryOther TagsCategory = iota
-	TagsCategoryWarning
-	TagsCategoryFandom
-	TagsCategoryRelationship
-	TagsCategoryRelationshipType
-)
-
-func (t TagsCategory) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, tagsCategoryName(t))), nil
-}
-
-func (t *TagsCategory) UnmarshalJSON(b []byte) error {
-	var s string
-	err := json.Unmarshal(b, &s)
-	if err != nil {
-		return err
-	}
-	*t = tagsCategoryFromName(s)
-	return nil
-}
 
 type DefinedTagDto struct {
 	ID          int64        `json:"id,string"`
@@ -82,6 +58,17 @@ type ListTagsResult struct {
 	TotalPages uint32
 }
 
+type UpdateTagCommand struct {
+	ID             int64
+	Name           string
+	Description    string
+	IsAdult        bool
+	IsSpoiler      bool
+	SynonymOfTagID Nullable[int64]
+	Type           TagsCategory
+	UserID         uuid.UUID
+}
+
 type TagsService interface {
 	GetTag(ctx context.Context, id int64) (TagDetailsItemDto, error)
 	GetTagsByIds(ctx context.Context, ids []int64) ([]DefinedTagDto, error)
@@ -89,4 +76,5 @@ type TagsService interface {
 	FindParentTagIds(ctx context.Context, names []int64) (BookTags, error)
 	CreateTags(ctx context.Context, cmd CreateTagsCommand) ([]DefinedTagDto, error)
 	List(ctx context.Context, query ListTagsQuery) (ListTagsResult, error)
+	UpdateTag(ctx context.Context, command UpdateTagCommand) error
 }

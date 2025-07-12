@@ -10,85 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func dbTagTypeToTagsCategory(t store.TagType) TagsCategory {
-	switch t {
-	case store.TagTypeFreeform:
-		return TagsCategoryOther
-	case store.TagTypeWarning:
-		return TagsCategoryWarning
-	case store.TagTypeFandom:
-		return TagsCategoryFandom
-	case store.TagTypeRel:
-		return TagsCategoryRelationship
-	case store.TagTypeReltype:
-		return TagsCategoryRelationshipType
-	default:
-		return TagsCategoryOther
-	}
-}
-
-func tagsCategoryToDbTagType(cat TagsCategory) store.TagType {
-	switch cat {
-	case TagsCategoryOther:
-		return store.TagTypeFreeform
-	case TagsCategoryWarning:
-		return store.TagTypeWarning
-	case TagsCategoryFandom:
-		return store.TagTypeFandom
-	case TagsCategoryRelationship:
-		return store.TagTypeRel
-	case TagsCategoryRelationshipType:
-		return store.TagTypeReltype
-	default:
-		return store.TagTypeFreeform
-	}
-}
-
-func tagsCategoryName(cat TagsCategory) string {
-	switch cat {
-	case TagsCategoryOther:
-		return "other"
-	case TagsCategoryWarning:
-		return "warning"
-	case TagsCategoryFandom:
-		return "fandom"
-	case TagsCategoryRelationship:
-		return "rel"
-	case TagsCategoryRelationshipType:
-		return "reltype"
-	default:
-		return "unknown"
-	}
-}
-
-func tagsCategoryFromName(name string) TagsCategory {
-	switch name {
-	case "other":
-		return TagsCategoryOther
-	case "warning":
-		return TagsCategoryWarning
-	case "fandom":
-		return TagsCategoryFandom
-	case "rel":
-		return TagsCategoryRelationship
-	case "reltype":
-		return TagsCategoryRelationshipType
-	default:
-		return TagsCategoryOther
-	}
-}
-
-func definedTagToTagDto(t store.DefinedTag) DefinedTagDto {
-	return DefinedTagDto{
-		ID:          t.ID,
-		Name:        t.Name,
-		Description: t.Description,
-		IsAdult:     t.IsAdult,
-		IsSpoiler:   t.IsSpoiler,
-		Category:    dbTagTypeToTagsCategory(t.TagType),
-	}
-}
-
 type tagsService struct {
 	db      store.DBTX
 	queries *store.Queries
@@ -129,6 +50,89 @@ func (t *tagsService) GetTag(ctx context.Context, id int64) (TagDetailsItemDto, 
 		IsDefault: tag.IsDefault,
 		SynonymOf: synonym,
 	}, nil
+}
+
+func (t *tagsService) GetTagsByIds(ctx context.Context, ids []int64) ([]DefinedTagDto, error) {
+	tags, err := t.queries.GetTagsByIds(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+	return mapSlice(tags, definedTagToTagDto), nil
+}
+
+func (t *tagsService) SearchTags(ctx context.Context, query string) ([]DefinedTagDto, error) {
+	query = strings.Trim(query, " \n\t")
+	query = strings.ToLower(query)
+
+	var searchTagsLimit int32 = 20
+
+	if query == "" {
+		searchTagsLimit = 100
+	}
+
+	tags, err := t.queries.SearchDefinedTags(ctx, store.SearchDefinedTagsParams{
+		LowercasedName: escapeSqlLikeValue(query) + "%",
+		Limit:          searchTagsLimit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return mapSlice(tags, definedTagToTagDto), nil
+}
+
+func (t *tagsService) FindParentTagIds(ctx context.Context, ids []int64) (r BookTags, err error) {
+	if len(ids) == 0 {
+		r.ParentTagIds = []int64{}
+		r.TagIds = []int64{}
+		return
+	}
+
+	tags, err := t.queries.GetTagsByIds(ctx, ids)
+	if err != nil {
+		return
+	}
+	r.ParentTagIds = make([]int64, len(tags))
+	r.TagIds = make([]int64, len(tags))
+
+	for i, tag := range tags {
+		r.TagIds[i] = tag.ID
+		if tag.SynonymOf.Valid {
+			r.ParentTagIds[i] = tag.SynonymOf.Int64
+		} else {
+			r.ParentTagIds[i] = tag.ID
+		}
+	}
+
+	return
+}
+
+// CreateTags implements TagsService.
+func (t *tagsService) CreateTags(ctx context.Context, cmd CreateTagsCommand) ([]DefinedTagDto, error) {
+	tags := make([]tagImportRow, len(cmd.Tags))
+	tagNames := make([]string, len(cmd.Tags))
+
+	for i, tag := range cmd.Tags {
+		tagNames[i] = tag.Name
+		tags[i] = tagImportRow{
+			ID:          GenID(),
+			Name:        tag.Name,
+			IsAdult:     tag.IsAdult,
+			IsSpoiler:   tag.IsSpoiler,
+			TagType:     tagsCategoryToDbTagType(tag.Category),
+			Description: "",
+			SynonymOf:   pgtype.Int8{Valid: false},
+			CreatedAt:   time.Now(),
+		}
+	}
+
+	err := importTags(ctx, t.queries, tags)
+	if err != nil {
+		return nil, err
+	}
+
+	tagsDto, err := t.queries.GetTagsByName(ctx, tagNames)
+	return mapSlice(tagsDto, definedTagToTagDto), err
 }
 
 // List implements TagsService.
@@ -188,87 +192,29 @@ func (t *tagsService) List(ctx context.Context, query ListTagsQuery) (ListTagsRe
 	}, nil
 }
 
-// CreateTags implements TagsService.
-func (t *tagsService) CreateTags(ctx context.Context, cmd CreateTagsCommand) ([]DefinedTagDto, error) {
-	tags := make([]tagImportRow, len(cmd.Tags))
-	tagNames := make([]string, len(cmd.Tags))
-
-	for i, tag := range cmd.Tags {
-		tagNames[i] = tag.Name
-		tags[i] = tagImportRow{
-			ID:          GenID(),
-			Name:        tag.Name,
-			IsAdult:     tag.IsAdult,
-			IsSpoiler:   tag.IsSpoiler,
-			TagType:     tagsCategoryToDbTagType(tag.Category),
-			Description: "",
-			SynonymOf:   pgtype.Int8{Valid: false},
-			CreatedAt:   time.Now(),
-		}
+func (t *tagsService) UpdateTag(ctx context.Context, command UpdateTagCommand) error {
+	if err := validateTagName(command.Name); err != nil {
+		return err
 	}
 
-	err := importTags(ctx, t.queries, tags)
-	if err != nil {
-		return nil, err
+	if err := validateTagDescription(command.Description); err != nil {
+		return err
 	}
 
-	tagsDto, err := t.queries.GetTagsByName(ctx, tagNames)
-	return mapSlice(tagsDto, definedTagToTagDto), err
-}
-
-func (t *tagsService) FindParentTagIds(ctx context.Context, ids []int64) (r BookTags, err error) {
-	if len(ids) == 0 {
-		r.ParentTagIds = []int64{}
-		r.TagIds = []int64{}
-		return
-	}
-
-	tags, err := t.queries.GetTagsByIds(ctx, ids)
-	if err != nil {
-		return
-	}
-	r.ParentTagIds = make([]int64, len(tags))
-	r.TagIds = make([]int64, len(tags))
-
-	for i, tag := range tags {
-		r.TagIds[i] = tag.ID
-		if tag.SynonymOf.Valid {
-			r.ParentTagIds[i] = tag.SynonymOf.Int64
-		} else {
-			r.ParentTagIds[i] = tag.ID
-		}
-	}
-
-	return
-}
-
-func (t *tagsService) GetTagsByIds(ctx context.Context, ids []int64) ([]DefinedTagDto, error) {
-	tags, err := t.queries.GetTagsByIds(ctx, ids)
-	if err != nil {
-		return nil, err
-	}
-	return mapSlice(tags, definedTagToTagDto), nil
-}
-
-func (t *tagsService) SearchTags(ctx context.Context, query string) ([]DefinedTagDto, error) {
-	query = strings.Trim(query, " \n\t")
-	query = strings.ToLower(query)
-
-	var searchTagsLimit int32 = 20
-
-	if query == "" {
-		searchTagsLimit = 100
-	}
-
-	tags, err := t.queries.SearchDefinedTags(ctx, store.SearchDefinedTagsParams{
-		LowercasedName: escapeSqlLikeValue(query) + "%",
-		Limit:          searchTagsLimit,
+	err := t.queries.UpdateTag(ctx, store.UpdateTagParams{
+		ID:          command.ID,
+		Name:        command.Name,
+		Description: command.Description,
+		TagType:     tagsCategoryToDbTagType(command.Type),
+		IsAdult:     command.IsAdult,
+		IsSpoiler:   command.IsSpoiler,
+		SynonymOf:   int64NullableDomainToDb(command.SynonymOfTagID),
 	})
 	if err != nil {
-		return nil, err
+		return wrapUnexpectedDBError(err)
 	}
 
-	return mapSlice(tags, definedTagToTagDto), nil
+	return nil
 }
 
 func escapeSqlLikeValue(v string) string {
@@ -321,4 +267,35 @@ func (agg *tagsAggregator) Fetch(ctx context.Context) (map[int64]DefinedTagDto, 
 func (agg *tagsAggregator) BookTags(bookID int64) []int64 {
 	ids, _ := agg.bookTags[bookID]
 	return ids
+}
+
+func validateTagName(name string) error {
+	if name == "" {
+		return ValidationError.New("tag name cannot be empty")
+	}
+
+	if len(name) > 50 {
+		return ValidationError.New("tag name cannot be larger than 50 characters")
+	}
+
+	return nil
+}
+
+func validateTagDescription(value string) error {
+	if len(value) > 500 {
+		return ValidationError.New("tag name cannot be larger than 500 characters")
+	}
+
+	return nil
+}
+
+func definedTagToTagDto(t store.DefinedTag) DefinedTagDto {
+	return DefinedTagDto{
+		ID:          t.ID,
+		Name:        t.Name,
+		Description: t.Description,
+		IsAdult:     t.IsAdult,
+		IsSpoiler:   t.IsSpoiler,
+		Category:    dbTagTypeToTagsCategory(t.TagType),
+	}
 }

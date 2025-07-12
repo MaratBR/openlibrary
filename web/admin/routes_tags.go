@@ -4,9 +4,14 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/flash"
+	"github.com/MaratBR/openlibrary/internal/i18n"
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/ggicci/httpin"
+	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
 )
 
@@ -18,6 +23,14 @@ type tagsController struct {
 
 func newTagsController(db app.DB, cfg *koanf.Koanf, service app.TagsService) *tagsController {
 	return &tagsController{db: db, cfg: cfg, service: service}
+}
+
+func (c *tagsController) Setup(r chi.Router) {
+	r.Get("/", c.Home)
+	r.Get("/tag-details/{id}", c.Tag)
+	r.Get("/tag-details/{id}/edit", c.TagEdit)
+	r.With(httpin.NewInput(&tagEditBody{})).Post("/tag-details/{id}/edit", c.TagEdit)
+
 }
 
 func (c *tagsController) Home(w http.ResponseWriter, r *http.Request) {
@@ -61,4 +74,53 @@ func (c *tagsController) Tag(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates.Tag(tag).Render(r.Context(), w)
+}
+
+type tagEditBody struct {
+	Adult       string `in:"form=adult,required"`
+	Spoiler     string `in:"form=spoiler,required"`
+	Name        string `in:"form=name,required"`
+	Type        string `in:"form=type,required"`
+	Description string `in:"form=description,required"`
+}
+
+func (c *tagsController) TagEdit(w http.ResponseWriter, r *http.Request) {
+	id, err := olhttp.URLParamInt64(r, "id")
+	if err != nil {
+		olresponse.Write500(w, r, err)
+		return
+	}
+
+	session := auth.RequireSession(r.Context())
+
+	if r.Method == http.MethodPost {
+		body := r.Context().Value(httpin.Input).(*tagEditBody)
+
+		err := c.service.UpdateTag(r.Context(), app.UpdateTagCommand{
+			ID:          id,
+			Name:        body.Name,
+			Description: body.Description,
+			IsAdult:     body.Adult == "on",
+			IsSpoiler:   body.Spoiler == "on",
+			UserID:      session.UserID,
+			Type:        app.TagsCategoryFromName(body.Type),
+		})
+		if err != nil {
+			writeApplicationError(w, r, err)
+			return
+		}
+
+		l := i18n.GetLocalizer(r.Context())
+		flash.Add(r, flash.Text(
+			l.T("admin.tags.updatedSuccessfully"),
+		))
+	}
+
+	tag, err := c.service.GetTag(r.Context(), id)
+	if err != nil {
+		olresponse.Write500(w, r, err)
+		return
+	}
+
+	templates.TagEdit(tag).Render(r.Context(), w)
 }

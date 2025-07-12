@@ -33,7 +33,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                 <a href="?" class="link link--primary">{ _t(l, "user.allUsers") }</a>
             </div>
 
-            <div class="admin-card mt-4">
+            <div class="admin-card p-4 mt-4">
 
                 {{
                     pagination := olresponse.Pagination(resp.Page, uint32(resp.TotalPages), 9)
@@ -128,7 +128,7 @@ templ User(user *app.UserDetailsDto) {
                 </h1>
             </header>
 
-            <section class="admin-card">
+            <section class="admin-card p-4">
                 <form method="post">
                     @csrf.CSRFInputTempl(ctx)
 

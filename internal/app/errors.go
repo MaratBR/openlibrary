@@ -15,6 +15,8 @@ var (
 
 	ErrGenericForbidden = AppErrors.NewType("generic_forbidden", ErrTraitForbidden).New("access to this resource is forbidden")
 	ErrDbError          = AppErrors.NewType("db_error")
+
+	ValidationError = AppErrors.NewType("validation", ErrTraitValidationError)
 )
 
 func wrapUnexpectedAppError(err error) error {

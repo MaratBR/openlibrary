@@ -81,3 +81,11 @@ textarea.input {
         @apply text-sm text-muted-foreground;
     }
 }
+
+.input-transparent {
+    @apply focus:bg-highlight;
+}
+
+.textarea {
+    @apply focus:outline-none block;
+}

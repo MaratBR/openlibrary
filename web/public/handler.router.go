@@ -5,7 +5,6 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
-	"github.com/MaratBR/openlibrary/internal/reqid"
 	"github.com/MaratBR/openlibrary/internal/upload"
 	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/go-chi/chi/v5"
@@ -36,7 +35,6 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 				olresponse.Write500(w, r, err)
 			},
 		}))
-		r.Use(reqid.New())
 
 		authController := newAuthController(authService, h.csrfHandler)
 		bookController := newBookController(bookService, reviewsService, readingListService)

@@ -21,7 +21,7 @@ func (q *Queries) DeleteDraft(ctx context.Context, id int64) error {
 }
 
 const getDraftById = `-- name: GetDraftById :one
-select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.is_adult_override, drafts.updated_at, drafts.created_at, books.id as book_id, books.name as book_name
+select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.is_adult_override, drafts.updated_at, drafts.created_at, drafts.published_at, books.id as book_id, books.name as book_name
 from drafts
 join book_chapters on book_chapters.id = drafts.chapter_id
 join books on books.id = book_chapters.book_id
@@ -39,6 +39,7 @@ type GetDraftByIdRow struct {
 	IsAdultOverride bool
 	UpdatedAt       pgtype.Timestamptz
 	CreatedAt       pgtype.Timestamptz
+	PublishedAt     pgtype.Timestamptz
 	BookID          int64
 	BookName        string
 }
@@ -57,6 +58,7 @@ func (q *Queries) GetDraftById(ctx context.Context, id int64) (GetDraftByIdRow, 
 		&i.IsAdultOverride,
 		&i.UpdatedAt,
 		&i.CreatedAt,
+		&i.PublishedAt,
 		&i.BookID,
 		&i.BookName,
 	)

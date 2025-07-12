@@ -23,7 +23,7 @@ export default function Switch({ value, onChange, name, slotProps = {}, ...props
         type="checkbox"
         {...slotProps.input}
       />
-      <span class="slider" {...slotProps.slider} />
+      <span class="switch__slider" {...slotProps.slider} />
     </label>
   )
 }

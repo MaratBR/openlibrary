@@ -7,6 +7,7 @@ import "net/url"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/csrf"
 
 type TagsSearchRequest struct {
     SearchQuery string
@@ -28,7 +29,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                 <p>View list of tags and create new tags or edit existing ones.</p>
             </header>
 
-            <section class="admin-card">
+            <section class="admin-card p-4">
                 <form method="get">
                     <input name="p" type="number" value={ fmt.Sprintf("%d", result.Page) } aria-hidden="true" class="hidden" />
 
@@ -182,7 +183,7 @@ templ Tag(tag app.TagDetailsItemDto) {
                     { tag.Name }
                 </h1>
 
-                <article class="admin-card">
+                <article class="admin-card p-4">
                     if tag.Description == "" {
                         <p class="text-muted-foreground">
                             { _t(l, "admin.tags.noDescription") }
@@ -193,7 +194,7 @@ templ Tag(tag app.TagDetailsItemDto) {
                 </article>
             </header>
 
-            <div class="admin-card">
+            <div class="admin-card p-4">
                 <div class="space-y-2">
                     @tagParam(_t(l, "admin.tags.adult"), tableBoolValue(tag.IsAdult))
                     @tagParam(_t(l, "admin.tags.spoiler"), tableBoolValue(tag.IsSpoiler))
@@ -201,6 +202,10 @@ templ Tag(tag app.TagDetailsItemDto) {
             </div>
 
             <div class="flex gap-2 mt-10">
+                <a href={templ.URL(fmt.Sprintf("/admin/tags/tag-details/%d/edit", tag.ID))} class="btn btn--lg btn--outline" x-init>
+                    { _t(l, "common.edit") }
+                </a>
+
                 <button class="btn btn--lg btn--destructive" x-init @click="alert('not implemented')">
                     { _t(l, "common.delete") }
                 </button>
@@ -208,6 +213,92 @@ templ Tag(tag app.TagDetailsItemDto) {
         </div>
     }
 }
+
+templ TagEdit(tag app.TagDetailsItemDto) {
+    {{ l := i18n.GetLocalizer(ctx) }}
+
+    @dashboardLayout("Admin - " + tag.Name) {
+        <div class="admin-page-content">
+            <form method="post">
+                @csrf.CSRFInputTempl(ctx)
+
+                <header class="admin-page-header">
+                    <input autocomplete="off" name="name" required value={tag.Name} class="input-transparent border-b-2 border-current my-6 font-title text-5xl bg-transparent">
+
+                    <article class="admin-card">
+                        <textarea rows="10" name="description" class="textarea p-4 w-full" placeholder={_t(l, "admin.tags.noDescription")}>{tag.Description}</textarea>
+                    </article>
+                </header>
+
+                <div class="admin-card p-4 space-y-4">
+                    <div class="admin-form-field">
+                        <div class="admin-form-field__label">
+                            <label for="type">{_t(l, "admin.tags.synonymOf")}</label>
+                        </div>
+                        <div class="admin-form-field__value">
+                            if tag.SynonymOf.Valid {
+                                {tag.SynonymOf.Value.Name}
+                            } else {
+                                None
+                            }
+                        </div>
+                    </div>
+                    <div class="admin-form-field">
+                        <div class="admin-form-field__label">
+                            <label for="type">{_t(l, "admin.tags.type")}</label>
+                        </div>
+                        <div class="admin-form-field__value">
+                            <select id="type" name="type" class="input">
+                                for _, cat := range app.TagsCategoryList {
+                                    <option 
+                                        if tag.Category == cat {
+                                            selected
+                                        }
+                                        value={ cat.String() }>{_t(l, fmt.Sprintf("tagType.%s", cat.String()))}</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin-form-field">
+                        <div class="admin-form-field__label">
+                            <label for="adult">{_t(l, "admin.tags.adult")}</label>
+                            <p class="text-muted-foreground">
+                                {_t(l, "admin.tags.adultDescription")}
+                            </p>
+                        </div>
+                        <div class="admin-form-field__value">
+                            <label class="switch">
+                                <input id="adult" name="adult" type="checkbox">
+                                <span class="switch__slider" />
+                            </label>
+                        </div>
+                    </div>
+                    <div class="admin-form-field">
+                        <div class="admin-form-field__label">
+                            <label for="spoiler">{_t(l, "admin.tags.spoiler")}</label>
+                            <p class="text-muted-foreground">
+                                {_t(l, "admin.tags.spoilerDescription")}
+                            </p>
+                        </div>
+                        <div class="admin-form-field__value">
+                            <label class="switch">
+                                <input id="spoiler" name="spoiler" type="checkbox">
+                                <span class="switch__slider" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-10">
+                    <button class="btn btn--lg btn--primary" type="submit">
+                        { _t(l, "common.save") }
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+}
+
 
 templ tagParam(name string, value templ.Component) {
     <div class="w-48 flex items-start">

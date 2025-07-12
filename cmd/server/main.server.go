@@ -14,6 +14,7 @@ import (
 	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
 	i18n "github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/internal/reqid"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/admin"
 	"github.com/MaratBR/openlibrary/web/frontend"
@@ -78,6 +79,7 @@ func mainServer(
 	// --------------------------------------
 
 	r := chi.NewRouter()
+	r.Use(reqid.New())
 	r.Use(olhttp.MakeRecoveryMiddleware())
 	r.Use(csrfHandler.Middleware)
 	r.Use(localizerProvider.Middleware)

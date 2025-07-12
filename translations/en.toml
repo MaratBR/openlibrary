@@ -116,6 +116,21 @@ search = "Search"
 logIn = "Log in"
 signUp = "Sign up"
 
+############
+# TAG TYPE #
+############
+
+[tagType]
+rel = "Relationship"
+reltype = "Relationship type"
+fandom = "Fandom"
+other = "Other (default)"
+warning = "Warning"
+
+##############
+# AGE RATING #
+##############
+
 [ageRating]
 example = "Example"
 targetAudience = "Target audience"
@@ -299,9 +314,13 @@ createdAt = "Creation date"
 default = "default"
 onlyParentTags = "Parent tags only"
 onlyAdultTags = "Adult tags only"
+type = "Tag type"
+synonymOf = "Parent tag (synonym of)"
 noTags = "No tags found, adjust your search query or create more tags"
 noDescription = "Tag has no description"
-
+spoilerDescription = "If set, tag will be hidden by default and only shown if user opens spoiler tags"
+adultDescription = "If set, tag will be highlighted and all books containing this tag will show a warning. However, all existing books that had this tag before it was marked as adult will not be automatically marked as adult in the search."
+updatedSuccessfully = "Tag updated successfully"
 
 [admin.users]
 title = "Users"
