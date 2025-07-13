@@ -1,15 +1,15 @@
 import { useMemo, useState } from 'preact/hooks'
-import {
-  DetailedBookSearchQuery,
-  detailedBookSearchQuerySchema,
-  getDefaultDetailedBookSearchQuery,
-  getQueryParams,
-} from './api'
 import TagsInput from './TagsInput'
 
 import RangeInput from './RangeInput'
 import { PreactIslandProps } from '../common/preact-island'
 import { z } from 'zod'
+import {
+  DetailedBookSearchQuery,
+  detailedBookSearchQuerySchema,
+  getDefaultDetailedBookSearchQuery,
+  getQueryParams,
+} from '@/api/search'
 
 const dataSchema = z
   .object({

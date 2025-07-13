@@ -2,9 +2,36 @@ package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 
 templ tag(t app.DefinedTagDto) {
     <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", t.ID)) } class="tag">
         { t.Name }
     </a>
+}
+
+templ TagPage(tag app.TagDetailsItemDto) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    
+    @baseLayout(tag.Name) {
+        <main class="ol-container">
+            <header class="pt-16 pb-8">
+                <h1 class="font-title font-bold text-6xl">{tag.Name}</h1>
+
+                <p class="my-8 text-xl">{tag.Description}</p>
+
+                <div>
+                    <a class="link" href={templ.URL(fmt.Sprintf("/search?it=%d", tag.ID))}>
+                        {_t(l, "common.books")}
+                    </a>
+                    &bull;
+                    <a class="link" href={templ.URL(fmt.Sprintf("/collections?it=%d", tag.ID))}>
+                        {_t(l, "common.collections")}
+                    </a>
+                </div>
+            </header>
+        </main>
+    }
 }

@@ -23,6 +23,7 @@
         "openlibrary",
         "pgconn",
         "pgtype",
+        "reqid",
         "Resizer",
         "Sprintf",
         "sqlx",

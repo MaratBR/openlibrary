@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/go-chi/chi/v5"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/web/public/templates"
 )
 
 type tagsController struct {
@@ -16,11 +17,23 @@ func newTagsController(service app.TagsService) *tagsController {
 }
 
 func (t *tagsController) TagPage(w http.ResponseWriter, r *http.Request) {
-	tagID := chi.URLParam(r, "tagID")
-	if tagID == "" {
+	tagID, err := olhttp.URLParamInt64(r, "tagID")
+	if err != nil {
 		http.Redirect(w, r, "/tags", http.StatusFound)
 		return
 	}
 
-	http.Redirect(w, r, "/search?it="+tagID, http.StatusFound)
+	tag, err := t.service.GetTag(r.Context(), tagID)
+
+	if err != nil {
+		if app.IsNotFoundError(err) {
+			http.Redirect(w, r, "/tags", http.StatusFound)
+			return
+		}
+
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	writeTemplate(w, r.Context(), templates.TagPage(tag))
 }

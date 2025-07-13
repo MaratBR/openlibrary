@@ -7,6 +7,10 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+var (
+	ErrTagNotFound = AppErrors.NewType("tag404", ErrTraitEntityNotFound).New("tag with this ID cannot be found")
+)
+
 type DefinedTagDto struct {
 	ID          int64        `json:"id,string"`
 	Name        string       `json:"name"`

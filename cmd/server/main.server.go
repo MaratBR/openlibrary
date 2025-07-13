@@ -15,6 +15,7 @@ import (
 	i18n "github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/reqid"
+	"github.com/MaratBR/openlibrary/internal/session"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/admin"
 	"github.com/MaratBR/openlibrary/web/frontend"
@@ -22,6 +23,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 )
 
@@ -44,7 +46,7 @@ func mainServer(
 	var err error
 
 	// --------------------------------------
-	// initialize dependencies
+	// initialize server dependencies
 	// --------------------------------------
 
 	slog.Debug("initializing localizer provider")
@@ -74,6 +76,12 @@ func mainServer(
 	slog.Debug("initializing csrf handler")
 	csrfHandler := csrf.NewHandler("CSRF HANDLER HERE")
 
+	slog.Debug("initializing redis and session store")
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: config.String("redis.addr"),
+	})
+	sessionStore := session.NewRedisStore(redisClient)
+
 	// --------------------------------------
 	// initialize web server
 	// --------------------------------------
@@ -83,6 +91,7 @@ func mainServer(
 	r.Use(olhttp.MakeRecoveryMiddleware())
 	r.Use(csrfHandler.Middleware)
 	r.Use(localizerProvider.Middleware)
+	r.Use(session.Middleware("sid", sessionStore))
 
 	// mount assets
 	assetsFS := frontend.AssetsFS(frontend.AssetsConfig{Dev: cliParams.Dev})

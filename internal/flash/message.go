@@ -7,16 +7,16 @@ import (
 	"github.com/a-h/templ"
 )
 
-type Message templ.Component
-
-type textFlash string
+type Message struct {
+	Text string `json:"text"`
+}
 
 // Render implements Message.
-func (t textFlash) Render(ctx context.Context, w io.Writer) error {
-	_, err := w.Write([]byte(templ.EscapeString(string(t))))
+func (t Message) Render(ctx context.Context, w io.Writer) error {
+	_, err := w.Write([]byte(templ.EscapeString(string(t.Text))))
 	return err
 }
 
 func Text(text string) Message {
-	return textFlash(text)
+	return Message{Text: text}
 }

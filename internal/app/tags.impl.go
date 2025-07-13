@@ -19,6 +19,10 @@ type tagsService struct {
 func (t *tagsService) GetTag(ctx context.Context, id int64) (TagDetailsItemDto, error) {
 	tag, err := t.queries.GetTag(ctx, id)
 	if err != nil {
+		if err == store.ErrNoRows {
+			return TagDetailsItemDto{}, ErrTagNotFound
+		}
+
 		return TagDetailsItemDto{}, wrapUnexpectedDBError(err)
 	}
 
@@ -283,7 +287,7 @@ func validateTagName(name string) error {
 
 func validateTagDescription(value string) error {
 	if len(value) > 500 {
-		return ValidationError.New("tag name cannot be larger than 500 characters")
+		return ValidationError.New("tag description cannot be larger than 500 characters")
 	}
 
 	return nil

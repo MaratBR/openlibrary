@@ -84,9 +84,14 @@ const ENTRIES = [
   'islands/admin-password-reset',
 
   'islands/bookmanager',
+
+  'islands/admin',
 ]
 
 export default defineConfig((env) => ({
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(env.mode),
+  },
   plugins: [
     preact({
       devToolsEnabled: true,

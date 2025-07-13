@@ -1,8 +1,8 @@
 import { isAttrTrue } from '../html-elements'
-import { OLIsland } from './island'
+import { OLIsland, OLIslandMounted } from './island'
 
 class OLIslandElement extends HTMLElement {
-  private _unmount?: () => void
+  private _mountedIsland?: OLIslandMounted
   private _isCreating: boolean = false
 
   get active() {
@@ -43,23 +43,28 @@ class OLIslandElement extends HTMLElement {
   }
 
   attributeChangedCallback(attribute: string, oldValue: string | null, newValue: string | null) {
-    if (attribute === 'active') {
-      const old = isAttrTrue(oldValue)
-      const new_ = isAttrTrue(newValue)
-      if (old !== new_) {
-        if (new_) {
-          this._create()
-        } else {
-          this._destroy()
+    switch (attribute) {
+      case 'active':
+        {
+          const old = isAttrTrue(oldValue)
+          const new_ = isAttrTrue(newValue)
+          if (old !== new_) {
+            if (new_) {
+              this._create()
+            } else {
+              this._destroy()
+            }
+          }
         }
-
-        this.onActiveChanged(new_)
-      }
+        break
+      case 'data':
+        this._updateComponentData()
+        break
     }
   }
 
   static get observedAttributes() {
-    return ['active']
+    return ['active', 'data']
   }
 
   //#endregion
@@ -69,14 +74,14 @@ class OLIslandElement extends HTMLElement {
   }
 
   private async _create() {
-    if (this._isCreating || this._unmount) return
+    if (this._isCreating || this._mountedIsland) return
     this._isCreating = true
 
     this._showLoader()
     let island: OLIsland
     try {
       ;[island] = await Promise.all([
-        this.getIsland(),
+        this._fetchIsland(),
         new Promise((resolve) => {
           setTimeout(resolve, 300)
         }),
@@ -96,13 +101,27 @@ class OLIslandElement extends HTMLElement {
       try {
         this._clearContent()
         this.dispatchEvent(new CustomEvent('island:before-mount'))
-        this._unmount = island.mount(this, this._getData())
+        this._mountedIsland = island.mount(this, this._getData())
         console.debug('[ol-island] mount', island)
         this.dispatchEvent(new CustomEvent('island:mount'))
       } finally {
         this._isCreating = false
       }
     })
+  }
+
+  private async _fetchIsland(): Promise<OLIsland> {
+    const src = this.getAttribute('src')
+
+    if (src) {
+      const module: unknown = await import(src)
+      const name = this.getAttribute('name') || 'default'
+      const island = getIslandFromModule(module, name)
+      if (island) return island
+      console.error(`[ol-island] module ${src}`, module)
+      throw new Error(`Island ${name} is not found in ${src}`)
+    }
+    throw new Error('Island src is not specified')
   }
 
   private _clearContent() {
@@ -131,34 +150,32 @@ class OLIslandElement extends HTMLElement {
     }
   }
 
+  private _updateComponentData() {
+    const mountedIsland = this._mountedIsland
+    if (!this.active || !mountedIsland) return
+
+    try {
+      const data = this._getData()
+      mountedIsland.setData(data)
+    } catch (e: unknown) {
+      console.error('[ol-island] failed to update component data', e)
+    }
+  }
+
   private _destroy() {
-    if (!this._unmount) {
+    if (!this._mountedIsland) {
       this._clearContent()
       return
     }
 
     this.dispatchEvent(new CustomEvent('island:before-destroy'))
-    this._unmount()
-    this._unmount = undefined
+    this._mountedIsland.dispose()
+    this._mountedIsland = undefined
     this.dispatchEvent(new CustomEvent('island:destroy'))
   }
 
   disconnectedCallback() {
     this._destroy()
-  }
-
-  protected async getIsland(): Promise<OLIsland> {
-    const src = this.getAttribute('src')
-
-    if (src) {
-      const module: unknown = await import(src)
-      const name = this.getAttribute('name') || 'default'
-      const island = getIslandFromModule(module, name)
-      if (island) return island
-      console.error(`[ol-island] module ${src}`, module)
-      throw new Error(`Island ${name} is not found in ${src}`)
-    }
-    throw new Error('Island src is not specified')
   }
 
   private _preload() {
@@ -167,10 +184,6 @@ class OLIslandElement extends HTMLElement {
     if (src) {
       import(src)
     }
-  }
-
-  protected onActiveChanged(_active: boolean) {
-    // no-op
   }
 }
 

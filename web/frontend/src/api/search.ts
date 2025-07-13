@@ -1,4 +1,7 @@
+import { DEFAULT_SEARCH_DEBOUNCE } from '@/config'
 import { httpClient } from '@/http-client'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'preact/hooks'
 import { z } from 'zod'
 
 const tagCategorySchema = z.enum(['other', 'warning', 'fandom', 'rel', 'reltype', 'unknown'])
@@ -86,4 +89,38 @@ export async function searchTags(query: string): Promise<DefinedTagDto[]> {
   const json = await response.json()
 
   return z.array(definedTagDtoSchema).parse(json)
+}
+
+export type TagsSearchOptions = {
+  query: string
+  fetchDefault?: boolean
+  debounceTimeout?: number
+  enabled?: boolean
+}
+
+export function useTagsSearch({
+  query,
+  fetchDefault = false,
+  debounceTimeout = DEFAULT_SEARCH_DEBOUNCE,
+  enabled = true,
+}: TagsSearchOptions) {
+  query = query.trim().toLowerCase()
+
+  const [realQuery, setRealQuery] = useState(query)
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setRealQuery(query)
+    }, debounceTimeout)
+
+    return () => clearInterval(t)
+  }, [query, debounceTimeout])
+
+  const queryObject = useQuery({
+    queryKey: ['tags-search', realQuery],
+    enabled: enabled && (realQuery.length > 0 || fetchDefault),
+    queryFn: () => searchTags(realQuery),
+  })
+
+  return queryObject
 }

@@ -1,30 +1,22 @@
-import { useEffect, useMemo, useState } from 'preact/hooks'
-import { DefinedTagDto, searchTags } from './api'
+import { useState } from 'preact/hooks'
 import { DropdownCore } from './DropdownCore'
+import { DefinedTagDto, useTagsSearch } from '@/api/search'
 
 export type TagsInputProps = {
   tags: DefinedTagDto[]
-  // eslint-disable-next-line no-unused-vars
+
   onInput: (tags: DefinedTagDto[]) => void
 }
 
-const defaultTagsPromise = searchTags('')
-
 export default function TagsInput({ tags, onInput }: TagsInputProps) {
-  const [searchResults, setSearchResults] = useState<DefinedTagDto[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
 
-  useEffect(() => {
-    defaultTagsPromise.then(setSearchResults)
-  }, [])
+  const query = useTagsSearch({
+    query: searchQuery,
+    fetchDefault: true,
+  })
 
-  const handleSearchInput = useMemo(
-    () =>
-      window.debounce((event: InputEvent) => {
-        const value = (event.target as HTMLInputElement).value
-        searchTags(value).then(setSearchResults)
-      }, 500),
-    [],
-  )
+  const searchResults = query.data ?? []
 
   function add(tag: DefinedTagDto) {
     if (tags.some((x) => x.id === tag.id)) return
@@ -69,7 +61,7 @@ export default function TagsInput({ tags, onInput }: TagsInputProps) {
       }}
       slotProps={{
         input: {
-          onInput: handleSearchInput,
+          onInput: (e) => setSearchQuery((e.target as HTMLInputElement).value),
         },
         menu: {
           className: 'max-h-[300px] overflow-y-auto',

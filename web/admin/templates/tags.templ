@@ -8,6 +8,7 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/web/olresponse"
 import "github.com/MaratBR/openlibrary/internal/csrf"
+import "encoding/json"
 
 type TagsSearchRequest struct {
     SearchQuery string
@@ -235,12 +236,44 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                         <div class="admin-form-field__label">
                             <label for="type">{_t(l, "admin.tags.synonymOf")}</label>
                         </div>
-                        <div class="admin-form-field__value">
+                        {{
+                            var synonymOfTagJson string
+
                             if tag.SynonymOf.Valid {
-                                {tag.SynonymOf.Value.Name}
+                                var v struct {
+                                    ID int64 `json:"id,string"`
+                                    Name string `json:"name"`
+                                }
+                                v.ID = tag.SynonymOf.Value.ID
+                                v.Name = tag.SynonymOf.Value.Name
+                                b, _ := json.Marshal(v)
+                                synonymOfTagJson = string(b)
                             } else {
-                                None
+                                synonymOfTagJson = "null"
                             }
+                        }}
+                        <div class="admin-form-field__value" x-data={fmt.Sprintf("{tag:%s,open:false}", synonymOfTagJson)}>
+                            <input :value="tag?tag.id:''" name="synonymOf" type="hidden" />
+                            <span class="mb-2 inline-block">
+                                <span 
+                                    if tag.SynonymOf.Valid {
+                                        x-cloak
+                                    }
+                                    x-show="!tag">{_t(l, "common.none")}</span>
+                                <span x-text="tag?tag.name:''">
+                                    {tag.SynonymOf.Value.Name}
+                                </span>
+                            </span><br />
+                            <button type="button" class="btn rounded-full btn--sm btn--secondary" @click="open=true">
+                                {_t(l, "common.change")}
+                            </button>
+                            <ol-island 
+                                @selected="tag=$event.detail;open=false"
+                                @close="open=false"
+                                active="true" 
+                                src="/_/assets/islands/admin.js" 
+                                name="SimpleTagInputModal" 
+                                :data="JSON.stringify({open})"  />
                         </div>
                     </div>
                     <div class="admin-form-field">

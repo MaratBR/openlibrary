@@ -11,6 +11,10 @@ report = "Report"
 cancel = "Cancel"
 search = "Search"
 ageRating = "Age rating"
+books = "Books"
+collections = "Collections"
+none = "None"
+change = "Change"
 
 [uiTheme]
 dark = "Dark"

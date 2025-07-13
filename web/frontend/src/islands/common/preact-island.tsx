@@ -1,6 +1,7 @@
-import { OLIsland } from '@/lib/island'
+import { OLIsland, OLIslandMounted } from '@/lib/island'
 import { ComponentChild, ComponentType, render } from 'preact'
 import { PreactIslandSetup } from './setup'
+import { useState } from 'preact/hooks'
 
 export type PreactIslandProps = { data?: unknown; rootElement: HTMLElement }
 
@@ -13,11 +14,24 @@ abstract class PreactIslandBase implements OLIsland {
 
   abstract wrap(element: ComponentChild): ComponentChild
 
-  mount(el: HTMLElement, data: unknown): () => void {
-    render(this.wrap(<this._component rootElement={el} data={data} />), el)
+  mount(el: HTMLElement, data: unknown): OLIslandMounted {
+    let setData: (data: unknown) => void = () => {}
 
-    return () => {
-      render(null, el)
+    const StateProxy = () => {
+      const [innerData, setInnerData] = useState(data)
+
+      setData = setInnerData
+
+      return <this._component rootElement={el} data={innerData} />
+    }
+
+    render(this.wrap(<StateProxy />), el)
+
+    return {
+      dispose() {
+        render(null, el)
+      },
+      setData,
     }
   }
 }

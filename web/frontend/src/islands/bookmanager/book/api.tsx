@@ -1,5 +1,5 @@
+import { definedTagDtoSchema } from '@/api/search'
 import { httpClient, OLAPIResponse } from '@/http-client'
-import { definedTagDtoSchema } from '@/islands/search-filters/api'
 import { z } from 'zod'
 
 export type UpdateBookRequest = {

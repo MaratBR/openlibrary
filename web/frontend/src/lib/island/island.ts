@@ -1,6 +1,10 @@
+export interface OLIslandMounted {
+  dispose(): void
+  setData(data: unknown): void
+}
+
 export interface OLIsland {
-  // eslint-disable-next-line no-unused-vars
-  mount(el: HTMLElement, data: unknown): () => void
+  mount(el: HTMLElement, data: unknown): OLIslandMounted
 }
 
 export function validateIslandName(name: string) {

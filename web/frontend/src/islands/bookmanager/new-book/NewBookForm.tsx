@@ -2,8 +2,8 @@ import { useState } from 'preact/hooks'
 import { Fragment } from 'preact'
 import clsx from 'clsx'
 import CSRFInput from '@/components/CSRFInput'
-import { DefinedTagDto } from '@/islands/search-filters/api'
 import TagsInput from '@/islands/search-filters/TagsInput'
+import { DefinedTagDto } from '@/api/search'
 
 export default function NewBookForm() {
   const [stage, _setStage] = useState(0)

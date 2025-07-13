@@ -26,3 +26,7 @@ func wrapUnexpectedAppError(err error) error {
 func wrapUnexpectedDBError(err error) error {
 	return ErrDbError.Wrap(err, "unexpected database error")
 }
+
+func IsNotFoundError(err error) bool {
+	return errorx.HasTrait(err, ErrTraitEntityNotFound)
+}

@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -82,6 +83,7 @@ type tagEditBody struct {
 	Name        string `in:"form=name,required"`
 	Type        string `in:"form=type,required"`
 	Description string `in:"form=description,required"`
+	SynonymOf   *int64 `in:"form=synonymOf"`
 }
 
 func (c *tagsController) TagEdit(w http.ResponseWriter, r *http.Request) {
@@ -97,13 +99,14 @@ func (c *tagsController) TagEdit(w http.ResponseWriter, r *http.Request) {
 		body := r.Context().Value(httpin.Input).(*tagEditBody)
 
 		err := c.service.UpdateTag(r.Context(), app.UpdateTagCommand{
-			ID:          id,
-			Name:        body.Name,
-			Description: body.Description,
-			IsAdult:     body.Adult == "on",
-			IsSpoiler:   body.Spoiler == "on",
-			UserID:      session.UserID,
-			Type:        app.TagsCategoryFromName(body.Type),
+			ID:             id,
+			Name:           body.Name,
+			Description:    body.Description,
+			IsAdult:        body.Adult == "on",
+			IsSpoiler:      body.Spoiler == "on",
+			SynonymOfTagID: app.NullableFromPtr(body.SynonymOf),
+			UserID:         session.UserID,
+			Type:           app.TagsCategoryFromName(body.Type),
 		})
 		if err != nil {
 			writeApplicationError(w, r, err)
@@ -114,6 +117,9 @@ func (c *tagsController) TagEdit(w http.ResponseWriter, r *http.Request) {
 		flash.Add(r, flash.Text(
 			l.T("admin.tags.updatedSuccessfully"),
 		))
+
+		http.Redirect(w, r, fmt.Sprintf("/admin/tags/tag-details/%d", id), http.StatusFound)
+		return
 	}
 
 	tag, err := c.service.GetTag(r.Context(), id)
