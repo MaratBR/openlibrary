@@ -36,6 +36,8 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 			},
 		}))
 
+		r.NotFound(notFoundHandler)
+
 		authController := newAuthController(authService, h.csrfHandler)
 		bookController := newBookController(bookService, reviewsService, readingListService)
 		chapterController := newChaptersController(bookService)

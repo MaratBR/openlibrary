@@ -242,7 +242,6 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 	}
 
 	if cmd.Role.Valid {
-		println(cmd.Role.Value)
 		err = u.updateUserRole(ctx, queries, cmd.UserID, cmd.Role.Value)
 		if err != nil {
 			rollbackTx(ctx, tx)

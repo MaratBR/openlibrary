@@ -62,7 +62,7 @@ textarea.input {
 
 .form-control {
     &--horizontal {
-        @apply md:grid md:grid-cols-[400px_1fr];
+        @apply md:grid md:grid-cols-[200px_1fr];
     }
 
     &__label {

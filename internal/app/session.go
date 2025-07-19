@@ -13,16 +13,16 @@ var (
 )
 
 type SessionInfo struct {
-	ID           int64
-	SID          string
-	CreatedAt    time.Time
-	ExpiresAt    time.Time
-	UserID       uuid.UUID
-	UserAgent    string
-	IpAddress    string
-	UserName     string
-	UserJoinedAt time.Time
-	UserRole     UserRole
+	ID           int64     `json:"id"`
+	SID          string    `json:"sid"`
+	CreatedAt    time.Time `json:"createdAt"`
+	ExpiresAt    time.Time `json:"expiresAt"`
+	UserID       uuid.UUID `json:"userId"`
+	UserAgent    string    `json:"userAgent"`
+	IpAddress    string    `json:"ipAddr"`
+	UserName     string    `json:"userName"`
+	UserJoinedAt time.Time `json:"userJoinedAt"`
+	UserRole     UserRole  `json:"userRole"`
 }
 
 type CreateSessionCommand struct {

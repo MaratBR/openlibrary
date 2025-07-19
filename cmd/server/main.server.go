@@ -91,7 +91,6 @@ func mainServer(
 	r.Use(olhttp.MakeRecoveryMiddleware())
 	r.Use(csrfHandler.Middleware)
 	r.Use(localizerProvider.Middleware)
-	r.Use(session.Middleware("sid", sessionStore))
 
 	// mount assets
 	assetsFS := frontend.AssetsFS(frontend.AssetsConfig{Dev: cliParams.Dev})
@@ -132,8 +131,13 @@ func mainServer(
 		panic("failed to start admin handler: " + err.Error())
 	}
 
-	r.Mount("/", publicUIHandler)
-	r.Mount("/admin", adminHandler)
+	// the area where all the fun happens
+	r.Group(func(r chi.Router) {
+		r.Use(session.Middleware("sid", sessionStore))
+		r.Mount("/", publicUIHandler)
+		r.Mount("/admin", adminHandler)
+
+	})
 
 	defer publicUIHandler.Stop()
 	defer adminHandler.Stop()

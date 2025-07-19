@@ -22,13 +22,13 @@ type redisSession struct {
 }
 
 // Get implements Session.
-func (s *redisSession) Get(ctx context.Context, key string) (string, bool) {
+func (s *redisSession) Get(key string) (string, bool) {
 	value, ok := s.data[key]
 	return value, ok
 }
 
 // Put implements Session.
-func (s *redisSession) Put(ctx context.Context, key string, value string) {
+func (s *redisSession) Put(key string, value string) {
 	s.data[key] = value
 	s.touched = true
 }
@@ -45,6 +45,11 @@ func (s *redisSession) Save(ctx context.Context) error {
 
 	_, err := s.client.HSet(ctx, _REDIS_PREFIX+string(s.id), s.data).Result()
 	return err
+}
+
+// Get implements Session.
+func (s *redisSession) ID() string {
+	return string(s.id)
 }
 
 func (s *redisSession) load(ctx context.Context) error {

@@ -7,9 +7,10 @@ import (
 )
 
 type Session interface {
-	Get(ctx context.Context, key string) (string, bool)
-	Put(ctx context.Context, key string, value string)
+	Get(key string) (string, bool)
+	Put(key string, value string)
 	Save(ctx context.Context) error
+	ID() string
 }
 
 type Store interface {
