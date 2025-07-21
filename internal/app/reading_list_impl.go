@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
@@ -127,6 +128,33 @@ func (r *readingListService) setStatusAndChapter(
 		Status:                status,
 		LastAccessedChapterID: pgtype.Int8{Valid: true, Int64: chapterID},
 	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	return nil
+}
+
+func (r *readingListService) MarkChapterRead(ctx context.Context, command MarkChapterCommand) error {
+	queries := store.New(r.db)
+	// TODO: account for public availability
+	bookID, err := queries.GetChapterBookID(ctx, command.ChapterID)
+	if err != nil {
+		if err == store.ErrNoRows {
+			return ReadingListChapterNotFound.New(fmt.Sprintf("chapter %d not found", command.ChapterID), command.ChapterID)
+		} else {
+			return wrapUnexpectedDBError(err)
+		}
+	}
+	err = queries.SetBookReadingListChapter(
+		ctx,
+		store.SetBookReadingListChapterParams{
+			BookID:                bookID,
+			LastAccessedChapterID: pgtype.Int8{Valid: true, Int64: command.ChapterID},
+			UserID:                uuidDomainToDb(command.UserID),
+		},
+	)
+
 	if err != nil {
 		return wrapUnexpectedDBError(err)
 	}

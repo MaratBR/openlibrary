@@ -2,14 +2,13 @@ package public
 
 import (
 	"net/http"
-	"net/url"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/gofrs/uuid"
 )
 
-type searchRequest struct {
+type booksSearchRequest struct {
 	Query string
 
 	IncludeUsers []uuid.UUID
@@ -21,16 +20,18 @@ type searchRequest struct {
 	Chapters        app.Int32Range
 	WordsPerChapter app.Int32Range
 
-	Page     uint
+	Page     uint32
 	PageSize uint
 }
 
-func parseSearchRequest(source url.Values) (search searchRequest) {
+func getBooksSearchRequest(r *http.Request) (search booksSearchRequest) {
+	source := r.URL.Query()
+
 	search.Query = source.Get("q")
 
-	search.Words = getInt32RangeFromQuery(source, "w")
-	search.Chapters = getInt32RangeFromQuery(source, "c")
-	search.WordsPerChapter = getInt32RangeFromQuery(source, "wc")
+	search.Words = olhttp.GetInt32RangeFromQuery(source, "w")
+	search.Chapters = olhttp.GetInt32RangeFromQuery(source, "c")
+	search.WordsPerChapter = olhttp.GetInt32RangeFromQuery(source, "wc")
 
 	search.IncludeTags = olhttp.GetInt64Array(source, "it")
 	search.ExcludeTags = olhttp.GetInt64Array(source, "et")
@@ -39,8 +40,8 @@ func parseSearchRequest(source url.Values) (search searchRequest) {
 	search.ExcludeUsers = olhttp.GetUUIDArray(source, "eu")
 
 	// pagination and page size
-	search.Page = getPage(source, "p")
-	pageSize := getInt32FromQuery(source, "ps")
+	search.Page = olhttp.GetPage(source, "p")
+	pageSize := olhttp.GetInt32FromQuery(source, "ps")
 	if pageSize.Valid {
 		if pageSize.Int32 <= 0 {
 			search.PageSize = 20
@@ -54,10 +55,4 @@ func parseSearchRequest(source url.Values) (search searchRequest) {
 	}
 
 	return
-}
-
-func getSearchRequest(r *http.Request) searchRequest {
-	query := r.URL.Query()
-	req := parseSearchRequest(query)
-	return req
 }

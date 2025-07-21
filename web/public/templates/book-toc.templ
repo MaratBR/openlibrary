@@ -10,6 +10,7 @@ templ BookTOC(
     ctx context.Context,
     bookID int64,
     chapters []app.BookChapterDto,
+    activeChapterID int64,
 ) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
@@ -26,7 +27,14 @@ templ BookTOC(
                         <a
                             href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
                             class="book-toc__item">
-                            <span>{ commonutil.FormatInt(i + 1) }</span>
+                            <div class="book-toc__num">
+                                <span>{ commonutil.FormatInt(i + 1) }</span>
+                                if chapter.ID == activeChapterID {
+                                    <span class="book-toc__mark">
+                                        <span class="material-symbols-outlined">bookmark</span>
+                                    </span>
+                                }
+                            </div>
                             <div>
                                 <div class="mb-1">
                                     { chapter.Name }

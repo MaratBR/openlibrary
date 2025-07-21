@@ -46,6 +46,10 @@ func NewAPIError(err error) *APIResponse {
 	return createAPIResponse(&apiError{err: err})
 }
 
+func NewAPIErrorWithMessage(message string) *APIResponse {
+	return createAPIResponse(textError(message))
+}
+
 func createAPIResponse(body APIBody) *APIResponse {
 	return &APIResponse{
 		body: body,
@@ -86,6 +90,17 @@ func (r *apiError) WriteHttpBody(w http.ResponseWriter) {
 	}
 
 	writeJSON(w, resp)
+}
+
+type textError string
+
+func (r textError) WriteHttpBody(w http.ResponseWriter) {
+	var resp jsonErrorResponse
+
+	resp.Message = string(r)
+
+	writeJSON(w, resp)
+
 }
 
 func addNotifications(w http.ResponseWriter, notifications []Notification) {

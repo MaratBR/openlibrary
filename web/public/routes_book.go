@@ -1,6 +1,7 @@
 package public
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -8,6 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/go-chi/chi/v5"
 	"github.com/joomcode/errorx"
 )
 
@@ -25,6 +27,15 @@ func newBookController(service app.BookService, reviewService app.ReviewsService
 	}
 }
 
+func (b *bookController) Register(r chi.Router) {
+	// book page and its fragments
+	r.Get("/book/{bookID}", b.GetBook)
+	r.Get("/book/{bookID}/__fragment/preview-card", b.GetBookPreview)
+	r.Get("/book/{bookID}/__fragment/toc", b.GetBookTOC)
+	r.Get("/book/{bookID}/__fragment/review", b.GetBookReview)
+
+}
+
 func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 	bookID, err := commonutil.URLParamInt64(r, "bookID")
 	if err != nil {
@@ -39,7 +50,7 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 
 		if errorx.IsOfType(err, app.ErrTypeBookNotFound) || errorx.IsOfType(err, app.ErrTypeBookPrivated) {
 			// send 404 page
-			writeTemplate(w, r.Context(), templates.BookNotFoundPage())
+			olhttp.WriteTemplate(w, r.Context(), templates.BookNotFoundPage())
 		} else {
 			writeApplicationError(w, r, err)
 			// send generic application error
@@ -108,7 +119,21 @@ func (b *bookController) GetBookTOC(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates.BookTOC(r.Context(), bookID, chapters).Render(r.Context(), w)
+	s, ok := auth.GetSession(r.Context())
+	var (
+		activeChapterID int64
+	)
+
+	if ok {
+		status, err := b.readingListService.GetStatus(r.Context(), s.UserID, bookID)
+		if err != nil {
+			slog.Error("failed to get reading list status", "userID", s.UserID, "bookID", bookID, "err", err)
+		} else if status.Valid && status.Value.ChapterID.Valid {
+			activeChapterID = int64(status.Value.ChapterID.Value)
+		}
+	}
+
+	templates.BookTOC(r.Context(), bookID, chapters, activeChapterID).Render(r.Context(), w)
 }
 
 func (b *bookController) GetBookPreview(w http.ResponseWriter, r *http.Request) {

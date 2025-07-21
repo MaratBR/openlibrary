@@ -36,7 +36,7 @@ func NewAuthorizationMiddleware(
 			}
 
 			// get session instance
-			sessionInstance, ok := session.GetSession(r)
+			sessionInstance, ok := session.Get(r)
 			if !ok {
 				next.ServeHTTP(w, r)
 				return

@@ -17,6 +17,12 @@ ON CONFLICT (book_id, user_id)
 DO UPDATE SET status = $3, last_updated_at = now()
 RETURNING *;
 
+-- name: SetBookReadingListChapter :exec
+INSERT INTO reading_list (book_id, user_id, status, last_accessed_chapter_id)
+VALUES ($1, $2, 'reading', $3)
+ON CONFLICT (book_id, user_id)
+DO UPDATE SET last_accessed_chapter_id = $3, last_updated_at = now();
+
 -- name: GetFirstChapterID :one
 select id
 from book_chapters

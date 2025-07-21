@@ -73,7 +73,7 @@ type BookSearchQuery struct {
 	IncludeHidden bool
 	IncludeEmpty  bool
 
-	Page     uint
+	Page     uint32
 	PageSize uint
 }
 
@@ -160,8 +160,8 @@ type DetailedBookSearchQuery struct {
 	IncludeHidden bool `json:"includeHidden"`
 	IncludeEmpty  bool `json:"includeEmpty"`
 
-	Page     uint `json:"page"`
-	PageSize uint `json:"pageSize"`
+	Page     uint32 `json:"page"`
+	PageSize uint   `json:"pageSize"`
 }
 
 func (d *DetailedBookSearchQuery) ActiveFilters() int {

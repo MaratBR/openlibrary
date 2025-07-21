@@ -64,6 +64,12 @@ Alpine.data('bookReader', () => ({
       this.changeFontSize(false)
     },
   },
+
+  closeButton: {
+    '@click'() {
+      this.settingsOpen = false
+    },
+  },
 }))
 
 function setFontSizeCookie(fontSize: number) {

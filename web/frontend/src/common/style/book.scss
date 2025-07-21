@@ -33,6 +33,14 @@
             hover:bg-secondary 
             active:outline-1 active:outline;
     }
+
+    &__num {
+        @apply flex flex-col items-center gap-2;
+    }
+
+    &__mark {
+        @apply inline-block text-muted-foreground;
+    }
 }
 
 // ----------------- //

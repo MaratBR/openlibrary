@@ -18,8 +18,8 @@ func newLibraryController(service app.ReadingListService) *libraryController {
 }
 
 func (c *libraryController) Register(r chi.Router) {
-	r.Get("/", c.index)
-	r.Get("/archive", c.archive)
+	r.Get("/library/", c.index)
+	r.Get("/library/archive", c.archive)
 }
 
 func (c *libraryController) index(w http.ResponseWriter, r *http.Request) {

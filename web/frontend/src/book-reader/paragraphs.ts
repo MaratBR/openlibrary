@@ -20,8 +20,9 @@ class Paragraphs {
   }
 
   init() {
-    const paragraphs = this._root.querySelectorAll('p')
-    paragraphs.forEach((p) => {
+    const paragraphs = this._root.querySelectorAll(':scope > p')
+    paragraphs.forEach((el) => {
+      const p = el as HTMLParagraphElement
       if (!containsOnlyTextElements(p)) return
       p.classList.add(styles.p)
       p.addEventListener('click', (e) => {

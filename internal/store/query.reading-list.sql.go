@@ -120,6 +120,24 @@ func (q *Queries) GetUserLibrary(ctx context.Context, arg GetUserLibraryParams) 
 	return items, nil
 }
 
+const setBookReadingListChapter = `-- name: SetBookReadingListChapter :exec
+INSERT INTO reading_list (book_id, user_id, status, last_accessed_chapter_id)
+VALUES ($1, $2, 'reading', $3)
+ON CONFLICT (book_id, user_id)
+DO UPDATE SET last_accessed_chapter_id = $3, last_updated_at = now()
+`
+
+type SetBookReadingListChapterParams struct {
+	BookID                int64
+	UserID                pgtype.UUID
+	LastAccessedChapterID pgtype.Int8
+}
+
+func (q *Queries) SetBookReadingListChapter(ctx context.Context, arg SetBookReadingListChapterParams) error {
+	_, err := q.db.Exec(ctx, setBookReadingListChapter, arg.BookID, arg.UserID, arg.LastAccessedChapterID)
+	return err
+}
+
 const setBookReadingListStatus = `-- name: SetBookReadingListStatus :one
 INSERT INTO reading_list (book_id, user_id, status, last_accessed_chapter_id)
 VALUES ($1, $2, $3, null)

@@ -14,6 +14,7 @@ var (
 	ReadingListErrors            = AppErrors.NewSubNamespace("reading_list")
 	ReadingListInvalidTransition = ReadingListErrors.NewType("invalid_transition")
 	ErrReadingListEmptyBook      = ReadingListInvalidTransition.NewSubtype("empty_book").New("cannot update reading list for empty book")
+	ReadingListChapterNotFound   = ReadingListErrors.NewType("chapter404")
 )
 
 const (
@@ -50,6 +51,11 @@ type GetReadingListItemsQuery struct {
 	Status ReadingListStatus
 }
 
+type MarkChapterCommand struct {
+	ChapterID int64
+	UserID    uuid.UUID
+}
+
 type ReadingListService interface {
 	MarksAsWantToRead(ctx context.Context, userID uuid.UUID, bookID int64) error
 	MarkAsDnf(ctx context.Context, userID uuid.UUID, bookID int64) error
@@ -59,4 +65,5 @@ type ReadingListService interface {
 	MarkAsReadingWithChapterID(ctx context.Context, userID uuid.UUID, bookID int64, chapterID int64) error
 	GetStatus(ctx context.Context, userID uuid.UUID, bookID int64) (Nullable[BookReadingListDto], error)
 	GetReadingListBooks(ctx context.Context, query GetReadingListItemsQuery) ([]BookLibraryDto, error)
+	MarkChapterRead(ctx context.Context, command MarkChapterCommand) error
 }

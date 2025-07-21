@@ -10,7 +10,7 @@ templ logo() {
 
 templ flashes() {
     {{
-        arr := flash.GetFlashes(ctx)
+        arr := flash.PullFlashes(ctx)
     }}
 
     if len(arr) > 0 {

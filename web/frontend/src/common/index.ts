@@ -19,4 +19,6 @@ import '@/http-client'
 import './common.css'
 
 import { initAfterDOMReady } from './links'
+import { initFirstActivityEvent } from '@/lib/user-activity-detector'
 initAfterDOMReady()
+initFirstActivityEvent()

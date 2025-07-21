@@ -1,6 +1,7 @@
 package olhttp
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -39,6 +40,12 @@ func GetInt32FromQuery(values url.Values, key string) app.Int32 {
 		return app.Int32{}
 	}
 	return app.Int32{Valid: true, Int32: int32(i)}
+}
+
+func GetInt32RangeFromQuery(query url.Values, queryParam string) app.Int32Range {
+	max := GetInt32FromQuery(query, fmt.Sprintf("%s.max", queryParam))
+	min := GetInt32FromQuery(query, fmt.Sprintf("%s.min", queryParam))
+	return app.Int32Range{Max: max, Min: min}
 }
 
 func GetPage(values url.Values, key string) uint32 {
@@ -99,7 +106,7 @@ func GetBoolDefault(value url.Values, key string, defaultValue bool) bool {
 	}
 }
 
-func splitByWithEscape(s string, c byte) []string {
+func SplitByWithEscape(s string, c byte) []string {
 	result := []string{}
 	buf := []byte{}
 	escaped := false
@@ -133,7 +140,7 @@ func splitByWithEscape(s string, c byte) []string {
 }
 
 func ParseStringArray(value string) []string {
-	return splitByWithEscape(value, ',')
+	return SplitByWithEscape(value, ',')
 }
 
 func ParseInt64Array(value string) []int64 {

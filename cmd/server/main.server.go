@@ -22,6 +22,7 @@ import (
 	"github.com/MaratBR/openlibrary/web/public"
 	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/knadh/koanf/v2"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
@@ -66,12 +67,8 @@ func mainServer(
 	slog.Debug("connecting to cache")
 	cacheInstance := createCache(config)
 
-	slog.Debug("connecting to elasticsearh client")
-	esClient, err := setupElasticsearch(config)
-	if err != nil {
-		panic(err)
-	}
-	_ = esClient
+	slog.Debug("connecting to elasticsearch client")
+	esClient := setupElasticsearch(config)
 
 	slog.Debug("initializing csrf handler")
 	csrfHandler := csrf.NewHandler("CSRF HANDLER HERE")
@@ -206,10 +203,25 @@ func connectToDatabase(config *koanf.Koanf) app.DB {
 		slog.Error("database.url is empty")
 		os.Exit(1)
 	}
-	db, err := store.Connect(context.Background(), connectionString)
-	if err != nil {
-		panic(err)
+	var (
+		db       *pgxpool.Pool
+		err      error
+		sleeping = time.Second
+	)
+
+	for {
+		db, err = store.Connect(context.Background(), connectionString)
+		if err != nil {
+			slog.Error("failed to connect to DB", "err", err, "sleeping", sleeping)
+			time.Sleep(sleeping)
+			if sleeping < time.Second*60 {
+				sleeping *= 2
+			}
+		} else {
+			break
+		}
 	}
+
 	return db
 }
 
@@ -222,7 +234,7 @@ func createCache(config *koanf.Koanf) *cache.Cache {
 	return cacheInstance
 }
 
-func setupElasticsearch(config *koanf.Koanf) (*elasticsearch.TypedClient, error) {
+func setupElasticsearch(config *koanf.Koanf) *elasticsearch.TypedClient {
 	elasticsearchURL := config.String("elasticsearch.url")
 	if elasticsearchURL == "" {
 		slog.Error("elasticsearch.url is empty")
@@ -233,13 +245,13 @@ func setupElasticsearch(config *koanf.Koanf) (*elasticsearch.TypedClient, error)
 		Addresses: []string{elasticsearchURL},
 	})
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	err = elasticstore.Setup(context.Background(), client)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	return client, nil
+	return client
 }

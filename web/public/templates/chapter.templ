@@ -6,6 +6,7 @@ import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "fmt"
 import "strconv"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/MaratBR/openlibrary/web/olresponse"
 
 templ Chapter(
     chapterWithDetails app.ChapterWithDetails,
@@ -18,13 +19,18 @@ templ Chapter(
     }}
 
     @htmlLayout(chapter.Name) {
+        @olresponse.JSServerData("chapterId", fmt.Sprintf("%d", chapterWithDetails.Chapter.ID))
+        <script>
+            const c = () => {if (window.IS_BOT) return;fetch(`/_api/reading-list/chapter?chapterId=${__server__.chapterId}`,{method:'POST'})};
+            window.FIRST_USER_ACTIVITY?c():document.addEventListener('first_user_activity', c);
+        </script>
+
         @siteHeaderLayout() {
-            <div class="h-full items-center flex gap-2">
-                <a class="link !font-[600]" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
+            <div class="h-full flex-nowrap overflow-x-auto whitespace-nowrap items-center flex gap-2">
+                <a class="link !font-[600] hidden lg:block" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
                     { book.Name }
                 </a>
-
-                <span class="material-symbols-outlined w-6 overflow-hidden select-none">chevron_right</span>
+                <span class="material-symbols-outlined w-6 overflow-hidden select-none !hidden lg:!block">chevron_right</span>
 
                 <span class="font-semibold">
                     { chapter.Name }
@@ -36,11 +42,11 @@ templ Chapter(
         <div
             x-data="bookReader"
             data-font-size={ strconv.Itoa(uiSettings.FontSize) }
-            class="book-reader grid grid-cols-[1fr_auto]">
+            class="book-reader">
             <div class="relative pb-10">
                 <aside class="z-10 absolute top-0 bottom-0 right-0">
                     <div class="flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2">
-                        <button x-bind="toggleButton" class="btn btn--icon btn--ghost">
+                        <button x-bind="toggleButton" class="btn btn--icon btn--secondary z-20">
                             <span class="material-symbols-outlined">settings</span>
                         </button>
                     </div>
@@ -73,8 +79,12 @@ templ Chapter(
                 </div>
             </div>
 
-            <div class="w-[400px] border-l" x-cloak x-bind="settings">
+            <div class="book-reader__settings" x-cloak x-bind="settings">
                 <div class="sticky top-[var(--header-height)] h-[100%-var(--header-height)]">
+                    <div class="p-4">
+                        <button x-bind="closeButton" class="btn btn--lg btn--secondary w-full lg:hidden">Close</button>
+                    </div>
+
                     @readerSettingsUI(uiSettings)
                 </div>
             </div>

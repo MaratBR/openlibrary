@@ -9,6 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
 )
 
@@ -18,6 +19,11 @@ type apiReadingListController struct {
 
 func newAPIReadingListController(service app.ReadingListService) *apiReadingListController {
 	return &apiReadingListController{service: service}
+}
+
+func (c *apiReadingListController) Register(r chi.Router) {
+	r.Post("/reading-list/status", c.UpdateStatus)
+	r.Post("/reading-list/chapter", c.UpdateCurrentChapter)
 }
 
 func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.Request) {
@@ -75,4 +81,24 @@ func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.R
 	}
 
 	olresponse.NewAPIResponse(state.Value).Write(w)
+}
+
+func (c *apiReadingListController) UpdateCurrentChapter(w http.ResponseWriter, r *http.Request) {
+	chapterID, err := olhttp.URLQueryParamInt64(r, "chapterId")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	s := auth.RequireSession(r.Context())
+
+	err = c.service.MarkChapterRead(r.Context(), app.MarkChapterCommand{
+		UserID:    s.UserID,
+		ChapterID: chapterID,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+	} else {
+		apiWriteOK(w)
+	}
 }

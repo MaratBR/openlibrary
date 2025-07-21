@@ -6,6 +6,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/go-chi/chi/v5"
 )
 
 type tagsController struct {
@@ -14,6 +15,10 @@ type tagsController struct {
 
 func newTagsController(service app.TagsService) *tagsController {
 	return &tagsController{service: service}
+}
+
+func (t *tagsController) Register(r chi.Router) {
+	r.Get("/tag/{tagID}", t.TagPage)
 }
 
 func (t *tagsController) TagPage(w http.ResponseWriter, r *http.Request) {
@@ -35,5 +40,5 @@ func (t *tagsController) TagPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeTemplate(w, r.Context(), templates.TagPage(tag))
+	olhttp.WriteTemplate(w, r.Context(), templates.TagPage(tag))
 }

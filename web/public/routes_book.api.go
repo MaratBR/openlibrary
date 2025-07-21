@@ -8,6 +8,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/go-chi/chi/v5"
 )
 
 type apiBookController struct {
@@ -22,6 +23,13 @@ func newAPIBookController(service app.BookService, reviewService app.ReviewsServ
 		reviewService:      reviewService,
 		readingListService: readingListService,
 	}
+}
+
+func (c *apiBookController) Register(r chi.Router) {
+	r.Post("/reviews/rating", c.RateBook)
+	r.Get("/reviews/{bookID}", c.GetReview)
+	r.Post("/reviews/{bookID}", c.UpdateOrCreateReview)
+	r.Delete("/reviews/{bookID}", c.DeleteReview)
 }
 
 func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {

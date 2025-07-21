@@ -20,12 +20,12 @@ type apiBookManagerController struct {
 	fileValidator upload.FileValidator
 }
 
-func newApiBookManagerController(service app.BookManagerService, fileValidator upload.FileValidator) *apiBookManagerController {
+func newAPIBookManagerController(service app.BookManagerService, fileValidator upload.FileValidator) *apiBookManagerController {
 	return &apiBookManagerController{service: service, fileValidator: fileValidator}
 }
 
 func (c *apiBookManagerController) Register(r chi.Router) {
-	r.Route("/_api/books-manager", func(r chi.Router) {
+	r.Route("/books-manager", func(r chi.Router) {
 		r.With(httpin.NewInput(&updateBookRequest{})).Post("/book/{bookID}", c.updateBook)
 		r.With(httpin.NewInput(&uploadCoverInput{})).Post("/book/{bookID}/cover", c.uploadCover)
 		r.With(httpin.NewInput(&updateBookChaptersOrderRequest{})).Post("/book/{bookID}/chapters-order", c.updateBookChaptersOrder)

@@ -7,6 +7,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/go-chi/chi/v5"
 )
 
 type chaptersController struct {
@@ -15,6 +16,11 @@ type chaptersController struct {
 
 func newChaptersController(service app.BookService) *chaptersController {
 	return &chaptersController{service: service}
+}
+
+func (c *chaptersController) Register(r chi.Router) {
+	r.Get("/book/{bookID}/chapters/{chapterID}", c.GetChapter)
+
 }
 
 func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) {

@@ -10,7 +10,7 @@ import "github.com/MaratBR/openlibrary/internal/i18n"
 
 templ flashMessages() {
     {{
-        messages := flash.GetFlashes(ctx)
+        messages := flash.PullFlashes(ctx)
     }}
 
     <div class="ol-container ol-container--big my-2 empty:hidden">

@@ -55,4 +55,8 @@
         }
     }
 
+    div:has(table) {
+        overflow-x: auto;
+    }
+
 }

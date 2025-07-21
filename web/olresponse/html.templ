@@ -26,6 +26,12 @@ templ Doc(
         if l.Passthrough() {
             <meta name="openlibrary-debug-meta:localizer-passthrough-mode" content="true" />
         }
+        {{
+            r := olhttp.GetRequest(ctx)
+        }}
+        if isBot(r) {
+            <script>window.IS_BOT=true</script>
+        }
         <title>{ settings.Title }</title>
         for _, scriptPath := range settings.Scripts {
             <script data-no-instant defer type="module" src={ scriptPath }></script>

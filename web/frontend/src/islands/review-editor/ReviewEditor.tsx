@@ -62,7 +62,7 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
     <div>
       <RatingInput scale={0.5} value={rating} onInput={setRating} />
 
-      <div class="ol-review-editor__toolbar mt-4">
+      <div class="review-editor__toolbar mt-4">
         <button
           class={active.bold ? 'active' : ''}
           onClick={() => editor.current?.chain().focus().toggleBold().run()}
@@ -78,7 +78,7 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
         </button>
       </div>
 
-      <div ref={rootEl} class="ol-review-editor__content __user-content __user-content--editor" />
+      <div ref={rootEl} class="review-editor__content __user-content __user-content--editor" />
 
       <button
         class="btn btn--lg btn--primary rounded-full mt-3"
@@ -128,9 +128,9 @@ function RatingInput({
       onClick={handleClick}
       style={`width:${540 * scale}px;height:${100 * scale}px`}
     >
-      <div class="ol-star-background h-full w-full opacity-15" />
+      <div class="star-background h-full w-full opacity-15" />
       <div
-        class="absolute left-0 top-0 ol-star-background ol-star-background--filled h-full"
+        class="absolute left-0 top-0 star-background star-background--filled h-full"
         style={`width:${calcPerc(value)}%;background-size:auto ${scale * 100}px`}
       />
     </div>

@@ -55,7 +55,7 @@ func Middleware(
 	}
 }
 
-func GetSession(r *http.Request) (Session, bool) {
+func Get(r *http.Request) (Session, bool) {
 	v := r.Context().Value(ctxKeySession)
 	if v == nil {
 		return nil, false

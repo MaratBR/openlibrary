@@ -6,6 +6,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/go-chi/chi/v5"
 )
 
 type userController struct {
@@ -15,6 +16,10 @@ type userController struct {
 
 func newProfileController(service app.UserService, bookService app.BookService) *userController {
 	return &userController{service: service, bookService: bookService}
+}
+
+func (c *userController) Register(r chi.Router) {
+	r.Get("/users/{id}", c.GetProfile)
 }
 
 func (c *userController) GetProfile(w http.ResponseWriter, r *http.Request) {

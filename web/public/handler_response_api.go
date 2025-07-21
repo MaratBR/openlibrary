@@ -3,6 +3,7 @@ package public
 import (
 	"net/http"
 
+	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/web/olresponse"
 )
 
@@ -37,4 +38,21 @@ func apiWriteUnprocessableEntity(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusUnprocessableEntity)
 	resp := olresponse.NewAPIError(err)
 	resp.Write(w)
+}
+
+func apiWriteUnauthorized(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusUnauthorized)
+	resp := olresponse.NewAPIErrorWithMessage("unauthorized")
+	resp.Write(w)
+}
+
+func returnUnauthorizedIfNotLoggedIn(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, ok := auth.GetSession(r.Context())
+		if !ok {
+			apiWriteUnauthorized(w)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/go-chi/chi/v5"
 )
 
 type authController struct {
@@ -19,6 +20,12 @@ type authController struct {
 
 func newAuthController(authService app.AuthService, csrfHandler *csrf.Handler) *authController {
 	return &authController{authService: authService, csrfHandler: csrfHandler}
+}
+
+func (c *authController) Register(r chi.Router) {
+	// public auth pages
+	r.HandleFunc("/login", c.LogIn)
+	r.HandleFunc("/logout", c.LogOut)
 }
 
 func (c *authController) LogIn(w http.ResponseWriter, r *http.Request) {

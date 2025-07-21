@@ -2,10 +2,10 @@ package olresponse
 
 import "github.com/MaratBR/openlibrary/internal/app"
 
-script jsServerData(key string, v any) {
+script JSServerData(key string, v any) {
     (window.__server__||(window.__server__={}))[key]=v
 }
 
 templ ServerData() {
-    @jsServerData("ageRatings", app.AllRatings)
+    @JSServerData("ageRatings", app.AllRatings)
 }
