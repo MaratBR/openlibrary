@@ -1,9 +1,7 @@
 package admin
 
 import (
-	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
@@ -15,8 +13,6 @@ import (
 )
 
 func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
-	h.setupAutoRedirect()
-
 	h.r.NotFound(adminNotFound)
 
 	h.r.Group(func(r chi.Router) {
@@ -56,8 +52,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 			})
 
 			r.Route("/tags", func(r chi.Router) {
-				c := newTagsController(h.db, h.cfg, tagsService)
-				c.Setup(r)
+				newTagsController(h.db, h.cfg, tagsService).Setup(r)
 			})
 
 			r.Route("/users", func(r chi.Router) {
@@ -68,6 +63,10 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 				r.With(httpin.NewInput(updateUserRequest{})).Post("/{id}", c.UserUpdate)
 			})
 
+			r.Route("/books", func(r chi.Router) {
+				newBooksController(h.db).Register(r)
+			})
+
 			{
 				c := newDebugController(bgServices.BookReindex)
 				r.Handle("/debug", http.HandlerFunc(c.Actions))
@@ -75,28 +74,4 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		})
 	})
 
-}
-
-func (h *Handler) setupAutoRedirect() {
-	adminOrigin := h.cfg.String("server.public-admin-origin")
-	if adminOrigin != "" {
-		adminOriginU, err := url.Parse(adminOrigin)
-		if err != nil {
-			panic(err)
-		}
-
-		h.r.Use(func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.Host != adminOriginU.Host {
-					location := fmt.Sprintf("%s://%s/admin", adminOriginU.Scheme, adminOriginU.Host)
-					w.Header().Add("Location", location)
-					w.Header().Set("Content-Type", "text/html")
-					w.WriteHeader(307)
-					w.Write([]byte(fmt.Sprintf("Redirect to <a href=\"%s\">%s</a>", location, location)))
-					return
-				}
-				next.ServeHTTP(w, r)
-			})
-		})
-	}
 }

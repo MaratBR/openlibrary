@@ -1,0 +1,222 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/app"
+import (
+    "fmt"
+    "time"
+	"github.com/MaratBR/openlibrary/web/olresponse"
+)
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "encoding/json"
+import "github.com/MaratBR/openlibrary/internal/csrf"
+import "github.com/eduardolat/goeasyi18n"
+
+templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+        // book.IsBanned = true
+        // book.IsPermDeleted = true
+
+        actionDisabled := book.IsPermDeleted
+    }}
+
+    @modLayout("Mod - " + book.Name) {
+        {{
+            var data struct {
+                Action string `json:"action"`
+                Reason string `json:"reason"`
+                Challenge string `json:"challenge"`
+                ChallengeInput string `json:"challengeInput"`
+            }
+            data.Challenge = "DELETE THIS BOOK PERMANENTLY"
+            dataJson, _ := json.Marshal(data)
+        }}
+
+        <div 
+            x-data={string(dataJson)}
+            class="ol-container ol-container--big">
+            <header>
+                <h1 class="page-header font-title my-8">{book.Name}</h1>
+
+                <div class="flex gap-1 mt-2">
+                    if book.IsBanned {
+                        <div class="bg-red-700 text-white px-3 rounded-full leading-8 font-medium flex items-center">
+                            <span class="material-symbols-outlined mr-1">gavel</span>
+                            { _t(l, "mod.book.banned") }
+                        </div>
+                    }
+                    if book.IsShadowBanned {
+                        <div class="bg-fuchsia-950 text-white px-3 rounded-full leading-8 font-medium flex items-center">
+                            <span class="material-symbols-outlined mr-1">shadow</span>
+                            { _t(l, "mod.book.shadowBanned") }
+                        </div>
+                    }
+                    if book.IsPermDeleted {
+                        <div class="bg-slate-700 text-white px-3 rounded-full leading-8 font-medium flex items-center">
+                            <span class="material-symbols-outlined mr-1">skull</span>
+                            { _t(l, "mod.book.permRemoved") }
+                        </div>
+                    }
+
+                </div>
+            </header>
+
+            <form method="post"
+                if book.IsPermDeleted  {
+                    aria-disabled="true"
+                    aria-describedby="mod_bookActionForm_PermRemovedNotice"
+                }
+                >
+
+                if book.IsPermDeleted {
+                    <p id="mod_bookActionForm_PermRemovedNotice" class="mt-4">{ _t(l, "mod.permRemovedNotice") }</p>
+                }
+                <ul class="mod-actions-container my-4">
+                    if book.IsBanned {
+                        @modBookAction("unban", _t(l, "mod.unban"), _t(l, "mod.unbanDescription"), actionDisabled) {}
+                    } else {
+                        @modBookAction("ban", _t(l, "mod.ban"), _t(l, "mod.banDescription"), actionDisabled) {}
+                    }
+
+                    if book.IsShadowBanned {
+                        @modBookAction("shadow_unban", _t(l, "mod.shadowUnban"), _t(l, "mod.shadowUnbanDescription"), actionDisabled) {}
+                    } else {
+                        @modBookAction("shadow_ban", _t(l, "mod.shadowBan"), _t(l, "mod.shadowBanDescription"), actionDisabled) {}
+                    }
+
+                    @modBookAction("perm_delete", _t(l, "mod.permDelete"), _t(l, "mod.permDeleteDescription"), actionDisabled) {}
+                </ul>
+
+                <input name="act" type="hidden" :value="action" />
+                <textarea required name="reason" x-model="reason" disabled :disabled="!action" class="input min-h-24" placeholder={_t(l, "mod.youMustSpecifyReasonForAction")} />
+                @csrf.CSRFInputTempl(ctx)
+
+                <div 
+                    x-cloak x-show="action==='permDelete'" 
+                    aria-hidden="true" :aria-hidden="action!=='permDelete'"
+                    class="card mb-8 mt-2 p-4">
+                    <p class="mb-4">{_tt(l, "mod.confirmDangerousAction", map[string]string{
+                        "challenge": data.Challenge,
+                    })}</p>
+
+                    <input x-model="challengeInput" class="input" />
+                </div>
+                
+                <button 
+                    disabled 
+                    :disabled="!action || !reason || (action === 'permDelete' && challenge !== challengeInput)" 
+                    class="btn btn--secondary btn--lg rounded-full" type="submit">{_t(l, "mod.performAction")}</button>
+            </form>
+
+            <hr class="my-8" />
+
+            <section class="overflow-hidden border rounded-md shadow-md">
+                <header class="p-2">
+                    <h2 class="text-xl">{ _t(l, "mod.book.log.recentActions") }</h2>
+                    <p>
+                        @templ.Raw(_tt(l, "mod.book.log.recentActionsOfBook", map[string]string{
+                            "book": book.Name,
+                        }))
+                    </p>
+                </header>
+
+                @modLogTable(recentBookLogs.Entries)
+
+                <a class="link text-lg p-4 inline-block" href={templ.SafeURL(fmt.Sprintf("/mod/book/%d/log", book.ID))}>Open full book log</a>
+            </section>
+        </div>
+    }
+}
+
+templ modBookAction(
+    id, name, description string, 
+    disabled bool,
+) {
+    <li 
+        class="mod-action-card"
+        role="button"
+        aria-disabled={ fmt.Sprintf("%t", disabled) }
+        if !disabled {
+            @click={fmt.Sprintf("action='%s'", id)} :data-active={fmt.Sprintf("action=='%s'", id)}
+        }
+        >
+        <span class="mod-action-card__name">
+            <span class="material-symbols-outlined">shield</span>
+            {name}
+        </span>
+        <span class="mod-action-card__description">{description}</span>
+    </li>
+}
+
+templ modLogTable(logs []app.BookModerationLog) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{ _t(l, "mod.book.log.action") }</th>
+                <th>{ _t(l, "mod.book.log.reason") }</th>
+                <th>{ _t(l, "mod.book.log.time") }</th>
+                <th>{ _t(l, "mod.book.log.actor") }</th>
+            </tr>
+        </thead>
+        <tbody class="[&>tr:last-child>td]:border-b-0">
+            for _, log := range logs {
+                <tr>
+                    <td>
+                        {{
+                            translationKey := fmt.Sprintf("mod.action.%s", log.Action)
+                            act := l.T(translationKey, goeasyi18n.Options{})
+                            if act == translationKey {
+                                act = string(log.Action)
+                            }
+                        }}
+                        { act }
+                    </td>
+                    <td>{log.Reason}</td>
+                    <td>
+                        <time datetime={ log.Time.Format(time.RFC3339) } title={ log.Time.Format(time.RFC3339) }>
+                            { relativeTime(l, log.Time) }
+                        </time>
+                    </td>
+                    <td>
+                        { log.ActorUserName }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+templ ModBookLog(book app.BookModerationInfo, logs app.BookLogResult) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    
+    // TODO: i18n
+    @modLayout("Mod - " + book.Name + " - activity log") {
+        <div 
+            class="ol-container ol-container--big">
+
+            <header class="my-8">
+                <h1 class="page-header font-title">
+                    <a class="link" href={ templ.SafeURL(fmt.Sprintf("/mod/book/%d", book.ID)) }>
+                        { book.Name }
+                    </a>
+                    <span class="material-symbols-outlined">chevron_right</span>
+                    { _t(l, "mod.bookLog.title") }
+                </h1>
+            </header>
+
+
+
+            <section class="rounded-sm border overflow-hidden mb-6">
+                @modLogTable(logs.Entries)
+            </section>
+
+            @olresponse.Pagination(uint32(logs.Page), logs.TotalPages, 9)
+        </div>
+    }
+}

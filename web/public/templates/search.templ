@@ -191,7 +191,7 @@ templ SimpleSearch() {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @htmlLayout(_t(l, "search.search")) {
+    @htmlLayout(htmlLayoutProps{Title: _t(l, "search.search")}) {
         <main class={ simpleSearchCSSRoot() }>
             <img class="dark:hidden" src="/_/embed-assets/logo.svg" />
             <img class="hidden dark:block" src="/_/embed-assets/logo-dark.svg" />

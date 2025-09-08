@@ -13,23 +13,24 @@ var (
 )
 
 type BookDetailsDto struct {
-	ID              int64                 `json:"id,string"`
-	Name            string                `json:"name"`
-	AgeRating       AgeRating             `json:"ageRating"`
-	IsAdult         bool                  `json:"adult"`
-	Tags            []DefinedTagDto       `json:"tags"`
-	Words           int                   `json:"words"`
-	WordsPerChapter int                   `json:"wordsPerChapter"`
-	CreatedAt       time.Time             `json:"createdAt"`
-	Collections     []BookCollectionDto   `json:"collections"`
-	Author          BookDetailsAuthorDto  `json:"author"`
-	Permissions     BookUserPermissions   `json:"permissions"`
-	Summary         string                `json:"summary"`
-	Notifications   []GenericNotification `json:"notifications,omitempty"`
-	Cover           string                `json:"cover"`
-	Rating          Nullable[float64]     `json:"rating"`
-	Votes           int32                 `json:"votes"`
-	Reviews         int32                 `json:"reviews"`
+	ID                  int64                 `json:"id,string"`
+	Name                string                `json:"name"`
+	AgeRating           AgeRating             `json:"ageRating"`
+	IsAdult             bool                  `json:"adult"`
+	Tags                []DefinedTagDto       `json:"tags"`
+	Words               int                   `json:"words"`
+	WordsPerChapter     int                   `json:"wordsPerChapter"`
+	CreatedAt           time.Time             `json:"createdAt"`
+	Collections         []BookCollectionDto   `json:"collections"`
+	Author              BookDetailsAuthorDto  `json:"author"`
+	Permissions         BookUserPermissions   `json:"permissions"`
+	Summary             string                `json:"summary"`
+	Notifications       []GenericNotification `json:"notifications,omitempty"`
+	Cover               string                `json:"cover"`
+	Rating              Nullable[float64]     `json:"rating"`
+	Votes               int32                 `json:"votes"`
+	Reviews             int32                 `json:"reviews"`
+	IsPubliclyAvailable bool                  `json:"isPubliclyAvailable"`
 }
 
 type GetBookQuery struct {
@@ -100,7 +101,7 @@ type GetPinnedUserBooksResult struct {
 }
 
 type BookService interface {
-	GetBook(ctx context.Context, query GetBookQuery) (BookDetailsDto, error)
+	GetBookDetails(ctx context.Context, query GetBookQuery) (BookDetailsDto, error)
 	GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]BookChapterDto, error)
 	GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error)
 	GetRandomBookID(ctx context.Context) (Nullable[int64], error)

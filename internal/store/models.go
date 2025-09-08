@@ -58,6 +58,56 @@ func (ns NullAgeRating) Value() (driver.Value, error) {
 	return string(ns.AgeRating), nil
 }
 
+type BookActionType string
+
+const (
+	BookActionTypeSignificantUpdate BookActionType = "significant_update"
+	BookActionTypeAuthorTransfer    BookActionType = "author_transfer"
+	BookActionTypeCoauthorAdded     BookActionType = "coauthor_added"
+	BookActionTypeCoauthorRemoved   BookActionType = "coauthor_removed"
+	BookActionTypeBan               BookActionType = "ban"
+	BookActionTypeShadowBan         BookActionType = "shadow_ban"
+	BookActionTypePermRemoval       BookActionType = "perm_removal"
+	BookActionTypeUnBan             BookActionType = "un_ban"
+	BookActionTypeUnShadowBan       BookActionType = "un_shadow_ban"
+	BookActionTypeReindex           BookActionType = "reindex"
+)
+
+func (e *BookActionType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BookActionType(s)
+	case string:
+		*e = BookActionType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BookActionType: %T", src)
+	}
+	return nil
+}
+
+type NullBookActionType struct {
+	BookActionType BookActionType
+	Valid          bool // Valid is true if BookActionType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBookActionType) Scan(value interface{}) error {
+	if value == nil {
+		ns.BookActionType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BookActionType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBookActionType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BookActionType), nil
+}
+
 type CensorMode string
 
 const (
@@ -233,6 +283,52 @@ func (ns NullTypeOf2fa) Value() (driver.Value, error) {
 	return string(ns.TypeOf2fa), nil
 }
 
+type UserActionType string
+
+const (
+	UserActionTypeSecPasswordReset UserActionType = "sec_password_reset"
+	UserActionTypeSec2faUmbrella   UserActionType = "sec_2fa_umbrella"
+	UserActionTypeBan              UserActionType = "ban"
+	UserActionTypeUnban            UserActionType = "unban"
+	UserActionTypeMute             UserActionType = "mute"
+	UserActionTypeUnmute           UserActionType = "unmute"
+)
+
+func (e *UserActionType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserActionType(s)
+	case string:
+		*e = UserActionType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserActionType: %T", src)
+	}
+	return nil
+}
+
+type NullUserActionType struct {
+	UserActionType UserActionType
+	Valid          bool // Valid is true if UserActionType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserActionType) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserActionType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserActionType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserActionType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserActionType), nil
+}
+
 type UserRole string
 
 const (
@@ -296,6 +392,8 @@ type Book struct {
 	TotalReviews       int32
 	TotalRatings       int32
 	IsPinned           bool
+	IsPermRemoved      bool
+	IsShadowBanned     bool
 }
 
 type BookBanHistory struct {
@@ -316,6 +414,16 @@ type BookChapter struct {
 	Words           int32
 	IsAdultOverride bool
 	Summary         string
+}
+
+type BookLog struct {
+	ID          int64
+	Time        pgtype.Timestamptz
+	BookID      int64
+	ActionType  BookActionType
+	Payload     []byte
+	ActorUserID pgtype.UUID
+	Reason      string
 }
 
 type BookView struct {
@@ -474,4 +582,12 @@ type UserFollower struct {
 	FollowerID pgtype.UUID
 	FollowedID pgtype.UUID
 	CreatedAt  pgtype.Timestamptz
+}
+
+type UserLog struct {
+	ID          int64
+	UserID      pgtype.UUID
+	ActorUserID pgtype.UUID
+	ActionType  UserActionType
+	Payload     []byte
 }

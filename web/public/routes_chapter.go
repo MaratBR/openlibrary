@@ -38,7 +38,7 @@ func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) 
 	}
 
 	userID := auth.GetNullableUserID(r.Context())
-	book, err := c.service.GetBook(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
+	book, err := c.service.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
 
 	if err != nil {
 		writeApplicationError(w, r, err)

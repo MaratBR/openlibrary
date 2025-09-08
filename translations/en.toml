@@ -15,6 +15,7 @@ books = "Books"
 collections = "Collections"
 none = "None"
 change = "Change"
+open = "Open"
 
 [uiTheme]
 dark = "Dark"
@@ -25,6 +26,10 @@ switchTheme = "Switch theme"
 
 [pageNotFound]
 text = "Page not found"
+
+[methodNotAllowed]
+title = "Method Not Allowed"
+text = "This is an HTTP error indicating incorrect HTTP method was called. If are seeing this after performing an action on the website please report this error."
 
 [time]
 justNow = "Just now"
@@ -206,6 +211,10 @@ notFoundText = "We could not find the book you requested. Either it does not exi
 emptyToc = "There is no table of contents for this book"
 emptyTocContent = "This books appears to be empty or all of its content is hidden. If you came across this books through search that might be a software error. If you are the author of this book, you can add a chapter from book manager or make chapters public"
 
+notPubliclyAvailableNotice = "This books is not publicly available. You can see it because you are the author. If you want to modify the book status and make it visible you can do that in book manager."
+notPubliclyAvailableNoticeMod = "This books is not publicly available. You can see it because you are the moderator."
+goToBookManager = "Go to book manager"
+
 [search]
 filters = "Filters"
 search = "Search"
@@ -308,6 +317,7 @@ tags = "Tags"
 siteSettings = "Site settings"
 home = "Home page"
 logout = "Logout"
+books = "Books"
 
 [admin.tags]
 name = "Name"
@@ -344,6 +354,10 @@ resetPassword = "Reset password"
 userWasUpdated = "User was successfully updated"
 noUsers = "No users found, adjust your search query or create more tags"
 
+[admin.books]
+title = "Books"
+searchNotImplemented = "Search in admin dashboard is not implemented yet. Put the book ID below to open the page."
+
 [editor]
 p = "Paragraph"
 h1 = "Heading 1"
@@ -369,3 +383,45 @@ saveDraftDescription = "Chapter's draft will be saved. You can always edit it la
 
 publishDraft = "Publish draft"
 publishDraftDescription = "Chapter will be published. You can always edit it later. Your changes <b>will</b> be visible to other users."
+
+
+[mod]
+performAction = "Perform action"
+ban = "Ban"
+banDescription = "Forcibly makes books private, but it still can be seen by the author and moderators (but not in search results)"
+shadowBan = "Shadow ban"
+shadowBanDescription = "Remove from search and recommendations"
+permDelete = "Permanent removal"
+permDeleteDescription = "Permanently remove the book and all of the related content. THIS IS IRREVERSIBLE"
+unban = "Unban"
+unbanDescription = "Unban the book"
+shadowUnban = "Undo a shadow ban"
+shadowUnbanDescription = "Undo an existing shadow ban of the book"
+permRemovedNotice = "Book was permanently removed. Moderation actions cannot be performed anymore."
+
+youMustSpecifyReasonForAction = "You must specify the reason for the moderation action"
+
+confirmDangerousAction = "Please type {{.challenge}} below to confirm you wish to perform this action" 
+
+[mod.bookLog]
+title = "Book log"
+
+[mod.action]
+ban = "Ban"
+un_ban = "Unban"
+shadow_ban = "Shadow ban"
+un_shadow_ban = "Shadow unban"
+
+[mod.book]
+banned = "Banned"
+shadowBanned = "Shadow-banned"
+permRemoved = "Permanently removed"
+
+[mod.book.log]
+recentActions = "Recent moderation actions"
+recentActionsOfBook = "List of recently performed moderation actions of <em>{{.book}}</em>."
+
+action = "Action"
+reason = "Reason"
+time = "Time of action"
+actor = "Actor (performed by)"

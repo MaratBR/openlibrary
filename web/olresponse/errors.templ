@@ -1,5 +1,8 @@
 package olresponse
 
+import "github.com/MaratBR/openlibrary/internal/reqid"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+
 templ errorLayout(title string) {
     @Doc(ctx, DocSettings{
         Title: title,
@@ -11,9 +14,32 @@ templ errorLayout(title string) {
 
 templ err500(err error) {
     @errorLayout("500") {
-        <main class="m-10">
-            <h1 class="font-title text-4xl my-4">500 Internal Server Error</h1>
-            <pre class="bg-secondary px-3 py-5">{ err.Error() }</pre>
+        <main class="ol-container py-12">
+            <h1 class="text-8xl mb-2 font-title text-center md:text-left">500</h1>
+            <div class="ml-4">
+                <h1 class="text-4xl font-title text-center md:text-left">Internal Server Error</h1>
+                <p class="my-8">This is a CAT-astrophe! But it's not your fault, though... promise</p>
+                <picture>
+                    <!-- yes, we are doing fallback for cats, but not for book covers, cats are important -->
+                    <source srcset="/_/assets/cats/avif/cat82.avif" type="image/avif">
+                    <source srcset="/_/assets/cats/avif/cat82.webp" type="image/webp">
+                    <img class="rounded-xl" style="max-width: 300px;" alt="/_/assets/cats/avif/cat81.webp" src="" />
+                </picture>
+                <p class="mt-2 text-xs opacity-40 hover:opacity-100">Image source: <a class="link" target="_blank" href="https://cataas.com/">https://cataas.com/</a></p>
+            
+                <section id="nerd" class="font-mono mt-8 border p-4 overflow-x-auto">
+                    <!-- yknow, for nerds -->
+                    <h2 class="text-2xl">nerd corner</h2>
+                    {{
+                        r := olhttp.GetRequest(ctx)
+                        requestID := reqid.Get(r)
+                    }}
+                    <pre class="text-sm">
+                        Request ID: { requestID } <br />
+                        Error message: { err.Error() } <br />
+                    </pre>
+                </section>
+            </div>
         </main>
     }
 }

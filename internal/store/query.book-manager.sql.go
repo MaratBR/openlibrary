@@ -172,7 +172,7 @@ func (q *Queries) InsertBookChapter(ctx context.Context, arg InsertBookChapterPa
 
 const managerGetUserBooks = `-- name: ManagerGetUserBooks :many
 select 
-    books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned,
+    books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned,
     collections.id as collection_id,
     collections.name as collection_name,
     collection_books."order" as collection_position,
@@ -210,6 +210,8 @@ type ManagerGetUserBooksRow struct {
 	TotalReviews       int32
 	TotalRatings       int32
 	IsPinned           bool
+	IsPermRemoved      bool
+	IsShadowBanned     bool
 	CollectionID       pgtype.Int8
 	CollectionName     pgtype.Text
 	CollectionPosition pgtype.Int4
@@ -244,6 +246,8 @@ func (q *Queries) ManagerGetUserBooks(ctx context.Context, arg ManagerGetUserBoo
 			&i.TotalReviews,
 			&i.TotalRatings,
 			&i.IsPinned,
+			&i.IsPermRemoved,
+			&i.IsShadowBanned,
 			&i.CollectionID,
 			&i.CollectionName,
 			&i.CollectionPosition,

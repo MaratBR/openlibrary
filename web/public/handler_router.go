@@ -1,6 +1,7 @@
 package public
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -24,6 +25,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	userService := app.NewUserService(db)
 	reviewsService := app.NewCachedReviewsService(app.NewReviewsService(db, userService, bgServices.Book), h.cache)
 	bookService := app.NewBookService(db, tagsService, h.uploadService, readingListService, reviewsService)
+	modBookService := app.NewModerationBookService(db)
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, h.uploadService, userService, h.esClient), h.cache)
 
 	bookManagerService := app.NewBookManagerService(db, tagsService, h.uploadService, userService, bgServices.BookReindex)
@@ -36,6 +38,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		}))
 
 		r.NotFound(notFoundHandler)
+		r.MethodNotAllowed(methodNotAllowed)
 
 		newAuthController(authService, h.csrfHandler).Register(r)
 		newBookController(bookService, reviewsService, readingListService).Register(r)
@@ -45,6 +48,16 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		newProfileController(userService, bookService).Register(r)
 		newLibraryController(readingListService).Register(r)
 		newBookManagerController(bookManagerService).Register(r)
+
+		r.Route("/mod", func(r chi.Router) {
+			newModController(bookService, modBookService).Register(r)
+		})
+
+		r.Route("/debug", func(r chi.Router) {
+			r.Handle("/500", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				olresponse.Write500(w, r, errors.New("test error"))
+			}))
+		})
 
 		r.Route("/_api", func(r chi.Router) {
 			newAPIBookController(bookService, reviewsService, readingListService).Register(r)

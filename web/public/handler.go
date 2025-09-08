@@ -10,6 +10,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	"github.com/MaratBR/openlibrary/internal/flash"
 	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/NYTimes/gziphandler"
 	"github.com/elastic/go-elasticsearch/v9"
@@ -72,6 +73,7 @@ func (h *Handler) initRouter() {
 	h.r.Use(flash.Middleware)
 
 	h.r.NotFound(notFoundHandler)
+	h.r.MethodNotAllowed(methodNotAllowed)
 }
 
 // Start starts all background services and sets started flag to true.
@@ -112,4 +114,14 @@ var (
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
 	templates.NotFoundPage().Render(r.Context(), w)
+}
+
+func methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusMethodNotAllowed)
+
+	if olresponse.PreferredMimeTypeIsJSON(r) {
+		w.Write([]byte("Method Not Allowed"))
+	} else {
+		templates.MethodNotAllowedPage().Render(r.Context(), w)
+	}
 }

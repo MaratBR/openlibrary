@@ -40,7 +40,7 @@ templ dashboardLayout(title string) {
 
 templ baseLayout(title string) {
     @olresponse.Doc(ctx, olresponse.DocSettings{
-        Title: title,
+        Title: "Admin - " + title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/admin-common.js", "/_/assets/admin-alpinejs.js" },
         CSS: []string{ "/_/assets/common.css", "/_/assets/admin-common.css", "/_/embed-assets/fonts.css" },
         InstantClick: false,

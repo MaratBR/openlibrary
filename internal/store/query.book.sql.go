@@ -69,7 +69,7 @@ func (q *Queries) GetAllBooks(ctx context.Context, arg GetAllBooksParams) ([]Get
 }
 
 const getBook = `-- name: GetBook :one
-select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, users.name as author_name
+select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned, users.name as author_name
 from books
 join users on books.author_user_id = users.id
 where books.id = $1
@@ -95,6 +95,8 @@ type GetBookRow struct {
 	TotalReviews       int32
 	TotalRatings       int32
 	IsPinned           bool
+	IsPermRemoved      bool
+	IsShadowBanned     bool
 	AuthorName         string
 }
 
@@ -120,6 +122,8 @@ func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
 		&i.TotalReviews,
 		&i.TotalRatings,
 		&i.IsPinned,
+		&i.IsPermRemoved,
+		&i.IsShadowBanned,
 		&i.AuthorName,
 	)
 	return i, err
@@ -397,7 +401,7 @@ func (q *Queries) GetRandomPublicBookIDs(ctx context.Context, limit int32) ([]in
 }
 
 const getTopUserBooks = `-- name: GetTopUserBooks :many
-select id, name, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, words, chapters, tag_ids, cached_parent_tag_ids, has_cover, view, rating, total_reviews, total_ratings, is_pinned
+select id, name, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, words, chapters, tag_ids, cached_parent_tag_ids, has_cover, view, rating, total_reviews, total_ratings, is_pinned, is_perm_removed, is_shadow_banned
 from books
 where author_user_id = $1 and is_publicly_visible
 order by rating desc limit $2
@@ -436,6 +440,8 @@ func (q *Queries) GetTopUserBooks(ctx context.Context, arg GetTopUserBooksParams
 			&i.TotalReviews,
 			&i.TotalRatings,
 			&i.IsPinned,
+			&i.IsPermRemoved,
+			&i.IsShadowBanned,
 		); err != nil {
 			return nil, err
 		}
@@ -448,7 +454,7 @@ func (q *Queries) GetTopUserBooks(ctx context.Context, arg GetTopUserBooksParams
 }
 
 const getUserBooks = `-- name: GetUserBooks :many
-select b.id, b.name, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned
+select b.id, b.name, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned
 from books b
 where b.author_user_id = $1 and chapters > 0
 order by b.is_pinned desc, b.created_at asc
@@ -489,6 +495,8 @@ func (q *Queries) GetUserBooks(ctx context.Context, arg GetUserBooksParams) ([]B
 			&i.TotalReviews,
 			&i.TotalRatings,
 			&i.IsPinned,
+			&i.IsPermRemoved,
+			&i.IsShadowBanned,
 		); err != nil {
 			return nil, err
 		}

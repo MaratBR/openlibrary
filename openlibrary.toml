@@ -5,7 +5,6 @@ url = "postgres://postgres:postgres@localhost:5432/openlibrary?sslmode=disable"
 host = "0.0.0.0"
 port = 8080
 public-origin = "http://localhost:8080"
-public-admin-origin = "http://admin.localhost:8080"
 
 [frontend-proxy]
 target-port = 5173

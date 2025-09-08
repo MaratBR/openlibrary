@@ -8,7 +8,7 @@ import "fmt"
 templ NotFoundPage() {
     {{
         l := i18n.GetLocalizer(ctx)
-        catID := rand.Int() % 100
+        catID := rand.Int() % 200 + 1
     }}
     @baseLayoutNoFooter("404") {
         <main class="ol-container py-12">
@@ -23,6 +23,21 @@ templ NotFoundPage() {
                     <img class="rounded-xl" style="max-width: 300px;" alt="image of a cat" src={fmt.Sprintf("/_/assets/cats/cat%d.jpg", catID)} />
                 </picture>
                 <p class="mt-2 text-xs opacity-40 hover:opacity-100">Image source: <a class="link" target="_blank" href="https://cataas.com/">https://cataas.com/</a></p>
+            </div>
+        </main>
+    }
+}
+
+templ MethodNotAllowedPage() {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    @baseLayoutNoFooter("404") {
+        <main class="ol-container py-12">
+            <h1 class="text-8xl mb-2 font-title text-center md:text-left">405</h1>
+            <div class="ml-4">
+                <h1 class="text-4xl font-title text-center md:text-left">{_t(l, "methodNotAllowed.title")}</h1>
+                <p class="mt-2">{_t(l, "methodNotAllowed.text")}</p>
             </div>
         </main>
     }

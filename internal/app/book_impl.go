@@ -60,7 +60,7 @@ func getWordsPerChapter(words, chapters int) int {
 	return words / chapters
 }
 
-func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDetailsDto, error) {
+func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (BookDetailsDto, error) {
 	book, err := s.queries.GetBook(ctx, query.ID)
 	if err != nil {
 		if err == store.ErrNoRows {
@@ -101,11 +101,12 @@ func (s *bookService) GetBook(ctx context.Context, query GetBookQuery) (BookDeta
 			ID:   authorID,
 			Name: book.AuthorName,
 		},
-		Permissions: BookUserPermissions{CanEdit: query.ActorUserID.Valid && authorID == query.ActorUserID.UUID},
-		Cover:       getBookCoverURL(s.uploadService, book.ID, book.HasCover),
-		Rating:      float64ToNullable(book.Rating),
-		Reviews:     book.TotalReviews,
-		Votes:       book.TotalRatings,
+		Permissions:         BookUserPermissions{CanEdit: query.ActorUserID.Valid && authorID == query.ActorUserID.UUID},
+		Cover:               getBookCoverURL(s.uploadService, book.ID, book.HasCover),
+		Rating:              float64ToNullable(book.Rating),
+		Reviews:             book.TotalReviews,
+		Votes:               book.TotalRatings,
+		IsPubliclyAvailable: book.IsPubliclyVisible,
 	}
 
 	if userPermissionState.IsOwner {

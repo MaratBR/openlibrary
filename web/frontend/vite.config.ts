@@ -72,6 +72,8 @@ const ENTRIES = [
   'admin-common',
   'admin-alpinejs',
 
+  'mod',
+
   'public.api',
 
   'book-reader',
@@ -86,6 +88,8 @@ const ENTRIES = [
   'islands/bookmanager',
 
   'islands/admin',
+
+  'islands/mod',
 ]
 
 export default defineConfig((env) => ({

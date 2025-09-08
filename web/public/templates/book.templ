@@ -5,6 +5,7 @@ import "fmt"
 import "encoding/json"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "crypto/md5"
+import "github.com/MaratBR/openlibrary/internal/auth"
 
 templ BookNotFoundPage() {
     {{
@@ -128,7 +129,21 @@ func getBookCoverURL(name string, height int) string {
 }
 
 templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookReadingListDto]) {
+    {{
+        user, isAuthenticated := auth.GetUser(ctx)
+    }}
+
     @baseLayout(book.Name) {
+        {{
+            l := i18n.GetLocalizer(ctx)
+            session, hasSession := auth.GetSession(ctx)
+        }}
+        if !book.IsPubliclyAvailable && hasSession && session.UserID == book.Author.ID {
+            <div class="ol-container ol-container--big p-4 bg-yellow-300 text-black border-yellow-600 border-2">
+                {_t(l, "book.notPubliclyAvailableNotice")} <br /> <a class="link" href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))}>{_t(l, "book.goToBookManager")}</a>
+            </div>
+        }
+
         <div 
             id="book" 
             class="book-page" 
@@ -139,6 +154,10 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
             <div class="book-page__left">
                 @bookCover(book.Cover, book.Name, 300)
                 @bookReadingList(book.ID, readingList)
+
+                if isAuthenticated && user.Role.IsModOrHigher() {
+                    @bookModMenu(&book)
+                }
             </div>
             <div class="book-page__right">
                 <header>
@@ -156,6 +175,14 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
     }
 }
 
+templ bookModMenu(book *app.BookDetailsDto) {
+    <a href={templ.URL(fmt.Sprintf("/mod/book/%d", book.ID))} class="btn btn--secondary w-[80%] rounded-full">
+        <span class="material-symbols-outlined">shield</span>
+        Mod menu
+    </a>
+}
+
+
 templ bookRating(book *app.BookDetailsDto) {
     <a id="rating-card" href="#reviews" class="book-page__rating-card">
         @starRating(book.Rating.Value, 0.5)
@@ -165,6 +192,8 @@ templ bookRating(book *app.BookDetailsDto) {
         </div>
     </a>
 }
+
+
 
 templ bookCover(cover, bookName string, height int) {
     {{
@@ -205,5 +234,4 @@ templ bookTags(tags []app.DefinedTagDto) {
         </li>
     </ul>
 }
-
 

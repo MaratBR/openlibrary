@@ -49,11 +49,29 @@ templ siteFooter() {
     </footer>
 }
 
-templ htmlLayout(title string) {
+type htmlLayoutProps struct {
+    Title string
+    CSS []string
+}
+
+templ htmlLayout(params htmlLayoutProps) {
+    {{
+        modCss := "/_/assets/common.css"
+        var css []string
+
+        if len(params.CSS) > 0 {
+            css = append(params.CSS, modCss)
+        } else {
+            css = []string{modCss}
+        }
+
+        
+    }}
+
     @olresponse.Doc(ctx, olresponse.DocSettings{
-        Title: title,
+        Title: params.Title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
-        CSS: []string{ "/_/assets/common.css" },
+        CSS: css,
         InstantClick: false,
         AppendToHead: templ.Join(
             frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
@@ -64,8 +82,8 @@ templ htmlLayout(title string) {
     }
 }
 
-templ baseLayout(title string) {
-    @htmlLayout(title) {
+templ _baseLayout(params htmlLayoutProps) {
+    @htmlLayout(params) {
         @siteHeader()
         @flashMessages()
         { children... }
@@ -74,9 +92,15 @@ templ baseLayout(title string) {
     }
 }
 
+templ baseLayout(title string) {
+    @_baseLayout(htmlLayoutProps{Title: title}) {
+        { children... }
+    }
+}
+
 
 templ baseLayoutNoFooter(title string) {
-    @htmlLayout(title) {
+    @htmlLayout(htmlLayoutProps{Title: title}) {
         @siteHeader()
         @flashMessages()
         { children... }

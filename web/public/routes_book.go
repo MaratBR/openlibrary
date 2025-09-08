@@ -6,7 +6,6 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
-	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
@@ -37,15 +36,14 @@ func (b *bookController) Register(r chi.Router) {
 }
 
 func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
-	bookID, err := commonutil.URLParamInt64(r, "bookID")
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
-		w.WriteHeader(404)
-		w.Write([]byte(err.Error()))
+		writeBadRequest(w, r, err)
 		return
 	}
 
 	userID := auth.GetNullableUserID(r.Context())
-	book, err := b.service.GetBook(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
+	book, err := b.service.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
 	if err != nil {
 
 		if errorx.IsOfType(err, app.ErrTypeBookNotFound) || errorx.IsOfType(err, app.ErrTypeBookPrivated) {
@@ -144,7 +142,7 @@ func (b *bookController) GetBookPreview(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	book, err := b.service.GetBook(r.Context(), app.GetBookQuery{
+	book, err := b.service.GetBookDetails(r.Context(), app.GetBookQuery{
 		ID:          bookID,
 		ActorUserID: auth.GetNullableUserID(r.Context()),
 	})

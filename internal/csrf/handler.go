@@ -200,6 +200,7 @@ func GenerateHMACCsrfToken(
 func VerifyHMACCsrfToken(
 	csrfToken, sid, secret string,
 ) bool {
+	// split token in two, compute the payload based on the sid, secret key, and random part of the token
 	parts := strings.Split(csrfToken, ".")
 	if len(parts) != 2 {
 		return false

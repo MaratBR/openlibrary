@@ -14,7 +14,7 @@ templ Login(data LoginData) {
         l := i18n.GetLocalizer(ctx)
     }}
 
-    @htmlLayout("Login") {
+    @htmlLayout(htmlLayoutProps{Title: _t(l, "login.login")}) {
         <div class="p-8 w-screen h-screen flex items-center justify-center bg-secondary">
             <main class="w-[400px] min-h-[450px] bg-background p-4 shadow-lg rounded-sm">
                 if data.IsToAdmin {

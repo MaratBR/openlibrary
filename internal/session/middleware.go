@@ -51,6 +51,11 @@ func Middleware(
 
 			r = r.WithContext(context.WithValue(r.Context(), ctxKeySession, session))
 			next.ServeHTTP(w, r)
+
+			err = session.Save(r.Context())
+			if err != nil {
+				slog.Error("failed to save session", "err", err)
+			}
 		})
 	}
 }

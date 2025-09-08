@@ -18,7 +18,7 @@ templ Chapter(
         uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
     }}
 
-    @htmlLayout(chapter.Name) {
+    @htmlLayout(htmlLayoutProps{Title: chapter.Name}) {
         @olresponse.JSServerData("chapterId", fmt.Sprintf("%d", chapterWithDetails.Chapter.ID))
         <script>
             const c = () => {if (window.IS_BOT) return;fetch(`/_api/reading-list/chapter?chapterId=${__server__.chapterId}`,{method:'POST'})};
@@ -125,7 +125,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings) {
         <p class="mt-2 text-muted-foreground">
             { l.TData("book.words", map[string]string{
                 "count": commonutil.FormatInt(int(chapter.Words)),
-            }) }
+            }) } &bull; <time datetime={ chapter.CreatedAt.String() }>{ relativeTime(l, chapter.CreatedAt) }</time>
         </p>
     </header>
 

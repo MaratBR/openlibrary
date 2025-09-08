@@ -45,7 +45,11 @@ func Middleware(next http.Handler) http.Handler {
 			err := json.Unmarshal([]byte(value), &col.arr)
 			if err != nil {
 				slog.Error("failed to unmarshal flash messages from session", "err", err)
+			} else {
+				slog.Debug("got messages from session", "count", len(col.arr), "messages", col.arr)
 			}
+		} else {
+			slog.Error("could not get flash message from session", "ok", ok, "value", value)
 		}
 
 		// run the handler
@@ -59,6 +63,7 @@ func Middleware(next http.Handler) http.Handler {
 				return
 			}
 			s.Put("flash:collection", string(b))
+			slog.Debug("flash: saved flash messages to session", "count", len(col.arr), "messages", col.arr)
 		}
 	})
 }
@@ -78,5 +83,7 @@ func PullFlashes(ctx context.Context) []Message {
 		return nil
 	}
 	collection := collectionAny.(*flashCollection)
-	return collection.PullAll()
+	l := collection.PullAll()
+	slog.Debug("flash: PullFlashes called", "count", len(l))
+	return l
 }

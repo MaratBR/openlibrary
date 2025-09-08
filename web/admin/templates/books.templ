@@ -1,0 +1,28 @@
+package templates 
+
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
+templ BooksPage() {
+{{
+    l := i18n.GetLocalizer(ctx)
+}}
+    
+    @dashboardLayout("Books") {
+        <div class="admin-page-content">
+            <header class="admin-page-header">
+                <h1 class="my-6 font-title text-3xl">
+                    {_t(l, "admin.books.title")}
+                </h1>
+            </header>
+
+            <div class="admin-card p-4 mb-4">
+                { _t(l, "admin.books.searchNotImplemented") }
+            </div>
+
+            <div x-data="{id:''}" class="admin-card p-4">
+                <input :value="id" @input="id=$event.target.value.replaceAll(/[^0-9]/g, '');$event.target.value=id" class="input w-64" />
+                <button @click="id && (location.href = `/book/${id}`)" class="btn btn--primary">{ _t(l, "common.open") }</button>
+            </div>
+        </div>
+    }
+}
