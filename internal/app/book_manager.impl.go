@@ -716,9 +716,28 @@ func (s *bookManagerService) CreateDraft(ctx context.Context, cmd CreateDraftCom
 	return id, nil
 }
 
+// UpdateDraftChapterName implements BookManagerService.
+func (s *bookManagerService) UpdateDraftChapterName(ctx context.Context, cmd UpdateDraftChapterNameCommand) error {
+	err := s.authorizeDraftUpdate(cmd.UserID, cmd.ChapterID, cmd.DraftID)
+	if err != nil {
+		return err
+	}
+
+	err = s.queries.UpdateDraftChapterName(ctx, store.UpdateDraftChapterNameParams{
+		ID:          cmd.DraftID,
+		ChapterName: cmd.ChapterName,
+	})
+
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	return nil
+
+}
+
 // UpdateDraftContent implements BookManagerService.
 func (s *bookManagerService) UpdateDraftContent(ctx context.Context, cmd UpdateDraftContentCommand) error {
-
 	err := s.authorizeDraftUpdate(cmd.UserID, cmd.ChapterID, cmd.DraftID)
 	if err != nil {
 		return err

@@ -31,6 +31,7 @@ func (c *apiBookManagerController) Register(r chi.Router) {
 		r.With(httpin.NewInput(&updateBookChaptersOrderRequest{})).Post("/book/{bookID}/chapters-order", c.updateBookChaptersOrder)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}", c.updateDraftContent)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/publish", c.updateDraftContentAndPublish)
+		r.Post("/book/{bookID}/{chapterID}/{draftID}/chapterName", c.updateDraftChapterName)
 
 	})
 }
@@ -199,6 +200,52 @@ func (c *apiBookManagerController) updateDraftContent(w http.ResponseWriter, r *
 		DraftID:   draftID,
 		UserID:    session.UserID,
 		Content:   string(contentBytes),
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+
+	apiWriteOK(w)
+}
+
+func (c *apiBookManagerController) updateDraftChapterName(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	chapterID, err := olhttp.URLParamInt64(r, "chapterID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	draftID, err := olhttp.URLParamInt64(r, "draftID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "text/plain" {
+		apiWriteBadRequest(w, errors.New("Content-Type must be text/plain"))
+		return
+	}
+
+	contentBytes, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	session := auth.RequireSession(r.Context())
+
+	err = c.service.UpdateDraftChapterName(r.Context(), app.UpdateDraftChapterNameCommand{
+		BookID:      bookID,
+		ChapterID:   chapterID,
+		DraftID:     draftID,
+		UserID:      session.UserID,
+		ChapterName: string(contentBytes),
 	})
 	if err != nil {
 		apiWriteApplicationError(w, err)

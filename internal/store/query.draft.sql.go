@@ -147,6 +147,22 @@ func (q *Queries) UpdateDraft(ctx context.Context, arg UpdateDraftParams) error 
 	return err
 }
 
+const updateDraftChapterName = `-- name: UpdateDraftChapterName :exec
+update drafts
+set chapter_name = $2, updated_at = now()
+where id = $1
+`
+
+type UpdateDraftChapterNameParams struct {
+	ID          int64
+	ChapterName string
+}
+
+func (q *Queries) UpdateDraftChapterName(ctx context.Context, arg UpdateDraftChapterNameParams) error {
+	_, err := q.db.Exec(ctx, updateDraftChapterName, arg.ID, arg.ChapterName)
+	return err
+}
+
 const updateDraftContent = `-- name: UpdateDraftContent :exec
 update drafts
 set content = $2, updated_at = now()

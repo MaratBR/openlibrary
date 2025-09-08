@@ -4,7 +4,7 @@
     }
 
     &__header-text {
-        @apply font-semibold;
+        @apply font-semibold h-full w-full;
     }
 
     &__draft, &__drafts-list-link {

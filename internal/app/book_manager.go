@@ -183,6 +183,14 @@ type DraftDto struct {
 	} `json:"book"`
 }
 
+type UpdateDraftChapterNameCommand struct {
+	ChapterName string
+	ChapterID   int64
+	BookID      int64
+	DraftID     int64
+	UserID      uuid.UUID
+}
+
 type UpdateDraftCommand struct {
 	Content         string
 	Summary         string
@@ -242,6 +250,7 @@ type BookManagerService interface {
 	GetDraft(ctx context.Context, query GetDraftQuery) (DraftDto, error)
 	// GetBookDrafts(ctx context.Context, query GetBookDraftsQuery)
 	UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error
+	UpdateDraftChapterName(ctx context.Context, cmd UpdateDraftChapterNameCommand) error
 	UpdateDraftContent(ctx context.Context, cmd UpdateDraftContentCommand) error
 	DeleteDraft(ctx context.Context, cmd DeleteDraftCommand) error
 	PublishDraft(ctx context.Context, cmd PublishDraftCommand) error

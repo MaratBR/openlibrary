@@ -3,16 +3,12 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/app"
 import "encoding/json"
 import "github.com/MaratBR/openlibrary/internal/i18n"
-import "fmt"
 
 templ ChapterEditor(bookID int64, draft app.DraftDto) {
     @bookManagerLayoutNoSiteBar(draft.ChapterName) {
         @siteHeaderLayout() {
             <div class="chapter-editor-page__header">
-                <span class="chapter-editor-page__header-text">
-                    <a class="link" href={templ.SafeURL(fmt.Sprintf("/books-manager/book/%d", draft.Book.ID))}>{draft.Book.Name}</a>&nbsp;> 
-                    {draft.ChapterName} 
-                </span>
+                <div class="chapter-editor-page__header-text" id="slot:header-text" /> 
                 <div class="mx-auto" />
                 <div id="slot:actions" class="flex gap-1">
                 </div>

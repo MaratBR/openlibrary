@@ -31,3 +31,19 @@ export function httpUpdateAndPublishDraft(
     })
     .then((r) => OLAPIResponse.createNoBody(r))
 }
+
+export function httpUpdateDraftChapterName(
+  bookId: string,
+  chapterId: string,
+  draftId: string,
+  chapterName: string,
+) {
+  return httpClient
+    .post(`/_api/books-manager/book/${bookId}/${chapterId}/${draftId}/chapterName`, {
+      body: chapterName,
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+    })
+    .then((r) => OLAPIResponse.createNoBody(r))
+}

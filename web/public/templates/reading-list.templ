@@ -21,7 +21,7 @@ templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadi
             }"
         }
         id="reading-list" 
-        class="w-[80%] my-4 relative">
+        class="w-[80%] mt-4 relative">
         if isAuthorized {
             @i18nExtractKeys(l, []string {
                 "readingList.want_to_read",

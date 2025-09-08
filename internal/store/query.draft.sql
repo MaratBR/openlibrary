@@ -20,6 +20,11 @@ update drafts
 set content = $2, updated_at = now()
 where id = $1;
 
+-- name: UpdateDraftChapterName :exec
+update drafts
+set chapter_name = $2, updated_at = now()
+where id = $1;
+
 -- name: DeleteDraft :exec
 delete from drafts where id = $1;
 

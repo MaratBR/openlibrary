@@ -4,8 +4,8 @@ import { PreactIslandProps } from '@/islands/common/preact-island'
 import { DraftDtoSchema } from '../contracts'
 import { Editor } from '@tiptap/core'
 import { z } from 'zod'
-import { httpUpdateAndPublishDraft, httpUpdateDraft } from './api'
-import { createPortal } from 'preact/compat'
+import { httpUpdateAndPublishDraft, httpUpdateDraft, httpUpdateDraftChapterName } from './api'
+import { createPortal, MouseEventHandler } from 'preact/compat'
 import clsx from 'clsx'
 import { useMutation } from '@tanstack/react-query'
 
@@ -19,6 +19,8 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
 
   const editorRef = useRef<Editor | null>(null)
 
+  const previousChapterName = useRef(draft.chapterName)
+  const [chapterName, setChapterName] = useState(draft.chapterName)
   const [beforeSaving, setBeforeSaving] = useState(false)
 
   const savingMutation = useMutation({
@@ -39,6 +41,12 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
       const d = window.delay(500)
       await httpUpdateAndPublishDraft(bookId, draft.chapterId, draft.id, content)
       await d
+    },
+  })
+
+  const updateChapterNameMutation = useMutation({
+    mutationFn: async (name: string) => {
+      await httpUpdateDraftChapterName(bookId, draft.chapterId, draft.id, name)
     },
   })
 
@@ -65,6 +73,16 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
     saveAndPublishMutation.mutate(content)
   }
 
+  function handleChapterNameBlur() {
+    const newName = chapterName.trim()
+    if (newName === previousChapterName.current) {
+      return
+    }
+
+    previousChapterName.current = newName
+    updateChapterNameMutation.mutate(newName)
+  }
+
   return (
     <>
       <BookContentEditor
@@ -74,6 +92,14 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
         onBeforeContentChanged={handleBeforeContentChanged}
         content={draft.content}
       />
+      {createPortal(
+        <ChapterNameInput
+          value={chapterName}
+          onChange={setChapterName}
+          onBlur={handleChapterNameBlur}
+        />,
+        document.getElementById('slot:header-text')!,
+      )}
       {createPortal(
         <>
           <button
@@ -105,4 +131,26 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
   function handleBeforeContentChanged() {
     setBeforeSaving(true)
   }
+}
+
+function ChapterNameInput({
+  value,
+  onChange,
+  onBlur,
+}: {
+  value: string
+  onChange: (value: string) => void
+  onBlur: MouseEventHandler<HTMLInputElement>
+}) {
+  return (
+    <input
+      onFocus={(e) => {
+        ;(e.target as HTMLInputElement).select()
+      }}
+      onBlur={onBlur}
+      class="h-full outline-none w-full focus:bg-muted mr-12 pl-2 -ml-2"
+      value={value}
+      onChange={(e) => onChange((e.target as HTMLInputElement).value)}
+    />
+  )
 }

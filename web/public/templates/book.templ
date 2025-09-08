@@ -155,8 +155,20 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
                 @bookCover(book.Cover, book.Name, 300)
                 @bookReadingList(book.ID, readingList)
 
-                if isAuthenticated && user.Role.IsModOrHigher() {
-                    @bookModMenu(&book)
+                if isAuthenticated {
+                    if user.Role.IsModOrHigher() {
+                        <a href={templ.URL(fmt.Sprintf("/mod/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] rounded-full">
+                            <span class="material-symbols-outlined">shield</span>
+                            Mod menu
+                        </a>
+                    }
+
+                    if user.ID == book.Author.ID {
+                        <a href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] rounded-full">
+                            <span class="material-symbols-outlined">bookmark_manager</span>
+                            Book manager
+                        </a>
+                    }
                 }
             </div>
             <div class="book-page__right">
@@ -173,13 +185,6 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
             </div>
         </div>
     }
-}
-
-templ bookModMenu(book *app.BookDetailsDto) {
-    <a href={templ.URL(fmt.Sprintf("/mod/book/%d", book.ID))} class="btn btn--secondary w-[80%] rounded-full">
-        <span class="material-symbols-outlined">shield</span>
-        Mod menu
-    </a>
 }
 
 
