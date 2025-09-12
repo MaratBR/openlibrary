@@ -1,16 +1,11 @@
-# AO3 fanific ids
+# Prerequisite
 
-30383217
-22073215
-18111758
-26026525
-40718202
-7991047
-
-# libvips installation
+## libvips installation
 
 1. Download libvips: https://github.com/libvips/libvips/releases
 2. Install dependencies:
+
+For debian-based:
 ```bash
 apt install \
     libjpeg8 libjpeg8-dev \

@@ -20,7 +20,6 @@ watch-server:
 watch-templ:
 	templ generate --watch
 
-
 migration:
 	migrate create -ext sql -dir internal/store/migrations -seq $N
 
@@ -34,7 +33,7 @@ reset-db:
 	migrate $(MIGRATE_ARGS) up
 
 migrate-db-down-1:
-	migrate $(MIGRATE_ARGS) down 1 
+	migrate $(MIGRATE_ARGS) down 1
 
 templ:
 	templ generate
@@ -66,3 +65,5 @@ watch-front:
 
 build-front:
 	cd ./web/frontend && pnpm run build
+
+codegen: sqlc templ
