@@ -17,6 +17,10 @@ apt install \
 ./scripts/install-vips.sh
 ```
 
+### libvips - gotchas (at least for me, idk)
+
+1. Make sure that `/usr/local/lib` is in `LD_LIBRARY_PATH`
+
 # Install go tools
 
 ```
@@ -26,7 +30,7 @@ go install github.com/mitranim/gow@latest
 # Requires protoc installed
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
-go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latestoaded
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 ```
