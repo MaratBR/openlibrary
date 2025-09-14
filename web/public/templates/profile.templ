@@ -89,10 +89,10 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetPinnedUserBooksResult) {
 templ userProfilePinnedBookCard(bookID int64, name, cover string) {
     <a 
         href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) } 
-        class="profile-book-card w-[200px]" 
+        class="profile-book-card-sm" 
         data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
         @bookCover(cover, name, 300)
-        <div class="profile-book-card__title">
+        <div class="profile-book-card-sm__title">
             { name }
         </div>
     </a>

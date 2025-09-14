@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { z } from 'zod'
 import { PreactIslandProps } from '../common/preact-island'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
@@ -71,7 +70,7 @@ export default function BookCardPreview({ data }: PreactIslandProps) {
         width: WIDTH,
         ...target.style,
       }}
-      class="absolute p-3 bg-background shadow-lg z-10 border rounded-xl pointer-events-none"
+      class="absolute p-3 bg-background shadow-lg z-20 border rounded-xl pointer-events-none"
     >
       <BookCardPreviewContent bookId={target.bookId} />
     </div>,

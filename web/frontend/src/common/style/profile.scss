@@ -12,13 +12,21 @@
 }
 
 .profile-book-card {
-    @apply inline-block font-text font-medium transition-transform cursor-pointer;
-
-    &:hover {
-        @apply text-primary;
-    }
+    @apply grid grid-cols-[100px_auto] gap-2;
 
     &__title {
-        @apply text-lg whitespace-break-spaces;
+        @apply cursor-pointer font-medium font-title text-2xl whitespace-break-spaces text-muted-foreground hover:underline hover:text-foreground;
+    }
+
+    &__cover {
+        float: left;
+    }
+}
+
+.profile-book-card-sm {
+    @apply w-[200px];
+
+    &__title {
+        @apply w-[200px];
     }
 }

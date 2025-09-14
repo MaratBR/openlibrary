@@ -7,138 +7,151 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 
 templ bookManagerLayoutBase(title string, sitebar bool) {
-    @olresponse.Doc(ctx, olresponse.DocSettings{
-        Title: title,
-        Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js", "/_/assets/bookmanager-common.js" },
-        CSS: []string{ "/_/assets/common.css", "/_/assets/bookmanager-common.css" },
-        InstantClick: false,
-        AppendToHead: templ.Join(
-            frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
-        ),
-    }) {
-        <style>body{min-width: 1000px;}</style>
-        @renderUISettings()
-        if sitebar {
-            @siteHeader()
-        }
-        { children... }
-    }
+	@olresponse.Doc(ctx, olresponse.DocSettings{
+		Title:        title,
+		Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js", "/_/assets/bookmanager-common.js"},
+		CSS:          []string{"/_/assets/common.css", "/_/assets/bookmanager-common.css"},
+		InstantClick: false,
+		AppendToHead: templ.Join(
+			frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
+		),
+	}) {
+		<style>body{min-width: 1000px;}</style>
+		@renderUISettings()
+		if sitebar {
+			@siteHeader()
+		}
+		{ children... }
+	}
 }
 
 templ bookManagerLayout(title string) {
-    @bookManagerLayoutBase(title, true) {
-        { children... }
-    }
+	@bookManagerLayoutBase(title, true) {
+		{ children... }
+	}
 }
 
 templ bookManagerLayoutNoSiteBar(title string) {
-    @bookManagerLayoutBase(title, false) {
-        { children... }
-    }
+	@bookManagerLayoutBase(title, false) {
+		{ children... }
+	}
 }
 
 templ BookManager() {
-    @bookManagerMainPage("") {
-        Home page   
-    }
+	@bookManagerMainPage("") {
+		Home page
+	}
 }
 
 templ BookManagerBooks(books app.GetUserBooksResult) {
-    {{
-        l := i18n.GetLocalizer(ctx)
-    }}
-    
-    @bookManagerMainPage("books") {
-        <header class="py-8">
-            <h1 class="page-header mb-4">
-                {_t(l, "bookManager.books")}
-            </h1>
+	{{
+	l := i18n.GetLocalizer(ctx)
+	}}
+	@bookManagerMainPage("books") {
+		<header class="py-8">
+			<h1 class="page-header mb-4">
+				{ _t(l, "bookManager.books") }
+			</h1>
+			if len(books.Books) == 0 {
+				<p class="my-8">
+					{ _t(l, "bookManager.noBooks") }
+				</p>
+				<a class="btn btn--lg btn--primary rounded-full" href="/books-manager/new?ol.from=books-manager&isFirst=1">
+					{ _t(l, "bookManager.writeYourFirstBook") }
+				</a>
+			} else {
+				<a class="mb-4 btn btn--lg btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
+					<span class="material-symbols-outlined">edit</span>
+					{ _t(l, "bookManager.createNewBook") }
+				</a>
+				@olresponse.Pagination(books.Page, books.TotalPages, 10)
+				@i18nExtractKeys(l, []string{"common.more", "common.less"})
 
-            if len(books.Books) == 0 {
-                <p class="my-8">
-                    {_t(l, "bookManager.noBooks")}
-                </p>
-                <a class="btn btn--lg btn--primary rounded-full" href="/books-manager/new?ol.from=books-manager&isFirst=1">
-                    {_t(l, "bookManager.writeYourFirstBook")}
-                </a>
-            } else {
-                <a class="mb-4 btn btn--lg btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
-                    <span class="material-symbols-outlined">edit</span>
-                    {_t(l, "bookManager.createNewBook")}
-                </a>
+				<ol-island 
+					data={ fmt.Sprintf("{\"selector\": \"#%s\"}", "books-manager-books") }
+					src="/_/assets/islands/book-card-preview.js" 
+					active="true" />
 
-                @olresponse.Pagination(books.Page, books.TotalPages, 10)
-                <section class="my-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    for _, book := range books.Books {
-                        @bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover)
-                    }
-                </section>
-                @olresponse.Pagination(books.Page, books.TotalPages, 10)
-            }
-        </header>
-    }
+				<section class="my-4 space-y-2" id="books-manager-books">
+					for _, book := range books.Books {
+						@bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
+					}
+				</section>
+				@olresponse.Pagination(books.Page, books.TotalPages, 10)
+			}
+		</header>
+	}
 }
 
-templ bookManagerYourBooksBookCard(bookID int64, name, cover string) {
-    <a 
-        href={ templ.SafeURL(fmt.Sprintf("/books-manager/book/%d", bookID)) } 
-        class="profile-book-card w-[100px]" 
-        data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
-        @bookCover(cover, name, 150)
-        <div class="profile-book-card__title text-sm">
-            { name }
-        </div>
-    </a>
+templ bookManagerYourBooksBookCard(bookID int64, name, cover, summary string) {
+	<div
+		class="profile-book-card"
+	>
+		<div class="profile-books-card__cover" data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
+			@bookCover(cover, name, 150)
+		</div>
+		<div class="profile-books-card__content">
+			<a class="profile-book-card__title" href={ templ.SafeURL(fmt.Sprintf("/books-manager/book/%d", bookID)) }>
+				{ name }
+			</a>
+			<div class="profile-book-card__summary">
+				@collapsible(140, true) {
+					@templ.Raw(summary)
+				}
+			</div>
+		</div>
+	</div>
 }
 
 templ BookManagerCollections() {
-    @bookManagerMainPage("collections") {
-        Home page   
-    }
+	@bookManagerMainPage("collections") {
+		TODO: Collections
+	}
 }
 
 templ bookManagerMainPage(tab string) {
-    {{
-        l := i18n.GetLocalizer(ctx)
-    }}
-    
-    @bookManagerLayout(_t(l, "bookManager.title")) {
-        <div class="ol-container ol-container--big side-tabs">
-            <aside class="side-tabs__menu">
-                <ul>
-                    <a href="/books-manager"
-                        if tab == "" {
-                            class="side-tabs__tab side-tabs__tab--active"
-                        } else {
-                            class="side-tabs__tab"
-                        }>
-                        { _t(l, "bookManager.home") }
-                    </a>
-
-                    <a href="?tab=books"
-                        if tab == "books" {
-                            class="side-tabs__tab side-tabs__tab--active"
-                        } else {
-                            class="side-tabs__tab"
-                        }>
-                        { _t(l, "bookManager.books") }
-                    </a>
-
-                    <a href="?tab=collections"
-                        if tab == "collections" {
-                            class="side-tabs__tab side-tabs__tab--active"
-                        } else {
-                            class="side-tabs__tab"
-                        }>
-                        { _t(l, "bookManager.collections") }
-                    </a>
-                </ul>
-            </aside>
-
-            <div class="side-tabs__body">
-                { children... }
-            </div>
-
-        </div>
-    }
+	{{
+	l := i18n.GetLocalizer(ctx)
+	}}
+	@bookManagerLayout(_t(l, "bookManager.title")) {
+		<div class="ol-container ol-container--big side-tabs">
+			<aside class="side-tabs__menu">
+				<ul>
+					<a
+						href="/books-manager"
+						if tab == "" {
+							class="side-tabs__tab side-tabs__tab--active"
+						} else {
+							class="side-tabs__tab"
+						}
+					>
+						{ _t(l, "bookManager.home") }
+					</a>
+					<a
+						href="?tab=books"
+						if tab == "books" {
+							class="side-tabs__tab side-tabs__tab--active"
+						} else {
+							class="side-tabs__tab"
+						}
+					>
+						{ _t(l, "bookManager.books") }
+					</a>
+					<a
+						href="?tab=collections"
+						if tab == "collections" {
+							class="side-tabs__tab side-tabs__tab--active"
+						} else {
+							class="side-tabs__tab"
+						}
+					>
+						{ _t(l, "bookManager.collections") }
+					</a>
+				</ul>
+			</aside>
+			<div class="side-tabs__body">
+				{ children... }
+			</div>
+		</div>
+	}
 }
