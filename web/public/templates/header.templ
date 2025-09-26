@@ -53,8 +53,8 @@ templ siteHeaderLayout() {
     <header class="site-header" id="site-header">
         <div class="site-header__inner" x-data="{navOpen:false}">
             <a href="/" class="site-header__logo">
-                <img style="height:64px" class="dark:hidden" src="/_/embed-assets/logo.svg" />
-                <img style="height:64px" class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
+                <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:hidden" src="/_/embed-assets/logo.svg" />
+                <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
             </a>
             { children... }
         </div>
@@ -82,8 +82,11 @@ templ navUser() {
             <a class="p-2 block hover:bg-secondary hover:font-medium" href="/account/settings">
                 { _t(l, "account.settings") }
             </a>
+            <hr />
+            <a class="p-2 block hover:bg-secondary hover:font-medium" href="/logout">
+                { _t(l, "account.logout") }
+            </a>
             if user.Role.IsAdmin() {
-                <hr />
                 <a class="p-2 flex items-center hover:bg-secondary hover:font-medium" href="/admin" target="_blank">
                     <span class="material-symbols-outlined">open_in_new</span>
                     { _t(l, "account.admin") }

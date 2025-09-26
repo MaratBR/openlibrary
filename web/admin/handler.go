@@ -6,7 +6,6 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
-	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/go-chi/chi/v5"
@@ -42,7 +41,6 @@ func NewHandler(
 
 func (h *Handler) initRouter() {
 	h.r = chi.NewRouter()
-	h.r.Use(olhttp.ReqCtxMiddleware)
 }
 
 // Start starts all background services and sets started flag to true.

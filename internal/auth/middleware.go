@@ -7,6 +7,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/session"
+	"github.com/MaratBR/openlibrary/internal/store"
 )
 
 var (
@@ -51,10 +52,13 @@ func NewAuthorizationMiddleware(
 				stringValue, ok := sessionInstance.Get(_CTX_SESSION_INFO_SESSION_KEY)
 
 				var err error
-				if !ok {
+				if !ok || stringValue == "" {
 					sessionInfo, err = sessionService.GetBySID(r.Context(), sessionID)
 					if err != nil {
 						if err == app.ErrSessionNotFound {
+							// we have a valid session id that does not correspond to existing session
+							// meaning that we should probably remove it
+							session.ResetSession(r, w)
 							next.ServeHTTP(w, r)
 						} else {
 							slog.Error("unexpected error when trying to retrieve user's session", "err", err)
@@ -62,7 +66,6 @@ func NewAuthorizationMiddleware(
 						}
 						return
 					}
-
 					b, err := json.Marshal(sessionInfo)
 					if err == nil {
 						sessionInstance.Put(_CTX_SESSION_INFO_SESSION_KEY, string(b))
@@ -78,12 +81,21 @@ func NewAuthorizationMiddleware(
 						// perhaps session was corrupted or the schema changed
 						slog.Error("error while parsing session info", "err", err)
 						next.ServeHTTP(w, r)
+						return
 					}
 				}
 			}
 
 			user, err := userService.GetUserSelfData(r.Context(), sessionInfo.UserID)
 			if err != nil {
+				if err == store.ErrNoRows {
+					// user with this ID does not exist and session info was likely
+					// retrieved from expired cache
+					slog.Warn("detected expired cache data, resetting user session", "userID", sessionInfo.UserID)
+					session.ResetSession(r, w)
+					next.ServeHTTP(w, r)
+					return
+				}
 				slog.Error("unexpected error when trying to retrieve user's data", "err", err)
 				options.OnFail(w, r, err)
 				return

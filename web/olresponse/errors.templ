@@ -13,12 +13,29 @@ templ errorLayout(title string) {
 }
 
 templ err500(err error) {
-    @errorLayout("500") {
+    @errorPageWithACat("500", "Internal Server Error", "This is a CAT-astrophe! But it's not your fault, though... promise", 82) {
+        <section id="nerd" class="font-mono mt-8 border p-4 overflow-x-auto">
+            <!-- yknow, for nerds -->
+            <h2 class="text-2xl">nerd corner</h2>
+            {{
+                r := olhttp.GetRequest(ctx)
+                requestID := reqid.Get(r)
+            }}
+            <pre class="text-sm">
+                Request ID: { requestID } <br />
+                Error message: { err.Error() } <br />
+            </pre>
+        </section>
+    }
+}
+
+templ errorPageWithACat(title, subtitle, text string, cat int) {
+    @errorLayout(title) {
         <main class="ol-container py-12">
-            <h1 class="text-8xl mb-2 font-title text-center md:text-left">500</h1>
+            <h1 class="text-8xl mb-2 font-title text-center md:text-left">{title}</h1>
             <div class="ml-4">
-                <h1 class="text-4xl font-title text-center md:text-left">Internal Server Error</h1>
-                <p class="my-8">This is a CAT-astrophe! But it's not your fault, though... promise</p>
+                <h1 class="text-4xl font-title text-center md:text-left">{subtitle}</h1>
+                <p class="my-8">{text}</p>
                 <picture>
                     <!-- yes, we are doing fallback for cats, but not for book covers, cats are important -->
                     <source srcset="/_/assets/cats/avif/cat82.avif" type="image/avif">
@@ -27,18 +44,7 @@ templ err500(err error) {
                 </picture>
                 <p class="mt-2 text-xs opacity-40 hover:opacity-100">Image source: <a class="link" target="_blank" href="https://cataas.com/">https://cataas.com/</a></p>
             
-                <section id="nerd" class="font-mono mt-8 border p-4 overflow-x-auto">
-                    <!-- yknow, for nerds -->
-                    <h2 class="text-2xl">nerd corner</h2>
-                    {{
-                        r := olhttp.GetRequest(ctx)
-                        requestID := reqid.Get(r)
-                    }}
-                    <pre class="text-sm">
-                        Request ID: { requestID } <br />
-                        Error message: { err.Error() } <br />
-                    </pre>
-                </section>
+                {children...}
             </div>
         </main>
     }

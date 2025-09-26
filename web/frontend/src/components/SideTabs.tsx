@@ -54,7 +54,7 @@ function SideTabsTab({ value, children }: TabProps) {
         onChangeRef.current(value)
       }}
     >
-      {children}
+      <span class="side-tabs__tab__title">{children}</span>
     </li>
   )
 }

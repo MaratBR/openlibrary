@@ -1,8 +1,10 @@
 package olhttp
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
+	"runtime/debug"
 	"strings"
 
 	"github.com/MaratBR/openlibrary/internal/reqid"
@@ -15,6 +17,12 @@ func MakeRecoveryMiddleware() func(next http.Handler) http.Handler {
 				if rec := recover(); rec != nil {
 					// TODO add request id
 					slog.ErrorContext(r.Context(), "recovered from panic", "rec", rec, "request-id", reqid.Get(r))
+
+					fmt.Println("--- Custom Panic Handler ---")
+					fmt.Printf("Recovered from panic: %v\n", r)
+					fmt.Println("Stack trace:")
+					debug.PrintStack() // Print the stack trace
+					fmt.Println("--------------------------")
 
 					b := strings.Builder{}
 					b.WriteString("server panicked!\nIf you are a developer, please fix this. If not please contact support or report to https://github.com/MaratBR/openlibrary/issues/new\n")

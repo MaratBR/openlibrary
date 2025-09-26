@@ -18,7 +18,7 @@ func newLibraryController(service app.ReadingListService) *libraryController {
 }
 
 func (c *libraryController) Register(r chi.Router) {
-	r.Get("/library/", c.index)
+	r.Get("/library", c.index)
 	r.Get("/library/archive", c.archive)
 }
 
@@ -26,7 +26,7 @@ func (c *libraryController) index(w http.ResponseWriter, r *http.Request) {
 	session, isAuthorized := auth.GetSession(r.Context())
 
 	if !isAuthorized {
-		templates.LibraryAnon().Render(r.Context(), w)
+		http.Redirect(w, r, "/login?next=/library", http.StatusSeeOther)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (c *libraryController) archive(w http.ResponseWriter, r *http.Request) {
 	session, isAuthorized := auth.GetSession(r.Context())
 
 	if !isAuthorized {
-		templates.LibraryAnon().Render(r.Context(), w)
+		http.Redirect(w, r, "/login?next=/library", http.StatusSeeOther)
 		return
 	}
 

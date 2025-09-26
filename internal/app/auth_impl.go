@@ -44,7 +44,7 @@ func (s *authService) SignUp(ctx context.Context, input SignUpCommand) (SignUpRe
 		return SignUpResult{}, ErrUsernameTaken
 	}
 
-	userID, err := createUser(ctx, queries, input.Username, input.Password)
+	userID, err := createUser(ctx, queries, input.Username, input.Password, RoleUser)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return SignUpResult{}, err
@@ -64,7 +64,7 @@ func (s *authService) SignUp(ctx context.Context, input SignUpCommand) (SignUpRe
 	return SignUpResult{SessionID: sessionID, UserID: userID}, nil
 }
 
-func createUser(ctx context.Context, queries *store.Queries, username, password string) (id uuid.UUID, err error) {
+func createUser(ctx context.Context, queries *store.Queries, username, password string, role UserRole) (id uuid.UUID, err error) {
 	userID := uuidV4()
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
@@ -81,6 +81,17 @@ func createUser(ctx context.Context, queries *store.Queries, username, password 
 	} else {
 		err = wrapUnexpectedDBError(err)
 	}
+
+	if role != RoleUser {
+		err = queries.UpdateUserRole(ctx, store.UpdateUserRoleParams{
+			Role: store.UserRole(role),
+			ID:   uuidDomainToDb(userID),
+		})
+		if err != nil {
+			err = wrapUnexpectedDBError(err)
+		}
+	}
+
 	return
 }
 
@@ -103,7 +114,7 @@ func (s *authService) EnsureAdminUserExists(ctx context.Context) error {
 		return err
 	}
 
-	_, err = createUser(ctx, queries, "admin", "admin")
+	_, err = createUser(ctx, queries, "admin", "admin", RoleAdmin)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return err

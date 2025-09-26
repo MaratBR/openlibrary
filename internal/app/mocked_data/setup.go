@@ -52,11 +52,11 @@ func (s *Setup) Run(options SetupOptions) error {
 		return err
 	}
 
-	// slog.Info("creating a few lorem ipsum books that are very long")
-	// err = s.createLongBook(userIds)
-	// if err != nil {
-	// 	return err
-	// }
+	slog.Info("creating a few lorem ipsum books that are very long")
+	err = s.createLongBook(userIds)
+	if err != nil {
+		return err
+	}
 
 	slog.Info("importing rr books")
 
@@ -111,8 +111,35 @@ func (s *Setup) createLongBook(userIds []uuid.UUID) error {
 
 				if err != nil {
 					slog.Error("failed to create chapter", "err", err)
-					continue
 				}
+			}
+
+			// create some reviews for this book
+			slog.Info("creating reviews for the long book", "name", bookName, "chapters", size)
+			_ = s.createBookReviews(userIds, bookID, size/100)
+		}()
+	}
+
+	wg.Wait()
+
+	return nil
+}
+func (s *Setup) createBookReviews(userIds []uuid.UUID, bookID int64, maxReviews int) error {
+	var wg sync.WaitGroup
+	for i := 0; i < maxReviews; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, err := s.reviewsService.UpdateReview(context.Background(), app.UpdateReviewCommand{
+				BookID:  bookID,
+				UserID:  userIds[rand.Int()%len(userIds)],
+				Rating:  app.RatingValue(rand.IntN(10) + 1),
+				Content: "I really enjoyed reading this book. Highly recommended!",
+			})
+
+			if err != nil {
+				slog.Error("failed to create review", "err", err)
+				return
 			}
 		}()
 	}

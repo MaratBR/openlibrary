@@ -17,3 +17,16 @@ func Write500(
 		err500(err).Render(r.Context(), w)
 	}
 }
+
+func WriteCustomErrorPage(
+	w http.ResponseWriter,
+	r *http.Request,
+	title, subtitle string,
+	err error,
+) {
+	if PreferredMimeTypeIsJSON(r) {
+		NewAPIError(err).Write(w)
+	} else {
+		errorPageWithACat(title, subtitle, err.Error(), -1).Render(r.Context(), w)
+	}
+}

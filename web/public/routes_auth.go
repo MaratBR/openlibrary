@@ -9,6 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/csrf"
+	"github.com/MaratBR/openlibrary/internal/session"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
 )
@@ -88,7 +89,7 @@ func (c *authController) signIn(username string, password string, w http.Respons
 		c.writeLoginForm(w, r, templates.LoginData{Error: err.Error()})
 		return
 	}
-	auth.WriteSIDCookie(w, c.csrfHandler.SIDCookie(), result.SessionID, time.Hour*24*30, r.URL.Scheme == "https")
+	session.WriteSIDCookie(w, result.SessionID, time.Hour*24*30, r.URL.Scheme == "https")
 	c.csrfHandler.WriteCSRFToken(w, result.SessionID)
 	w.Header().Add("Set-Cookie", "auth_ll="+username)
 

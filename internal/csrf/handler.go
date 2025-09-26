@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,6 +13,8 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/commonutil"
+	"github.com/MaratBR/openlibrary/internal/session"
+	"github.com/MaratBR/openlibrary/web/olresponse"
 )
 
 type csrfTokenKeyType struct{}
@@ -29,11 +32,7 @@ type Handler struct {
 	anonymousSid string
 }
 
-func (h Handler) SIDCookie() string {
-	return h.sidCookie
-}
-
-func (h *Handler) getCSRF(r *http.Request) string {
+func (h *Handler) extractExpectedCSRFToken(r *http.Request) string {
 	cookie, err := r.Cookie(h.cookie)
 	if err == nil && cookie.Value != "" {
 		return cookie.Value
@@ -61,7 +60,7 @@ func (h *Handler) getSubmittedCSRF(r *http.Request) string {
 	return ""
 }
 
-func (h *Handler) Verify(r *http.Request) bool {
+func (h *Handler) Verify(r *http.Request) error {
 	var (
 		sid            string
 		csrfFromCookie string
@@ -70,7 +69,7 @@ func (h *Handler) Verify(r *http.Request) bool {
 	{
 		cookie, err := r.Cookie(h.cookie)
 		if err != nil {
-			return false
+			return err
 		}
 		csrfFromCookie = cookie.Value
 	}
@@ -86,14 +85,23 @@ func (h *Handler) Verify(r *http.Request) bool {
 
 	dsValue := h.getSubmittedCSRF(r)
 	if dsValue == "" || dsValue != csrfFromCookie {
-		return false
+		if dsValue == "" {
+			return errors.New("no csrf token was submitted (or it is empty)")
+		}
+
+		return errors.New("csrf cookie and submitted value are not the same")
+
 	}
 
 	isValidToken := VerifyHMACCsrfToken(csrfFromCookie, sid, h.secret)
-	return isValidToken
+	if !isValidToken {
+		return errors.New("csrf token matches but has invalid HMAC signature ")
+	}
+
+	return nil
 }
 
-func (h *Handler) WriteCSRFFromSid(r *http.Request, w http.ResponseWriter) string {
+func (h *Handler) WriteCSRFFromSID(r *http.Request, w http.ResponseWriter) string {
 	return h.WriteCSRFToken(w, h.getSID(r))
 }
 
@@ -122,29 +130,21 @@ func (h *Handler) getSID(r *http.Request) string {
 	return sid
 }
 
-func (h *Handler) CheckEndpoint(w http.ResponseWriter, r *http.Request) {
-	if !h.Verify(r) {
-		writeCsrfError(w)
-		return
-	}
-	w.WriteHeader(200)
-	w.Write([]byte("ok"))
-}
-
 func (h *Handler) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		csrfToken := h.getCSRF(r)
+		csrfToken := h.extractExpectedCSRFToken(r)
 
 		if r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodOptions {
 			if r.Method == http.MethodGet {
 				_, err := r.Cookie(h.cookie)
 				if err == http.ErrNoCookie {
-					csrfToken = h.WriteCSRFFromSid(r, w)
+					csrfToken = h.WriteCSRFFromSID(r, w)
 				}
 			}
 		} else {
-			if !h.Verify(r) {
-				writeCsrfError(w)
+			if err := h.Verify(r); err != nil {
+				h.WriteCSRFFromSID(r, w)
+				writeCsrfError(w, r, err)
 				return
 			}
 		}
@@ -162,13 +162,13 @@ func NewHandler(secret string) *Handler {
 		cookie:    "csrf",
 		header:    "x-csrf-token",
 		paramName: "__csrf",
-		sidCookie: "sid",
+		sidCookie: session.CookieName,
 	}
 }
 
-func writeCsrfError(w http.ResponseWriter) {
+func writeCsrfError(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(http.StatusForbidden)
-	w.Write([]byte("csrf token is missing"))
+	olresponse.WriteCustomErrorPage(w, r, "CSRF", "CSRF verification error. This can usually be fixed by refreshing the page or by clearing browser's cache.", err)
 }
 
 func getCsrfHMACPayload(sid, secret, randomValue string) string {

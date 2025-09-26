@@ -102,23 +102,4 @@ templ libraryBookCard(bookID int64, name, cover string) {
     </a>
 }
 
-templ LibraryAnon() {
-    {{
-        l := i18n.GetLocalizer(ctx)
-    }}
-
-    @baseLayout(_t(l, "library.title")) {
-        <main class="ol-container">
-            <header class="library-header">
-                <h1 class="page-header page-header--big">{_t(l, "library.title")}</h1>
-            </header>
-
-            <div class="library-body">
-                <a href="/login" class="btn btn--outline btn--lg text-lg rounded-full">
-                    { _t(l, "library.login") }
-                </a>
-            </div>
-        </main>
-    }
-}
 

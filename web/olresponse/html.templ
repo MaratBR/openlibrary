@@ -23,7 +23,7 @@ templ Doc(
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        if l.Passthrough() {
+        if l != nil && l.Passthrough() {
             <meta name="openlibrary-debug-meta:localizer-passthrough-mode" content="true" />
         }
         {{

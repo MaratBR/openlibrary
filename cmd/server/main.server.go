@@ -84,6 +84,7 @@ func mainServer(
 	// --------------------------------------
 
 	r := chi.NewRouter()
+	r.Use(olhttp.ReqCtxMiddleware)
 	r.Use(reqid.New())
 	r.Use(olhttp.MakeRecoveryMiddleware())
 	r.Use(csrfHandler.Middleware)
@@ -130,7 +131,7 @@ func mainServer(
 
 	// the area where all the fun happens
 	r.Group(func(r chi.Router) {
-		r.Use(session.Middleware("sid", sessionStore))
+		r.Use(session.Middleware(sessionStore))
 		r.Mount("/", publicUIHandler)
 		r.Mount("/admin", adminHandler)
 

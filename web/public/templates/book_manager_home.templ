@@ -125,7 +125,7 @@ templ bookManagerMainPage(tab string) {
 							class="side-tabs__tab"
 						}
 					>
-						{ _t(l, "bookManager.home") }
+						<span class="side-tabs__tab__title">{ _t(l, "bookManager.home") }</span>
 					</a>
 					<a
 						href="?tab=books"
@@ -135,7 +135,7 @@ templ bookManagerMainPage(tab string) {
 							class="side-tabs__tab"
 						}
 					>
-						{ _t(l, "bookManager.books") }
+						<span class="side-tabs__tab__title">{ _t(l, "bookManager.books") }</span>
 					</a>
 					<a
 						href="?tab=collections"
@@ -145,7 +145,7 @@ templ bookManagerMainPage(tab string) {
 							class="side-tabs__tab"
 						}
 					>
-						{ _t(l, "bookManager.collections") }
+						<span class="side-tabs__tab__title">{ _t(l, "bookManager.collections") }</span>
 					</a>
 				</ul>
 			</aside>

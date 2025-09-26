@@ -4,7 +4,8 @@
     padding-left: var(--bm-sidebar-width);
 
     &__menu {
-        @apply border-r border-border w-[var(--bm-sidebar-width)] left-0 top-0 bottom-0 absolute bg-background pt-2;
+        width: calc(var(--bm-sidebar-width) - 0.25em);
+        @apply left-1 top-4 absolute bg-muted p-1 rounded-xl;
 
         ul {
             @apply sticky top-[var(--header-height)] flex flex-col items-stretch gap-2;
@@ -12,13 +13,27 @@
     }
 
     &__tab {
-        @apply block font-normal p-2 text-lg rounded-l-full pl-5 cursor-pointer
-            hover:bg-secondary
-            active:bg-muted-2
-            hover:text-primary;
+        @apply block relative p-2 text-lg px-5 cursor-pointer font-title font-medium transition-all rounded-xl;
+
+        & > span {
+
+        }
 
         &--active {
-            @apply hover:text-foreground bg-secondary font-semibold;
+            @apply bg-background text-foreground;
+        }
+
+        &--active &__title {
+            @apply underline;
+        }
+
+        &__title {
+            @apply underline-offset-4;
+            text-decoration-thickness: 0.12em;
+        }
+
+        &:hover &__title {
+            @apply text-muted-2-foreground underline;
         }
     }
 

@@ -9,7 +9,6 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	"github.com/MaratBR/openlibrary/internal/flash"
-	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/NYTimes/gziphandler"
@@ -69,7 +68,6 @@ func NewHandler(
 func (h *Handler) initRouter() {
 	h.r = chi.NewRouter()
 	h.r.Use(gziphandler.GzipHandler)
-	h.r.Use(olhttp.ReqCtxMiddleware)
 	h.r.Use(flash.Middleware)
 
 	h.r.NotFound(notFoundHandler)

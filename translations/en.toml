@@ -49,7 +49,7 @@ many = "{{.count}} days ago"
 [login]
 username = "Username"
 password = "Password"
-login = "Log in"
+login = "Sign in"
 logout = "Log out"
 
 [account]
@@ -57,6 +57,7 @@ profile = "Profile"
 settings = "Settings"
 bookManager = "Book manager"
 admin = "Admin dashboard"
+logout = "Logout"
 
 [gender]
 m = "Male"
@@ -122,7 +123,7 @@ noReviewsText = "There are no reviews for this book yet. Be the first to write o
 home = "Home"
 library = "Library"
 search = "Search"
-logIn = "Log in"
+logIn = "Sign in"
 signUp = "Sign up"
 
 ############
@@ -198,7 +199,7 @@ tocShort = "ToC"
 reviews = "Reviews"
 whatDoYouThink = "What do <em>you</em> think?"
 writeReview = "Write review"
-writeReviewLogin = "Log in to write review"
+writeReviewLogin = "Sign in to write review"
 rateBook = "Rate this book"
 youRated = "You rated this book {{.rating}}"
 myReview = "My review"
@@ -318,6 +319,7 @@ siteSettings = "Site settings"
 home = "Home page"
 logout = "Logout"
 books = "Books"
+debugActions = "Debug actions"
 
 [admin.tags]
 name = "Name"

@@ -2,9 +2,7 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/gofrs/uuid"
@@ -52,18 +50,6 @@ func GetNullableUserID(ctx context.Context) uuid.NullUUID {
 		return uuid.NullUUID{}
 	}
 	return uuid.NullUUID{Valid: true, UUID: session.UserID}
-}
-
-func WriteSIDCookie(w http.ResponseWriter, cookieName, sid string, expiration time.Duration, secure bool) {
-	httpSecure := "; Secure"
-	if !secure {
-		httpSecure = ""
-	}
-	w.Header().Add("Set-Cookie", fmt.Sprintf("%s=%s; Path=/; Max-Age=%d; HttpOnly%s", cookieName, sid, int(expiration.Seconds()), httpSecure))
-}
-
-func RemoveSIDCookie(w http.ResponseWriter, cookieName string, secure bool) {
-	WriteSIDCookie(w, cookieName, "", 0, secure)
 }
 
 func attachSessionInfo(r *http.Request, sessionInfo *app.SessionInfo, user *app.SelfUserDto) *http.Request {
