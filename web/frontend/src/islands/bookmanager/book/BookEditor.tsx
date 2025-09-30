@@ -47,7 +47,7 @@ export default function BookEditor({ data: dataUnknown, rootElement }: PreactIsl
 
           {tab === 'chapters' && (
             <div class="my-4">
-              <Chapters data={data} rootElement={rootElement} />
+              <Chapters book={data} />
             </div>
           )}
         </SideTabs.Body>

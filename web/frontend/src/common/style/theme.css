@@ -14,7 +14,7 @@ html:has(body.dark) {
 }
 
 .theme-default {
-  --background: 0 0% 100%;
+  --background: 0 0% 98%;
   --foreground: 222 0% 20%;
   --card: 0 0% 100%;
   --card-foreground: 222.2 84% 4.9%;
@@ -42,16 +42,18 @@ html:has(body.dark) {
   --chart-4: 43 74% 66%;
   --chart-5: 27 87% 67%;
   --highlight: 0, 0, 0, 0.05;
+
+
 }
 
 .dark {
   --background: 20 0% 12.1%;
   --foreground: 0 0% 95%;
-  --card: 222.2 84% 4.9%;
+  --card: 225 8% 16.1%;
   --card-foreground: 210 40% 98%;
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
+  --primary: 217.2 91.2%  76%;
   --primary-foreground: 222.2 47.4% 11.2%;
   --secondary: 240 3.7% 15.9%;
   --secondary-foreground: 0 0% 98%;
@@ -72,4 +74,10 @@ html:has(body.dark) {
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
   --highlight: 255, 255, 255, 0.05;
+  
 }
+
+ * {
+  --tw-shadow-color: #eee;
+
+ }

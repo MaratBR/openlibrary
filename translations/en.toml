@@ -275,6 +275,7 @@ stageLabel2 = "3. Tags"
 stageLabel3 = "4. Review"
 
 [bookManager.edit]
+chapterNamePlaceholder = "Chapter name"
 isPubliclyVisible = "Publicly visible"
 isPubliclyVisible_description = "When set, book will be visible to other users"
 cover = "Cover"

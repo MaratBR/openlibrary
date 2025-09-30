@@ -103,11 +103,11 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 	}
 
 	{
-		chapters, err := s.queries.GetBookChapters(ctx, query.BookID)
+		chapters, err := s.queries.GetPubliclyVisibleBookChapters(ctx, query.BookID)
 		if err != nil {
 			return ManagerGetBookResult{}, err
 		}
-		bookDto.Chapters = mapSlice(chapters, func(chapter store.GetBookChaptersRow) BookChapterDto {
+		bookDto.Chapters = mapSlice(chapters, func(chapter store.GetPubliclyVisibleBookChaptersRow) BookChapterDto {
 			return BookChapterDto{
 				ID:        chapter.ID,
 				Order:     int(chapter.Order),
@@ -475,7 +475,7 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 }
 
 func (s *bookManagerService) GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChapterResult, error) {
-	rows, err := s.queries.GetBookChapters(ctx, query.BookID)
+	rows, err := s.queries.GetPubliclyVisibleBookChapters(ctx, query.BookID)
 	if err != nil {
 		return ManagerGetBookChapterResult{}, err
 	}

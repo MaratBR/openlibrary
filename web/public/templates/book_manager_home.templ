@@ -61,7 +61,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 				</a>
 			} else {
 				<a class="mb-4 btn btn--lg btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
-					<span class="material-symbols-outlined">edit</span>
+					<i class="fa-solid fa-pencil"></i>
 					{ _t(l, "bookManager.createNewBook") }
 				</a>
 				@olresponse.Pagination(books.Page, books.TotalPages, 10)

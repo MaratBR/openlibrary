@@ -145,11 +145,11 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (B
 
 // GetBookChapters implements BookService.
 func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]BookChapterDto, error) {
-	chapters, err := s.queries.GetBookChapters(ctx, query.ID)
+	chapters, err := s.queries.GetPubliclyVisibleBookChapters(ctx, query.ID)
 	if err != nil {
 		return nil, err
 	}
-	chapterDtos := mapSlice(chapters, func(chapter store.GetBookChaptersRow) BookChapterDto {
+	chapterDtos := mapSlice(chapters, func(chapter store.GetPubliclyVisibleBookChaptersRow) BookChapterDto {
 		return BookChapterDto{
 			ID:        chapter.ID,
 			Order:     int(chapter.Order),
@@ -210,18 +210,18 @@ func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQu
 		next Nullable[ChapterNextPrevDto]
 	)
 
-	if chapter.PrevChapterID.Valid {
+	if chapter.PrevChapterID != 0 {
 		prev = Value(ChapterNextPrevDto{
-			ID:    chapter.PrevChapterID.Int64,
-			Name:  chapter.PrevChapterName.String,
+			ID:    chapter.PrevChapterID,
+			Name:  chapter.PrevChapterName,
 			Order: int32(chapter.Order - 1),
 		})
 	}
 
-	if chapter.NextChapterID.Valid {
+	if chapter.NextChapterID != 0 {
 		next = Value(ChapterNextPrevDto{
-			ID:    chapter.NextChapterID.Int64,
-			Name:  chapter.NextChapterName.String,
+			ID:    chapter.NextChapterID,
+			Name:  chapter.NextChapterName,
 			Order: int32(chapter.Order + 1),
 		})
 	}

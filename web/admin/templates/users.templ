@@ -75,7 +75,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                 <td>
                                     <a class="link link--primary" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) } target="_blank">
                                         { user.Name }
-                                        <span class="material-symbols-outlined !text-sm">open_in_new</span>
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                     </a>
                                     if user.IsBanned {
                                         <div class="text-muted-foreground flex items-center">
@@ -94,7 +94,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                 <td>
                                     <div class="flex gap-1">
                                         <a aria-label={ edit } class="btn btn--secondary btn--sm" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s", user.ID)) }>
-                                            <span class="material-symbols-outlined">edit</span>
+                                            <i class="fa-solid fa-pencil"></i>
                                         </a>
 
                                         <a aria-label={ delete } class="btn btn--secondary btn--sm text-destructive hover:bg-destructive/10" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s/delete", user.ID)) }>

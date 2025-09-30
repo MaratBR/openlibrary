@@ -16,6 +16,6 @@
     }
 
     &__books {
-        @apply flex gap-4 items-start flex-wrap;
+        @apply lg:flex lg:gap-4 lg:items-start lg:flex-wrap;
     }
 }

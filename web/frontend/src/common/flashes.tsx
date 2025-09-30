@@ -1,7 +1,7 @@
 import { render } from 'preact'
-import { Subject, useSubject } from './subject'
 import type { OLNotification } from '@/http-client'
 import SanitizeHTML from './SanitizeHTML'
+import { Subject, useSubject } from './rx'
 
 class Notifications extends Subject<OLNotification[]> {
   constructor() {
@@ -9,16 +9,17 @@ class Notifications extends Subject<OLNotification[]> {
   }
 
   remove(notification: OLNotification) {
-    const idx = this.value.indexOf(notification)
+    const value = this.getValue()
+    const idx = value.indexOf(notification)
     if (idx !== -1) {
-      const newValue = [...this.value]
+      const newValue = [...value]
       newValue.splice(idx, 1)
       this.set(newValue)
     }
   }
 
   add(notification: OLNotification) {
-    this.set([...this.value, notification])
+    this.set([...this.getValue(), notification])
   }
 
   public static instance: Notifications = new Notifications()
@@ -29,15 +30,16 @@ function FlashesHost() {
 
   return (
     <>
-      {notifications.map((notif) => {
+      {notifications.map((notif, i) => {
         return (
-          <div class="ol-flash" data-type={notif.type}>
+          // TODO proper key value
+          <div key={i} class="ol-flash" data-type={notif.type}>
             <span>
               <SanitizeHTML value={notif.text} />
             </span>
             <div class="ol-flash__closeContainer">
               <button onClick={() => Notifications.instance.remove(notif)} class="ol-flash__close">
-                <span class="material-symbols-outlined">close</span>
+                <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
           </div>
@@ -68,7 +70,7 @@ declare global {
 }
 
 // Implementation of flash
-const flashFunc = ((...args: [string] | [OLNotification] | [string, OLNotification['type']]) => {
+const flashFunc = (...args: [string] | [OLNotification] | [string, OLNotification['type']]) => {
   if (args.length >= 2 && typeof args[0] === 'string' && typeof args[1] === 'string') {
     // Handle (text: string, type: OLNotification['type'])
     const [text, type] = args
@@ -91,6 +93,6 @@ const flashFunc = ((...args: [string] | [OLNotification] | [string, OLNotificati
       Notifications.instance.add(args[0])
     }
   }
-}) as typeof flash // Type assertion to ensure we match the overloads
+} // Type assertion to ensure we match the overloads
 
 window.flash = flashFunc

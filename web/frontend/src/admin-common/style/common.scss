@@ -1,5 +1,5 @@
 .admin-card {
-    @apply bg-background border-border border;
+    @apply bg-card border-border border;
 }
 
 .admin-id {
@@ -11,7 +11,7 @@
 }
 
 .admin-page-breadcrumb {
-    @apply border-b bg-background p-2 flex gap-2 items-center flex-wrap sticky top-0 z-10 pl-4;
+    @apply border-b bg-card p-2 flex gap-2 items-center flex-wrap sticky top-0 z-10 pl-4;
 }
 
 .admin-page-header {

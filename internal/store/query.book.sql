@@ -5,10 +5,10 @@ join users on books.author_user_id = users.id
 where books.id = $1
 limit 1;
 
--- name: GetBookChapters :many
+-- name: GetPubliclyVisibleBookChapters :many
 select c.id, c.name, c.words, c."order", c.created_at, c.summary, c.is_adult_override
 from book_chapters c
-where book_id = $1
+where book_id = $1 and is_publicly_visible = true
 order by "order";
 
 -- name: GetUserBooks :many
@@ -37,16 +37,31 @@ order by collections.created_at desc;
 -- name: GetBookChapterWithDetails :one
 select 
     bc.*,
-    prev_chapter.id as prev_chapter_id,
-    prev_chapter.name as prev_chapter_name,
-    next_chapter.id as next_chapter_id,
-    next_chapter.name as next_chapter_name
+    coalesce(prev_chapter.id, 0) as prev_chapter_id,
+    coalesce(prev_chapter.name, '') as prev_chapter_name,
+    coalesce(next_chapter.id, 0) as next_chapter_id,
+    coalesce(next_chapter.name, '') as next_chapter_name
 from book_chapters bc
-left join book_chapters prev_chapter on prev_chapter.book_id = bc.book_id and prev_chapter."order" = bc."order" - 1
-left join book_chapters next_chapter on next_chapter.book_id = bc.book_id and next_chapter."order" = bc."order" + 1
-join books on bc.book_id = books.id
-join users on users.id = books.author_user_id
-where bc.id = $1 and (bc.book_id = $2 or $2 = 0);
+left join lateral (
+    select id, name
+    from book_chapters
+    where book_id = bc.book_id
+      and "order" < bc."order"
+      and is_publicly_visible = true
+    order by "order" desc
+    limit 1
+) prev_chapter on true
+left join lateral (
+    select id, name
+    from book_chapters
+    where book_id = bc.book_id
+      and "order" > bc."order"
+      and is_publicly_visible = true
+    order by "order" asc
+    limit 1
+) next_chapter on true
+where bc.id = $1
+  and (bc.book_id = $2 or $2 = 0);
 
 -- name: GetTopUserBooks :many
 select *

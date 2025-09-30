@@ -22,13 +22,16 @@ templ siteHeader() {
             }}
             <ul class="nav-links">
                 <a role="listitem" class="nav-link" href="/">
-                    <span class="nav-link__icon material-symbols-outlined">home</span>{l.T("nav.home")}
+                    <i class="fa-solid fa-house text-xl mr-2"></i>
+                    {l.T("nav.home")}
                 </a>
                 <a role="listitem" class="nav-link" href="/library">
-                    <span class="nav-link__icon material-symbols-outlined">newsstand</span>{l.T("nav.library")}
+                    <i class="fa-solid fa-book-open text-xl mr-2"></i>
+                    {l.T("nav.library")}
                 </a>
                 <a role="listitem" class="nav-link" href="/search">
-                    <span class="nav-link__icon material-symbols-outlined">search</span>{l.T("nav.search")}
+                    <i class="fa-solid fa-search text-xl mr-2"></i>
+                    {l.T("nav.search")}
                 </a>
             </ul>
             {{
@@ -73,23 +76,34 @@ templ navUser() {
             <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
         </button>
         <div x-cloak @click.outside="userMenu=false" x-show="userMenu" class="nav-user__menu">
-            <a class="p-2 block hover:bg-secondary hover:font-medium" href="/books-manager">
+            <a class="nav-user__menu__item" href="/books-manager">
                 { _t(l, "account.bookManager") }
             </a>
-            <a class="p-2 block hover:bg-secondary hover:font-medium" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) }>
+            <a class="nav-user__menu__item" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) }>
                 { _t(l, "account.profile") }
             </a>
-            <a class="p-2 block hover:bg-secondary hover:font-medium" href="/account/settings">
+            <a class="nav-user__menu__item" href="/account/settings">
                 { _t(l, "account.settings") }
             </a>
+            <button x-init @click="OLTheme.toggle()" class="nav-user__menu__item">
+                <div class="ol-theme-only-content" data-theme="dark">
+                    Dark
+                </div>
+                <div class="ol-theme-only-content" data-theme="light">
+                    Light
+                </div>
+                <div class="ol-theme-only-content" data-theme="system">
+                    System
+                </div>
+            </button>
             <hr />
-            <a class="p-2 block hover:bg-secondary hover:font-medium" href="/logout">
+            <a class="nav-user__menu__item" href="/logout">
                 { _t(l, "account.logout") }
             </a>
             if user.Role.IsAdmin() {
-                <a class="p-2 flex items-center hover:bg-secondary hover:font-medium" href="/admin" target="_blank">
-                    <span class="material-symbols-outlined">open_in_new</span>
+                <a class="nav-user__menu__item" href="/admin" target="_blank">
                     { _t(l, "account.admin") }
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 </a>
             }
         </div>

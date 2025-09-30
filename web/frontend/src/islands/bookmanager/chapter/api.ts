@@ -1,4 +1,5 @@
 import { httpClient, OLAPIResponse } from '@/http-client'
+import { z } from 'zod'
 
 export function httpUpdateDraft(
   bookId: string,
@@ -46,4 +47,20 @@ export function httpUpdateDraftChapterName(
       },
     })
     .then((r) => OLAPIResponse.createNoBody(r))
+}
+
+export function httpCreateChapter(
+  bookId: string,
+  request: {
+    name: string
+    summary: string
+    isAdultOverride: boolean
+    content: string
+  },
+) {
+  return httpClient
+    .post(`/_api/books-manager/book/${bookId}/createChapter`, {
+      body: JSON.stringify(request),
+    })
+    .then((r) => OLAPIResponse.create(r.json(), z.string()))
 }

@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'preact/hooks'
-import { httpUpdateChaptersOrder, managerBookDetailsSchema } from './api'
+import { useMemo, useRef, useState } from 'preact/hooks'
+import { httpUpdateChaptersOrder, ManagerBookDetails } from './api'
 import { twMerge } from 'tailwind-merge'
 import clsx from 'clsx'
 import { ErrorDisplay } from '@/components/error'
-import { PreactIslandProps } from '@/islands/common/preact-island'
+import Popper from '@/components/Popper'
+import { useMutation } from '@tanstack/react-query'
+import { httpCreateChapter } from '../chapter/api'
 
 type Chapter = {
   id: string
@@ -91,13 +93,17 @@ function SortableChapterItem({
   )
 }
 
-export default function Chapters({ data: dataUnknown }: PreactIslandProps) {
-  const data = useMemo(() => managerBookDetailsSchema.parse(dataUnknown), [dataUnknown])
+export default function Chapters({ book: data }: { book: ManagerBookDetails }) {
   const [chapters, setChapters] = useState(data.chapters || [])
   const [originalOrder, setOriginalOrder] = useState<string[]>([])
   const [isReordering, setIsReordering] = useState(false)
   const [isSavingOrder, setSavingOrder] = useState(false)
   const [savingOrderError, setSavingOrderError] = useState<unknown>()
+  const [openChapterName, setOpenChapterName] = useState(false)
+  const [chapterName, setChapterName] = useState('')
+  const validChapterName = chapterName.trim().length > 0
+
+  const addChapterButton = useRef<HTMLButtonElement | null>(null)
 
   const moveChapterUp = (index: number) => {
     if (index > 0) {
@@ -156,6 +162,25 @@ export default function Chapters({ data: dataUnknown }: PreactIslandProps) {
       })
   }
 
+  const createChapterMutation = useMutation({
+    mutationFn: async () => {
+      if (!validChapterName) {
+        throw new Error(`invalid chapter name: ${chapterName}`)
+      }
+
+      const response = await httpCreateChapter(data.id, {
+        name: chapterName,
+        content: '',
+        isAdultOverride: false,
+        summary: '',
+      })
+
+      const chapterId = response.data
+
+      window.location.href = `/books-manager/book/${data.id}/chapter/${chapterId}`
+    },
+  })
+
   const numberOfUpdates = useMemo(() => {
     if (!isReordering) return 0
 
@@ -171,6 +196,28 @@ export default function Chapters({ data: dataUnknown }: PreactIslandProps) {
 
   return (
     <>
+      <Popper
+        style={openChapterName ? {} : { display: 'none' }}
+        anchorEl={addChapterButton}
+        placement="bottom-end"
+      >
+        <div class="card shadow-md mt-1 flex items-center gap-1">
+          <input
+            value={chapterName}
+            onInput={(e) => setChapterName((e.target as HTMLInputElement).value)}
+            class="input w-64"
+            placeholder={window._('bookManager.edit.chapterNamePlaceholder')}
+          />
+          <button
+            disabled={createChapterMutation.isPending || !validChapterName}
+            class="btn btn--ghost"
+            onClick={() => createChapterMutation.mutate()}
+          >
+            <span class="material-symbols-outlined">check</span>
+          </button>
+        </div>
+      </Popper>
+
       {savingOrderError && (
         <div class="mb-4">
           <ErrorDisplay error={savingOrderError} />
@@ -185,19 +232,20 @@ export default function Chapters({ data: dataUnknown }: PreactIslandProps) {
               <button class="btn btn--secondary rounded-full" onClick={handleStartReordering}>
                 {window._('bookManager.edit.reorder')}
               </button>
-              <button class="btn btn--primary rounded-full">
+              <button
+                ref={addChapterButton}
+                class="btn btn--primary rounded-full relative"
+                onClick={() => setOpenChapterName((x) => !x)}
+              >
                 {window._('bookManager.edit.addChapter')}
               </button>
             </>
           ) : (
             <>
-              <button
-                class="btn btn--secondary rounded-full"
-                onClick={handleCancelReordering}
-              >
+              <button class="btn btn--secondary rounded-full" onClick={handleCancelReordering}>
                 {window._('bookManager.edit.cancel')}
               </button>
-              <button class="btn btn--primary  rounded-full" onClick={handleSaveOrder}>
+              <button class="btn btn--primary rounded-full" onClick={handleSaveOrder}>
                 {isSavingOrder ? (
                   <span class="loader loader--dark" />
                 ) : (

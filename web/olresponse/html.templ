@@ -15,10 +15,26 @@ templ Doc(
         if ok {
             lang = l.Lang().String()
         }
+        r := olhttp.GetRequest(ctx)
+        theme, err := r.Cookie("_theme")
+        var isDark bool
+
+        if err == nil {
+            if theme.Value == "dark" {
+                isDark = true
+            }
+        }
     }}
 
     <!doctype html>
-    <html lang={lang}>
+    <html 
+        lang={lang} 
+        if isDark {
+            class="theme-default dark"
+        } else {
+            class="theme-default"
+        }
+        >
     <head>
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -26,9 +42,6 @@ templ Doc(
         if l != nil && l.Passthrough() {
             <meta name="openlibrary-debug-meta:localizer-passthrough-mode" content="true" />
         }
-        {{
-            r := olhttp.GetRequest(ctx)
-        }}
         if isBot(r) {
             <script>window.IS_BOT=true</script>
         }
@@ -39,9 +52,7 @@ templ Doc(
         for _, cssPath := range settings.CSS {
             <link rel="stylesheet" href={ cssPath } />
         }
-        <link 
-            rel="stylesheet" 
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <link rel="stylesheet" href="/_/embed-assets/css/fa/all.min.css">
         <style>
         [x-cloak]{ display: none !important; }
         </style>
@@ -53,11 +64,7 @@ templ Doc(
         @ServerData()
     </head>
     {{
-        bodyClasses := "m-0 font-text theme-default bg-background text-foreground min-h-screen"
-        isDark := olhttp.GetUITheme(ctx) == "dark"
-        if isDark {
-            bodyClasses += " dark"
-        }
+        bodyClasses := "m-0 font-text bg-background text-foreground min-h-screen"
     }}
     <body class={bodyClasses}>
         { children... }

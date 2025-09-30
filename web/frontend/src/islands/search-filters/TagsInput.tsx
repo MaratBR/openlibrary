@@ -52,7 +52,7 @@ export default function TagsInput({ tags, onInput }: TagsInputProps) {
                   class="h-5 hover:text-rose-600"
                   aria-label={window._('search.removeTag')}
                 >
-                  <span class="material-symbols-outlined !text-[20px]">close</span>
+                  <i class="fa-solid fa-xmark !text-[20px]" />
                 </button>
               </span>
             ))}

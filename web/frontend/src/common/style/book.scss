@@ -25,13 +25,16 @@
 //                   //
 // ----------------- //
 .book-toc {
-    @apply md:grid md:grid-cols-2 mt-3;
+    @apply md:grid md:grid-cols-2 mt-3 gap-1;
 
     &__item {
         @apply 
-            p-2 text-lg grid grid-cols-[48px_auto] rounded-lg 
-            hover:bg-secondary 
-            active:outline-1 active:outline;
+            p-2 text-lg grid grid-cols-[48px_auto] rounded-lg bg-card border
+            hover:bg-secondary hover:shadow-sm hover:outline hover:outline-2;
+
+        &--readingNow {
+            @apply border-primary outline-primary outline outline-2;
+        }
     }
 
     &__num {

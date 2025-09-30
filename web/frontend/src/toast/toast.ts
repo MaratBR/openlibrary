@@ -117,7 +117,7 @@ function createBasicToast(title: Node, content: Node, type?: ToastType): HTMLEle
     close.role = 'button'
     close.classList.add('ol-toast__close')
     close.setAttribute('data-toast-close', 'true')
-    close.innerHTML = '<span style="font-size:22px" class="material-symbols-outlined">close</span>'
+    close.innerHTML = '<i style="font-size:22px" class="fa-solid fa-xmark" />'
     div.appendChild(close)
   }
 

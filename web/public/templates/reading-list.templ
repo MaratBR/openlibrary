@@ -38,7 +38,7 @@ templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadi
                 x-show="rl !== null" 
                 class="btn btn--outline btn--lg rounded-full w-full"
                 @click="open=true">
-                <span class="material-symbols-outlined">edit</span> 
+                <i class="fa-solid fa-pencil"></i> 
                 <span x-text="rl ? (i18n['readingList.' + rl.status] ?? rl.status) : ''">
                     if readingListStatus.Valid {
                         {l.T(fmt.Sprintf("readingList.%s", readingListStatus.Value.Status))}

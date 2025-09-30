@@ -54,7 +54,8 @@ create table book_chapters (
     created_at timestamptz not null default now(),
     words int4 not null default 0,
     is_adult_override bool not null default false,
-    summary text not null default ''
+    summary text not null default '',
+    is_publicly_visible bool not null default false
 );
 
 create index ix_bok_chapters_book_id on book_chapters (book_id);

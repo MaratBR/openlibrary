@@ -158,14 +158,13 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
                 if isAuthenticated {
                     if user.Role.IsModOrHigher() {
                         <a href={templ.URL(fmt.Sprintf("/mod/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] rounded-full">
-                            <span class="material-symbols-outlined">shield</span>
+                            <i class="fa-solid fa-shield-halved"></i>
                             Mod menu
                         </a>
                     }
 
                     if user.ID == book.Author.ID {
                         <a href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] rounded-full">
-                            <span class="material-symbols-outlined">bookmark_manager</span>
                             Book manager
                         </a>
                     }

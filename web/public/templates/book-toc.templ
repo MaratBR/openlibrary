@@ -16,7 +16,7 @@ templ BookTOC(
 
     <div class="contents" id="slot-book-toc" x-cloak x-show="tab==='toc'">
         if len(chapters) == 0 {
-            <section id="empty_toc" class="mt-4 p-2 border rounded-lg">
+            <section id="empty_toc" class="mt-4 p-2 border rounded-lg bg-card shadow-md">
                 <h1 class="font-title text-xl font-semibold mb-2">{_t(l, "book.emptyToc")}</h1>
                 <p>{_t(l, "book.emptyTocContent")}</p>
             </section>
@@ -26,7 +26,12 @@ templ BookTOC(
                     <li role="listitem">
                         <a
                             href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
-                            class="book-toc__item">
+                            if chapter.ID == activeChapterID {
+                                class="book-toc__item book-toc__item--readingNow"
+                            } else {
+                                class="book-toc__item"
+                            }
+                            >
                             <div class="book-toc__num">
                                 <span>{ commonutil.FormatInt(i + 1) }</span>
                                 if chapter.ID == activeChapterID {

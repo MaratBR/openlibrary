@@ -2,7 +2,7 @@
     @apply lg:grid lg:grid-cols-[1fr_auto];
 
     &__settings {
-        @apply border-t w-full right-0 left-0 bottom-0 fixed z-30 bg-background;
+        @apply border-t w-full right-0 left-0 bottom-0 fixed z-30 bg-card;
 
 
         @apply lg:relative lg:border-t-0 lg:border-l lg:top-0 lg:w-[400px];

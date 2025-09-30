@@ -137,7 +137,7 @@ export function ImageResizer({
           class="z-10 size-10 flex items-center justify-center absolute top-1 right-1 hover:bg-white/20"
           onClick={() => onClose()}
         >
-          <span class="material-symbols-outlined text-white">close</span>
+          <i class="fa-solid fa-xmark text-white" />
         </button>
 
         <Canvas cutoutHeight={expectedHeight} cutoutWidth={expectedWidth} />

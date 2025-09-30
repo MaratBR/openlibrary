@@ -5,7 +5,7 @@
 
     &__menu {
         width: calc(var(--bm-sidebar-width) - 0.25em);
-        @apply left-1 top-4 absolute bg-muted p-1 rounded-xl;
+        @apply left-1 top-4 absolute bg-card rounded-md shadow-md border border-border py-2;
 
         ul {
             @apply sticky top-[var(--header-height)] flex flex-col items-stretch gap-2;
@@ -13,14 +13,16 @@
     }
 
     &__tab {
-        @apply block relative p-2 text-lg px-5 cursor-pointer font-title font-medium transition-all rounded-xl;
+        @apply 
+            block relative p-2 text-lg px-5 cursor-pointer font-title font-medium;
 
-        & > span {
 
+        &:hover:not(&--active) &__title {
+            @apply underline;
         }
 
         &--active {
-            @apply bg-background text-foreground;
+            @apply bg-primary text-primary-foreground;
         }
 
         &--active &__title {
@@ -30,10 +32,6 @@
         &__title {
             @apply underline-offset-4;
             text-decoration-thickness: 0.12em;
-        }
-
-        &:hover &__title {
-            @apply text-muted-2-foreground underline;
         }
     }
 

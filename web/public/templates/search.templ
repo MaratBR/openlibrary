@@ -34,7 +34,7 @@ templ SearchPage(
             "search.genres",
         })
 
-        <div class="ol-container my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t }", len(result.Books) == 0) }>
+        <div class="ol-container my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
             @SearchResultFragment(result, explainedQuery)
         </div>
     }
@@ -79,8 +79,8 @@ templ SearchResultFragment(
         </form>
 
         <div class="flex gap-2 my-4">
-            <button @click="openFilters=!openFilters" class="btn btn--lg btn--outline rounded-full">
-                <span class="material-symbols-outlined">filter_list</span>
+            <button @click="openFilters=!openFilters" class="btn btn--lg btn--ghost px-0">
+                <i class="fa-solid fa-filter"></i>
                 {_t(l, "search.filters")}
                 if activeFilters > 0 {
                     ({ formatInt32(int32(activeFilters)) })
@@ -89,9 +89,9 @@ templ SearchResultFragment(
         </div>
 
 
-        <section class="search-filters" x-cloak x-show="openFilters" x-collapse>
+        <section class="search-filters" x-cloak x-show="openFilters && filtersReady" x-collapse>
             <div class="p-4">
-                <ol-island data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
+                <ol-island @island:mount="filtersReady=true" data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
             </div>
         </section>
 
@@ -166,15 +166,12 @@ templ SearchResultFragment(
 templ searchNoResultsCard() {
     {{ l := i18n.GetLocalizer(ctx) }}
 
-    <div class="my-8 px-12 text-lg overflow-hidden rounded-xl grid grid-cols-[auto_1fr] bg-[#dee0e2] dark:bg-[#211f1d] max-w-[600px]">
-        <div>
-            <img class="dark:invert" aria-hidden="true" src="/_/embed-assets/book_question.h300.webp" />
+    <div class="relative">
+        <div class="font-title text-muted-foreground rotate-12 text-center mt-10" style="font-size: 320px;">
+            ??
         </div>
-        <div class="p-4 flex items-center">
-            <p class="text-3xl font-title">
-                { _t(l, "search.noResults") }
-            </p>
-        </div>
+
+        <p class="text-center absolute bottom-10 left-[50%] -translate-x-1/2 z-10 px-2 rounded-md text-black inline-block leading-8">{ _t(l, "search.noResults") }</p>
     </div>
 }
 

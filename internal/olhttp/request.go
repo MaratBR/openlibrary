@@ -20,12 +20,3 @@ func GetRequest(ctx context.Context) *http.Request {
 	}
 	return v
 }
-
-func GetUITheme(ctx context.Context) string {
-	r := GetRequest(ctx)
-	cookie, err := r.Cookie("ui_theme")
-	if err != nil {
-		return ""
-	}
-	return cookie.Value
-}

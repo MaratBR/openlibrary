@@ -110,7 +110,7 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
 
             <hr class="my-8" />
 
-            <section class="overflow-hidden border rounded-md shadow-md">
+            <section class="overflow-hidden border card p-0 shadow-md">
                 <header class="p-2">
                     <h2 class="text-xl">{ _t(l, "mod.book.log.recentActions") }</h2>
                     <p>
@@ -141,7 +141,7 @@ templ modBookAction(
         }
         >
         <span class="mod-action-card__name">
-            <span class="material-symbols-outlined">shield</span>
+            <i class="fa-solid fa-shield-halved"></i>
             {name}
         </span>
         <span class="mod-action-card__description">{description}</span>

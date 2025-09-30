@@ -32,6 +32,7 @@ func (c *apiBookManagerController) Register(r chi.Router) {
 		r.Post("/book/{bookID}/{chapterID}/{draftID}", c.updateDraftContent)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/publish", c.updateDraftContentAndPublish)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/chapterName", c.updateDraftChapterName)
+		r.Post("/book/{bookID}/createChapter", c.createChapter)
 
 	})
 }
@@ -307,4 +308,42 @@ func (c *apiBookManagerController) updateDraftContentAndPublish(w http.ResponseW
 	}
 
 	apiWriteOK(w)
+}
+
+type createChapterRequest struct {
+	Body struct {
+		Name            string `json:"name"`
+		Summary         string `json:"summary"`
+		IsAdultOverride bool   `json:"isAdultOverride"`
+		Content         string `json:"content"`
+	} `in:"body=json"`
+}
+
+func (c *apiBookManagerController) createChapter(w http.ResponseWriter, r *http.Request) {
+	session := auth.RequireSession(r.Context())
+	input := r.Context().Value(httpin.Input).(*createChapterRequest)
+
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	command := app.CreateBookChapterCommand{
+		BookID:          bookID,
+		Name:            input.Body.Name,
+		Summary:         input.Body.Summary,
+		IsAdultOverride: input.Body.IsAdultOverride,
+		Content:         input.Body.Content,
+		UserID:          session.UserID,
+	}
+
+	result, err := c.service.CreateBookChapter(r.Context(), command)
+
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	olresponse.NewAPIResponse(result.ID).Write(w)
 }

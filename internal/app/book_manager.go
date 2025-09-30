@@ -91,6 +91,7 @@ type CreateBookChapterCommand struct {
 	Content         string
 	IsAdultOverride bool
 	Summary         string
+	UserID          uuid.UUID
 }
 
 type CreateBookChapterResult struct {

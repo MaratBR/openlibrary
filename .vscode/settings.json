@@ -70,9 +70,11 @@
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     },
     "files.exclude": {
-        "**/*.rpyc": true,
-        "**/*.rpa": true,
-        "**/*.rpymc": true,
-        "**/cache/": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "./fontawesome-free-7.0.1-web": true
     }
 }

@@ -1,5 +1,5 @@
 .site-header {
-    @apply z-40 w-full bg-background sticky top-0 h-[var(--header-height)] border-b;
+    @apply z-40 w-full bg-card sticky top-0 h-[var(--header-height)] border-b;
 
     &__inner {
         @apply max-w-[120ch] mx-auto h-full flex flex-nowrap;
@@ -19,7 +19,7 @@
 
 .site-nav {
     top: var(--header-height);
-    @apply bg-background flex flex-col gap-2 fixed z-50 w-screen shadow-lg invisible transition-all opacity-0;
+    @apply flex flex-col gap-2 fixed z-50 w-screen shadow-lg invisible transition-all opacity-0 bg-card;
     transform: translateY(-20px);
 
     @apply lg:visible lg:static lg:shadow-none lg:flex-row lg:bg-transparent lg:transition-none lg:transform-none lg:opacity-100; 
@@ -52,7 +52,6 @@
     @apply 
         h-full inline-flex items-center font-medium text-foreground/80 text-[1rem] px-5 min-h-12
         hover:text-foreground hover:bg-accent
-        focus:outline -outline-offset-2
         active:text-primary;
     
     &__icon {
@@ -63,7 +62,7 @@
 .nav-user {
     @apply 
         relative h-full ml-4 mt-0
-        md:min-w-12 md:max-w-24;
+        lg:min-w-12 lg:max-w-24;
 
     &__btn {
         @apply lg:h-full;
@@ -71,7 +70,13 @@
 
     &__menu {
         @apply 
-            bg-secondary rounded-lg p-2 mr-4 mb-4
-            lg:bg-background lg:rounded-none lg:p-0 lg:absolute lg:top-full lg:right-0 lg:border-border lg:border lg:py-1 lg:space-y-1 lg:min-w-40;
+            bg-secondary rounded-lg mr-4 mb-4
+            lg:bg-muted lg:rounded-xl lg:absolute lg:top-full lg:right-0 lg:p-1 lg:space-y-1 lg:min-w-48 lg:flex lg:flex-col lg:shadow-md;
+
+        &__item {
+            @apply px-2 py-2 min-h-10 flex items-center rounded-md transition-all duration-100
+                hover:bg-card hover:shadow-sm
+                active:bg-muted-2;
+        }
     }
 }

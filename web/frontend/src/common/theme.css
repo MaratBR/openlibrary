@@ -1,0 +1,9 @@
+html:not([data-theme="dark"]) .ol-theme-only-content[data-theme="dark"] {
+    display: none;
+}
+html:not([data-theme="system"]) .ol-theme-only-content[data-theme="system"] {
+    display: none;
+}
+html:not([data-theme="light"]) .ol-theme-only-content[data-theme="light"] {
+    display: none;
+}

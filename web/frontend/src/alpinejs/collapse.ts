@@ -48,8 +48,8 @@ Alpine.data('collapseContent', () => ({
   },
 
   buttonIcon: {
-    'x-text'() {
-      return this.expand ? 'collapse_all' : 'expand_all'
+    ':style'() {
+      return this.expand ? 'transform:rotate(180deg)' : ''
     },
   },
 }))

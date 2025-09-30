@@ -124,7 +124,7 @@ templ BookMyReview(
                                 "id": "current-review-rating",
                             })
                             <button @click="requestEditing()" class="btn btn--lg btn--outline rounded-full">
-                                <span class="material-symbols-outlined">edit</span>
+                                <i class="fa-solid fa-pencil"></i>
                                 { _t(l, "reviews.editReview") }
                             </button>
                         </div>
@@ -277,7 +277,7 @@ templ collapsible(height int, canBeCollapsed bool) {
             }
             class="absolute flex items-center left-0 right-0 bottom-0 p-1 z-20 text-lg font-[500] hover:text-primary focus:outline focus:outline-2 outline-offset-[-2px]">
             <span x-bind="buttonLabel">{ _t(l, "common.more") }</span>
-            <span x-bind="buttonIcon" class="material-symbols-outlined !text-[18px]">expand_all</span>
+            <i x-bind="buttonIcon" class="fa-solid fa-chevron-down"></i>
         </button>
     </div>
 }

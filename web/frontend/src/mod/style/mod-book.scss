@@ -3,7 +3,7 @@
 }
 
 .mod-action-card {
-    @apply transition-shadow cursor-pointer bg-background rounded-sm border-2 border-slate-400 p-4 max-w-64 
+    @apply transition-shadow cursor-pointer bg-card rounded-sm border-2 border-slate-400 p-4 max-w-64 
         hover:shadow-md
         data-[active=true]:border-orange-600 data-[active=true]:bg-secondary;
 
