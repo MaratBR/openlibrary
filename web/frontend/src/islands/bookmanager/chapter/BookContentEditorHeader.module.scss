@@ -9,10 +9,6 @@
 .btn {
     @apply flex items-center p-2;
 
-    :global(.material-symbols-outlined) {
-        @apply select-none;
-    }
-
     &:has(input:checked) {
         @apply text-primary;
     }

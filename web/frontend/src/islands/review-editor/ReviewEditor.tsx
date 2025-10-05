@@ -67,14 +67,14 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
           class={active.bold ? 'active' : ''}
           onClick={() => editor.current?.chain().focus().toggleBold().run()}
         >
-          <span class="material-symbols-outlined">format_bold</span>
+          <i class="fa-solid fa-bold" />
         </button>
 
         <button
           class={active.italic ? 'active' : ''}
           onClick={() => editor.current?.chain().focus().toggleItalic().run()}
         >
-          <span class="material-symbols-outlined">format_italic</span>
+          <i class="fa-solid fa-italic" />
         </button>
       </div>
 

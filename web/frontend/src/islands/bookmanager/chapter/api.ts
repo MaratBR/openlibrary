@@ -22,12 +22,16 @@ export function httpUpdateAndPublishDraft(
   chapterId: string,
   draftId: string,
   content: string,
+  makePublic: boolean,
 ) {
   return httpClient
     .post(`/_api/books-manager/book/${bookId}/${chapterId}/${draftId}/publish`, {
       body: content,
       headers: {
         'Content-Type': 'text/plain',
+      },
+      searchParams: {
+        makePublic,
       },
     })
     .then((r) => OLAPIResponse.createNoBody(r))
@@ -62,5 +66,5 @@ export function httpCreateChapter(
     .post(`/_api/books-manager/book/${bookId}/createChapter`, {
       body: JSON.stringify(request),
     })
-    .then((r) => OLAPIResponse.create(r.json(), z.string()))
+    .then((r) => OLAPIResponse.create(r, z.string()))
 }

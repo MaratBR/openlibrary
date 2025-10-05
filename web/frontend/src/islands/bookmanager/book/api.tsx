@@ -17,13 +17,16 @@ const bookCollectionDtoSchema = z.object({
   size: z.number(),
 })
 
-const bookChapterDtoSchema = z.object({
+const managerBookChapterDtoSchema = z.object({
   id: z.string(),
   order: z.number().min(0).int(),
   name: z.string(),
   words: z.number(),
   createdAt: z.string(),
   summary: z.string(),
+  isAdultOverride: z.boolean(),
+  isPubliclyVisible: z.boolean(),
+  draftId: z.string().nullable(),
 })
 
 export const managerBookDetailsSchema = z.object({
@@ -35,7 +38,7 @@ export const managerBookDetailsSchema = z.object({
   words: z.number(),
   wordsPerChapter: z.number(),
   collections: z.array(bookCollectionDtoSchema),
-  chapters: z.array(bookChapterDtoSchema),
+  chapters: z.array(managerBookChapterDtoSchema),
   createdAt: z.string(),
   author: z.object({
     id: z.string(),
@@ -47,7 +50,7 @@ export const managerBookDetailsSchema = z.object({
   cover: z.string(),
 })
 
-export type ManagerBookDetails = z.infer<typeof managerBookDetailsSchema>
+export type ManagerBookDetailsDto = z.infer<typeof managerBookDetailsSchema>
 
 export function httpUpdateBook(id: string, request: UpdateBookRequest) {
   return httpClient

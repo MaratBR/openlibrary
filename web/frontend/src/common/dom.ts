@@ -21,3 +21,25 @@ export function executeAfterDOMIsReady(callback: () => void): void {
   if (typeof queueMicrotask !== 'undefined') queueMicrotask(callback)
   else setTimeout(callback, 0)
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function throttleUntilNextFrame<TArgs extends any[]>(
+  fn: (...args: TArgs) => void,
+): (...args: TArgs) => void {
+  const argsContainer: { value: TArgs } = { value: undefined as never as TArgs }
+  let scheduled = false
+
+  return (...args: TArgs) => {
+    argsContainer.value = args
+    if (!scheduled) {
+      scheduled = true
+      window.requestAnimationFrame(() => {
+        try {
+          fn(...argsContainer.value)
+        } finally {
+          scheduled = false
+        }
+      })
+    }
+  }
+}

@@ -35,8 +35,6 @@ templ BookPage(
     }}
     
     @bookPageLayout(book, readingListStatus) {
-        @i18nExtractKeys(l, []string{ "common.more", "common.less", "common.save" })
-
         <div x-ignore class="mt-4 __user-content">
             @templ.Raw(book.Summary)
         </div>
@@ -232,8 +230,8 @@ templ bookTags(tags []app.DefinedTagDto) {
                 x-cloak
             }
             class="nojs-hidden" role="button" x-show="len>10" @click="open=!open">
-            <span class="tag font-semibold nojs-hidden" x-text="i18n[open?'common.less':'common.more']">
-                {l.T("common.more")}
+            <span class="tag font-semibold nojs-hidden" x-text="window._(open?'common.less':'common.more')">
+                {_t(l, "common.more")}
             </span>
         </li>
     </ul>

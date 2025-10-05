@@ -11,10 +11,13 @@ import collapse from '@alpinejs/collapse'
 import './book-reader'
 import './rating-input'
 import './collapse'
+import './page-progress'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ;(window as any).Alpine = Alpine
 
 Alpine.plugin(ajax)
 Alpine.plugin(collapse)
-Alpine.start()
+if (!new URLSearchParams(window.location.search).has('debug.disableAlpineJS')) {
+  Alpine.start()
+}

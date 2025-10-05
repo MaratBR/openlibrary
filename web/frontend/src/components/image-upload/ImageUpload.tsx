@@ -2,7 +2,6 @@ import { formatFileSize } from '@/lib/format'
 import { ChangeEvent, useEffect, useRef } from 'preact/compat'
 
 export type ImageUploadProps = {
-  // eslint-disable-next-line no-unused-vars
   onFileSelected: (file: File) => void
   file: File | null
   displayedFile?: string | null
@@ -39,7 +38,7 @@ export function ImageUpload({ onFileSelected, file, displayedFile }: ImageUpload
           <img src={displayedFile} />
         ) : (
           <div class="absolute inset-0 flex justify-center items-center group-hover:bg-highlight">
-            <span class="material-symbols-outlined">image</span>
+            <i class="fa-solid fa-image" />
           </div>
         )}
       </label>

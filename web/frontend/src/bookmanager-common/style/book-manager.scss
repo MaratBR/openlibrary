@@ -5,7 +5,7 @@
 
     &__menu {
         width: calc(var(--bm-sidebar-width) - 0.25em);
-        @apply left-1 top-4 absolute bg-card rounded-md shadow-md border border-border py-2;
+        @apply left-1 top-0 absolute bg-card rounded-md shadow-md border border-border py-2;
 
         ul {
             @apply sticky top-[var(--header-height)] flex flex-col items-stretch gap-2;
@@ -36,6 +36,6 @@
     }
 
     &__body {
-        @apply pl-8;
+        @apply ml-8;
     }
 }

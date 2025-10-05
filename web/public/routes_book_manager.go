@@ -7,6 +7,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
@@ -124,6 +125,10 @@ func (c *bookManagerController) sendBookEditorPage(bookID int64, w http.Response
 	book, err := c.service.GetBook(r.Context(), query)
 
 	if err != nil {
+		if err == store.ErrNoRows {
+			http.Redirect(w, r, "/books-manager?tab=books", http.StatusFound)
+		}
+
 		writeApplicationError(w, r, err)
 		return
 	}

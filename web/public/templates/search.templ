@@ -15,24 +15,7 @@ templ SearchPage(
     }}
 
     @baseLayout("Search") {
-        @i18nExtractKeys(l, []string{
-            "common.more",
-            "common.less",
-
-            "search.search",
-            "search.doSearch",
-            "search.includeTags",
-            "search.excludeTags",
-            "search.includeAuthors",
-            "search.excludeAuthors",
-            "search.author",
-            "search.words",
-            "search.chapters",
-            "search.wordsPerChapter",
-            "search.favorites",
-            "search.tags",
-            "search.genres",
-        })
+        @i18nExtractKeysByPrefix(l, "search")
 
         <div class="ol-container my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
             @SearchResultFragment(result, explainedQuery)
@@ -89,7 +72,7 @@ templ SearchResultFragment(
         </div>
 
 
-        <section class="search-filters" x-cloak x-show="openFilters && filtersReady" x-collapse>
+        <section class="search-filters mb-2" x-cloak x-show="openFilters && filtersReady" x-collapse>
             <div class="p-4">
                 <ol-island @island:mount="filtersReady=true" data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
             </div>

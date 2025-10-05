@@ -216,6 +216,10 @@ notPubliclyAvailableNotice = "This books is not publicly available. You can see 
 notPubliclyAvailableNoticeMod = "This books is not publicly available. You can see it because you are the moderator."
 goToBookManager = "Go to book manager"
 
+readingListYouJumpedBack = "It seems that you've jumped back a few chapters. Do you want to update your reading progress?"
+readingListYouJumpedForward = "It seems that you've jumped forward and skipped a few chapters. Do you want to update your reading progress?"
+readingListSetProgress = "Set progress"
+
 [search]
 filters = "Filters"
 search = "Search"
@@ -257,6 +261,7 @@ noBooks = "You have yet to write your first book! If you want to try yourself as
 writeYourFirstBook = "Write your first book"
 createNewBook = "Create new book"
 title = "Book manager"
+emptyBookSummary = "This book has no summary"
 
 [bookManager.newBook]
 title = "New book"
@@ -293,12 +298,17 @@ clickOnImageToChange = "Click on image to change"
 chapters = "Chapters"
 addChapter = "Add chapter"
 noChapters = "No chapters yet"
+emptyChapterSummary = "No chapter summary"
 words = "Words"
 edit = "Edit"
 delete = "Delete"
 reorder = "Reorder"
 cancel = "Cancel"
 changesPending = "You have changed the order of {count} chapters"
+adult = "Adult"
+chapterHidden = "Hidden"
+activeDraft = "Active draft"
+editDraft = "Edit draft"
 
 #####################
 #                   #
@@ -362,6 +372,7 @@ title = "Books"
 searchNotImplemented = "Search in admin dashboard is not implemented yet. Put the book ID below to open the page."
 
 [editor]
+placeholder = "Write the chapter here..."
 p = "Paragraph"
 h1 = "Heading 1"
 h2 = "Heading 2"
@@ -387,6 +398,10 @@ saveDraftDescription = "Chapter's draft will be saved. You can always edit it la
 publishDraft = "Publish draft"
 publishDraftDescription = "Chapter will be published. You can always edit it later. Your changes <b>will</b> be visible to other users."
 
+chapterNamePlaceholder = "Unnamed chapter"
+publishAreYouSure = "Publish the chapter?"
+publishWarning = "This will update the chapter for all users."
+makeChapterVisible = "Make chapter visible for everyone"
 
 [mod]
 performAction = "Perform action"
@@ -423,6 +438,8 @@ permRemoved = "Permanently removed"
 [mod.book.log]
 recentActions = "Recent moderation actions"
 recentActionsOfBook = "List of recently performed moderation actions of <em>{{.book}}</em>."
+
+empty = "No records in the log yet"
 
 action = "Action"
 reason = "Reason"

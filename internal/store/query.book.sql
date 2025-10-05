@@ -11,6 +11,13 @@ from book_chapters c
 where book_id = $1 and is_publicly_visible = true
 order by "order";
 
+-- name: GetAllBookChapters :many
+select c.*, 
+  cast(coalesce((select id from drafts where drafts.chapter_id = c.id order by created_at desc limit 1), 0) as int8) as latest_draft_id
+from book_chapters c
+where book_id = $1
+order by "order";
+
 -- name: GetUserBooks :many
 select b.*
 from books b

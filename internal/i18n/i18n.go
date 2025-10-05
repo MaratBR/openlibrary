@@ -72,8 +72,11 @@ func walkTranslations(
 	fn func(goeasyi18n.TranslateString),
 	prefix string,
 	m map[string]any,
+	def *keyDef,
 ) {
 	for k, v := range m {
+		defInner := def.addInner(k)
+
 		if vStr, ok := v.(string); ok {
 			fn(goeasyi18n.TranslateString{
 				Key:     prefix + k,
@@ -85,19 +88,21 @@ func walkTranslations(
 				ts.Key = prefix + k
 				fn(ts)
 			} else {
-				walkTranslations(fn, prefix+k+".", vMap)
+				walkTranslations(fn, prefix+k+".", vMap, defInner)
 			}
 		}
 	}
 }
 
-func loadFromTOML(files ...string) (goeasyi18n.TranslateStrings, error) {
+func loadFromTOML(files ...string) (goeasyi18n.TranslateStrings, *keyDef, error) {
 	arr := make([]goeasyi18n.TranslateString, 0)
+
+	fullDef := &keyDef{}
 
 	for _, file := range files {
 		f, err := os.Open(file)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		defer f.Close()
 
@@ -106,28 +111,33 @@ func loadFromTOML(files ...string) (goeasyi18n.TranslateStrings, error) {
 		err = toml.NewDecoder(f).Decode(&m)
 
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
+		def := &keyDef{}
 		walkTranslations(func(ts goeasyi18n.TranslateString) {
 			arr = append(arr, ts)
-		}, "", m)
+		}, "", m, def)
+		fullDef.mergeWith(def)
 	}
 
-	return goeasyi18n.TranslateStrings(arr), nil
+	return goeasyi18n.TranslateStrings(arr), fullDef, nil
 }
 
 func newI18N(
 	lang language.Tag,
 	files map[language.Tag][]string,
-) *goeasyi18n.I18n {
+) (*goeasyi18n.I18n, *keyDef) {
 	i18nInstance := goeasyi18n.NewI18n(goeasyi18n.Config{
 		FallbackLanguageName:    lang.String(),
 		DisableConsistencyCheck: false,
 	})
 
+	allLangDef := &keyDef{}
+
 	for lang, langFiles := range files {
-		translations, err := loadFromTOML(langFiles...)
+		translations, langKeyDef, err := loadFromTOML(langFiles...)
+		allLangDef.mergeWith(langKeyDef)
 		if err != nil {
 			panic(err)
 		}
@@ -135,12 +145,13 @@ func newI18N(
 		i18nInstance.AddLanguage(lang.String(), translations)
 	}
 
-	return i18nInstance
+	return i18nInstance, allLangDef
 }
 
 type LocaleProvider struct {
 	defaultLanguage language.Tag
 	i18n            *goeasyi18n.I18n
+	def             *keyDef
 	mx              sync.Mutex
 	autoReload      bool
 	files           map[language.Tag][]string
@@ -172,8 +183,7 @@ func (p *LocaleProvider) getI18N() *goeasyi18n.I18n {
 func (p *LocaleProvider) load() {
 	p.mx.Lock()
 	defer p.mx.Unlock()
-
-	p.i18n = newI18N(p.defaultLanguage, p.files)
+	p.i18n, p.def = newI18N(p.defaultLanguage, p.files)
 	p.lastLoad = time.Now()
 }
 
@@ -198,7 +208,7 @@ func (p *LocaleProvider) statChanged() bool {
 func (p *LocaleProvider) CreateLocalizer(r *http.Request) *Localizer {
 	tag, passthrough := getLanguageTag(r, p.defaultLanguage)
 	i18nInstance := p.getI18N()
-	localizer := newLocalizer(i18nInstance, tag, passthrough)
+	localizer := newLocalizer(i18nInstance, p.def, tag, passthrough)
 	return localizer
 }
 
@@ -227,6 +237,7 @@ func getLanguageTag(r *http.Request, defaultLang language.Tag) (language.Tag, bo
 
 type Localizer struct {
 	i18n        *goeasyi18n.I18n
+	def         *keyDef
 	lang        language.Tag
 	passthrough bool
 }
@@ -251,16 +262,36 @@ func (l *Localizer) T(key string, params ...goeasyi18n.Options) string {
 	return v
 }
 
+func (l *Localizer) TT(prefixPath string) map[string]string {
+	o := l.def.path(prefixPath)
+	if o == nil {
+		return nil
+	}
+
+	m := make(map[string]string)
+
+	if prefixPath != "" {
+		prefixPath = prefixPath + "."
+	}
+
+	o.walkFullKeys(func(fullKey string) {
+		m[prefixPath+fullKey] = l.T(prefixPath + fullKey)
+	})
+
+	return m
+}
+
 func (l *Localizer) TData(key string, data any) string {
 	return l.T(key, goeasyi18n.Options{
 		Data: data,
 	})
 }
 
-func newLocalizer(i18n *goeasyi18n.I18n, lang language.Tag, passthrough bool) *Localizer {
+func newLocalizer(i18n *goeasyi18n.I18n, def *keyDef, lang language.Tag, passthrough bool) *Localizer {
 	return &Localizer{
 		i18n:        i18n,
 		lang:        lang,
+		def:         def,
 		passthrough: passthrough,
 	}
 }

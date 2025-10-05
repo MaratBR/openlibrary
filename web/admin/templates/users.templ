@@ -17,7 +17,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
             <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
                 <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ _t(l, "common.search") } />
                 <button type="submit" :disabled="q.trim()===''" class="btn btn--secondary">
-                    <span class="material-symbols-outlined">search</span>
+                    <i class="fa-solid fa-search"></i>
                 </button>
             </form>
 
@@ -79,7 +79,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                     </a>
                                     if user.IsBanned {
                                         <div class="text-muted-foreground flex items-center">
-                                            <span class="material-symbols-outlined mr-1">report</span>
+                                            <i class="fa-solid fa-flag mr-1"></i>
                                             { _t(l, "admin.users.userIsBanned") }
                                         </div>
                                     }
@@ -98,7 +98,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                         </a>
 
                                         <a aria-label={ delete } class="btn btn--secondary btn--sm text-destructive hover:bg-destructive/10" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s/delete", user.ID)) }>
-                                            <span class="material-symbols-outlined">delete</span>
+                                            <i class="fa-solid fa-trash-can"></i>
                                         </a>
                                     </div>
                                 </td>

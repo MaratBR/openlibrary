@@ -79,6 +79,10 @@ templ htmlLayout(params htmlLayoutProps) {
     }) {
         @renderUISettings()
         { children... }
+        {{
+            l := i18n.GetLocalizer(ctx)
+        }}
+        @i18nExtractKeysByPrefix(l, "common")
     }
 }
 
@@ -135,7 +139,7 @@ templ themeSwitcher() {
         onclick={toggleTheme()}
         class="btn btn--secondary rounded-full size-12" 
         aria-label={_t(l, "uiTheme.switchTheme")}>
-        <span class="material-symbols-outlined dark:!hidden">light_mode</span>
-        <span class="material-symbols-outlined !hidden dark:!inline-block">dark_mode</span>
+        <i class="fa-solid fa-sun dark:!hidden"></i>
+        <i class="fa-solid fa-moon !hidden dark:!inline-block"></i>
     </button>
 }

@@ -126,7 +126,7 @@ export default defineConfig((env) => ({
   },
 
   build: {
-    minify: env.mode === 'production',
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         chunkFileNames: 'chunks/[hash].js',

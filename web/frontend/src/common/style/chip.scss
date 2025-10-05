@@ -1,0 +1,9 @@
+.chip {
+    @apply leading-6 rounded-full px-1 inline-flex items-center gap-1;
+
+    @apply bg-card text-card-foreground;
+
+    &--primary {
+        @apply bg-primary text-primary-foreground;
+    }
+}

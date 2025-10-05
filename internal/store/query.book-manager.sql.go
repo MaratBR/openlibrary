@@ -335,17 +335,18 @@ func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
 
 const updateBookChapter = `-- name: UpdateBookChapter :one
 update book_chapters
-set name = $2, content = $3, words = $4, summary = $5
+set name = $2, content = $3, words = $4, summary = $5, is_publicly_visible = $6
 where id = $1
 returning book_chapters.book_id
 `
 
 type UpdateBookChapterParams struct {
-	ID      int64
-	Name    string
-	Content string
-	Words   int32
-	Summary string
+	ID                int64
+	Name              string
+	Content           string
+	Words             int32
+	Summary           string
+	IsPubliclyVisible bool
 }
 
 func (q *Queries) UpdateBookChapter(ctx context.Context, arg UpdateBookChapterParams) (int64, error) {
@@ -355,6 +356,7 @@ func (q *Queries) UpdateBookChapter(ctx context.Context, arg UpdateBookChapterPa
 		arg.Content,
 		arg.Words,
 		arg.Summary,
+		arg.IsPubliclyVisible,
 	)
 	var book_id int64
 	err := row.Scan(&book_id)

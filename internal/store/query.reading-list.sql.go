@@ -12,9 +12,10 @@ import (
 )
 
 const getBookReadingListState = `-- name: GetBookReadingListState :one
-SELECT user_id, book_id, status, last_accessed_chapter_id, last_updated_at
-FROM reading_list
-WHERE book_id = $1 and user_id = $2
+SELECT rl.user_id, rl.book_id, rl.status, rl.last_accessed_chapter_id, rl.last_updated_at, bc."order" as chapter_order
+FROM reading_list rl
+LEFT JOIN book_chapters bc ON rl.last_accessed_chapter_id = bc.id
+WHERE rl.book_id = $1 and rl.user_id = $2
 `
 
 type GetBookReadingListStateParams struct {
@@ -22,15 +23,25 @@ type GetBookReadingListStateParams struct {
 	UserID pgtype.UUID
 }
 
-func (q *Queries) GetBookReadingListState(ctx context.Context, arg GetBookReadingListStateParams) (ReadingList, error) {
+type GetBookReadingListStateRow struct {
+	UserID                pgtype.UUID
+	BookID                int64
+	Status                ReadingListStatus
+	LastAccessedChapterID pgtype.Int8
+	LastUpdatedAt         pgtype.Timestamptz
+	ChapterOrder          pgtype.Int4
+}
+
+func (q *Queries) GetBookReadingListState(ctx context.Context, arg GetBookReadingListStateParams) (GetBookReadingListStateRow, error) {
 	row := q.db.QueryRow(ctx, getBookReadingListState, arg.BookID, arg.UserID)
-	var i ReadingList
+	var i GetBookReadingListStateRow
 	err := row.Scan(
 		&i.UserID,
 		&i.BookID,
 		&i.Status,
 		&i.LastAccessedChapterID,
 		&i.LastUpdatedAt,
+		&i.ChapterOrder,
 	)
 	return i, err
 }

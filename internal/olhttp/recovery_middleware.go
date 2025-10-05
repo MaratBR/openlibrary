@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"runtime/debug"
 	"strings"
 
@@ -18,16 +19,20 @@ func MakeRecoveryMiddleware() func(next http.Handler) http.Handler {
 					// TODO add request id
 					slog.ErrorContext(r.Context(), "recovered from panic", "rec", rec, "request-id", reqid.Get(r))
 
+					stack := debug.Stack()
+
 					fmt.Println("--- Custom Panic Handler ---")
 					fmt.Printf("Recovered from panic: %v\n", r)
 					fmt.Println("Stack trace:")
-					debug.PrintStack() // Print the stack trace
+					os.Stderr.Write(stack) // Print the stack trace
 					fmt.Println("--------------------------")
 
 					b := strings.Builder{}
 					b.WriteString("server panicked!\nIf you are a developer, please fix this. If not please contact support or report to https://github.com/MaratBR/openlibrary/issues/new\n")
 					b.WriteString("\n\nrequest id: ")
 					b.WriteString(reqid.Get(r))
+					b.WriteString("\n\nSTACK TRACE:\n")
+					b.Write(stack)
 					body := b.String()
 					w.Write([]byte(body))
 				}

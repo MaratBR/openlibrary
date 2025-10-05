@@ -25,11 +25,11 @@
 //                   //
 // ----------------- //
 .book-toc {
-    @apply md:grid md:grid-cols-2 mt-3 gap-1;
+    @apply md:grid md:grid-cols-2 mt-3 gap-1 items-stretch;
 
     &__item {
         @apply 
-            p-2 text-lg grid grid-cols-[48px_auto] rounded-lg bg-card border
+            p-2 text-lg grid grid-cols-[48px_auto] rounded-lg bg-card border h-full
             hover:bg-secondary hover:shadow-sm hover:outline hover:outline-2;
 
         &--readingNow {

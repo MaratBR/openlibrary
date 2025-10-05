@@ -21,7 +21,8 @@ templ BookTOC(
                 <p>{_t(l, "book.emptyTocContent")}</p>
             </section>
         } else {
-            <ul class="book-toc" role="listbox">
+            <ol-scroll-blocker />
+            <ul class="book-toc contain-layout p-1 contain-paint" role="listbox">
                 for i, chapter := range chapters {
                     <li role="listitem">
                         <a
@@ -36,7 +37,7 @@ templ BookTOC(
                                 <span>{ commonutil.FormatInt(i + 1) }</span>
                                 if chapter.ID == activeChapterID {
                                     <span class="book-toc__mark">
-                                        <span class="material-symbols-outlined">bookmark</span>
+                                        <i class="fa-solid fa-bookmark"></i>
                                     </span>
                                 }
                             </div>

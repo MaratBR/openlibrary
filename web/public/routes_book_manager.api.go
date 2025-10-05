@@ -32,8 +32,7 @@ func (c *apiBookManagerController) Register(r chi.Router) {
 		r.Post("/book/{bookID}/{chapterID}/{draftID}", c.updateDraftContent)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/publish", c.updateDraftContentAndPublish)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/chapterName", c.updateDraftChapterName)
-		r.Post("/book/{bookID}/createChapter", c.createChapter)
-
+		r.With(httpin.NewInput(&createChapterRequest{})).Post("/book/{bookID}/createChapter", c.createChapter)
 	})
 }
 
@@ -273,6 +272,8 @@ func (c *apiBookManagerController) updateDraftContentAndPublish(w http.ResponseW
 		return
 	}
 
+	makePublic := olhttp.GetBool(r.URL.Query(), "makePublic").Or(false)
+
 	if r.Header.Get("Content-Type") != "text/plain" {
 		apiWriteBadRequest(w, errors.New("Content-Type must be text/plain"))
 		return
@@ -300,8 +301,9 @@ func (c *apiBookManagerController) updateDraftContentAndPublish(w http.ResponseW
 	}
 
 	err = c.service.PublishDraft(r.Context(), app.PublishDraftCommand{
-		DraftID: draftID,
-		UserID:  session.UserID,
+		DraftID:    draftID,
+		UserID:     session.UserID,
+		MakePublic: makePublic,
 	})
 	if err != nil {
 		apiWriteApplicationError(w, err)
@@ -345,5 +347,5 @@ func (c *apiBookManagerController) createChapter(w http.ResponseWriter, r *http.
 		return
 	}
 
-	olresponse.NewAPIResponse(result.ID).Write(w)
+	olresponse.NewAPIResponse(app.Int64String(result.ID)).Write(w)
 }

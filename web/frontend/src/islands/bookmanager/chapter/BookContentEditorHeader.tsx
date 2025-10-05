@@ -98,12 +98,12 @@ export default function BookContentEditorHeader({
         <section class={styles.section}>
           <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input type="checkbox" id="bold" checked={state.bold} onInput={toggleBold} />
-            <span class="material-symbols-outlined">format_bold</span>
+            <i class="fa-solid fa-bold" />
           </label>
 
           <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input type="checkbox" id="italic" checked={state.italic} onInput={toggleItalic} />
-            <span class="material-symbols-outlined">format_italic</span>
+            <i class="fa-solid fa-italic" />
           </label>
 
           <label role="button" class={`btn btn--ghost ${styles.btn}`}>
@@ -113,7 +113,7 @@ export default function BookContentEditorHeader({
               checked={state.underline}
               onInput={toggleUnderline}
             />
-            <span class="material-symbols-outlined">format_underlined</span>
+            <i class="fa-solid fa-underline" />
           </label>
         </section>
 
@@ -127,7 +127,7 @@ export default function BookContentEditorHeader({
               checked={state.textAlign === 'left'}
               onInput={() => toggleTextAlign('left')}
             />
-            <span class="material-symbols-outlined">format_align_left</span>
+            <i class="fa-solid fa-align-left" />
           </label>
           <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input
@@ -136,7 +136,7 @@ export default function BookContentEditorHeader({
               checked={state.textAlign === 'center'}
               onInput={() => toggleTextAlign('center')}
             />
-            <span class="material-symbols-outlined">format_align_center</span>
+            <i class="fa-solid fa-align-center" />
           </label>
           <label role="button" class={`btn btn--ghost ${styles.btn}`}>
             <input
@@ -145,7 +145,7 @@ export default function BookContentEditorHeader({
               checked={state.textAlign === 'right'}
               onInput={() => toggleTextAlign('right')}
             />
-            <span class="material-symbols-outlined">format_align_right</span>
+            <i class="fa-solid fa-align-right" />
           </label>
         </section>
 

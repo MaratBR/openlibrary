@@ -1,7 +1,8 @@
 -- name: GetBookReadingListState :one
-SELECT *
-FROM reading_list
-WHERE book_id = $1 and user_id = $2;
+SELECT rl.*, bc."order" as chapter_order
+FROM reading_list rl
+LEFT JOIN book_chapters bc ON rl.last_accessed_chapter_id = bc.id
+WHERE rl.book_id = $1 and rl.user_id = $2;
 
 -- name: SetBookReadingListStatusAndChapter :one
 INSERT INTO reading_list (book_id, user_id, status, last_accessed_chapter_id)

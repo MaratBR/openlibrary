@@ -11,6 +11,11 @@ export const DraftDtoSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
   }),
+  book: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+  isChapterPubliclyAvailable: z.boolean(),
 })
 
 export type DraftDto = z.infer<typeof DraftDtoSchema>

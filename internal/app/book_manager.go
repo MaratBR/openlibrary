@@ -41,21 +41,21 @@ type ManagerGetBookQuery struct {
 }
 
 type ManagerBookDetailsDto struct {
-	ID                int64                `json:"id,string"`
-	Name              string               `json:"name"`
-	AgeRating         AgeRating            `json:"ageRating"`
-	IsAdult           bool                 `json:"adult"`
-	Tags              []DefinedTagDto      `json:"tags"`
-	Words             int                  `json:"words"`
-	WordsPerChapter   int                  `json:"wordsPerChapter"`
-	CreatedAt         time.Time            `json:"createdAt"`
-	Collections       []BookCollectionDto  `json:"collections"`
-	Chapters          []BookChapterDto     `json:"chapters"`
-	Author            BookDetailsAuthorDto `json:"author"`
-	Summary           string               `json:"summary"`
-	IsPubliclyVisible bool                 `json:"isPubliclyVisible"`
-	IsBanned          bool                 `json:"isBanned"`
-	Cover             string               `json:"cover"`
+	ID                int64                   `json:"id,string"`
+	Name              string                  `json:"name"`
+	AgeRating         AgeRating               `json:"ageRating"`
+	IsAdult           bool                    `json:"adult"`
+	Tags              []DefinedTagDto         `json:"tags"`
+	Words             int                     `json:"words"`
+	WordsPerChapter   int                     `json:"wordsPerChapter"`
+	CreatedAt         time.Time               `json:"createdAt"`
+	Collections       []BookCollectionDto     `json:"collections"`
+	Chapters          []ManagerBookChapterDto `json:"chapters"`
+	Author            BookDetailsAuthorDto    `json:"author"`
+	Summary           string                  `json:"summary"`
+	IsPubliclyVisible bool                    `json:"isPubliclyVisible"`
+	IsBanned          bool                    `json:"isBanned"`
+	Cover             string                  `json:"cover"`
 }
 
 type ManagerGetBookResult struct {
@@ -105,13 +105,15 @@ type ReorderChaptersCommand struct {
 }
 
 type ManagerBookChapterDto struct {
-	ID              int64     `json:"id,string"`
-	Name            string    `json:"name"`
-	CreatedAt       time.Time `json:"createdAt"`
-	Words           int       `json:"words"`
-	Summary         string    `json:"summary"`
-	Order           int32     `json:"order"`
-	IsAdultOverride bool      `json:"isAdultOverride"`
+	ID                int64                 `json:"id,string"`
+	Name              string                `json:"name"`
+	CreatedAt         time.Time             `json:"createdAt"`
+	Words             int                   `json:"words"`
+	Summary           string                `json:"summary"`
+	Order             int32                 `json:"order"`
+	IsAdultOverride   bool                  `json:"isAdultOverride"`
+	IsPubliclyVisible bool                  `json:"isPubliclyVisible"`
+	DraftID           Nullable[Int64String] `json:"draftId"`
 }
 
 type ManagerGetBookChaptersQuery struct {
@@ -182,6 +184,7 @@ type DraftDto struct {
 		ID   int64  `json:"id,string"`
 		Name string `json:"name"`
 	} `json:"book"`
+	IsChapterPubliclyAvailable bool `json:"isChapterPubliclyAvailable"`
 }
 
 type UpdateDraftChapterNameCommand struct {
@@ -217,8 +220,9 @@ type DeleteDraftCommand struct {
 }
 
 type PublishDraftCommand struct {
-	DraftID int64
-	UserID  uuid.UUID
+	DraftID    int64
+	UserID     uuid.UUID
+	MakePublic bool
 }
 
 type GetLatestDraftQuery struct {

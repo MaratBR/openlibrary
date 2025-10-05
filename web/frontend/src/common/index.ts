@@ -3,17 +3,20 @@ import './util'
 import './cookies'
 import './theme'
 
-import { OverlayScrollbars } from 'overlayscrollbars'
 import 'overlayscrollbars/overlayscrollbars.css'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(window as any).OverlayScrollbars = OverlayScrollbars
-document.dispatchEvent(new CustomEvent('overlayscrollbars-ready'))
+;(() => {
+  import('overlayscrollbars').then(({ OverlayScrollbars }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(window as any).OverlayScrollbars = OverlayScrollbars
+    document.dispatchEvent(new CustomEvent('overlayscrollbars-ready'))
+  })
+})()
 
 import './__server__'
 import './delay'
 import './flashes'
 import '../lib/island'
+import '../lib/ScrollBlocker'
 import '../toast/toast'
 
 import '@/http-client'

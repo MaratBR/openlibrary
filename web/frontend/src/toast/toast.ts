@@ -125,19 +125,19 @@ function createBasicToast(title: Node, content: Node, type?: ToastType): HTMLEle
     const iconWrapper = document.createElement('div')
     iconWrapper.classList.add('ol-toast__icon')
 
-    const iconElement = document.createElement('span')
-    iconElement.classList.add('material-symbols-outlined')
+    const iconElement = document.createElement('i')
+    iconElement.classList.add('fa-solid')
 
     iconWrapper.dataset.type = type
     switch (type) {
       case 'info':
-        iconElement.textContent = 'info'
+        iconElement.classList.add('fa-info')
         break
       case 'success':
-        iconElement.textContent = 'check_circle'
+        iconElement.classList.add('fa-circle-check')
         break
       case 'error':
-        iconElement.textContent = 'error'
+        iconElement.classList.add('fa-triangle-exclamation')
         break
     }
 

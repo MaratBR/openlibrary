@@ -6,17 +6,23 @@ import TextAlign from '@tiptap/extension-text-align'
 import Image from '@tiptap/extension-image'
 
 import StarterKit from '@tiptap/starter-kit'
-import { useEffect, useMemo, useRef } from 'preact/hooks'
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import './BookManagerEditor.scss'
 import Heading from '@tiptap/extension-heading'
 import { createEvent } from '@/lib/event'
 import BookContentEditorHeader from './BookContentEditorHeader'
 import Underline from '@tiptap/extension-underline'
+import Placeholder from '@tiptap/extension-placeholder'
 import { debounce } from '@/common/util/debounce'
 import { RefObject } from 'preact'
+import { MouseEventHandler } from 'preact/compat'
+import { useMutation } from '@tanstack/react-query'
+import { httpUpdateDraftChapterName } from './api'
+import { DraftDto } from '../contracts'
 
 export type BookContentEditorProps = {
-  content: string
+  bookId: string
+  draft: DraftDto
   onContentChanged: (editor: Editor) => void
   onBeforeContentChanged?: () => void
   contentChangedDebounce: number
@@ -24,7 +30,8 @@ export type BookContentEditorProps = {
 }
 
 export default function BookContentEditor({
-  content,
+  bookId,
+  draft,
   onContentChanged,
   contentChangedDebounce,
   onBeforeContentChanged,
@@ -53,43 +60,81 @@ export default function BookContentEditor({
   refs.current.onBeforeContentChanged = onBeforeContentChanged
   refs.current.handleContentChanged = handleContentChanged
 
-  const propsRef = useRef({ content })
-  propsRef.current.content = content
+  const propsRef = useRef({ content: draft.content })
+  propsRef.current.content = draft.content
 
   useEffect(() => {
     if (root.current === null) throw new Error('root is null')
-    editor.current = createEditor(root.current, {
-      content: propsRef.current.content,
-      onUpdate: ({ editor }) => {
-        editorUpdateEvent.current.fire(editor)
+    editor.current = createEditor(
+      root.current,
+      { placeholder: window._('editor.placeholder') },
+      {
+        content: propsRef.current.content,
+        onUpdate: ({ editor }) => {
+          editorUpdateEvent.current.fire(editor)
 
-        refs.current.handleContentChanged(editor)
-        if (!refs.current.onBeforeContentChangedCalled) {
-          refs.current.onBeforeContentChangedCalled = true
-          if (refs.current.onBeforeContentChanged) refs.current.onBeforeContentChanged()
-        }
+          refs.current.handleContentChanged(editor)
+          if (!refs.current.onBeforeContentChangedCalled) {
+            refs.current.onBeforeContentChangedCalled = true
+            if (refs.current.onBeforeContentChanged) refs.current.onBeforeContentChanged()
+          }
+        },
+        onTransaction: ({ editor }) => {
+          editorUpdateEvent.current.fire(editor)
+        },
       },
-      onTransaction: ({ editor }) => {
-        editorUpdateEvent.current.fire(editor)
-      },
-    })
+    )
   }, [])
 
   useEffect(() => {
     if (editorRef) editorRef.current = editor.current
   }, [editorRef])
 
+  const previousChapterName = useRef(draft.chapterName)
+  const [chapterName, setChapterName] = useState(draft.chapterName)
+
+  const updateChapterNameMutation = useMutation({
+    mutationFn: async (name: string) => {
+      await httpUpdateDraftChapterName(bookId, draft.chapterId, draft.id, name)
+    },
+  })
+
+  function handleChapterNameBlur() {
+    const newName = chapterName.trim()
+    if (newName === previousChapterName.current) {
+      return
+    }
+
+    previousChapterName.current = newName
+    updateChapterNameMutation.mutate(newName)
+  }
+
   return (
     <div class="book-editor">
       <BookContentEditorHeader editorRef={editor} editorUpdateEvent={editorUpdateEvent.current} />
       <article class="ol-container">
+        <div class="mb-8">
+          <ChapterNameInput
+            value={chapterName}
+            onChange={setChapterName}
+            onBlur={handleChapterNameBlur}
+          />
+        </div>
         <div class="__user-content book-editor__content" ref={root} />
       </article>
     </div>
   )
 }
 
-function createEditor(editorElement: HTMLElement, options?: Partial<EditorOptions>) {
+function createEditor(
+  editorElement: HTMLElement,
+  {
+    placeholder,
+  }: {
+    placeholder: string
+  },
+  options?: Partial<EditorOptions>,
+) {
   return new Editor({
     element: editorElement,
     content: '',
@@ -112,7 +157,33 @@ function createEditor(editorElement: HTMLElement, options?: Partial<EditorOption
       Image.configure({
         inline: true,
       }),
+      Placeholder.configure({
+        placeholder,
+      }),
     ],
     ...options,
   })
+}
+
+function ChapterNameInput({
+  value,
+  onChange,
+  onBlur,
+}: {
+  value: string
+  onChange: (value: string) => void
+  onBlur: MouseEventHandler<HTMLInputElement>
+}) {
+  return (
+    <input
+      // onFocus={(e) => {
+      //   ;(e.target as HTMLInputElement).select()
+      // }}
+      placeholder={window._('editor.chapterNamePlaceholder')}
+      onBlur={onBlur}
+      class="font-title text-3xl leading-3 bg-transparent focus:outline-none py-2"
+      value={value}
+      onChange={(e) => onChange((e.target as HTMLInputElement).value)}
+    />
+  )
 }

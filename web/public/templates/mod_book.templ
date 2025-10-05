@@ -186,6 +186,16 @@ templ modLogTable(logs []app.BookModerationLog) {
                     </td>
                 </tr>
             }
+            
+            if len(logs) == 0 {
+                <tr>
+                    <td colspan="4">
+                        <div class="text-center py-4">
+                            { _t(l, "mod.book.log.empty") }
+                        </div>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 }
@@ -205,7 +215,7 @@ templ ModBookLog(book app.BookModerationInfo, logs app.BookLogResult) {
                     <a class="link" href={ templ.SafeURL(fmt.Sprintf("/mod/book/%d", book.ID)) }>
                         { book.Name }
                     </a>
-                    <span class="material-symbols-outlined">chevron_right</span>
+                    <i class="fa-solid fa-chevron-right"></i>
                     { _t(l, "mod.bookLog.title") }
                 </h1>
             </header>

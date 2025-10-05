@@ -42,7 +42,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 		newAuthController(authService, h.csrfHandler).Register(r)
 		newBookController(bookService, reviewsService, readingListService).Register(r)
-		newChaptersController(bookService).Register(r)
+		newChaptersController(bookService, readingListService).Register(r)
 		newSearchController(searchService, bookService).Register(r)
 		newTagsController(tagsService).Register(r)
 		newProfileController(userService, bookService).Register(r)

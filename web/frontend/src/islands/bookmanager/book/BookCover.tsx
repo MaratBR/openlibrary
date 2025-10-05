@@ -1,8 +1,8 @@
 import { ImageResizer, ImageUpload } from '@/components/image-upload'
-import { httpUploadCover, ManagerBookDetails } from './api'
+import { httpUploadCover, ManagerBookDetailsDto } from './api'
 import { useState } from 'preact/hooks'
 
-export default function BookCover({ book }: { book: ManagerBookDetails }) {
+export default function BookCover({ book }: { book: ManagerBookDetailsDto }) {
   const [file, setFile] = useState<File | null>(null)
   const [displayedFile, setDisplayedFile] = useState(book.cover)
 

@@ -17,6 +17,10 @@ templ bookManagerLayoutBase(title string, sitebar bool) {
 		),
 	}) {
 		<style>body{min-width: 1000px;}</style>
+		{{
+			l := i18n.GetLocalizer(ctx)
+		}}
+		@i18nExtractKeysByPrefix(l, "common")
 		@renderUISettings()
 		if sitebar {
 			@siteHeader()
@@ -48,42 +52,47 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 	l := i18n.GetLocalizer(ctx)
 	}}
 	@bookManagerMainPage("books") {
-		<header class="py-8">
+		<section>
 			<h1 class="page-header mb-4">
 				{ _t(l, "bookManager.books") }
 			</h1>
-			if len(books.Books) == 0 {
-				<p class="my-8">
-					{ _t(l, "bookManager.noBooks") }
-				</p>
-				<a class="btn btn--lg btn--primary rounded-full" href="/books-manager/new?ol.from=books-manager&isFirst=1">
-					{ _t(l, "bookManager.writeYourFirstBook") }
-				</a>
-			} else {
-				<a class="mb-4 btn btn--lg btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
-					<i class="fa-solid fa-pencil"></i>
-					{ _t(l, "bookManager.createNewBook") }
-				</a>
-				@olresponse.Pagination(books.Page, books.TotalPages, 10)
-				@i18nExtractKeys(l, []string{"common.more", "common.less"})
+			<div class="card mt-4 p-4">
+				if len(books.Books) == 0 {
+					<p class="my-8">
+						{ _t(l, "bookManager.noBooks") }
+					</p>
+					<a class="btn btn--lg btn--primary rounded-full" href="/books-manager/new?ol.from=books-manager&isFirst=1">
+						{ _t(l, "bookManager.writeYourFirstBook") }
+					</a>
+				} else {
+					<a class="mb-4 btn btn--lg btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
+						<i class="fa-solid fa-pencil"></i>
+						{ _t(l, "bookManager.createNewBook") }
+					</a>
+					@olresponse.Pagination(books.Page, books.TotalPages, 10)
 
-				<ol-island 
-					data={ fmt.Sprintf("{\"selector\": \"#%s\"}", "books-manager-books") }
-					src="/_/assets/islands/book-card-preview.js" 
-					active="true" />
+					<ol-island 
+						data={ fmt.Sprintf("{\"selector\": \"#%s\"}", "books-manager-books") }
+						src="/_/assets/islands/book-card-preview.js" 
+						active="true" />
 
-				<section class="my-4 space-y-2" id="books-manager-books">
-					for _, book := range books.Books {
-						@bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
-					}
-				</section>
-				@olresponse.Pagination(books.Page, books.TotalPages, 10)
-			}
-		</header>
+					<section class="my-4 space-y-2" id="books-manager-books">
+						for _, book := range books.Books {
+							@bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
+						}
+					</section>
+					@olresponse.Pagination(books.Page, books.TotalPages, 10)
+				}
+			</div>
+		</section>
 	}
 }
 
 templ bookManagerYourBooksBookCard(bookID int64, name, cover, summary string) {
+	{{
+		l := i18n.GetLocalizer(ctx)
+	}}
+
 	<div
 		class="profile-book-card"
 	>
@@ -95,8 +104,12 @@ templ bookManagerYourBooksBookCard(bookID int64, name, cover, summary string) {
 				{ name }
 			</a>
 			<div class="profile-book-card__summary">
-				@collapsible(140, true) {
-					@templ.Raw(summary)
+				if summary == "" {
+					<p class="text-muted-foreground"><em>{ _t(l, "bookManager.emptyBookSummary") }</em></p>
+				} else {
+					@collapsible(140, true) {
+						@templ.Raw(summary)
+					}
 				}
 			</div>
 		</div>
@@ -114,7 +127,7 @@ templ bookManagerMainPage(tab string) {
 	l := i18n.GetLocalizer(ctx)
 	}}
 	@bookManagerLayout(_t(l, "bookManager.title")) {
-		<div class="ol-container ol-container--big side-tabs">
+		<div class="ol-container ol-container--big side-tabs mt-4">
 			<aside class="side-tabs__menu">
 				<ul>
 					<a

@@ -3,10 +3,10 @@ import TextEditor from './TextEditor'
 
 import AgeRatingInput from '@/components/AgeRatingInput'
 import Switch from '@/components/Switch'
-import { httpUpdateBook, ManagerBookDetails } from './api'
+import { httpUpdateBook, ManagerBookDetailsDto } from './api'
 import TagsInput from '@/islands/search-filters/TagsInput'
 
-export default function GeneralInformation({ data: initialData }: { data: ManagerBookDetails }) {
+export default function GeneralInformation({ data: initialData }: { data: ManagerBookDetailsDto }) {
   const [data, setData] = useState(initialData)
   const [name, setName] = useState(data.name)
   const [tags, setTags] = useState(data.tags)

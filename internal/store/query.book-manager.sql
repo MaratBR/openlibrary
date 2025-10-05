@@ -68,7 +68,7 @@ values ($1, $2, $3, $4, $5, $6, $7, $8);
 
 -- name: UpdateBookChapter :one
 update book_chapters
-set name = $2, content = $3, words = $4, summary = $5
+set name = $2, content = $3, words = $4, summary = $5, is_publicly_visible = $6
 where id = $1
 returning book_chapters.book_id;
 

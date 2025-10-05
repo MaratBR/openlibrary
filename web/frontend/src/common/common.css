@@ -13,6 +13,7 @@
 @import "./style/avatar.scss";
 @import "./style/book-rating.scss";
 @import "./style/card.scss";
+@import "./style/chip.scss";
 @import "./style/error.scss";
 @import "./style/flash.scss";
 @import "./style/loader.scss";

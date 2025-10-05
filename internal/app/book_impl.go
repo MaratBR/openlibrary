@@ -193,7 +193,7 @@ type GetBookChapterQuery struct {
 }
 
 type GetBookChapterResult struct {
-	Chapter ChapterWithDetails
+	ChapterWithDetails ChapterWithDetails
 }
 
 func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error) {
@@ -227,7 +227,7 @@ func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQu
 	}
 
 	return GetBookChapterResult{
-		Chapter: ChapterWithDetails{
+		ChapterWithDetails: ChapterWithDetails{
 			Chapter: ChapterDto{
 				ID:              chapter.ID,
 				Name:            chapter.Name,

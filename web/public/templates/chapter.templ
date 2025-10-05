@@ -8,30 +8,31 @@ import "strconv"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/web/olresponse"
 
+type ChapterProgressTrackerOptions struct {
+    JumpedBackward bool
+    JumpedForward bool
+    Enable bool
+}
+
 templ Chapter(
     chapterWithDetails app.ChapterWithDetails,
     book app.BookDetailsDto,
+    options ChapterProgressTrackerOptions,
 ) {
     {{
-        _ = i18n.GetLocalizer(ctx)
         chapter := chapterWithDetails.Chapter
         uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
     }}
 
     @htmlLayout(htmlLayoutProps{Title: chapter.Name}) {
         @olresponse.JSServerData("chapterId", fmt.Sprintf("%d", chapterWithDetails.Chapter.ID))
-        <script>
-            const c = () => {if (window.IS_BOT) return;fetch(`/_api/reading-list/chapter?chapterId=${__server__.chapterId}`,{method:'POST'})};
-            window.FIRST_USER_ACTIVITY?c():document.addEventListener('first_user_activity', c);
-        </script>
 
         @siteHeaderLayout() {
             <div class="h-full flex-nowrap overflow-x-auto whitespace-nowrap items-center flex gap-2">
                 <a class="link !font-[600] hidden lg:block" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
                     { book.Name }
                 </a>
-                <span class="material-symbols-outlined w-6 overflow-hidden select-none !hidden lg:!block">chevron_right</span>
-
+                <i class="fa-solid fa-arrow-right"></i>
                 <span class="font-semibold">
                     { chapter.Name }
                 </span>
@@ -47,29 +48,29 @@ templ Chapter(
                 <aside class="z-10 absolute top-0 bottom-0 right-0">
                     <div class="flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2">
                         <button x-bind="toggleButton" class="btn btn--icon btn--secondary z-20">
-                            <span class="material-symbols-outlined">settings</span>
+                            <i class="fa-solid fa-gear"></i>
                         </button>
                     </div>
                 </aside>
                 <div class="book-reader__chapter relative">
-                    @ChapterContentSection(&chapter, uiSettings)
+                    @ChapterContentSection(&chapter, uiSettings, options)
 
-                    <section class="grid grid-cols-2 mt-4 bg-background sticky bottom-0 py-1">
+                    <section class="grid grid-cols-2 mt-4 bg-card shadow-md rounded-lg overflow-hidden">
                         if chapter.PrevChapter.Valid {
-                            <a class="text-lg p-4 flex items-center gap-4 focus:outline focus:outline-2 hover:bg-secondary justify-end"
+                            <a class="text-lg p-4 flex items-center gap-4 active:outline active:bg-primary active:text-primary-foreground justify-end"
                                 href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.PrevChapter.Value.ID)) }>
-                                <span class="material-symbols-outlined">arrow_back</span>
-                                <span>{ chapter.PrevChapter.Value.Name }</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                                <span class="hover:underline underline-offset-2" style="text-decoration-thickness: 2px;">{ chapter.PrevChapter.Value.Name }</span>
                             </a>
                         } else {
                             <span />
                         }
 
                         if chapter.NextChapter.Valid {
-                            <a class="text-lg p-4 flex items-center gap-4 focus:outline focus:outline-2 hover:bg-secondary justify-start"
+                            <a class="text-lg p-4 flex items-center gap-4 active:outline active:bg-primary active:text-primary-foreground justify-start"
                                 href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.NextChapter.Value.ID)) }>
-                                <span>{ chapter.NextChapter.Value.Name }</span>
-                                <span class="material-symbols-outlined">arrow_forward</span>
+                                <span class="hover:underline underline-offset-2" style="text-decoration-thickness: 2px;">{ chapter.NextChapter.Value.Name }</span>
+                                <i class="fa-solid fa-arrow-right"></i>
                             </a>
                         } else {
                             <span />
@@ -84,13 +85,10 @@ templ Chapter(
                     <div class="p-4">
                         <button x-bind="closeButton" class="btn btn--lg btn--secondary w-full lg:hidden">Close</button>
                     </div>
-
                     @readerSettingsUI(uiSettings)
                 </div>
             </div>
         </div>
-
-        @siteFooter()
     }
 }
 
@@ -101,20 +99,20 @@ templ readerSettingsUI(settings uiSettings) {
 
             <div class="max-w-[250px] grid grid-cols-3 border border-border rounded-sm h-16">
                 <button x-bind="decreaseFont" class="flex items-center justify-center hover:bg-secondary rounded-sm m-2">
-                    <span class="material-symbols-outlined">text_decrease</span>
+                    <i class="fa-solid fa-minus"></i>
                 </button>
                 <div x-text="fontSize" class="flex items-center justify-center text-xl">
                     { strconv.Itoa(settings.FontSize) }
                 </div>
                 <button x-bind="increaseFont" class="flex items-center justify-center hover:bg-secondary rounded-sm m-2">
-                    <span class="material-symbols-outlined">text_increase</span>
+                    <i class="fa-solid fa-plus"></i>
                 </button>
             </div>
         </section>
     </div>
 }
 
-templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings) {
+templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings, options ChapterProgressTrackerOptions) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
@@ -129,13 +127,63 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings) {
         </p>
     </header>
 
-    <article class="__user-content book-reader__content" { templ.Attributes{
+    <script>
+        window.__markChapterAsRead = async () => {
+            if (window.IS_BOT) return;
+            await fetch(`/_api/reading-list/chapter?chapterId=${__server__.chapterId}`,{method:'POST'});
+        };
+    </script>
+
+    if options.Enable {
+        if !options.JumpedBackward && !options.JumpedForward {
+            <script>
+            if (window.FIRST_USER_ACTIVITY) {
+                window.__markChapterAsRead();
+            } else {
+                document.addEventListener('first_user_activity', () => {
+                    window.__markChapterAsRead()
+                });
+            }
+            </script>
+        } else {
+            <section 
+                x-data="{status:0}"
+                x-show="status!=2"
+                class="card card--elevated mb-8 grid grid-cols-[auto_1fr] gap-2">
+                <p>
+                    if options.JumpedBackward {
+                        { _t(l, "book.readingListYouJumpedBack") }
+                    } else if options.JumpedForward {
+                        { _t(l, "book.readingListYouJumpedForward") }
+                    }
+                </p>
+                <div>
+                    <button
+                        class="btn btn--secondary relative" 
+                        :disabled="status==1"
+                        @click="if (status != 0) return; status = 1; window.__markChapterAsRead().then(() => {status=2;})">
+                        <div :style="`opacity:${status==1 ? 0 : 1}`">
+                            <i class="fa-solid fa-bookmark"></i>
+                            { _t(l, "book.readingListSetProgress") }
+                        </div>
+                        <div x-cloak x-show="status==1" class="flex items-center justify-center absolute inset-0">
+                            <span class="loader" />
+                        </div>
+                    </button>
+                </div>
+            </section>
+        }
+    }
+    
+    <article id="ChapterContent" class="__user-content book-reader__content" { templ.Attributes{
         "style": fmt.Sprintf("--book-font-size:%dpx", uiSettings.FontSize),
     }... } :style="`--book-font-size:${fontSize}px`">
         <div class="contents" x-ignore id="book-reader-content">
             @templ.Raw(chapter.Content)
         </div>
     </article>
+
+    <div x-data="pageProgress" data-content-element="#ChapterContent" class="fixed w-screen left-0 h-1 bg-primary z-10 origin-left rtl:origin-right" style="top: var(--header-height)" x-cloak />
 
     <script>
         document.addEventListener('ol:book-reader:ready', () => {

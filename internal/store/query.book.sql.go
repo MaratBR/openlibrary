@@ -11,6 +11,60 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getAllBookChapters = `-- name: GetAllBookChapters :many
+select c.id, c.name, c.book_id, c.content, c."order", c.created_at, c.words, c.is_adult_override, c.summary, c.is_publicly_visible, 
+  cast(coalesce((select id from drafts where drafts.chapter_id = c.id order by created_at desc limit 1), 0) as int8) as latest_draft_id
+from book_chapters c
+where book_id = $1
+order by "order"
+`
+
+type GetAllBookChaptersRow struct {
+	ID                int64
+	Name              string
+	BookID            int64
+	Content           string
+	Order             int32
+	CreatedAt         pgtype.Timestamptz
+	Words             int32
+	IsAdultOverride   bool
+	Summary           string
+	IsPubliclyVisible bool
+	LatestDraftID     int64
+}
+
+func (q *Queries) GetAllBookChapters(ctx context.Context, bookID int64) ([]GetAllBookChaptersRow, error) {
+	rows, err := q.db.Query(ctx, getAllBookChapters, bookID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllBookChaptersRow
+	for rows.Next() {
+		var i GetAllBookChaptersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.BookID,
+			&i.Content,
+			&i.Order,
+			&i.CreatedAt,
+			&i.Words,
+			&i.IsAdultOverride,
+			&i.Summary,
+			&i.IsPubliclyVisible,
+			&i.LatestDraftID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllBooks = `-- name: GetAllBooks :many
 select id, name, summary, author_user_id, created_at, age_rating, cached_parent_tag_ids, is_publicly_visible, chapters, words
 from books

@@ -11,11 +11,12 @@ import (
 )
 
 type chaptersController struct {
-	service app.BookService
+	service            app.BookService
+	readingListService app.ReadingListService
 }
 
-func newChaptersController(service app.BookService) *chaptersController {
-	return &chaptersController{service: service}
+func newChaptersController(service app.BookService, readingListService app.ReadingListService) *chaptersController {
+	return &chaptersController{service: service, readingListService: readingListService}
 }
 
 func (c *chaptersController) Register(r chi.Router) {
@@ -45,7 +46,7 @@ func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	chapter, err := c.service.GetBookChapter(r.Context(), app.GetBookChapterQuery{
+	result, err := c.service.GetBookChapter(r.Context(), app.GetBookChapterQuery{
 		BookID:    bookID,
 		ChapterID: chapterID,
 	})
@@ -55,5 +56,32 @@ func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	templates.Chapter(chapter.Chapter, book).Render(r.Context(), w)
+	var options templates.ChapterProgressTrackerOptions
+
+	session, ok := auth.GetSession(r.Context())
+	if ok {
+		options.Enable = true
+
+		if session == nil {
+			panic("wtf")
+		}
+
+		status, err := c.readingListService.GetStatus(r.Context(), session.UserID, bookID)
+		if err == nil && status.Valid && status.Value.ChapterID.Valid {
+			statusChapterOrder := status.Value.ChapterOrder
+			chapterOrder := result.ChapterWithDetails.Chapter.Order
+			if statusChapterOrder == chapterOrder {
+				// if it's same chapter - no need to do anything, disable chapter auto-marking
+				options.Enable = false
+			} else if chapterOrder < statusChapterOrder {
+				// we backtracked
+				options.JumpedBackward = true
+			} else if chapterOrder > statusChapterOrder+1 {
+				// we jumped forward 1 or more over
+				options.JumpedForward = true
+			}
+		}
+	}
+
+	templates.Chapter(result.ChapterWithDetails, book, options).Render(r.Context(), w)
 }

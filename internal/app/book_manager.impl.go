@@ -91,7 +91,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 		CreatedAt:       book.CreatedAt.Time,
 		Collections:     []BookCollectionDto{},
-		Chapters:        []BookChapterDto{},
+		Chapters:        []ManagerBookChapterDto{},
 		Author: BookDetailsAuthorDto{
 			ID:   authorID,
 			Name: book.AuthorName,
@@ -103,18 +103,27 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 	}
 
 	{
-		chapters, err := s.queries.GetPubliclyVisibleBookChapters(ctx, query.BookID)
+		chapters, err := s.queries.GetAllBookChapters(ctx, query.BookID)
 		if err != nil {
 			return ManagerGetBookResult{}, err
 		}
-		bookDto.Chapters = mapSlice(chapters, func(chapter store.GetPubliclyVisibleBookChaptersRow) BookChapterDto {
-			return BookChapterDto{
-				ID:        chapter.ID,
-				Order:     int(chapter.Order),
-				Name:      chapter.Name,
-				Words:     int(chapter.Words),
-				CreatedAt: chapter.CreatedAt.Time,
-				Summary:   chapter.Summary,
+		bookDto.Chapters = mapSlice(chapters, func(chapter store.GetAllBookChaptersRow) ManagerBookChapterDto {
+			var draftID Nullable[Int64String]
+
+			if chapter.LatestDraftID != 0 {
+				draftID = Value(Int64String(chapter.LatestDraftID))
+			}
+
+			return ManagerBookChapterDto{
+				ID:                chapter.ID,
+				Order:             chapter.Order,
+				Name:              chapter.Name,
+				Words:             int(chapter.Words),
+				CreatedAt:         chapter.CreatedAt.Time,
+				Summary:           chapter.Summary,
+				IsAdultOverride:   chapter.IsAdultOverride,
+				IsPubliclyVisible: chapter.IsPubliclyVisible,
+				DraftID:           draftID,
 			}
 		})
 	}
@@ -561,6 +570,7 @@ func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) 
 			ID:   draft.BookID,
 			Name: draft.BookName,
 		},
+		IsChapterPubliclyAvailable: draft.IsChapterPubliclyVisible,
 	}, nil
 }
 
@@ -628,12 +638,19 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 	// update the chapter and mark draft as published
 	queries := s.queries.WithTx(tx)
 
+	isChapterPublic := draft.IsChapterPubliclyVisible
+
+	if cmd.MakePublic {
+		isChapterPublic = true
+	}
+
 	bookID, err = queries.UpdateBookChapter(ctx, store.UpdateBookChapterParams{
-		ID:      draft.ChapterID,
-		Name:    draft.ChapterName,
-		Summary: draft.Summary,
-		Content: draft.Content,
-		Words:   draft.Words,
+		ID:                draft.ChapterID,
+		Name:              draft.ChapterName,
+		Summary:           draft.Summary,
+		Content:           draft.Content,
+		Words:             draft.Words,
+		IsPubliclyVisible: isChapterPublic,
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)

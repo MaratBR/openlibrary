@@ -1,8 +1,8 @@
 -- name: GetDraftById :one
-select drafts.*, books.id as book_id, books.name as book_name
+select drafts.*, books.id as book_id, books.name as book_name, bc.is_publicly_visible as is_chapter_publicly_visible
 from drafts
-join book_chapters on book_chapters.id = drafts.chapter_id
-join books on books.id = book_chapters.book_id
+join book_chapters bc on bc.id = drafts.chapter_id
+join books on books.id = bc.book_id
 where drafts.id = $1;
 
 -- name: InsertDraft :exec

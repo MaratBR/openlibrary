@@ -28,27 +28,7 @@ templ ChapterEditor(bookID int64, draft app.DraftDto) {
                 Draft: draft,
             })
         }}
-        @i18nExtractKeys(l, []string{
-            "editor.p",
-            "editor.h1",
-            "editor.h2",
-            "editor.h3",
-            "editor.h4",
-            "editor.h5",
-            "editor.h6",
-            "editor.bold",
-            "editor.italic",
-            "editor.underlined",
-            "editor.textAlignLeft",
-            "editor.textAlignCenter",
-            "editor.textAlignRight",
-            "editor.saveDraft",
-            "editor.saveDraftDescription",
-            "editor.draftSavedRecently",
-            "editor.draftSaved",
-            "editor.publishDraft",
-            "editor.publishDraftDescription",
-        })
+        @i18nExtractKeysByPrefix(l, "editor")
         <ol-island data={string(jsonBytes)} active="true" src="/_/assets/islands/bookmanager.js" name="Chapter" />
     }
 }

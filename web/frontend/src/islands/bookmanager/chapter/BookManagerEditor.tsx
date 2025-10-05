@@ -4,10 +4,11 @@ import { PreactIslandProps } from '@/islands/common/preact-island'
 import { DraftDtoSchema } from '../contracts'
 import { Editor } from '@tiptap/core'
 import { z } from 'zod'
-import { httpUpdateAndPublishDraft, httpUpdateDraft, httpUpdateDraftChapterName } from './api'
-import { createPortal, MouseEventHandler } from 'preact/compat'
+import { httpUpdateAndPublishDraft, httpUpdateDraft } from './api'
+import { createPortal } from 'preact/compat'
 import clsx from 'clsx'
 import { useMutation } from '@tanstack/react-query'
+import Switch from '@/components/Switch'
 
 const dataSchema = z.object({
   bookId: z.string(),
@@ -19,17 +20,14 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
 
   const editorRef = useRef<Editor | null>(null)
 
-  const previousChapterName = useRef(draft.chapterName)
-  const [chapterName, setChapterName] = useState(draft.chapterName)
+  const [makeChapterVisible, setMakeChapterVisible] = useState(true)
   const [beforeSaving, setBeforeSaving] = useState(false)
+  const [publishPopupOpen, setPublishPopupOpen] = useState(false)
 
   const savingMutation = useMutation({
     mutationFn: async (content: string) => {
-      const t = performance.now()
-      const d = window.delay(500)
       await httpUpdateDraft(bookId, draft.chapterId, draft.id, content)
-      await d
-      console.log(`saving took ${performance.now() - t} ms`)
+      setPublishPopupOpen(false)
     },
     onSettled() {
       setBeforeSaving(false)
@@ -38,15 +36,14 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
 
   const saveAndPublishMutation = useMutation({
     mutationFn: async (content: string) => {
-      const d = window.delay(500)
-      await httpUpdateAndPublishDraft(bookId, draft.chapterId, draft.id, content)
-      await d
-    },
-  })
-
-  const updateChapterNameMutation = useMutation({
-    mutationFn: async (name: string) => {
-      await httpUpdateDraftChapterName(bookId, draft.chapterId, draft.id, name)
+      await httpUpdateAndPublishDraft(
+        bookId,
+        draft.chapterId,
+        draft.id,
+        content,
+        makeChapterVisible,
+      )
+      setPublishPopupOpen(false)
     },
   })
 
@@ -73,15 +70,7 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
     saveAndPublishMutation.mutate(content)
   }
 
-  function handleChapterNameBlur() {
-    const newName = chapterName.trim()
-    if (newName === previousChapterName.current) {
-      return
-    }
-
-    previousChapterName.current = newName
-    updateChapterNameMutation.mutate(newName)
-  }
+  const publishButtonRef = useRef<HTMLButtonElement | null>(null)
 
   return (
     <>
@@ -90,28 +79,55 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
         contentChangedDebounce={1000}
         onContentChanged={handleContentChange}
         onBeforeContentChanged={handleBeforeContentChanged}
-        content={draft.content}
+        draft={draft}
+        bookId={bookId}
       />
-      {createPortal(
-        <ChapterNameInput
-          value={chapterName}
-          onChange={setChapterName}
-          onBlur={handleChapterNameBlur}
-        />,
-        document.getElementById('slot:header-text')!,
-      )}
       {createPortal(
         <>
           <button
+            ref={publishButtonRef}
             disabled={saveAndPublishMutation.isPending}
-            onClick={() => saveAndPublish()}
+            onClick={() => setPublishPopupOpen(true)}
             id="actions:saveAndPublish"
-            class={clsx('btn btn--secondary rounded-full', {
-              'with-loader': saveAndPublishMutation.isPending,
-            })}
+            class="btn btn--secondary rounded-full"
           >
             {window._('editor.publishDraft')}
           </button>
+          <div class="relative">
+            <div
+              data-open={publishPopupOpen}
+              class="card p-4 shadow-2xl absolute right-0 top-0 rounded-2xl min-w-48 transition-opacity data-[open=true]:opacity-1 data-[open=false]:opacity-0 data-[open=false]:pointer-events-none"
+            >
+              <strong>{window._('editor.publishAreYouSure')}</strong>
+              <p>{window._('editor.publishWarning')}</p>
+              {!draft.isChapterPubliclyAvailable && (
+                <div class="form-control form-control--horizontal bg-muted rounded-xl p-2 -m-2 mt-1">
+                  <div class="form-control__label p-0">{window._('editor.makeChapterVisible')}</div>
+                  <div class="form-control__value">
+                    <Switch value={makeChapterVisible} onChange={setMakeChapterVisible} />
+                  </div>
+                </div>
+              )}
+              <div class="flex -ml-2 gap-1 mt-4">
+                <button
+                  class="btn btn--destructive rounded-full"
+                  onClick={() => setPublishPopupOpen(false)}
+                >
+                  {window._('common.cancel')}
+                </button>
+                <button
+                  ref={publishButtonRef}
+                  disabled={saveAndPublishMutation.isPending}
+                  onClick={() => saveAndPublish()}
+                  class={clsx('btn btn--secondary rounded-full', {
+                    'with-loader': saveAndPublishMutation.isPending,
+                  })}
+                >
+                  {window._('editor.publishDraft')}
+                </button>
+              </div>
+            </div>
+          </div>
           <button
             disabled={savingMutation.isPending}
             onClick={() => save()}
@@ -131,26 +147,4 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
   function handleBeforeContentChanged() {
     setBeforeSaving(true)
   }
-}
-
-function ChapterNameInput({
-  value,
-  onChange,
-  onBlur,
-}: {
-  value: string
-  onChange: (value: string) => void
-  onBlur: MouseEventHandler<HTMLInputElement>
-}) {
-  return (
-    <input
-      onFocus={(e) => {
-        ;(e.target as HTMLInputElement).select()
-      }}
-      onBlur={onBlur}
-      class="h-full outline-none w-full focus:bg-muted mr-12 pl-2 -ml-2"
-      value={value}
-      onChange={(e) => onChange((e.target as HTMLInputElement).value)}
-    />
-  )
 }

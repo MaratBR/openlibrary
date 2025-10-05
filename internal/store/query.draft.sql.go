@@ -21,27 +21,28 @@ func (q *Queries) DeleteDraft(ctx context.Context, id int64) error {
 }
 
 const getDraftById = `-- name: GetDraftById :one
-select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.is_adult_override, drafts.updated_at, drafts.created_at, drafts.published_at, books.id as book_id, books.name as book_name
+select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.is_adult_override, drafts.updated_at, drafts.created_at, drafts.published_at, books.id as book_id, books.name as book_name, bc.is_publicly_visible as is_chapter_publicly_visible
 from drafts
-join book_chapters on book_chapters.id = drafts.chapter_id
-join books on books.id = book_chapters.book_id
+join book_chapters bc on bc.id = drafts.chapter_id
+join books on books.id = bc.book_id
 where drafts.id = $1
 `
 
 type GetDraftByIdRow struct {
-	ID              int64
-	CreatedBy       pgtype.UUID
-	ChapterID       int64
-	ChapterName     string
-	Content         string
-	Words           int32
-	Summary         string
-	IsAdultOverride bool
-	UpdatedAt       pgtype.Timestamptz
-	CreatedAt       pgtype.Timestamptz
-	PublishedAt     pgtype.Timestamptz
-	BookID          int64
-	BookName        string
+	ID                       int64
+	CreatedBy                pgtype.UUID
+	ChapterID                int64
+	ChapterName              string
+	Content                  string
+	Words                    int32
+	Summary                  string
+	IsAdultOverride          bool
+	UpdatedAt                pgtype.Timestamptz
+	CreatedAt                pgtype.Timestamptz
+	PublishedAt              pgtype.Timestamptz
+	BookID                   int64
+	BookName                 string
+	IsChapterPubliclyVisible bool
 }
 
 func (q *Queries) GetDraftById(ctx context.Context, id int64) (GetDraftByIdRow, error) {
@@ -61,6 +62,7 @@ func (q *Queries) GetDraftById(ctx context.Context, id int64) (GetDraftByIdRow, 
 		&i.PublishedAt,
 		&i.BookID,
 		&i.BookName,
+		&i.IsChapterPubliclyVisible,
 	)
 	return i, err
 }

@@ -36,17 +36,17 @@ export default function BookEditor({ data: dataUnknown, rootElement }: PreactIsl
           <SideTabs.Tab value="cover">{window._('bookManager.edit.cover')}</SideTabs.Tab>
           <SideTabs.Tab value="chapters">{window._('bookManager.edit.chapters')}</SideTabs.Tab>
         </SideTabs.List>
-        <SideTabs.Body>
-          <div class="my-4" style={{ display: tab === 'general' ? 'block' : 'none' }}>
+        <SideTabs.Body class="card">
+          <div style={{ display: tab === 'general' ? 'block' : 'none' }}>
             <GeneralInformation data={data} />
           </div>
 
-          <div class="my-4" style={{ display: tab === 'cover' ? 'block' : 'none' }}>
+          <div style={{ display: tab === 'cover' ? 'block' : 'none' }}>
             <BookCover book={data} />
           </div>
 
           {tab === 'chapters' && (
-            <div class="my-4">
+            <div>
               <Chapters book={data} />
             </div>
           )}

@@ -10,11 +10,11 @@
 
         @apply
             sticky left-0 right-0 
-            bg-background z-10 mb-10 py-2 shadow-gray-200 min-h-16;
+            bg-card z-10 mb-10 py-2 shadow-gray-200 min-h-12;
     }
 
     &__content {
-        @apply font-book mb-16 px-8 md:px-0;
+        @apply font-book mb-16 px-8 md:px-2 py-2 bg-card min-h-[1000px] border border-border shadow-sm;
         font-size: var(--book-font-size);
 
         .ProseMirror {
@@ -23,6 +23,14 @@
             &::selection {
                 @apply bg-primary/20;
             }
+        }
+
+        p.is-editor-empty:first-child::before {
+            @apply text-muted-2-foreground;
+            content: attr(data-placeholder);
+            float: left;
+            height: 0;
+            pointer-events: none;
         }
     }
 }

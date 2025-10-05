@@ -66,7 +66,7 @@ templ bookReview(
 
         <div class="text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2">
             <button class="btn btn--icon btn--ghost">
-                <span class="material-symbols-outlined">flag</span>
+                <i class="fa-solid fa-flag"></i>
             </button>
         </div>
     </div>
@@ -103,12 +103,6 @@ templ BookMyReview(
             $ajax(`/book/${this.$root.dataset.bookId}/__fragment/review`);
         }
     }">
-        @i18nExtractKeys(l, []string{
-            "common.save",
-            "reviews.updated",
-            "reviews.myReview",
-        })
-
         if ratingAndReview.Review.Valid {
             {{ review := ratingAndReview.Review.Value }}
             <div x-ref="myReview" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden">
