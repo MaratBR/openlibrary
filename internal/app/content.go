@@ -30,6 +30,7 @@ func ProcessContent(content string) (ProcessedContentData, error) {
 		return ProcessedContentData{}, err
 	}
 	words := CountWordsHtml(fixedHtml)
+
 	return ProcessedContentData{Sanitized: fixedHtml, Words: words}, nil
 }
 

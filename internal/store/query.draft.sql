@@ -17,7 +17,7 @@ where id = $1;
 
 -- name: UpdateDraftContent :exec
 update drafts
-set content = $2, updated_at = now()
+set content = $2, words = $3, updated_at = now()
 where id = $1;
 
 -- name: UpdateDraftChapterName :exec

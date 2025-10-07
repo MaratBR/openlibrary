@@ -575,6 +575,8 @@ func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) 
 }
 
 func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error {
+	println("UpdateDraft called")
+
 	content, err := ProcessContent(cmd.Content)
 
 	if err != nil {
@@ -760,9 +762,16 @@ func (s *bookManagerService) UpdateDraftContent(ctx context.Context, cmd UpdateD
 		return err
 	}
 
+	data, err := ProcessContent(cmd.Content)
+
+	if err != nil {
+		return err
+	}
+
 	err = s.queries.UpdateDraftContent(ctx, store.UpdateDraftContentParams{
 		ID:      cmd.DraftID,
-		Content: cmd.Content,
+		Content: data.Sanitized,
+		Words:   data.Words,
 	})
 
 	if err != nil {
