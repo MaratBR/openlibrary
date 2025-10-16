@@ -27,6 +27,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	bookService := app.NewBookService(db, tagsService, h.uploadService, readingListService, reviewsService)
 	modBookService := app.NewModerationBookService(db)
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, h.uploadService, userService, h.esClient), h.cache)
+	collectionService := app.NewCollectionsService(db)
 
 	bookManagerService := app.NewBookManagerService(db, tagsService, h.uploadService, userService, bgServices.BookReindex)
 
@@ -45,7 +46,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		newChaptersController(bookService, readingListService).Register(r)
 		newSearchController(searchService, bookService).Register(r)
 		newTagsController(tagsService).Register(r)
-		newProfileController(userService, bookService).Register(r)
+		newProfileController(userService, bookService, searchService).Register(r)
 		newLibraryController(readingListService).Register(r)
 		newBookManagerController(bookManagerService).Register(r)
 
@@ -64,6 +65,12 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 			newAPIReadingListController(readingListService).Register(r)
 			newAPITagsController(tagsService).Register(r)
 			newAPIBookManagerController(bookManagerService, fileValidator).Register(r)
+			newAPICollectionController(collectionService).Register(r)
+
+			r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusNotFound)
+				olresponse.NewAPIError(errors.New("not found")).Write(w)
+			})
 		})
 
 	})

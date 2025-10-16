@@ -36,7 +36,7 @@ templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadi
                     x-cloak
                 }
                 x-show="rl !== null" 
-                class="btn btn--outline btn--lg rounded-full w-full"
+                class="btn btn--outline btn--lg  w-full"
                 @click="open=true">
                 <i class="fa-solid fa-pencil"></i> 
                 <span x-text="rl ? (i18n['readingList.' + rl.status] ?? rl.status) : ''">
@@ -49,23 +49,23 @@ templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadi
                 if readingListStatus.Valid {
                     x-cloak
                 }
-                @click="status('want_to_read')" x-show="rl === null" class="btn btn--primary btn--lg rounded-full w-full nojs-hidden">
+                @click="status('want_to_read')" x-show="rl === null" class="btn btn--primary btn--lg  w-full nojs-hidden">
                 {l.T("readingList.want_to_read")}
             </button>
 
-            <ul x-cloak x-show="open" class="flex flex-col gap-2 absolute left-0 right-0 top-16 shadow-lg bg-background p-2 rounded-xl" @click.outside="open=false">
+            <ul x-cloak x-show="open" class="flex flex-col gap-2 absolute left-0 right-0 top-16 shadow-lg bg-background p-2 rounded-xl z-10" @click.outside="open=false">
                 for _, status := range displayableReadingListStatuses() {
                     <li>
                         <button 
                             :disabled={ fmt.Sprintf("rl !== null && rl.status === '%s'", status) }
                             @click={ fmt.Sprintf("status('%s')", status) }
                             x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }
-                            class="btn btn--outline rounded-full w-full border border-border" />
+                            class="btn btn--outline  w-full border border-border" />
                     </li>
                 }
             </ul>
         } else {
-            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", bookID)))) } class="btn btn--primary btn--lg rounded-full w-full">
+            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", bookID)))) } class="btn btn--primary btn--lg  w-full">
                 {l.T("readingList.want_to_read")}
             </a>
         }

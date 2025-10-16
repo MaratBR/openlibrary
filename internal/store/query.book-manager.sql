@@ -23,7 +23,7 @@ where id = $1;
 -- name: RecalculateBookStats :exec
 update books
 set words = stat.words, chapters = stat.chapters
-from (select sum(words) as words, count(1) as chapters from book_chapters where book_id = $1) as stat
+from (select sum(words) as words, count(1) as chapters from book_chapters where book_id = $1 and is_publicly_visible = true) as stat
 where books.id = $1;
 
 -- name: ManagerGetUserBooks :many
@@ -63,8 +63,8 @@ where book_id = $1;
 
 -- name: InsertBookChapter :exec
 insert into book_chapters
-(id, name, book_id, content, "order", created_at, words, summary)
-values ($1, $2, $3, $4, $5, $6, $7, $8);
+(id, name, book_id, content, "order", created_at, words, summary, is_publicly_visible)
+values ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 
 -- name: UpdateBookChapter :one
 update book_chapters

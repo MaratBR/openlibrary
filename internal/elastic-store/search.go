@@ -3,6 +3,7 @@ package elasticstore
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"strconv"
 
 	"github.com/elastic/go-elasticsearch/v9"
@@ -69,7 +70,7 @@ func createAndTermQuery(term string, values []types.FieldValue) types.Query {
 	for i := 0; i < len(values); i++ {
 		subQueries[i] = types.Query{
 			Term: map[string]types.TermQuery{
-				"tags": {
+				term: {
 					Value: values[i],
 				},
 			},
@@ -88,7 +89,7 @@ func createNegativeAndTermQuery(term string, values []types.FieldValue) types.Qu
 	for i := 0; i < len(values); i++ {
 		subQueries[i] = types.Query{
 			Term: map[string]types.TermQuery{
-				"tags": {
+				term: {
 					Value: values[i],
 				},
 			},
@@ -185,10 +186,15 @@ func Search(
 	resp, err := client.Search().Request(esReq).Do(ctx)
 
 	if err != nil {
+		onSearchFail(esReq, err)
 		return SearchResult{}, err
 	}
 
 	results := make([]SearchRow, 0, len(resp.Hits.Hits))
+
+	if len(resp.Hits.Hits) == 0 {
+		onSearchEmpty(esReq)
+	}
 
 	for i := 0; i < len(resp.Hits.Hits); i++ {
 		hit := resp.Hits.Hits[i]
@@ -219,4 +225,21 @@ func Search(
 		TookMS: resp.Took,
 		Total:  resp.Hits.Total.Value,
 	}, nil
+}
+
+func onSearchFail(req *search.Request, err error) {
+	jsonText, err_ := json.Marshal(req)
+	if err_ != nil {
+		slog.Error("failed to serialize elastic request to JSON", "err", err_)
+		slog.Error("failed to execute elastic request", "err", err)
+	} else {
+		slog.Error("failed to execute elastic request", "err", err, "req", string(jsonText))
+	}
+}
+
+func onSearchEmpty(req *search.Request) {
+	jsonText, err := json.Marshal(req)
+	if err == nil {
+		slog.Debug("empty search result", "req", string(jsonText))
+	}
 }

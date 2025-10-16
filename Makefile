@@ -74,4 +74,10 @@ db_populate:
 	go run ./cmd/server populate
 
 db_backup:
-	PGPASSWORD=$(LOCAL_DB_PASSWORD) pg_dump -h $(LOCAL_DB_HOST) -p $(LOCAL_DB_PORT) -U $(LOCAL_DB_USER) -F c -b -v -f "$(OUT_DIR)/openlibrary.backup" openlibrary
+	sudo docker run --rm \
+		-e PGPASSWORD=$(LOCAL_DB_PASSWORD) \
+		-v ./$(OUT_DIR):/backup \
+		--network host \
+		postgres:latest \
+		pg_dump -h $(LOCAL_DB_HOST) -p $(LOCAL_DB_PORT) -U $(LOCAL_DB_USER) \
+		-F c -b -v -f "/backup/openlibrary.backup" openlibrary

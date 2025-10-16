@@ -145,12 +145,12 @@ export default function Chapters({ book: data }: { book: ManagerBookDetailsDto }
         <div class="flex gap-2">
           {!isReordering ? (
             <>
-              <button class="btn btn--secondary rounded-full" onClick={handleStartReordering}>
+              <button class="btn btn--secondary " onClick={handleStartReordering}>
                 {window._('bookManager.edit.reorder')}
               </button>
               <button
                 ref={addChapterButton}
-                class="btn btn--primary rounded-full relative"
+                class="btn btn--primary  relative"
                 onClick={() => setOpenChapterName((x) => !x)}
               >
                 {window._('bookManager.edit.addChapter')}
@@ -158,10 +158,10 @@ export default function Chapters({ book: data }: { book: ManagerBookDetailsDto }
             </>
           ) : (
             <>
-              <button class="btn btn--secondary rounded-full" onClick={handleCancelReordering}>
+              <button class="btn btn--secondary " onClick={handleCancelReordering}>
                 {window._('bookManager.edit.cancel')}
               </button>
-              <button class="btn btn--primary rounded-full" onClick={handleSaveOrder}>
+              <button class="btn btn--primary" onClick={handleSaveOrder}>
                 {isSavingOrder ? (
                   <span class="loader loader--dark" />
                 ) : (

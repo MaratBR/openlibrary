@@ -46,7 +46,9 @@ func apiWriteUnauthorized(w http.ResponseWriter) {
 	resp.Write(w)
 }
 
-func returnUnauthorizedIfNotLoggedIn(next http.Handler) http.Handler {
+// I added ____ because for some reason autocomplete REALLY loves to suggest this function whenever I want to type "return"
+// TODO rename
+func ___returnUnauthorizedIfNotLoggedIn(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, ok := auth.GetSession(r.Context())
 		if !ok {

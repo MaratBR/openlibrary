@@ -249,10 +249,12 @@ func setupElasticsearch(config *koanf.Koanf) *elasticsearch.TypedClient {
 		panic(err)
 	}
 
-	err = elasticstore.Setup(context.Background(), client)
-	if err != nil {
-		panic(err)
-	}
+	go func() {
+		err = elasticstore.Setup(context.Background(), client)
+		if err != nil {
+			slog.Error("FAILED TO SETUP ELASTIC", "err", err)
+		}
+	}()
 
 	return client
 }

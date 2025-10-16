@@ -22,9 +22,25 @@ func i18nExtractKeysByPrefix(l *i18n.Localizer, prefixPath string) templ.Compone
 	return i18nKeys(m)
 }
 
-func _t(l *i18n.Localizer, key string) string {
-	value := l.T(key)
-	return value
+func _t(l *i18n.Localizer, key string, params ...string) string {
+	if len(params) == 0 {
+		return l.T(key)
+	}
+
+	m := make(map[string]string, (len(params)+1)/2)
+
+	for i := 0; i < len(params); i += 2 {
+		key := params[i]
+		var value string
+		if i < len(params)-1 {
+			value = params[i+1]
+		}
+		m[key] = value
+	}
+
+	return l.T(key, goeasyi18n.Options{
+		Data: m,
+	})
 }
 
 func _tt(l *i18n.Localizer, key string, params any) string {

@@ -86,12 +86,13 @@ type GetUserBooksResult struct {
 }
 
 type CreateBookChapterCommand struct {
-	BookID          int64
-	Name            string
-	Content         string
-	IsAdultOverride bool
-	Summary         string
-	UserID          uuid.UUID
+	BookID            int64
+	Name              string
+	Content           string
+	IsAdultOverride   bool
+	Summary           string
+	UserID            uuid.UUID
+	IsPubliclyVisible bool
 }
 
 type CreateBookChapterResult struct {

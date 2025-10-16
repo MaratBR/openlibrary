@@ -61,7 +61,7 @@ func (t *tagsService) GetTagsByIds(ctx context.Context, ids []int64) ([]DefinedT
 	if err != nil {
 		return nil, err
 	}
-	return mapSlice(tags, definedTagToTagDto), nil
+	return MapSlice(tags, definedTagToTagDto), nil
 }
 
 func (t *tagsService) SearchTags(ctx context.Context, query string) ([]DefinedTagDto, error) {
@@ -82,7 +82,7 @@ func (t *tagsService) SearchTags(ctx context.Context, query string) ([]DefinedTa
 		return nil, err
 	}
 
-	return mapSlice(tags, definedTagToTagDto), nil
+	return MapSlice(tags, definedTagToTagDto), nil
 }
 
 func (t *tagsService) FindParentTagIds(ctx context.Context, ids []int64) (r BookTags, err error) {
@@ -136,7 +136,7 @@ func (t *tagsService) CreateTags(ctx context.Context, cmd CreateTagsCommand) ([]
 	}
 
 	tagsDto, err := t.queries.GetTagsByName(ctx, tagNames)
-	return mapSlice(tagsDto, definedTagToTagDto), err
+	return MapSlice(tagsDto, definedTagToTagDto), err
 }
 
 // List implements TagsService.
@@ -159,7 +159,7 @@ func (t *tagsService) List(ctx context.Context, query ListTagsQuery) (ListTagsRe
 	count, err := store.CountTags(ctx, t.db, dbQuery)
 	totalPages := uint32(math.Ceil(float64(count) / float64(limit)))
 
-	tagDtos := mapSlice(tags, func(t store.TagRow) TagDetailsItemDto {
+	tagDtos := MapSlice(tags, func(t store.TagRow) TagDetailsItemDto {
 		var synonym Nullable[struct {
 			ID   int64
 			Name string

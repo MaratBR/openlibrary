@@ -103,10 +103,11 @@ func (s *Setup) createLongBook(userIds []uuid.UUID) error {
 
 			for i := 0; i < size; i++ {
 				_, err := s.bookManagerService.CreateBookChapter(context.Background(), app.CreateBookChapterCommand{
-					BookID:  bookID,
-					Name:    fmt.Sprintf("Chapter %d", i+1),
-					Summary: fmt.Sprintf("Summary of chapter %d", i+1),
-					Content: longContent,
+					BookID:            bookID,
+					Name:              fmt.Sprintf("Chapter %d", i+1),
+					Summary:           fmt.Sprintf("Summary of chapter %d", i+1),
+					Content:           longContent,
+					IsPubliclyVisible: true,
 				})
 
 				if err != nil {

@@ -1,0 +1,9 @@
+.listitem {
+    @apply p-1;
+
+    @apply hover:bg-highlight;
+
+    &--lg {
+        @apply p-2;
+    }
+}

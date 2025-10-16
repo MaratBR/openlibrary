@@ -332,12 +332,13 @@ func (c *apiBookManagerController) createChapter(w http.ResponseWriter, r *http.
 	}
 
 	command := app.CreateBookChapterCommand{
-		BookID:          bookID,
-		Name:            input.Body.Name,
-		Summary:         input.Body.Summary,
-		IsAdultOverride: input.Body.IsAdultOverride,
-		Content:         input.Body.Content,
-		UserID:          session.UserID,
+		BookID:            bookID,
+		Name:              input.Body.Name,
+		Summary:           input.Body.Summary,
+		IsAdultOverride:   input.Body.IsAdultOverride,
+		Content:           input.Body.Content,
+		UserID:            session.UserID,
+		IsPubliclyVisible: false,
 	}
 
 	result, err := c.service.CreateBookChapter(r.Context(), command)

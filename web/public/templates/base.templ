@@ -13,20 +13,22 @@ templ flashMessages() {
         messages := flash.PullFlashes(ctx)
     }}
 
-    <div class="ol-container ol-container--big my-2 empty:hidden">
-        for _, message := range messages {
-            <div x-data class="flash">
-                @message
-                <div class="flash__closeContainer">
-                    <button @click="$root.remove()" class="flash__close">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+    if len(messages) > 0 {
+        <div class="ol-container ol-container--big my-2">
+            for _, message := range messages {
+                <div x-data class="flash">
+                    @message
+                    <div class="flash__closeContainer">
+                        <button @click="$root.remove()" class="flash__close">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        }
+            }
 
-        <div id="client-flashes" class="contents" />
-    </div>
+            <div id="client-flashes" class="contents" />
+        </div>
+    }
 }
 
 templ renderUISettings() {
@@ -137,7 +139,7 @@ templ themeSwitcher() {
     }}
     <button 
         onclick={toggleTheme()}
-        class="btn btn--secondary rounded-full size-12" 
+        class="btn btn--secondary  size-12" 
         aria-label={_t(l, "uiTheme.switchTheme")}>
         <i class="fa-solid fa-sun dark:!hidden"></i>
         <i class="fa-solid fa-moon !hidden dark:!inline-block"></i>

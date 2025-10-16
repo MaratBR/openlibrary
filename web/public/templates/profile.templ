@@ -4,6 +4,16 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
+import "github.com/MaratBR/openlibrary/web/olresponse"
+
+templ UserNotFound() {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    @baseLayout("404 - " + _t(l, "user.notFound")) {
+        @olresponse.ErrorPage("404", _t(l, "user.notFound"), _t(l, "user.notFoundDescription"))
+    }
+}
 
 templ User(user *app.UserDetailsDto, pinnedBooks app.GetPinnedUserBooksResult) {
     {{
@@ -54,32 +64,31 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetPinnedUserBooksResult) {
                 bookSectionId := fmt.Sprintf("profile-books-%s", user.ID)
             }}
         </div>
-
-        <ol-island 
-            data={ fmt.Sprintf("{\"selector\": \"#%s\"}", bookSectionId) }
-            src="/_/assets/islands/book-card-preview.js" 
-            active="true" />
-
         <section class="profile-books" id="profile-books">
             <ul class="profile-books__list" id={bookSectionId}>
-                <div class="-mr-4" style="width: max(0px, calc((100vw - 120ch) / 2));"></div>
+                <div style="width: max(0px, calc((100vw - var(--_center-width)) / 2));"></div>
                 for _, book := range pinnedBooks.Books {
                     @userProfilePinnedBookCard(book.ID, book.Name, book.Cover)
                 }
                 if pinnedBooks.HasMore {
                     <a href={ templ.SafeURL(fmt.Sprintf("/users/%s/books", user.ID)) } class="flex flex-col items-center justify-center w-[200px] rounded-xl hover:text-primary">
                         <span>Show more</span>
-                        <span class="material-symbols-outlined !text-4xl">arrow_right_alt</span>
+                        <i class="fa-solid fa-arrow-right"></i>
                     </a>
                 }
-                <div class="-ml-4" style="width: max(0px, calc((100vw - 120ch) / 2))"></div>
+                <div style="width: max(0px, calc((100vw - var(--_center-width)) / 2));"></div>
             </ul>
         </section>
         <script>
             document.addEventListener('overlayscrollbars-ready', () => {
                 const root = document.getElementById('profile-books')
-                OverlayScrollbars(root, {
-                })
+                OverlayScrollbars(root, {})
+            })
+            document.addEventListener('ol:jsready', () => {
+                const root = document.getElementById('profile-books').querySelector('[data-overlayscrollbars-viewport]')
+                setTimeout(() => {
+                    enableDragScroll(root)
+                }, 2000)
             })
         </script>
         

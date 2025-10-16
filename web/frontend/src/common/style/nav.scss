@@ -30,7 +30,7 @@
     }
 
     &__user {
-        @apply lg:ml-auto;
+        @apply lg:ml-auto flex items-stretch;
     }
 }
 

@@ -89,7 +89,7 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
             disabled={saveAndPublishMutation.isPending}
             onClick={() => setPublishPopupOpen(true)}
             id="actions:saveAndPublish"
-            class="btn btn--secondary rounded-full"
+            class="btn btn--secondary "
           >
             {window._('editor.publishDraft')}
           </button>
@@ -109,10 +109,7 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
                 </div>
               )}
               <div class="flex -ml-2 gap-1 mt-4">
-                <button
-                  class="btn btn--destructive rounded-full"
-                  onClick={() => setPublishPopupOpen(false)}
-                >
+                <button class="btn btn--destructive " onClick={() => setPublishPopupOpen(false)}>
                   {window._('common.cancel')}
                 </button>
                 <button

@@ -142,6 +142,8 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
             </div>
         }
 
+        @i18nExtractKeysByPrefix(l, "book")
+
         <div 
             id="book" 
             class="book-page" 
@@ -153,16 +155,23 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
                 @bookCover(book.Cover, book.Name, 300)
                 @bookReadingList(book.ID, readingList)
 
-                if isAuthenticated {
-                    if user.Role.IsModOrHigher() {
-                        <a href={templ.URL(fmt.Sprintf("/mod/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] rounded-full">
+
+                <div class="flex gap-1 mt-4">
+                    <ol-island src="bookmanager" name="BookCollectionsPopup" active="true" data={ fmt.Sprintf("{\"bookId\": \"%d\"}", book.ID) } />
+                    <button class="btn btn--ghost relative" id="BookCollectionsPopup:target">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+
+                    if isAuthenticated && user.Role.IsModOrHigher() {
+                        <a href={templ.URL(fmt.Sprintf("/mod/book/%d", book.ID))} class="btn btn--ghost text-orange-600">
                             <i class="fa-solid fa-shield-halved"></i>
-                            Mod menu
                         </a>
                     }
+                </div>
 
+                if isAuthenticated {
                     if user.ID == book.Author.ID {
-                        <a href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] rounded-full">
+                        <a href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] ">
                             Book manager
                         </a>
                     }

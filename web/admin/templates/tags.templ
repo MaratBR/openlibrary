@@ -53,7 +53,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                             <label class="label" for="chk_onlyAdultTags">{ _t(l, "admin.tags.onlyAdultTags") }</label>
                         </div>
 
-                        <button type="submit" class="btn btn--primary rounded-full">
+                        <button type="submit" class="btn btn--primary">
                             { _t(l, "common.apply") }
                         </button>
                     </div>
@@ -264,7 +264,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                                     {tag.SynonymOf.Value.Name}
                                 </span>
                             </span><br />
-                            <button type="button" class="btn rounded-full btn--sm btn--secondary" @click="open=true">
+                            <button type="button" class="btn btn--sm btn--secondary" @click="open=true">
                                 {_t(l, "common.change")}
                             </button>
                             <ol-island 

@@ -107,7 +107,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		if err != nil {
 			return ManagerGetBookResult{}, err
 		}
-		bookDto.Chapters = mapSlice(chapters, func(chapter store.GetAllBookChaptersRow) ManagerBookChapterDto {
+		bookDto.Chapters = MapSlice(chapters, func(chapter store.GetAllBookChaptersRow) ManagerBookChapterDto {
 			var draftID Nullable[Int64String]
 
 			if chapter.LatestDraftID != 0 {
@@ -129,11 +129,11 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 	}
 
 	{
-		collections, err := s.queries.GetBookCollections(ctx, query.BookID)
+		collections, err := s.queries.GetBookCollectionData(ctx, query.BookID)
 		if err != nil {
 			return ManagerGetBookResult{}, err
 		}
-		bookDto.Collections = mapSlice(collections, func(collection store.GetBookCollectionsRow) BookCollectionDto {
+		bookDto.Collections = MapSlice(collections, func(collection store.GetBookCollectionDataRow) BookCollectionDto {
 			return BookCollectionDto{
 				ID:       collection.ID,
 				Name:     collection.Name,
@@ -180,11 +180,7 @@ func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 		return 0, wrapUnexpectedDBError(err)
 	}
 
-	err = s.bookReindexService.Reindex(ctx, id)
-	if err != nil {
-		// TODO wrap error
-		return id, err
-	}
+	s.bookReindexService.ScheduleReindex(ctx, id)
 
 	return id, err
 }
@@ -223,11 +219,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return wrapUnexpectedDBError(err)
 	}
 
-	err = s.bookReindexService.Reindex(ctx, input.BookID)
-	if err != nil {
-		// TODO wrap error
-		return err
-	}
+	s.bookReindexService.ScheduleReindex(ctx, input.BookID)
 
 	return nil
 }
@@ -370,7 +362,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 	for i := 0; i < len(books); i++ {
 		bookTagIDs := tagsAgg.BookTags(books[i].ID)
 		if bookTagIDs != nil {
-			books[i].Tags = mapSlice(bookTagIDs, func(tagID int64) DefinedTagDto {
+			books[i].Tags = MapSlice(bookTagIDs, func(tagID int64) DefinedTagDto {
 				return tags[tagID]
 			})
 		} else {
@@ -393,14 +385,15 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 		return CreateBookChapterResult{}, ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
 	}
 	err = s.queries.InsertBookChapter(ctx, store.InsertBookChapterParams{
-		ID:        id,
-		BookID:    input.BookID,
-		Name:      input.Name,
-		CreatedAt: timeToTimestamptz(time.Now()),
-		Content:   content.Sanitized,
-		Order:     lastOrder + 1,
-		Words:     content.Words,
-		Summary:   input.Summary,
+		ID:                id,
+		BookID:            input.BookID,
+		Name:              input.Name,
+		CreatedAt:         timeToTimestamptz(time.Now()),
+		Content:           content.Sanitized,
+		Order:             lastOrder + 1,
+		Words:             content.Words,
+		Summary:           input.Summary,
+		IsPubliclyVisible: input.IsPubliclyVisible,
 	})
 	if err != nil {
 		return CreateBookChapterResult{}, err
@@ -409,6 +402,7 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 	if err != nil {
 		return CreateBookChapterResult{}, err
 	}
+	s.bookReindexService.ScheduleReindex(ctx, input.BookID)
 	return CreateBookChapterResult{ID: id}, nil
 }
 

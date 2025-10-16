@@ -434,16 +434,18 @@ type BookView struct {
 }
 
 type Collection struct {
-	ID         int64
-	Name       string
-	UserID     pgtype.UUID
-	CreatedAt  pgtype.Timestamptz
-	BooksCount int32
+	ID            int64
+	Name          string
+	UserID        pgtype.UUID
+	CreatedAt     pgtype.Timestamptz
+	BooksCount    int32
+	LastUpdatedAt pgtype.Timestamptz
 }
 
 type CollectionBook struct {
 	CollectionID int64
 	BookID       int64
+	AddedAt      pgtype.Timestamptz
 	Order        int32
 }
 

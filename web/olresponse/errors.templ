@@ -13,7 +13,7 @@ templ errorLayout(title string) {
 }
 
 templ err500(err error) {
-    @errorPageWithACat("500", "Internal Server Error", "This is a CAT-astrophe! But it's not your fault, though... promise", 82) {
+    @ErrorPageWithACat("500", "Internal Server Error", "This is a CAT-astrophe! But it's not your fault, though... promise", 82) {
         <section id="nerd" class="font-mono mt-8 border p-4 overflow-x-auto">
             <!-- yknow, for nerds -->
             <h2 class="text-2xl">nerd corner</h2>
@@ -29,7 +29,7 @@ templ err500(err error) {
     }
 }
 
-templ errorPageWithACat(title, subtitle, text string, cat int) {
+templ ErrorPageWithACat(title, subtitle, text string, cat int) {
     @errorLayout(title) {
         <main class="ol-container py-12">
             <h1 class="text-8xl mb-2 font-title text-center md:text-left">{title}</h1>
@@ -44,6 +44,20 @@ templ errorPageWithACat(title, subtitle, text string, cat int) {
                 </picture>
                 <p class="mt-2 text-xs opacity-40 hover:opacity-100">Image source: <a class="link" target="_blank" href="https://cataas.com/">https://cataas.com/</a></p>
             
+                {children...}
+            </div>
+        </main>
+    }
+}
+
+
+templ ErrorPage(title, subtitle, text string) {
+    @errorLayout(title) {
+        <main class="ol-container py-12">
+            <h1 class="text-8xl mb-2 font-title text-center md:text-left">{title}</h1>
+            <div class="ml-4">
+                <h1 class="text-4xl font-title text-center md:text-left">{subtitle}</h1>
+                <p class="my-8">{text}</p>            
                 {children...}
             </div>
         </main>

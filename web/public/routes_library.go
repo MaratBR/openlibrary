@@ -5,6 +5,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
 )
@@ -20,6 +21,7 @@ func newLibraryController(service app.ReadingListService) *libraryController {
 func (c *libraryController) Register(r chi.Router) {
 	r.Get("/library", c.index)
 	r.Get("/library/archive", c.archive)
+	r.Get("/library/collections", c.collections)
 }
 
 func (c *libraryController) index(w http.ResponseWriter, r *http.Request) {
@@ -92,4 +94,8 @@ func (c *libraryController) archive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates.LibraryArchive(read, dnf).Render(r.Context(), w)
+}
+
+func (c *libraryController) collections(w http.ResponseWriter, r *http.Request) {
+	olhttp.WriteTemplate(w, r.Context(), templates.LibraryCollections())
 }

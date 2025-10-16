@@ -7,7 +7,7 @@ import { useHashQueryValue } from '@/lib/url-hooks'
 import { PreactIslandProps } from '@/islands/common/preact-island'
 import SideTabs from '@/components/SideTabs'
 
-export default function BookEditor({ data: dataUnknown, rootElement }: PreactIslandProps) {
+export default function BookEditor({ data: dataUnknown, rootElement: _ }: PreactIslandProps) {
   const data = useMemo(() => managerBookDetailsSchema.parse(dataUnknown), [dataUnknown])
 
   const [tabValue, setTab] = useHashQueryValue('tab')

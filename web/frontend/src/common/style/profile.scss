@@ -1,7 +1,8 @@
 .profile-books {
+    --_center-width: 110ch;
 
     .os-scrollbar-horizontal {
-        margin: 0 max(0px, calc((100vw - 120ch) / 2));
+        margin: 0 max(0px, calc((100vw - var(--_center-width)) / 2));
     }
 
     @apply w-full max-w-[100vw] overflow-auto;

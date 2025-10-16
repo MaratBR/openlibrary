@@ -14,11 +14,11 @@ templ SearchPage(
         l := i18n.GetLocalizer(ctx)
     }}
 
-    @baseLayout("Search") {
+    @baseLayout(_t(l, "search.search")) {
         @i18nExtractKeysByPrefix(l, "search")
 
         <div class="ol-container my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
-            @SearchResultFragment(result, explainedQuery)
+            @SearchResultFragment(result, explainedQuery, false)
         </div>
     }
 }
@@ -26,6 +26,7 @@ templ SearchPage(
 templ SearchResultFragment(
     result *app.BookSearchResult,
     explainedQuery app.DetailedBookSearchQuery,
+    disableHeader bool,
 ) {
 
     {{
@@ -48,14 +49,16 @@ templ SearchResultFragment(
     <main id="PaginationAjaxSlot">
         @jsonTemplate("data-search-explained-query", explainedQuery)
 
-        <h1 class="page-header">
-            if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
-                {{ firstTag := explainedQuery.IncludeTags[0] }}
-                <span>{ firstTag.Name }</span>
-            } else {
-                <span>{ _t(l, "search.search") }</span>
-            }
-        </h1>
+        if !disableHeader {
+            <h1 class="page-header">
+                if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
+                    {{ firstTag := explainedQuery.IncludeTags[0] }}
+                    <span>{ firstTag.Name }</span>
+                } else {
+                    <span>{ _t(l, "search.search") }</span>
+                }
+            </h1>
+        }
 
         <form class="mt-5">
             <input id="search-input" name="q" class="input p-6 rounded-full text-lg w-full" value={ explainedQuery.Query } />
@@ -178,10 +181,10 @@ templ SimpleSearch() {
             <form method="get" action="/search">
                 <input placeholder={_t(l, "search.search")} class="w-96 input rounded-full text-lg p-6" name="query" />
                 <div class="flex gap-2 justify-center mt-8">
-                    <a href="/random" class="btn btn--secondary rounded-full">
+                    <a href="/random" class="btn btn--secondary ">
                         {_t(l, "search.feelingLucky")}
                     </a>
-                    <button type="submit" class="btn btn--secondary rounded-full">
+                    <button type="submit" class="btn btn--secondary ">
                         {_t(l, "search.doSearch")}
                     </button>
                 </div>

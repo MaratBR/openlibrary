@@ -126,11 +126,11 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (B
 	}
 
 	{
-		collections, err := s.queries.GetBookCollections(ctx, query.ID)
+		collections, err := s.queries.GetBookCollectionData(ctx, query.ID)
 		if err != nil {
 			return BookDetailsDto{}, err
 		}
-		bookDto.Collections = mapSlice(collections, func(collection store.GetBookCollectionsRow) BookCollectionDto {
+		bookDto.Collections = MapSlice(collections, func(collection store.GetBookCollectionDataRow) BookCollectionDto {
 			return BookCollectionDto{
 				ID:       collection.ID,
 				Name:     collection.Name,
@@ -149,7 +149,7 @@ func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChapters
 	if err != nil {
 		return nil, err
 	}
-	chapterDtos := mapSlice(chapters, func(chapter store.GetPubliclyVisibleBookChaptersRow) BookChapterDto {
+	chapterDtos := MapSlice(chapters, func(chapter store.GetPubliclyVisibleBookChaptersRow) BookChapterDto {
 		return BookChapterDto{
 			ID:        chapter.ID,
 			Order:     int(chapter.Order),

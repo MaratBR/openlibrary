@@ -14,24 +14,23 @@
 
     &__tab {
         @apply 
-            block relative p-2 text-lg px-5 cursor-pointer font-title font-medium;
+            block relative p-2 text-lg px-5 cursor-pointer font-medium border-r-2 border-transparent;
 
 
         &:hover:not(&--active) &__title {
-            @apply underline;
+            @apply text-foreground;
         }
 
         &--active {
-            @apply bg-primary text-primary-foreground;
+            @apply border-current;
         }
 
         &--active &__title {
-            @apply underline;
+            @apply text-foreground font-semibold;
         }
 
         &__title {
-            @apply underline-offset-4;
-            text-decoration-thickness: 0.12em;
+            @apply text-muted-2-foreground;
         }
     }
 

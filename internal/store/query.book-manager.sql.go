@@ -141,19 +141,20 @@ func (q *Queries) InsertBook(ctx context.Context, arg InsertBookParams) error {
 
 const insertBookChapter = `-- name: InsertBookChapter :exec
 insert into book_chapters
-(id, name, book_id, content, "order", created_at, words, summary)
-values ($1, $2, $3, $4, $5, $6, $7, $8)
+(id, name, book_id, content, "order", created_at, words, summary, is_publicly_visible)
+values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
 type InsertBookChapterParams struct {
-	ID        int64
-	Name      string
-	BookID    int64
-	Content   string
-	Order     int32
-	CreatedAt pgtype.Timestamptz
-	Words     int32
-	Summary   string
+	ID                int64
+	Name              string
+	BookID            int64
+	Content           string
+	Order             int32
+	CreatedAt         pgtype.Timestamptz
+	Words             int32
+	Summary           string
+	IsPubliclyVisible bool
 }
 
 func (q *Queries) InsertBookChapter(ctx context.Context, arg InsertBookChapterParams) error {
@@ -166,6 +167,7 @@ func (q *Queries) InsertBookChapter(ctx context.Context, arg InsertBookChapterPa
 		arg.CreatedAt,
 		arg.Words,
 		arg.Summary,
+		arg.IsPubliclyVisible,
 	)
 	return err
 }
@@ -279,7 +281,7 @@ func (q *Queries) ManagerGetUserBooksCount(ctx context.Context, authorUserID pgt
 const recalculateBookStats = `-- name: RecalculateBookStats :exec
 update books
 set words = stat.words, chapters = stat.chapters
-from (select sum(words) as words, count(1) as chapters from book_chapters where book_id = $1) as stat
+from (select sum(words) as words, count(1) as chapters from book_chapters where book_id = $1 and is_publicly_visible = true) as stat
 where books.id = $1
 `
 

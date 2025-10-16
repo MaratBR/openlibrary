@@ -1,7 +1,68 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "fmt"
 
-templ ProfileBooks(books []app.GetUserBooksResult) {
-    <h1>Profile books</h1>
+
+templ ProfileBooks(
+    user *app.UserDetailsDto,
+    result *app.BookSearchResult,
+    explainedQuery app.DetailedBookSearchQuery,
+) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+        title := _t(l, "profile.booksOf", "user", user.Name)
+    }}
+
+    @baseLayout(title) {
+        <div class="sticky top-[var(--header-height)] z-20">
+            <nav class="ol-container shadow-md rounded-b-md bg-card px-3">
+                <ul class="tabs tabs--primary-b">
+                    <li role="button" class="tab tab--active">
+                        <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ _t(l, "profile.books") }</a>
+                    </li>
+                    <li role="button" class="tab">
+                        <a href={ templ.URL(fmt.Sprintf("/users/%s/collections", user.ID)) }>{ _t(l, "profile.collections") }</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        @i18nExtractKeysByPrefix(l, "search")
+
+        <div class="ol-container my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
+            @SearchResultFragment(result, explainedQuery, true)
+        </div>
+    }
+}
+
+templ ProfileCollections(
+    user *app.UserDetailsDto,
+) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+        title := _t(l, "profile.collectionsOf", "user", user.Name)
+    }}
+
+    @baseLayout(title) {
+        <div class="sticky top-[var(--header-height)] z-20">
+            <nav class="ol-container shadow-md rounded-b-md bg-card px-3">
+                <ul class="tabs tabs--primary-b">
+                    <li role="button" class="tab">
+                        <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ _t(l, "profile.books") }</a>
+                    </li>
+                    <li role="button" class="tab tab--active">
+                        <a href={ templ.URL(fmt.Sprintf("/users/%s/collections", user.ID)) }>{ _t(l, "profile.collections") }</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        @i18nExtractKeysByPrefix(l, "search")
+
+        <div class="ol-container my-12 px-2">
+        Test
+        </div>
+    }
 }

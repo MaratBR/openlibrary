@@ -30,7 +30,7 @@ func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s, ok := session.Get(r)
 		if !ok {
-			slog.Error("could not load flash messages to session: session is not attached to request context")
+			slog.Debug("could not load flash messages to session: session is not attached to request context")
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -45,8 +45,9 @@ func Middleware(next http.Handler) http.Handler {
 			err := json.Unmarshal([]byte(value), &col.arr)
 			if err != nil {
 				slog.Error("failed to unmarshal flash messages from session", "err", err)
-			} else {
+			} else if len(col.arr) > 0 {
 				slog.Debug("got messages from session", "count", len(col.arr), "messages", col.arr)
+
 			}
 		} else {
 			slog.Error("could not get flash message from session", "ok", ok, "value", value)

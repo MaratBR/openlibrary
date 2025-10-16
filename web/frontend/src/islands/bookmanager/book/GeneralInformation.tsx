@@ -110,7 +110,7 @@ export default function GeneralInformation({ data: initialData }: { data: Manage
       </div>
 
       <div class="mt-4">
-        <button class="btn btn--primary rounded-full">
+        <button class="btn btn--primary">
           {loading ? <span class="loader loader--dark" /> : window._('bookManager.edit.save')}
         </button>
       </div>

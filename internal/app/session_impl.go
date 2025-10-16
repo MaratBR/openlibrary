@@ -23,7 +23,7 @@ func (s *sessionService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]S
 		}
 		return nil, wrapUnexpectedDBError(err)
 	}
-	return mapSlice(sessions, func(s store.GetUserSessionsRow) SessionInfo {
+	return MapSlice(sessions, func(s store.GetUserSessionsRow) SessionInfo {
 		return SessionInfo{
 			ID:           s.ID,
 			SID:          s.Sid,

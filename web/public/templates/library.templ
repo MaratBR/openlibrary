@@ -10,12 +10,14 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
     }}
 
     @baseLayout(_t(l, "library.title")) {
+        <header class="library-header">
+            <div class="ol-container flex gap-4">
+                @libraryTab(_t(l, "library.title"), "/library", true)
+                @libraryTab(_t(l, "library.archive"), "/library/archive", false)
+                @libraryTab(_t(l, "library.collections"), "/library/collections", false)
+            </div>
+        </header>
         <main class="ol-container">
-            <header class="library-header flex gap-4">
-                <h1 class="page-header page-header--big underline underline-offset-2">{_t(l, "library.title")}</h1>
-                <a href="/library/archive" class="page-header page-header--big text-muted-foreground hover:underline underline-offset-2">{_t(l, "library.archive")}</a>
-            </header>
-
             <ol-island 
                 data={ "{\"selector\": \".library-body\"}" }
                 src="/_/assets/islands/book-card-preview.js" 
@@ -42,40 +44,17 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
     }
 }
 
-templ LibraryArchive(read, dnf []app.BookLibraryDto) {
-    {{
-        l := i18n.GetLocalizer(ctx)
-    }}
-
-    @baseLayout(_t(l, "library.title")) {
-        <main class="ol-container">
-            <header class="library-header flex gap-4">
-                <a href="/library" class="page-header page-header--big text-muted-foreground hover:underline underline-offset-2">{_t(l, "library.title")}</a>
-                <h1 class="page-header page-header--big underline underline-offset-2">{_t(l, "library.archive")}</h1>
-            </header>
-
-            <ol-island 
-                data={ "{\"selector\": \".library-body\"}" }
-                src="/_/assets/islands/book-card-preview.js" 
-                active="true" />
-        
-            <div class="library-body">
-                if len(read) + len(dnf) == 0 {
-                    <p>
-                        {_t(l, "library.archiveDescription")}
-                    </p>
-                }
-
-                if len(read) != 0 {
-                    @librarySection(_t(l, "readingList.read"), read)
-                }
-                if len(dnf) != 0 {
-                    @librarySection(_t(l, "readingList.dnf"), dnf)
-                }
-            </div>
-        </main>
+templ libraryTab(
+    title, url string,
+    active bool,
+) {
+    if active {
+        <h1 class="library-header__item library-header__item--active">{title}</h1>
+    } else {
+        <a href={templ.SafeURL(url)} class="library-header__item">{title}</a>
     }
 }
+
 
 templ librarySection(label string, books []app.BookLibraryDto) {
     <section class="library-section">
@@ -103,3 +82,67 @@ templ libraryBookCard(bookID int64, name, cover string) {
 }
 
 
+templ LibraryArchive(read, dnf []app.BookLibraryDto) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+
+    @baseLayout(_t(l, "library.title")) {
+        <header class="library-header">
+            <div class="ol-container flex gap-4">
+                @libraryTab(_t(l, "library.title"), "/library", false)
+                @libraryTab(_t(l, "library.archive"), "/library/archive", true)
+                @libraryTab(_t(l, "library.collections"), "/library/collections", false)
+            </div>
+        </header>
+
+
+        <main class="ol-container">
+            <ol-island 
+                data={ "{\"selector\": \".library-body\"}" }
+                src="/_/assets/islands/book-card-preview.js" 
+                active="true" />
+        
+            <div class="library-body">
+                if len(read) + len(dnf) == 0 {
+                    <p>
+                        {_t(l, "library.archiveDescription")}
+                    </p>
+                }
+
+                if len(read) != 0 {
+                    @librarySection(_t(l, "readingList.read"), read)
+                }
+                if len(dnf) != 0 {
+                    @librarySection(_t(l, "readingList.dnf"), dnf)
+                }
+            </div>
+        </main>
+    }
+}
+
+templ LibraryCollections() {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+        @baseLayout(_t(l, "library.title")) {
+        <header class="library-header">
+            <div class="ol-container flex gap-4">
+                @libraryTab(_t(l, "library.title"), "/library", false)
+                @libraryTab(_t(l, "library.archive"), "/library/archive", false)
+                @libraryTab(_t(l, "library.collections"), "/library/collections", true)
+            </div>
+        </header>
+
+        <main class="ol-container">
+            <ol-island 
+                data={ "{\"selector\": \".library-body\"}" }
+                src="/_/assets/islands/book-card-preview.js" 
+                active="true" />
+        
+            <div class="library-body">
+                TODO: Collections
+            </div>
+        </main>
+    }
+}

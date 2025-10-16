@@ -117,7 +117,7 @@ templ BookMyReview(
                             @starRatingControllable(float64(review.Rating), 0.5, templ.Attributes{
                                 "id": "current-review-rating",
                             })
-                            <button @click="requestEditing()" class="btn btn--lg btn--outline rounded-full">
+                            <button @click="requestEditing()" class="btn btn--lg btn--outline ">
                                 <i class="fa-solid fa-pencil"></i>
                                 { _t(l, "reviews.editReview") }
                             </button>
@@ -182,23 +182,13 @@ templ BookMyReview(
                                         type: 'success',
                                     }))
                                 `, bookID))
-                                @i18nKeys(map[string]string{
-                                    "book.youRated": l.TData("book.youRated", map[string]string{
-                                        "rating": "$",
-                                    }),
-                                })
-                                @i18nExtractKeys(l, []string{
-                                    "book.rateBook",
-                                    "book.ratingSaved",
-                                    "book.thankYouForRating",
-                                })
                                 <span
-                                    x-text="!rating?i18n['book.rateBook']:i18n['book.youRated'].replaceAll('$',rating/2)"
+                                    x-text="!rating?i18n['book.rateBook']:i18n['book.youRated'].replaceAll('{{.rating}}',rating/2)"
                                     class="font-light">
                                     { text }
                                 </span>
                             </div>
-                            <button class="btn btn--outline btn--lg text-lg p-6 rounded-full" @click="requestEditing()">
+                            <button class="btn btn--outline btn--lg text-lg p-6 " @click="requestEditing()">
                                 <span x-show="!loading">
                                     { l.T("book.writeReview") }
                                 </span>
@@ -216,7 +206,7 @@ templ BookMyReview(
                         }
                         href := "/login?" + query.Encode()
                     }}
-                    <a class="btn btn--outline btn--lg text-lg p-6 rounded-full mt-4" href={templ.URL(href)}>
+                    <a class="btn btn--outline btn--lg text-lg p-6  mt-4" href={templ.URL(href)}>
                         { l.T("book.writeReviewLogin") }
                     </a>
                 }
@@ -269,7 +259,7 @@ templ collapsible(height int, canBeCollapsed bool) {
             if !canBeCollapsed {
                 x-cloak
             }
-            class="absolute flex items-center left-0 right-0 bottom-0 p-1 z-20 text-lg font-[500] hover:text-primary focus:outline focus:outline-2 outline-offset-[-2px]">
+            class="absolute flex items-center left-0 right-0 bottom-0 p-1 z-10 text-lg font-[500] hover:text-primary focus:outline focus:outline-2 outline-offset-[-2px]">
             <span x-bind="buttonLabel">{ _t(l, "common.more") }</span>
             <i x-bind="buttonIcon" class="fa-solid fa-chevron-down"></i>
         </button>

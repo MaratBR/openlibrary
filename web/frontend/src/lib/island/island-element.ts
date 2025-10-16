@@ -111,7 +111,7 @@ class OLIslandElement extends HTMLElement {
   }
 
   private async _fetchIsland(): Promise<OLIsland> {
-    const src = this.getAttribute('src')
+    const src = this.getSrc()
 
     if (src) {
       const module: unknown = await import(src)
@@ -122,6 +122,17 @@ class OLIslandElement extends HTMLElement {
       throw new Error(`Island ${name} is not found in ${src}`)
     }
     throw new Error('Island src is not specified')
+  }
+
+  private getSrc() {
+    const src = this.getAttribute('src')
+    if (!src) return null
+
+    if (/(\.js$|\.js[#?].*$)/g.test(src)) {
+      return src
+    }
+
+    return `/_/assets/islands/${src}.js`
   }
 
   private _clearContent() {

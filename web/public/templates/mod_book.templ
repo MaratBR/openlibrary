@@ -105,7 +105,7 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
                 <button 
                     disabled 
                     :disabled="!action || !reason || (action === 'permDelete' && challenge !== challengeInput)" 
-                    class="btn btn--secondary btn--lg rounded-full" type="submit">{_t(l, "mod.performAction")}</button>
+                    class="btn btn--secondary btn--lg " type="submit">{_t(l, "mod.performAction")}</button>
             </form>
 
             <hr class="my-8" />

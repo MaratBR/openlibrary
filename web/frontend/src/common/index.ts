@@ -2,15 +2,7 @@ import './i18n'
 import './util'
 import './cookies'
 import './theme'
-
-import 'overlayscrollbars/overlayscrollbars.css'
-;(() => {
-  import('overlayscrollbars').then(({ OverlayScrollbars }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(window as any).OverlayScrollbars = OverlayScrollbars
-    document.dispatchEvent(new CustomEvent('overlayscrollbars-ready'))
-  })
-})()
+import './scrollable'
 
 import './__server__'
 import './delay'
@@ -26,3 +18,7 @@ import { initAfterDOMReady } from './links'
 import { initFirstActivityEvent } from '@/lib/user-activity-detector'
 initAfterDOMReady()
 initFirstActivityEvent()
+
+requestIdleCallback(() => {
+  document.dispatchEvent(new CustomEvent('ol:jsready'))
+})

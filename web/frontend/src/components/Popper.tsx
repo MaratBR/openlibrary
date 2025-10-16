@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'preact/hooks'
+import { useEffect, useLayoutEffect, useRef } from 'preact/hooks'
 import { createPopper, Options, Instance } from '@popperjs/core'
 import { ComponentChild, RefObject } from 'preact'
 import { HTMLAttributes } from 'preact/compat'
@@ -33,7 +33,7 @@ export default function Popper({
     strategy,
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!ref.current) {
       return
     }

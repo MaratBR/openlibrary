@@ -195,7 +195,7 @@ declare global {
   }
 }
 
-window.toast = (...args) => {}
+window.toast = (..._args) => {}
 
 // const btn = document.createElement('button')
 // btn.textContent = 'Toast'

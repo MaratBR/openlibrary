@@ -56,7 +56,7 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 			err = wrapUnexpectedDBError(err)
 			return
 		}
-		result.Comments = mapSlice(rows, func(r store.GetChapterCommentsRow) CommentDto {
+		result.Comments = MapSlice(rows, func(r store.GetChapterCommentsRow) CommentDto {
 			return CommentDto{
 				ID:        r.ID,
 				Content:   r.Content,
@@ -78,7 +78,7 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 			err = wrapUnexpectedDBError(err)
 			return
 		}
-		result.Comments = mapSlice(rows, func(r store.GetChapterCommentsAfterRow) CommentDto {
+		result.Comments = MapSlice(rows, func(r store.GetChapterCommentsAfterRow) CommentDto {
 			return CommentDto{
 				ID:        r.ID,
 				Content:   r.Content,

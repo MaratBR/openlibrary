@@ -25,7 +25,7 @@ func (s *readingListService) GetReadingListBooks(ctx context.Context, query GetR
 	if err != nil {
 		return nil, wrapUnexpectedDBError(err)
 	}
-	return mapSlice(rows, func(r store.GetUserLibraryRow) BookLibraryDto {
+	return MapSlice(rows, func(r store.GetUserLibraryRow) BookLibraryDto {
 		var lastChapter Nullable[BookReadingListItemLastChapterDto]
 		if r.ChapterID.Valid {
 			lastChapter = Value(BookReadingListItemLastChapterDto{

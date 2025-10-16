@@ -1,8 +1,8 @@
 .tabs {
-    @apply flex border rounded-lg p-1 gap-1;
+    @apply flex gap-1;
 
     .tab {
-        @apply p-2 cursor-pointer;
+        @apply cursor-pointer;
     }
 
     &--primary {
@@ -10,23 +10,27 @@
             @apply 
                 text-lg font-medium 
                 relative 
-                py-3 px-2 -m-1
                 hover:bg-secondary 
                 transition-all
                 rounded-lg;
 
-            &:first-child {
-                @apply rounded-r-none;
-            }
-
-            &:last-child {
-                @apply rounded-l-none;
-            }
-
             &--active {
                 @apply 
-                    text-primary after:scale-y-100 bg-primary/10 !rounded-lg
-                    m-0 py-2 px-1;
+                    text-primary after:scale-y-100 bg-primary/10 !rounded-lg;
+            }
+        }
+    }
+
+    &--primary-b {
+        .tab {
+            @apply border-b-2 border-transparent text-lg text-muted-foreground hover:text-foreground;
+
+            &--active {
+                @apply font-medium border-current text-foreground;
+            }
+
+            & > a {
+                @apply p-2 inline-block;
             }
         }
     }

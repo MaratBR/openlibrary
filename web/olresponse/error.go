@@ -27,6 +27,6 @@ func WriteCustomErrorPage(
 	if PreferredMimeTypeIsJSON(r) {
 		NewAPIError(err).Write(w)
 	} else {
-		errorPageWithACat(title, subtitle, err.Error(), -1).Render(r.Context(), w)
+		ErrorPageWithACat(title, subtitle, err.Error(), -1).Render(r.Context(), w)
 	}
 }

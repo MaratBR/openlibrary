@@ -24,7 +24,11 @@ type booksSearchRequest struct {
 	PageSize uint
 }
 
-func getBooksSearchRequest(r *http.Request) (search booksSearchRequest) {
+type bookSearchRequestParsingOptions struct {
+	DisableUsers bool
+}
+
+func getBooksSearchRequest(r *http.Request, opts *bookSearchRequestParsingOptions) (search booksSearchRequest) {
 	source := r.URL.Query()
 
 	search.Query = source.Get("q")
@@ -36,8 +40,10 @@ func getBooksSearchRequest(r *http.Request) (search booksSearchRequest) {
 	search.IncludeTags = olhttp.GetInt64Array(source, "it")
 	search.ExcludeTags = olhttp.GetInt64Array(source, "et")
 
-	search.IncludeUsers = olhttp.GetUUIDArray(source, "iu")
-	search.ExcludeUsers = olhttp.GetUUIDArray(source, "eu")
+	if opts == nil || !opts.DisableUsers {
+		search.IncludeUsers = olhttp.GetUUIDArray(source, "iu")
+		search.ExcludeUsers = olhttp.GetUUIDArray(source, "eu")
+	}
 
 	// pagination and page size
 	search.Page = olhttp.GetPage(source, "p")

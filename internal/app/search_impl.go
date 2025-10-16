@@ -112,8 +112,8 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 	// convert to elastic request
 	esReq := elasticstore.SearchRequest{
 		Query:        req.Query,
-		IncludeUsers: make([]string, len(req.IncludeUsers)),
-		ExcludeUsers: make([]string, len(req.ExcludeUsers)),
+		IncludeUsers: MapSlice(req.IncludeUsers, func(id uuid.UUID) string { return id.String() }),
+		ExcludeUsers: MapSlice(req.ExcludeUsers, func(id uuid.UUID) string { return id.String() }),
 		IncludeTags:  req.IncludeTags,
 		ExcludeTags:  req.ExcludeTags,
 		Words: elasticstore.Range{

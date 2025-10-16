@@ -257,7 +257,7 @@ func (q *Queries) GetBookChapterWithDetails(ctx context.Context, arg GetBookChap
 	return i, err
 }
 
-const getBookCollections = `-- name: GetBookCollections :many
+const getBookCollectionData = `-- name: GetBookCollectionData :many
 select collections.id, collections.name, collections.books_count as size, collection_books."order" as position, collections.created_at, users.name as user_name, collections.user_id
 from collections
 join collection_books on collections.id = collection_books.collection_id
@@ -266,7 +266,7 @@ where collection_books.book_id = $1
 order by collections.created_at desc
 `
 
-type GetBookCollectionsRow struct {
+type GetBookCollectionDataRow struct {
 	ID        int64
 	Name      string
 	Size      int32
@@ -276,15 +276,15 @@ type GetBookCollectionsRow struct {
 	UserID    pgtype.UUID
 }
 
-func (q *Queries) GetBookCollections(ctx context.Context, bookID int64) ([]GetBookCollectionsRow, error) {
-	rows, err := q.db.Query(ctx, getBookCollections, bookID)
+func (q *Queries) GetBookCollectionData(ctx context.Context, bookID int64) ([]GetBookCollectionDataRow, error) {
+	rows, err := q.db.Query(ctx, getBookCollectionData, bookID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetBookCollectionsRow
+	var items []GetBookCollectionDataRow
 	for rows.Next() {
-		var i GetBookCollectionsRow
+		var i GetBookCollectionDataRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -336,7 +336,7 @@ func (q *Queries) GetBookSearchRelatedData(ctx context.Context, ids []int64) ([]
 	return items, nil
 }
 
-const getBooksCollections = `-- name: GetBooksCollections :many
+const getBooksCollectionData = `-- name: GetBooksCollectionData :many
 select collections.id, collections.name, collections.books_count as size, collection_books.book_id, collection_books."order" as position, collections.created_at, users.name as user_name, collections.user_id
 from collections
 join collection_books on collections.id = collection_books.collection_id
@@ -345,7 +345,7 @@ where collection_books.book_id = ANY($1::int8[])
 order by collections.created_at desc
 `
 
-type GetBooksCollectionsRow struct {
+type GetBooksCollectionDataRow struct {
 	ID        int64
 	Name      string
 	Size      int32
@@ -356,15 +356,15 @@ type GetBooksCollectionsRow struct {
 	UserID    pgtype.UUID
 }
 
-func (q *Queries) GetBooksCollections(ctx context.Context, dollar_1 []int64) ([]GetBooksCollectionsRow, error) {
-	rows, err := q.db.Query(ctx, getBooksCollections, dollar_1)
+func (q *Queries) GetBooksCollectionData(ctx context.Context, dollar_1 []int64) ([]GetBooksCollectionDataRow, error) {
+	rows, err := q.db.Query(ctx, getBooksCollectionData, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetBooksCollectionsRow
+	var items []GetBooksCollectionDataRow
 	for rows.Next() {
-		var i GetBooksCollectionsRow
+		var i GetBooksCollectionDataRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,

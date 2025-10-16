@@ -1,5 +1,17 @@
 .library-header {
-    @apply my-8;
+    @apply py-8 mb-8 border-b bg-card;
+
+    &__item {
+        @apply text-3xl font-medium p-2 rounded-xl;
+    
+        &:not(&--active) {
+            @apply text-muted-foreground transition-colors duration-75 hover:bg-primary/10 hover:text-primary active:bg-primary/15;
+        }
+
+        &--active {
+            @apply shadow-lg bg-background;
+        }
+    }
 }
 
 .library-body {

@@ -48,7 +48,7 @@ func (c *searchController) simpleSearch(w http.ResponseWriter, r *http.Request) 
 }
 
 func (c *searchController) search(w http.ResponseWriter, r *http.Request) {
-	search := getBooksSearchRequest(r)
+	search := getBooksSearchRequest(r, nil)
 	query := app.BookSearchQuery{
 		UserID: auth.GetNullableUserID(r.Context()),
 
@@ -82,7 +82,7 @@ func (c *searchController) search(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.URL.Query().Has("__fragment") {
-		olhttp.WriteTemplate(w, r.Context(), templates.SearchResultFragment(result, explainedQuery))
+		olhttp.WriteTemplate(w, r.Context(), templates.SearchResultFragment(result, explainedQuery, false))
 	} else {
 		olhttp.WriteTemplate(w, r.Context(), templates.SearchPage(result, explainedQuery))
 	}

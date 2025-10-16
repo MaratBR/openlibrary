@@ -88,6 +88,9 @@ user = "User"
 users = "Users"
 allUsers = "All users"
 
+notFound = "User not found"
+notFoundDescription = "There are a lot of people that exist. But not this one though."
+
 [user.books]
 one = "book"
 many = "books"
@@ -220,6 +223,14 @@ readingListYouJumpedBack = "It seems that you've jumped back a few chapters. Do 
 readingListYouJumpedForward = "It seems that you've jumped forward and skipped a few chapters. Do you want to update your reading progress?"
 readingListSetProgress = "Set progress"
 
+[book.collection]
+namePlaceholder = "Collection name"
+collectionsListTitle = "Your collections"
+addCollection = "Create collection"
+addToCollection = "Add to collection"
+addToCollections = "Add to {{.count}} collections"
+
+
 [search]
 filters = "Filters"
 search = "Search"
@@ -242,9 +253,10 @@ noJavascript = "Hey there! It looks like you have Javascript disabled. OpenLibra
 
 [library]
 libraryDescription = "Books from your reading list will appear here. If you want to take a look at books that you already read or simply did not finish (i.e. abandoned) please checkout the Archive tab."
-title = "My library"
 login = "Login to add books to your library"
+title = "My library"
 archive = "Archive"
+collections = "Collections"
 archiveDescription = "Books that you read or did not finish will appear here"
 
 #####################
@@ -445,3 +457,8 @@ action = "Action"
 reason = "Reason"
 time = "Time of action"
 actor = "Actor (performed by)"
+
+[profile]
+books = "Books"
+collections = "Collections"
+booksOf = "{{ .user }}'s books"

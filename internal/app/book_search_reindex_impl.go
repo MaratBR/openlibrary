@@ -13,6 +13,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/elastic/go-elasticsearch/v9/esapi"
+	"github.com/elastic/go-elasticsearch/v9/typedapi/types"
 )
 
 type bookReindexService struct {
@@ -40,6 +41,15 @@ func (s *bookReindexService) ScheduleReindexAll() error {
 	go s.reindexAll(ctx, 10000)
 
 	return nil
+}
+
+func (s *bookReindexService) ScheduleReindex(ctx context.Context, id int64) {
+	go func() {
+		err := s.Reindex(ctx, id)
+		if err != nil {
+			slog.Error("failed to reindex book", "err", err)
+		}
+	}()
 }
 
 func (s *bookReindexService) Reindex(ctx context.Context, id int64) error {
@@ -70,6 +80,14 @@ func (s *bookReindexService) Reindex(ctx context.Context, id int64) error {
 }
 
 func (s *bookReindexService) reindexAll(ctx context.Context, batchSize int) {
+	_, err := s.client.DeleteByQuery(elasticstore.BOOKS_INDEX_NAME).Query(&types.Query{
+		MatchAll: types.NewMatchAllQuery(),
+	}).Do(ctx)
+
+	if err != nil {
+		slog.Error("failed to delete all docs from index", "index", elasticstore.BOOKS_INDEX_NAME, "err", err)
+	}
+
 	var cursor int64
 
 	queries := store.New(s.db)
@@ -163,6 +181,9 @@ type dummyBookReindexService struct{}
 
 func NewDummyBookReindexService() BookReindexService {
 	return &dummyBookReindexService{}
+}
+
+func (s *dummyBookReindexService) ScheduleReindex(ctx context.Context, id int64) {
 }
 
 func (s *dummyBookReindexService) Reindex(ctx context.Context, id int64) error {

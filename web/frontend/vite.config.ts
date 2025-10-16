@@ -1,8 +1,11 @@
 /* eslint-disable no-undef */
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { defineConfig, Plugin } from 'vite'
 import preact from '@preact/preset-vite'
 import type { OutputAsset } from 'rollup'
+import { build as esbuild } from 'esbuild'
+import { readFile } from 'node:fs/promises'
+import glob from 'fast-glob'
 
 type AutoInjectCSSAsLinkOptions = {
   baseUrl: string
@@ -64,22 +67,66 @@ function autoInjectCSSAsLinkTagPlugin({ baseUrl }: AutoInjectCSSAsLinkOptions): 
   }
 }
 
+function esbuildMinifyPlugin(): Plugin {
+  return {
+    name: 'esbuild-minify-post',
+    apply: 'build',
+    async closeBundle() {
+      // adjust this to match your outDir
+      const outDir = resolve(process.cwd(), 'dist')
+      // get all .js files from dist
+      const files = await glob('**/*.js', { cwd: outDir, absolute: true })
+
+      await Promise.all(
+        files.map(async (file) => {
+          const code = await readFile(file, 'utf8')
+          const result = await esbuild({
+            stdin: {
+              contents: code,
+              resolveDir: dirname(file),
+              sourcefile: file,
+              loader: 'js',
+            },
+            outfile: file,
+            write: true,
+            bundle: false,
+            minify: true,
+            sourcemap: true,
+            allowOverwrite: true,
+          })
+
+          if (result.errors.length) {
+            console.error(`esbuild failed on ${file}`, result.errors)
+          }
+        }),
+      )
+    },
+  }
+}
+
 const ENTRIES = [
   'common',
   'alpinejs',
   'http-client',
 
+  // admin stuff
   'admin-common',
   'admin-alpinejs',
 
+  // moderation
   'mod',
 
+  // global public API (remove?)
   'public.api',
 
+  // specifically stuff for book-reader
   'book-reader',
 
+  // bookmanager stuff
   'bookmanager-common',
 
+  // islands
+  'islands/public', // all islands available in public pages
   'islands/book-card-preview',
   'islands/review-editor',
   'islands/search-filters',
@@ -117,12 +164,20 @@ export default defineConfig((env) => ({
     autoInjectCSSAsLinkTagPlugin({
       baseUrl: '/_/assets/',
     }),
+    esbuildMinifyPlugin(),
   ],
 
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
     },
+  },
+
+  esbuild: {
+    legalComments: 'none',
+    minifyWhitespace: true,
+    minifyIdentifiers: true,
+    minifySyntax: true,
   },
 
   build: {
@@ -132,7 +187,6 @@ export default defineConfig((env) => ({
         chunkFileNames: 'chunks/[hash].js',
         // Put chunk styles at <output>/assets
         assetFileNames: (assetInfo) => {
-          console.log(assetInfo.names)
           if (
             assetInfo.names.length === 1 &&
             assetInfo.names[0].endsWith('.css') &&

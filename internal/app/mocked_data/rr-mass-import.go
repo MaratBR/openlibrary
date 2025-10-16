@@ -125,11 +125,12 @@ func importBook(
 	for i := 0; i < len(book.Chapters); i++ {
 		chapter := book.Book.Chapters[i]
 		_, err = service.CreateBookChapter(ctx, app.CreateBookChapterCommand{
-			BookID:          bookID,
-			Name:            chapter.Title,
-			Content:         book.Chapters[i].Content,
-			IsAdultOverride: false,
-			Summary:         fmt.Sprintf("Original chapter: https://www.royalroad.com/fiction/%d/chapter/%d", book.Book.ID, chapter.ID),
+			BookID:            bookID,
+			Name:              chapter.Title,
+			Content:           book.Chapters[i].Content,
+			IsAdultOverride:   false,
+			Summary:           fmt.Sprintf("Original chapter: https://www.royalroad.com/fiction/%d/chapter/%d", book.Book.ID, chapter.ID),
+			IsPubliclyVisible: true,
 		})
 		if err != nil {
 			return err
