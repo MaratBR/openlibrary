@@ -211,6 +211,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 		searchResult.Books[i] = BookSearchItem{
 			ID:   book.ID,
 			Name: book.Name,
+			Slug: book.Slug,
 			Author: BookDetailsAuthorDto{
 				ID:   book.AuthorID,
 				Name: authorName,

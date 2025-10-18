@@ -1,0 +1,60 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/MaratBR/openlibrary/web/olresponse"
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/auth"
+
+templ Collection(
+    result app.GetCollectionBooksResult,
+) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+        session, isAuthorized := auth.GetSession(ctx)
+    }}
+    @baseLayout(_t(l, "collection.collection") + " - " + result.Collection.Name) {
+        <div class="ol-container my-12 px-2" >
+            <header class="mb-8">
+                <h1 class="font-semibold text-4xl">{ result.Collection.Name }</h1>
+                <p class="mt-2">
+                    <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", result.Collection.UserID.String())) }>
+                        { result.Collection.UserName }
+                    </a>
+                </p>
+            </header>
+
+            {{
+                pagination := olresponse.PaginationImpl(olresponse.PaginationImplProps{
+                    Size: 9,
+                    Page: uint32(result.Page),
+                    TotalPages: uint32(result.TotalPages),
+                    UseAlpineJsAjax: true,
+                })
+            }}
+            <main id="PaginationAjaxSlot">
+                if len(result.Books) > 0 {
+                    if !(result.TotalPages == 1 && result.Page == 1) {
+                        @pagination
+                    }
+                    <ul class="my-2">
+                        for _, book := range result.Books {
+                            @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.AuthorName, book.AuthorID, book.Tags)
+                        }
+                    </ul>
+                    if !(result.TotalPages == 1 && result.Page == 1) {
+                        @pagination
+                    }
+                } else {
+                    <p class="mt-4">
+                        if isAuthorized && result.Collection.UserID == session.UserID {
+                            { _t(l, "collection.emptyCollectionYours") }
+                        } else {
+                            { _t(l, "collection.emptyCollection") }
+                        }
+                    </p>
+                }
+            </main>  
+        </div>
+    }
+}

@@ -79,12 +79,13 @@ templ htmlLayout(params htmlLayoutProps) {
             frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
         ),
     }) {
-        @renderUISettings()
-        { children... }
         {{
             l := i18n.GetLocalizer(ctx)
         }}
         @i18nExtractKeysByPrefix(l, "common")
+        @renderUISettings()
+        { children... }
+  
     }
 }
 

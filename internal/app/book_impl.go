@@ -89,6 +89,7 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (B
 	bookDto := BookDetailsDto{
 		ID:              book.ID,
 		Name:            book.Name,
+		Slug:            book.Slug,
 		AgeRating:       ageRating,
 		IsAdult:         ageRating.IsAdult(),
 		Tags:            tags,

@@ -116,9 +116,11 @@ templ bookManagerYourBooksBookCard(bookID int64, name, cover, summary string) {
 	</div>
 }
 
-templ BookManagerCollections() {
+templ BookManagerCollections(collections []app.CollectionDto) {
 	@bookManagerMainPage("collections") {
-		TODO: Collections
+		for _, col := range collections {
+			{ col.Name }
+		}
 	}
 }
 

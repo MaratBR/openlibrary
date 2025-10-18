@@ -376,6 +376,7 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 type Book struct {
 	ID                 int64
 	Name               string
+	Slug               string
 	Summary            string
 	AuthorUserID       pgtype.UUID
 	CreatedAt          pgtype.Timestamptz

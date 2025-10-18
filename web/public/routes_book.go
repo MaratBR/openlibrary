@@ -29,6 +29,7 @@ func newBookController(service app.BookService, reviewService app.ReviewsService
 func (b *bookController) Register(r chi.Router) {
 	// book page and its fragments
 	r.Get("/book/{bookID}", b.GetBook)
+	r.Get("/book/{bookID}/{slug}", b.GetBook)
 	r.Get("/book/{bookID}/__fragment/preview-card", b.GetBookPreview)
 	r.Get("/book/{bookID}/__fragment/toc", b.GetBookTOC)
 	r.Get("/book/{bookID}/__fragment/review", b.GetBookReview)
@@ -45,7 +46,6 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 	userID := auth.GetNullableUserID(r.Context())
 	book, err := b.service.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
 	if err != nil {
-
 		if errorx.IsOfType(err, app.ErrTypeBookNotFound) || errorx.IsOfType(err, app.ErrTypeBookPrivated) {
 			// send 404 page
 			olhttp.WriteTemplate(w, r.Context(), templates.BookNotFoundPage())
@@ -54,6 +54,12 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 			// send generic application error
 		}
 		return
+	}
+
+	var replaceURLWithSlug bool
+	slug := chi.URLParam(r, "slug")
+	if book.Slug != slug {
+		replaceURLWithSlug = true
 	}
 
 	var (
@@ -98,6 +104,7 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 		ratingAndReview,
 		readingListStatus,
 		reviews,
+		replaceURLWithSlug,
 	).Render(r.Context(), w)
 }
 

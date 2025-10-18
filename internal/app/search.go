@@ -80,6 +80,7 @@ type BookSearchQuery struct {
 type BookSearchItem struct {
 	ID              int64                `json:"id,string"`
 	Name            string               `json:"name"`
+	Slug            string               `json:"slug"`
 	CreatedAt       time.Time            `json:"createdAt"`
 	AgeRating       AgeRating            `json:"ageRating"`
 	Words           int                  `json:"words"`

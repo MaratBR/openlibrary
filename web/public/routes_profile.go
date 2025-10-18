@@ -12,13 +12,14 @@ import (
 )
 
 type userController struct {
-	service       app.UserService
-	bookService   app.BookService
-	searchService app.SearchService
+	service           app.UserService
+	collectionService app.CollectionService
+	bookService       app.BookService
+	searchService     app.SearchService
 }
 
-func newProfileController(service app.UserService, bookService app.BookService, searchService app.SearchService) *userController {
-	return &userController{service: service, bookService: bookService, searchService: searchService}
+func newProfileController(service app.UserService, bookService app.BookService, searchService app.SearchService, collectionService app.CollectionService) *userController {
+	return &userController{service: service, bookService: bookService, searchService: searchService, collectionService: collectionService}
 }
 
 func (c *userController) Register(r chi.Router) {
@@ -99,7 +100,17 @@ func (c *userController) GetCollections(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	olhttp.WriteTemplate(w, r.Context(), templates.ProfileCollections(user))
+	page := olhttp.GetPage(r.URL.Query(), "page")
+
+	result, err := c.collectionService.GetUserCollections(r.Context(), app.GetUserCollectionsQuery{
+		UserID:   userID,
+		Page:     int32(page),
+		PageSize: 20,
+	})
+	booksMap, err := c.collectionService.GetCollectionBooksMap(r.Context(), result.Collections)
+
+	// TODO add pagination here too
+	olhttp.WriteTemplate(w, r.Context(), templates.ProfileCollections(user, result.Collections, booksMap))
 }
 
 func (c *userController) GetProfile(w http.ResponseWriter, r *http.Request) {

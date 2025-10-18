@@ -61,6 +61,7 @@ func (s *bookReindexService) Reindex(ctx context.Context, id int64) error {
 
 	idx := elasticstore.BookIndex{
 		Name:        book.Name,
+		Slug:        book.Slug,
 		Description: book.Summary,
 		Rating:      string(book.AgeRating),
 		AuthorID:    uuidDbToDomain(book.AuthorUserID),
@@ -140,6 +141,7 @@ func (s *bookReindexService) reindexAll(ctx context.Context, batchSize int) {
 				_ = enc.Encode(header)
 				idx := elasticstore.BookIndex{
 					Name:        book.Name,
+					Slug:        book.Slug,
 					Description: book.Summary,
 					Rating:      string(book.AgeRating),
 					AuthorID:    uuidDbToDomain(book.AuthorUserID),

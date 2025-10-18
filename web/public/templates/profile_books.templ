@@ -39,6 +39,8 @@ templ ProfileBooks(
 
 templ ProfileCollections(
     user *app.UserDetailsDto,
+    collections []app.CollectionDto,
+    booksMap map[int64][]app.CollectionBookDto,
 ) {
     {{
         l := i18n.GetLocalizer(ctx)
@@ -62,7 +64,7 @@ templ ProfileCollections(
         @i18nExtractKeysByPrefix(l, "search")
 
         <div class="ol-container my-12 px-2">
-        Test
+            @collectionsList(collections, booksMap)
         </div>
     }
 }

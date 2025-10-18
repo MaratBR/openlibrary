@@ -23,11 +23,16 @@ templ BookNotFoundPage() {
     }
 }
 
+script replaceURLWith(s string) {
+    window.history.replaceState({}, '', s)
+}
+
 templ BookPage(
     book app.BookDetailsDto,
     ratingAndReview app.RatingAndReview,
     readingListStatus app.Nullable[app.BookReadingListDto],
     topReviews []app.ReviewDto,
+    replaceURLWithSlug bool,
 ) {
     {{
         l := i18n.GetLocalizer(ctx)
@@ -35,6 +40,9 @@ templ BookPage(
     }}
     
     @bookPageLayout(book, readingListStatus) {
+        if replaceURLWithSlug {
+            @replaceURLWith(fmt.Sprintf("/book/%d/%s", book.ID, book.Slug))
+        }
         <div x-ignore class="mt-4 __user-content">
             @templ.Raw(book.Summary)
         </div>
@@ -79,7 +87,14 @@ templ BookPage(
                 @bookTopReviews(topReviews, book.Author.ID)
             </div>
 
-            <div role="tabpanel" class="contents" id="slot-book-toc" x-merge="replace" x-cloak x-show="tab==='toc'" x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/__fragment/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
+            <div 
+                role="tabpanel" 
+                class="contents" 
+                id="slot-book-toc" 
+                x-merge="replace" 
+                x-cloak 
+                x-show="tab==='toc'" 
+                x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/__fragment/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
                 <div class="h-[600px] mt-4">
                     <span class="loader mt-4"></span>
                 </div>

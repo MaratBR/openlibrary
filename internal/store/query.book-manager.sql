@@ -1,13 +1,13 @@
--- name: InsertBook :exec
+-- name: Book_Insert :exec
 insert into books 
 (
     id, name, summary, author_user_id, created_at, age_rating, tag_ids, cached_parent_tag_ids,
-    is_publicly_visible
+    is_publicly_visible, slug
 )
 values 
 (
     $1, $2, $3, $4, $5, $6, $7, $8, 
-    $9
+    $9, $10
 );
 
 -- name: UpdateBook :exec
@@ -61,7 +61,7 @@ select cast(coalesce(max("order"), 0) as int4) as last_order
 from book_chapters
 where book_id = $1;
 
--- name: InsertBookChapter :exec
+-- name: Book_InsertChapter :exec
 insert into book_chapters
 (id, name, book_id, content, "order", created_at, words, summary, is_publicly_visible)
 values ($1, $2, $3, $4, $5, $6, $7, $8, $9);

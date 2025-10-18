@@ -18,6 +18,7 @@ type BookIndex struct {
 	Tags            []int64   `json:"tags"`
 	Chapters        int32     `json:"chapters"`
 	Words           int32     `json:"words"`
+	Slug            string    `json:"slug"`
 	WordsPerChapter int32     `json:"wordsPerChapter"`
 }
 

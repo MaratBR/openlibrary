@@ -2,10 +2,14 @@
     @apply flex flex-wrap gap-2;
 
     &__item {
-        @apply border-border border rounded-full flex items-center justify-center text-lg size-12 min-w-12 hover:ring hover:ring-current active:bg-secondary;
+        @apply 
+            rounded-xl flex items-center justify-center font-semibold
+            text-lg size-12 min-w-12 bg-muted-2/40 transition-colors
+            hover:bg-muted-2 hover:ring
+            active:bg-secondary;
 
         &--active {
-            @apply bg-primary text-primary-foreground border-primary active:bg-primary/80;
+            @apply bg-primary text-primary-foreground border-primary hover:bg-primary;
         }
     }
 }

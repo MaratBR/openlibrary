@@ -14,11 +14,12 @@ import (
 )
 
 type bookManagerController struct {
-	service app.BookManagerService
+	service           app.BookManagerService
+	collectionService app.CollectionService
 }
 
-func newBookManagerController(service app.BookManagerService) *bookManagerController {
-	return &bookManagerController{service: service}
+func newBookManagerController(service app.BookManagerService, collectionService app.CollectionService) *bookManagerController {
+	return &bookManagerController{service: service, collectionService: collectionService}
 }
 
 func (c *bookManagerController) Register(r chi.Router) {
@@ -62,7 +63,19 @@ func (c *bookManagerController) index(w http.ResponseWriter, r *http.Request) {
 		templates.BookManagerBooks(books).Render(r.Context(), w)
 		return
 	} else if tab == "collections" {
-		templates.BookManagerCollections().Render(r.Context(), w)
+		page := olhttp.GetPage(r.URL.Query(), "page")
+		pageSize := olhttp.GetPageSize(r.URL.Query(), "pageSize", 1, 100, 15)
+		result, err := c.collectionService.GetUserCollections(r.Context(), app.GetUserCollectionsQuery{
+			UserID:   session.UserID,
+			Page:     int32(page),
+			PageSize: int32(pageSize),
+		})
+		if err != nil {
+			writeApplicationError(w, r, err)
+			return
+		}
+
+		templates.BookManagerCollections(result.Collections).Render(r.Context(), w)
 		return
 	} else {
 		http.Redirect(w, r, "/books-manager", http.StatusFound)

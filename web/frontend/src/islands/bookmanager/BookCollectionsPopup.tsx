@@ -116,8 +116,6 @@ function BookCollectionsPopup({ data }: PreactIslandProps) {
         .map(([id, _added]) => id)
         .filter((id) => collections?.some((x) => x.id === id))
 
-      if (collectionIds.length === 0) return
-
       await httpAddBookToCollections(bookId, collectionIds)
 
       handleClose()

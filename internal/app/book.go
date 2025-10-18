@@ -31,6 +31,7 @@ type BookDetailsDto struct {
 	Votes               int32                 `json:"votes"`
 	Reviews             int32                 `json:"reviews"`
 	IsPubliclyAvailable bool                  `json:"isPubliclyAvailable"`
+	Slug                string                `json:"slug"`
 }
 
 type GetBookQuery struct {

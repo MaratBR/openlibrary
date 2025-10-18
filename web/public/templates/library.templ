@@ -3,6 +3,7 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
+import "github.com/MaratBR/openlibrary/web/olresponse"
 
 templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
     {{
@@ -121,7 +122,7 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
     }
 }
 
-templ LibraryCollections() {
+templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64][]app.CollectionBookDto) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
@@ -139,10 +140,67 @@ templ LibraryCollections() {
                 data={ "{\"selector\": \".library-body\"}" }
                 src="/_/assets/islands/book-card-preview.js" 
                 active="true" />
+
+            {{
+                pagination := olresponse.Pagination(uint32(result.Page), uint32(result.TotalPages), 6)
+            }}
         
             <div class="library-body">
-                TODO: Collections
+                if result.TotalPages == 0 {
+                    <p>{ _t(l, "library.noCollections") }</p>
+                    TODO: add button to create first collection
+                } else {
+                    @pagination
+                    @collectionsList(result.Collections, booksMap)
+                    @pagination
+                }
             </div>
         </main>
     }
+}
+
+templ collectionsList(collections []app.CollectionDto, booksMap map[int64][]app.CollectionBookDto) {
+    <ul class="space-y-2">
+        for _, col := range collections {
+            {{
+                books, _ := booksMap[col.ID]
+            }}
+            @libraryCollectionCard(col, books)
+        }
+    </ul>
+}
+
+templ libraryCollectionCard(collection app.CollectionDto, books []app.CollectionBookDto) {
+    <li class="library-user-collection">
+        <a href={ templ.SafeURL(fmt.Sprintf("/col/%d", collection.ID)) } class="library-user-collection__header">
+            <div class="library-user-collection__name">{ collection.Name }</div>
+
+            <div class="text-muted-foreground">
+                {{
+                    l := i18n.GetLocalizer(ctx)
+                }}
+                { _tt(l, "collection.books", map[string]string{
+                    "count": fmt.Sprintf("%d", collection.BooksCount),
+                }) }
+            </div>
+        </a>
+
+        if len(books) > 0 {
+            <ul class="flex gap-1">
+                for _, book := range books {
+                    {{
+                        cover := book.Cover
+                        if cover == "" {
+                            cover = getBookCoverURL(book.Name, 100)
+                        }
+                    }}
+                    <li>
+                        <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
+                            <img src={ cover } class="rounded-r-md" style="height: 90px;" />
+                        </a>
+                    </li>
+                }
+            </ul>
+            }
+    </li>
 }

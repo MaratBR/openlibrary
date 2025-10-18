@@ -91,7 +91,7 @@ from book_chapters
 where id = $1;
 
 -- name: GetAllBooks :many
-select id, name, summary, author_user_id, created_at, age_rating, cached_parent_tag_ids, is_publicly_visible, chapters, words
+select id, name, slug, summary, author_user_id, created_at, age_rating, cached_parent_tag_ids, is_publicly_visible, chapters, words
 from books
 where id > $1
 order by id asc

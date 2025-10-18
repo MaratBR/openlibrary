@@ -27,6 +27,81 @@ func (q *Queries) BookSetHasCover(ctx context.Context, arg BookSetHasCoverParams
 	return err
 }
 
+const book_Insert = `-- name: Book_Insert :exec
+insert into books 
+(
+    id, name, summary, author_user_id, created_at, age_rating, tag_ids, cached_parent_tag_ids,
+    is_publicly_visible, slug
+)
+values 
+(
+    $1, $2, $3, $4, $5, $6, $7, $8, 
+    $9, $10
+)
+`
+
+type Book_InsertParams struct {
+	ID                 int64
+	Name               string
+	Summary            string
+	AuthorUserID       pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	AgeRating          AgeRating
+	TagIds             []int64
+	CachedParentTagIds []int64
+	IsPubliclyVisible  bool
+	Slug               string
+}
+
+func (q *Queries) Book_Insert(ctx context.Context, arg Book_InsertParams) error {
+	_, err := q.db.Exec(ctx, book_Insert,
+		arg.ID,
+		arg.Name,
+		arg.Summary,
+		arg.AuthorUserID,
+		arg.CreatedAt,
+		arg.AgeRating,
+		arg.TagIds,
+		arg.CachedParentTagIds,
+		arg.IsPubliclyVisible,
+		arg.Slug,
+	)
+	return err
+}
+
+const book_InsertChapter = `-- name: Book_InsertChapter :exec
+insert into book_chapters
+(id, name, book_id, content, "order", created_at, words, summary, is_publicly_visible)
+values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+`
+
+type Book_InsertChapterParams struct {
+	ID                int64
+	Name              string
+	BookID            int64
+	Content           string
+	Order             int32
+	CreatedAt         pgtype.Timestamptz
+	Words             int32
+	Summary           string
+	IsPubliclyVisible bool
+}
+
+func (q *Queries) Book_InsertChapter(ctx context.Context, arg Book_InsertChapterParams) error {
+	_, err := q.db.Exec(ctx, book_InsertChapter,
+		arg.ID,
+		arg.Name,
+		arg.BookID,
+		arg.Content,
+		arg.Order,
+		arg.CreatedAt,
+		arg.Words,
+		arg.Summary,
+		arg.IsPubliclyVisible,
+	)
+	return err
+}
+
 const getChapterOrder = `-- name: GetChapterOrder :many
 select "order", id
 from book_chapters
@@ -99,82 +174,9 @@ func (q *Queries) GetLastChapterOrder(ctx context.Context, bookID int64) (int32,
 	return last_order, err
 }
 
-const insertBook = `-- name: InsertBook :exec
-insert into books 
-(
-    id, name, summary, author_user_id, created_at, age_rating, tag_ids, cached_parent_tag_ids,
-    is_publicly_visible
-)
-values 
-(
-    $1, $2, $3, $4, $5, $6, $7, $8, 
-    $9
-)
-`
-
-type InsertBookParams struct {
-	ID                 int64
-	Name               string
-	Summary            string
-	AuthorUserID       pgtype.UUID
-	CreatedAt          pgtype.Timestamptz
-	AgeRating          AgeRating
-	TagIds             []int64
-	CachedParentTagIds []int64
-	IsPubliclyVisible  bool
-}
-
-func (q *Queries) InsertBook(ctx context.Context, arg InsertBookParams) error {
-	_, err := q.db.Exec(ctx, insertBook,
-		arg.ID,
-		arg.Name,
-		arg.Summary,
-		arg.AuthorUserID,
-		arg.CreatedAt,
-		arg.AgeRating,
-		arg.TagIds,
-		arg.CachedParentTagIds,
-		arg.IsPubliclyVisible,
-	)
-	return err
-}
-
-const insertBookChapter = `-- name: InsertBookChapter :exec
-insert into book_chapters
-(id, name, book_id, content, "order", created_at, words, summary, is_publicly_visible)
-values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-`
-
-type InsertBookChapterParams struct {
-	ID                int64
-	Name              string
-	BookID            int64
-	Content           string
-	Order             int32
-	CreatedAt         pgtype.Timestamptz
-	Words             int32
-	Summary           string
-	IsPubliclyVisible bool
-}
-
-func (q *Queries) InsertBookChapter(ctx context.Context, arg InsertBookChapterParams) error {
-	_, err := q.db.Exec(ctx, insertBookChapter,
-		arg.ID,
-		arg.Name,
-		arg.BookID,
-		arg.Content,
-		arg.Order,
-		arg.CreatedAt,
-		arg.Words,
-		arg.Summary,
-		arg.IsPubliclyVisible,
-	)
-	return err
-}
-
 const managerGetUserBooks = `-- name: ManagerGetUserBooks :many
 select 
-    books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned,
+    books.id, books.name, books.slug, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned,
     collections.id as collection_id,
     collections.name as collection_name,
     collection_books."order" as collection_position,
@@ -196,6 +198,7 @@ type ManagerGetUserBooksParams struct {
 type ManagerGetUserBooksRow struct {
 	ID                 int64
 	Name               string
+	Slug               string
 	Summary            string
 	AuthorUserID       pgtype.UUID
 	CreatedAt          pgtype.Timestamptz
@@ -232,6 +235,7 @@ func (q *Queries) ManagerGetUserBooks(ctx context.Context, arg ManagerGetUserBoo
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Slug,
 			&i.Summary,
 			&i.AuthorUserID,
 			&i.CreatedAt,

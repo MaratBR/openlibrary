@@ -8,12 +8,14 @@ import (
 	"io"
 	"log/slog"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
+	"github.com/gosimple/slug"
 	"github.com/minio/minio-go/v7"
 )
 
@@ -148,6 +150,14 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 	}, nil
 }
 
+func makeBookNameSlug(name string) string {
+	slug := slug.Make(strings.ToLower(name))
+	if len(slug) > 80 {
+		slug = slug[:80]
+	}
+	return slug
+}
+
 func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCommand) (int64, error) {
 	err := validateBookName(input.Name)
 	if err != nil {
@@ -165,9 +175,10 @@ func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 	}
 
 	id := GenID()
-	err = s.queries.InsertBook(ctx, store.InsertBookParams{
+	err = s.queries.Book_Insert(ctx, store.Book_InsertParams{
 		ID:                 id,
 		Name:               input.Name,
+		Slug:               makeBookNameSlug(input.Name),
 		AuthorUserID:       uuidDomainToDb(input.UserID),
 		CreatedAt:          timeToTimestamptz(time.Now()),
 		TagIds:             tags.TagIds,
@@ -384,7 +395,7 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 	if err != nil {
 		return CreateBookChapterResult{}, ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
 	}
-	err = s.queries.InsertBookChapter(ctx, store.InsertBookChapterParams{
+	err = s.queries.Book_InsertChapter(ctx, store.Book_InsertChapterParams{
 		ID:                id,
 		BookID:            input.BookID,
 		Name:              input.Name,

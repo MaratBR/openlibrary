@@ -27,7 +27,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	bookService := app.NewBookService(db, tagsService, h.uploadService, readingListService, reviewsService)
 	modBookService := app.NewModerationBookService(db)
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, h.uploadService, userService, h.esClient), h.cache)
-	collectionService := app.NewCollectionsService(db)
+	collectionService := app.NewCollectionsService(db, tagsService, h.uploadService)
 
 	bookManagerService := app.NewBookManagerService(db, tagsService, h.uploadService, userService, bgServices.BookReindex)
 
@@ -46,9 +46,10 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		newChaptersController(bookService, readingListService).Register(r)
 		newSearchController(searchService, bookService).Register(r)
 		newTagsController(tagsService).Register(r)
-		newProfileController(userService, bookService, searchService).Register(r)
-		newLibraryController(readingListService).Register(r)
-		newBookManagerController(bookManagerService).Register(r)
+		newProfileController(userService, bookService, searchService, collectionService).Register(r)
+		newLibraryController(readingListService, collectionService).Register(r)
+		newCollectionController(collectionService).Register(r)
+		newBookManagerController(bookManagerService, collectionService).Register(r)
 
 		r.Route("/mod", func(r chi.Router) {
 			newModController(bookService, modBookService).Register(r)

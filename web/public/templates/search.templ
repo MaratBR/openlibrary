@@ -4,6 +4,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/gofrs/uuid"
 
 
 templ SearchPage(
@@ -87,59 +88,25 @@ templ SearchResultFragment(
             @pagination
             <ul role="listbox" id="results" class="book-search-results">
                 {{
-                    l := i18n.GetLocalizer(ctx)
                     tags := make(map[int64]app.DefinedTagDto, len(result.Tags))
                     for _, tag := range result.Tags {
                         tags[tag.ID] = tag
                     }
                 }}
                 for _, book := range result.Books {
-                    <li role="listitem" id={ fmt.Sprintf("book-%d", book.ID) } class="book-search-card">
-                        <div class="book-search-card__left">
-                            <a class="book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
-                                @bookCover(book.Cover, book.Name, 200)
-                            </a>
-                        </div>
-                        
-                        <div class="book-search-card__right">
-                            <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) } class="link book-search-card__link">{ book.Name }</a>                    
-                            <br />
-                            by
-                            <a class="link book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>
-                                { book.Author.Name }
-                            </a>
+                    {{
+                        tagsList := make([]app.DefinedTagDto, 0, len(book.Tags))
 
-                            @collapsible(160, true) {
-                                <ul class="book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
-                                    data-expand="false"
-                                    :data-expand="expand"
-                                    x-data="{expand:false}">
-                                    for _, tagId := range book.Tags {
-                                        {{ tag := tags[int64(tagId)] }}
-                                        <li class="tag">
-                                            <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", tagId)) }>
-                                                { tag.Name }
-                                            </a>
-                                        </li>
-                                    }
-
-                                    <li 
-                                        if len(book.Tags) <= 6 {
-                                            x-show="false" x-cloak
-                                        }
-                                        @click="expand=!expand" class="book-search-card__tags__more">
-                                        <span x-text="i18n[expand?'common.less':'common.more']">{ _t(l, "common.more") }</span>
-                                    </li>
-                                </ul>
-
-                                if book.Summary != "" {
-                                    <div class="book-search-card__summary __user-content" x-ignore>
-                                        @templ.Raw(book.Summary)
-                                    </div>
-                                }
+                        for _, tagId := range book.Tags {
+                            tag, ok := tags[int64(tagId)]
+                            if !ok {
+                                continue
                             }
-                        </div>
-                    </li>
+                            tagsList = append(tagsList, tag)
+                        }
+                    }}
+
+                    @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.Author.Name, book.Author.ID, tagsList)
                 }
             </ul>
             <div class="pt-4">
@@ -147,6 +114,57 @@ templ SearchResultFragment(
             </div>
         }
     </main>
+}
+
+templ bookSearchCard(id int64, name, slug, summary, cover, authorName string, authorID uuid.UUID, tags []app.DefinedTagDto) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    <li role="listitem" id={ fmt.Sprintf("book-%d", id) } class="book-search-card">
+        <div class="book-search-card__left">
+            <a class="book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", id)) }>
+                @bookCover(cover, name, 200)
+            </a>
+        </div>
+        
+        <div class="book-search-card__right">
+            <a href={ templ.SafeURL(fmt.Sprintf("/book/%d/%s", id, slug)) } class="link book-search-card__link">{ name }</a>                    
+            <br />
+            by
+            <a class="link book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", authorID.String())) }>
+                { authorName }
+            </a>
+
+            @collapsible(160, true) {
+                <ul class="book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
+                    data-expand="false"
+                    :data-expand="expand"
+                    x-data="{expand:false}">
+                    for _, tag := range tags {
+                        <li class="tag">
+                            <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", tag.ID)) }>
+                                { tag.Name }
+                            </a>
+                        </li>
+                    }
+
+                    <li 
+                        if len(tags) <= 6 {
+                            x-show="false" x-cloak
+                        }
+                        @click="expand=!expand" class="book-search-card__tags__more">
+                        <span x-text="i18n[expand?'common.less':'common.more']">{ _t(l, "common.more") }</span>
+                    </li>
+                </ul>
+
+                if summary != "" {
+                    <div class="book-search-card__summary __user-content" x-ignore>
+                        @templ.Raw(summary)
+                    </div>
+                }
+            }
+        </div>
+    </li>
 }
 
 templ searchNoResultsCard() {

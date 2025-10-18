@@ -58,7 +58,12 @@ templ PaginationImpl(
             {{
                 href := getPageURL(ctx, i)
             }}
-            <a href={ href } class="pagination__item">
+            <a 
+                href={ href } class="pagination__item" 
+                if opts.UseAlpineJsAjax {
+                    x-target.push="PaginationAjaxSlot"
+                }
+            >
                 { fmt.Sprintf("%d", i) }
             </a>
         }
@@ -69,7 +74,12 @@ templ PaginationImpl(
             {{
                 href := getPageURL(ctx, i)
             }}
-            <a href={ href } class="pagination__item">
+            <a 
+                href={ href } class="pagination__item" 
+                if opts.UseAlpineJsAjax {
+                    x-target.push="PaginationAjaxSlot"
+                }
+            >
                 { fmt.Sprintf("%d", i) }
             </a>
         }

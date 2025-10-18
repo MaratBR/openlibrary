@@ -66,7 +66,7 @@ func (q *Queries) GetAllBookChapters(ctx context.Context, bookID int64) ([]GetAl
 }
 
 const getAllBooks = `-- name: GetAllBooks :many
-select id, name, summary, author_user_id, created_at, age_rating, cached_parent_tag_ids, is_publicly_visible, chapters, words
+select id, name, slug, summary, author_user_id, created_at, age_rating, cached_parent_tag_ids, is_publicly_visible, chapters, words
 from books
 where id > $1
 order by id asc
@@ -81,6 +81,7 @@ type GetAllBooksParams struct {
 type GetAllBooksRow struct {
 	ID                 int64
 	Name               string
+	Slug               string
 	Summary            string
 	AuthorUserID       pgtype.UUID
 	CreatedAt          pgtype.Timestamptz
@@ -103,6 +104,7 @@ func (q *Queries) GetAllBooks(ctx context.Context, arg GetAllBooksParams) ([]Get
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Slug,
 			&i.Summary,
 			&i.AuthorUserID,
 			&i.CreatedAt,
@@ -123,7 +125,7 @@ func (q *Queries) GetAllBooks(ctx context.Context, arg GetAllBooksParams) ([]Get
 }
 
 const getBook = `-- name: GetBook :one
-select books.id, books.name, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned, users.name as author_name
+select books.id, books.name, books.slug, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned, users.name as author_name
 from books
 join users on books.author_user_id = users.id
 where books.id = $1
@@ -133,6 +135,7 @@ limit 1
 type GetBookRow struct {
 	ID                 int64
 	Name               string
+	Slug               string
 	Summary            string
 	AuthorUserID       pgtype.UUID
 	CreatedAt          pgtype.Timestamptz
@@ -160,6 +163,7 @@ func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Slug,
 		&i.Summary,
 		&i.AuthorUserID,
 		&i.CreatedAt,
@@ -472,7 +476,7 @@ func (q *Queries) GetRandomPublicBookIDs(ctx context.Context, limit int32) ([]in
 }
 
 const getTopUserBooks = `-- name: GetTopUserBooks :many
-select id, name, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, words, chapters, tag_ids, cached_parent_tag_ids, has_cover, view, rating, total_reviews, total_ratings, is_pinned, is_perm_removed, is_shadow_banned
+select id, name, slug, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, words, chapters, tag_ids, cached_parent_tag_ids, has_cover, view, rating, total_reviews, total_ratings, is_pinned, is_perm_removed, is_shadow_banned
 from books
 where author_user_id = $1 and is_publicly_visible
 order by rating desc limit $2
@@ -495,6 +499,7 @@ func (q *Queries) GetTopUserBooks(ctx context.Context, arg GetTopUserBooksParams
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Slug,
 			&i.Summary,
 			&i.AuthorUserID,
 			&i.CreatedAt,
@@ -525,7 +530,7 @@ func (q *Queries) GetTopUserBooks(ctx context.Context, arg GetTopUserBooksParams
 }
 
 const getUserBooks = `-- name: GetUserBooks :many
-select b.id, b.name, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned
+select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned
 from books b
 where b.author_user_id = $1 and chapters > 0
 order by b.is_pinned desc, b.created_at asc
@@ -550,6 +555,7 @@ func (q *Queries) GetUserBooks(ctx context.Context, arg GetUserBooksParams) ([]B
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Slug,
 			&i.Summary,
 			&i.AuthorUserID,
 			&i.CreatedAt,

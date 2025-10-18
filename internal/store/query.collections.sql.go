@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const addBookToCollection = `-- name: AddBookToCollection :exec
+const collection_AddBookToCollection = `-- name: Collection_AddBookToCollection :exec
 insert into collection_books (book_id, collection_id, "order")
 values (
     $1, $2,
@@ -20,79 +20,50 @@ values (
 on conflict (book_id, collection_id) do nothing
 `
 
-type AddBookToCollectionParams struct {
+type Collection_AddBookToCollectionParams struct {
 	BookID       int64
 	CollectionID int64
 }
 
-func (q *Queries) AddBookToCollection(ctx context.Context, arg AddBookToCollectionParams) error {
-	_, err := q.db.Exec(ctx, addBookToCollection, arg.BookID, arg.CollectionID)
+func (q *Queries) Collection_AddBookToCollection(ctx context.Context, arg Collection_AddBookToCollectionParams) error {
+	_, err := q.db.Exec(ctx, collection_AddBookToCollection, arg.BookID, arg.CollectionID)
 	return err
 }
 
-const deleteBookFromCollection = `-- name: DeleteBookFromCollection :exec
+const collection_DeleteBookFromCollection = `-- name: Collection_DeleteBookFromCollection :exec
 delete from collection_books where book_id = $1 and collection_id = $2
 `
 
-type DeleteBookFromCollectionParams struct {
+type Collection_DeleteBookFromCollectionParams struct {
 	BookID       int64
 	CollectionID int64
 }
 
-func (q *Queries) DeleteBookFromCollection(ctx context.Context, arg DeleteBookFromCollectionParams) error {
-	_, err := q.db.Exec(ctx, deleteBookFromCollection, arg.BookID, arg.CollectionID)
+func (q *Queries) Collection_DeleteBookFromCollection(ctx context.Context, arg Collection_DeleteBookFromCollectionParams) error {
+	_, err := q.db.Exec(ctx, collection_DeleteBookFromCollection, arg.BookID, arg.CollectionID)
 	return err
 }
 
-const getBookCollections = `-- name: GetBookCollections :many
-select c.id, c.name, c.user_id, c.created_at, c.books_count, c.last_updated_at
+const collection_Get = `-- name: Collection_Get :one
+select c.id, c.name, c.user_id, c.created_at, c.books_count, c.last_updated_at, u.name as user_name
 from collections c
-join collection_books cb on cb.collection_id = c.id
-where c.user_id = $1 and cb.book_id = $2
-order by last_updated_at desc
+join users u on c.user_id = u.id
+where c.id = $1
 `
 
-type GetBookCollectionsParams struct {
-	UserID pgtype.UUID
-	BookID int64
+type Collection_GetRow struct {
+	ID            int64
+	Name          string
+	UserID        pgtype.UUID
+	CreatedAt     pgtype.Timestamptz
+	BooksCount    int32
+	LastUpdatedAt pgtype.Timestamptz
+	UserName      string
 }
 
-func (q *Queries) GetBookCollections(ctx context.Context, arg GetBookCollectionsParams) ([]Collection, error) {
-	rows, err := q.db.Query(ctx, getBookCollections, arg.UserID, arg.BookID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Collection
-	for rows.Next() {
-		var i Collection
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.UserID,
-			&i.CreatedAt,
-			&i.BooksCount,
-			&i.LastUpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getCollection = `-- name: GetCollection :one
-select id, name, user_id, created_at, books_count, last_updated_at
-from collections
-where id = $1
-`
-
-func (q *Queries) GetCollection(ctx context.Context, id int64) (Collection, error) {
-	row := q.db.QueryRow(ctx, getCollection, id)
-	var i Collection
+func (q *Queries) Collection_Get(ctx context.Context, id int64) (Collection_GetRow, error) {
+	row := q.db.QueryRow(ctx, collection_Get, id)
+	var i Collection_GetRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -100,20 +71,31 @@ func (q *Queries) GetCollection(ctx context.Context, id int64) (Collection, erro
 		&i.CreatedAt,
 		&i.BooksCount,
 		&i.LastUpdatedAt,
+		&i.UserName,
 	)
 	return i, err
 }
 
-const getCollectionBooks = `-- name: GetCollectionBooks :many
-select b.id, b.name, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned, cb."order" as order_within_collection
+const collection_GetBooks = `-- name: Collection_GetBooks :many
+select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned, author.name as author_name, cb."order" as order_within_collection
 from collection_books cb
 join books b on b.id = cb.book_id
+join users author on author.id = b.author_user_id
+where cb.collection_id = $3
 order by cb."order"
+limit $1 offset $2
 `
 
-type GetCollectionBooksRow struct {
+type Collection_GetBooksParams struct {
+	Limit        int32
+	Offset       int32
+	CollectionID int64
+}
+
+type Collection_GetBooksRow struct {
 	ID                    int64
 	Name                  string
+	Slug                  string
 	Summary               string
 	AuthorUserID          pgtype.UUID
 	CreatedAt             pgtype.Timestamptz
@@ -132,21 +114,23 @@ type GetCollectionBooksRow struct {
 	IsPinned              bool
 	IsPermRemoved         bool
 	IsShadowBanned        bool
+	AuthorName            string
 	OrderWithinCollection int32
 }
 
-func (q *Queries) GetCollectionBooks(ctx context.Context) ([]GetCollectionBooksRow, error) {
-	rows, err := q.db.Query(ctx, getCollectionBooks)
+func (q *Queries) Collection_GetBooks(ctx context.Context, arg Collection_GetBooksParams) ([]Collection_GetBooksRow, error) {
+	rows, err := q.db.Query(ctx, collection_GetBooks, arg.Limit, arg.Offset, arg.CollectionID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetCollectionBooksRow
+	var items []Collection_GetBooksRow
 	for rows.Next() {
-		var i GetCollectionBooksRow
+		var i Collection_GetBooksRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Slug,
 			&i.Summary,
 			&i.AuthorUserID,
 			&i.CreatedAt,
@@ -165,6 +149,7 @@ func (q *Queries) GetCollectionBooks(ctx context.Context) ([]GetCollectionBooksR
 			&i.IsPinned,
 			&i.IsPermRemoved,
 			&i.IsShadowBanned,
+			&i.AuthorName,
 			&i.OrderWithinCollection,
 		); err != nil {
 			return nil, err
@@ -177,54 +162,21 @@ func (q *Queries) GetCollectionBooks(ctx context.Context) ([]GetCollectionBooksR
 	return items, nil
 }
 
-const getCollections = `-- name: GetCollections :many
-select id, name, user_id, created_at, books_count, last_updated_at
-from collections
-where id = ANY($1::int8[])
-`
-
-func (q *Queries) GetCollections(ctx context.Context, dollar_1 []int64) ([]Collection, error) {
-	rows, err := q.db.Query(ctx, getCollections, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Collection
-	for rows.Next() {
-		var i Collection
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.UserID,
-			&i.CreatedAt,
-			&i.BooksCount,
-			&i.LastUpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getLatestUserCollections = `-- name: GetLatestUserCollections :many
-select id, name, user_id, created_at, books_count, last_updated_at
-from collections
-where user_id = $1
+const collection_GetByBook = `-- name: Collection_GetByBook :many
+select c.id, c.name, c.user_id, c.created_at, c.books_count, c.last_updated_at
+from collections c
+join collection_books cb on cb.collection_id = c.id
+where c.user_id = $1 and cb.book_id = $2
 order by last_updated_at desc
-limit $2
 `
 
-type GetLatestUserCollectionsParams struct {
+type Collection_GetByBookParams struct {
 	UserID pgtype.UUID
-	Limit  int32
+	BookID int64
 }
 
-func (q *Queries) GetLatestUserCollections(ctx context.Context, arg GetLatestUserCollectionsParams) ([]Collection, error) {
-	rows, err := q.db.Query(ctx, getLatestUserCollections, arg.UserID, arg.Limit)
+func (q *Queries) Collection_GetByBook(ctx context.Context, arg Collection_GetByBookParams) ([]Collection, error) {
+	rows, err := q.db.Query(ctx, collection_GetByBook, arg.UserID, arg.BookID)
 	if err != nil {
 		return nil, err
 	}
@@ -250,20 +202,7 @@ func (q *Queries) GetLatestUserCollections(ctx context.Context, arg GetLatestUse
 	return items, nil
 }
 
-const getMaxOrderInCollection = `-- name: GetMaxOrderInCollection :one
-select cast(coalesce(max("order"), -1) as int4)
-from collection_books
-where collection_id = $1
-`
-
-func (q *Queries) GetMaxOrderInCollection(ctx context.Context, collectionID int64) (int32, error) {
-	row := q.db.QueryRow(ctx, getMaxOrderInCollection, collectionID)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
-}
-
-const getUserCollections = `-- name: GetUserCollections :many
+const collection_GetByUser = `-- name: Collection_GetByUser :many
 select id, name, user_id, created_at, books_count, last_updated_at
 from collections
 where user_id = $3
@@ -271,14 +210,14 @@ order by created_at desc
 limit $1 offset $2
 `
 
-type GetUserCollectionsParams struct {
+type Collection_GetByUserParams struct {
 	Limit  int32
 	Offset int32
 	UserID pgtype.UUID
 }
 
-func (q *Queries) GetUserCollections(ctx context.Context, arg GetUserCollectionsParams) ([]Collection, error) {
-	rows, err := q.db.Query(ctx, getUserCollections, arg.Limit, arg.Offset, arg.UserID)
+func (q *Queries) Collection_GetByUser(ctx context.Context, arg Collection_GetByUserParams) ([]Collection, error) {
+	rows, err := q.db.Query(ctx, collection_GetByUser, arg.Limit, arg.Offset, arg.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -304,18 +243,128 @@ func (q *Queries) GetUserCollections(ctx context.Context, arg GetUserCollections
 	return items, nil
 }
 
-const insertCollection = `-- name: InsertCollection :exec
+const collection_GetMaxOrder = `-- name: Collection_GetMaxOrder :one
+select cast(coalesce(max("order"), -1) as int4)
+from collection_books
+where collection_id = $1
+`
+
+func (q *Queries) Collection_GetMaxOrder(ctx context.Context, collectionID int64) (int32, error) {
+	row := q.db.QueryRow(ctx, collection_GetMaxOrder, collectionID)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const collection_GetRecentByUser = `-- name: Collection_GetRecentByUser :many
+select id, name, user_id, created_at, books_count, last_updated_at
+from collections
+where user_id = $1
+order by last_updated_at desc
+limit $2
+`
+
+type Collection_GetRecentByUserParams struct {
+	UserID pgtype.UUID
+	Limit  int32
+}
+
+func (q *Queries) Collection_GetRecentByUser(ctx context.Context, arg Collection_GetRecentByUserParams) ([]Collection, error) {
+	rows, err := q.db.Query(ctx, collection_GetRecentByUser, arg.UserID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Collection
+	for rows.Next() {
+		var i Collection
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.BooksCount,
+			&i.LastUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const collection_Insert = `-- name: Collection_Insert :exec
 insert into collections (id, name, user_id)
 values ($1, $2, $3)
 `
 
-type InsertCollectionParams struct {
+type Collection_InsertParams struct {
 	ID     int64
 	Name   string
 	UserID pgtype.UUID
 }
 
-func (q *Queries) InsertCollection(ctx context.Context, arg InsertCollectionParams) error {
-	_, err := q.db.Exec(ctx, insertCollection, arg.ID, arg.Name, arg.UserID)
+func (q *Queries) Collection_Insert(ctx context.Context, arg Collection_InsertParams) error {
+	_, err := q.db.Exec(ctx, collection_Insert, arg.ID, arg.Name, arg.UserID)
 	return err
+}
+
+const collection_RecalculateCounter = `-- name: Collection_RecalculateCounter :exec
+update collections
+set books_count = coalesce((select count(*) from collection_books where collection_id = $1), 0)
+where id = $1
+`
+
+func (q *Queries) Collection_RecalculateCounter(ctx context.Context, collectionID int64) error {
+	_, err := q.db.Exec(ctx, collection_RecalculateCounter, collectionID)
+	return err
+}
+
+const collections_CountByUser = `-- name: Collections_CountByUser :one
+select count(*)
+from collections 
+where user_id = $1
+`
+
+func (q *Queries) Collections_CountByUser(ctx context.Context, userID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, collections_CountByUser, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const collections_ListByID = `-- name: Collections_ListByID :many
+select id, name, user_id, created_at, books_count, last_updated_at
+from collections
+where id = ANY($1::int8[])
+`
+
+func (q *Queries) Collections_ListByID(ctx context.Context, dollar_1 []int64) ([]Collection, error) {
+	rows, err := q.db.Query(ctx, collections_ListByID, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Collection
+	for rows.Next() {
+		var i Collection
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.BooksCount,
+			&i.LastUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

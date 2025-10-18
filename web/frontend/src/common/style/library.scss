@@ -31,3 +31,24 @@
         @apply lg:flex lg:gap-4 lg:items-start lg:flex-wrap;
     }
 }
+
+.library-user-collection {
+    @apply bg-card p-3 -mx-3 rounded-xl;
+
+    &__header {
+        @apply py-2 px-3 -mx-3 block active:bg-highlight;
+    }
+
+    &__name {
+        @apply text-2xl font-semibold;
+    }
+
+    &__header:hover &__name {
+        @apply underline underline-offset-2;
+        text-decoration-thickness: 0.1em;
+    }
+
+    & ul {
+        @apply mt-2;
+    }
+}

@@ -121,7 +121,7 @@ func (c *apiCollectionController) containingBook(w http.ResponseWriter, r *http.
 func (c *apiCollectionController) getRecent(w http.ResponseWriter, r *http.Request) {
 	s := auth.RequireSession(r.Context())
 
-	result, err := c.collectionService.GetRecentUserCollections(r.Context(), app.GetRecentCollections{
+	result, err := c.collectionService.GetRecentUserCollections(r.Context(), app.GetRecentCollectionsQuery{
 		UserID: s.UserID,
 		Limit:  20,
 	})
