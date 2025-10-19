@@ -6,7 +6,6 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
-	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 )
@@ -51,7 +50,7 @@ func (c *apiCollectionController) createCollection(w http.ResponseWriter, r *htt
 		return
 	}
 
-	olresponse.NewAPIResponse(app.Int64String(collectionId)).Write(w)
+	olhttp.NewAPIResponse(app.Int64String(collectionId)).Write(w)
 }
 
 type addToCollectionInput struct {
@@ -81,7 +80,7 @@ func (c *apiCollectionController) addToCollection(w http.ResponseWriter, r *http
 		return
 	}
 
-	olresponse.NewAPIResponseOK().Write(w)
+	olhttp.NewAPIResponseOK().Write(w)
 }
 
 type recentCollectionDto struct {
@@ -115,7 +114,7 @@ func (c *apiCollectionController) containingBook(w http.ResponseWriter, r *http.
 		return
 	}
 
-	olresponse.NewAPIResponse(app.MapSlice(collections, collectionDtoToAPI)).Write(w)
+	olhttp.NewAPIResponse(app.MapSlice(collections, collectionDtoToAPI)).Write(w)
 }
 
 func (c *apiCollectionController) getRecent(w http.ResponseWriter, r *http.Request) {
@@ -131,5 +130,5 @@ func (c *apiCollectionController) getRecent(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	olresponse.NewAPIResponse(app.MapSlice(result, collectionDtoToAPI)).Write(w)
+	olhttp.NewAPIResponse(app.MapSlice(result, collectionDtoToAPI)).Write(w)
 }

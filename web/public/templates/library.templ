@@ -3,7 +3,7 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
-import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
     {{
@@ -142,7 +142,7 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
                 active="true" />
 
             {{
-                pagination := olresponse.Pagination(uint32(result.Page), uint32(result.TotalPages), 6)
+                pagination := olhttp.Pagination(uint32(result.Page), uint32(result.TotalPages), 6)
             }}
         
             <div class="library-body">

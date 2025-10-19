@@ -10,7 +10,6 @@ import (
 	"github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/upload"
-	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 )
@@ -86,12 +85,12 @@ func (c *apiBookManagerController) updateBook(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	response := olresponse.NewAPIResponse(bookResult.Book)
-	response.AddNotification(olresponse.NewNotification(
+	response := olhttp.NewAPIResponse(bookResult.Book)
+	response.AddNotification(olhttp.NewNotification(
 		l.TData("bookManager.edit.editedSuccessfully", map[string]string{
 			"Name": name,
 		}),
-		olresponse.NotificationInfo,
+		olhttp.NotificationInfo,
 	))
 	response.Write(w)
 }
@@ -135,7 +134,7 @@ func (c *apiBookManagerController) uploadCover(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	response := olresponse.NewAPIResponse(result.URL)
+	response := olhttp.NewAPIResponse(result.URL)
 	response.Write(w)
 }
 
@@ -348,5 +347,5 @@ func (c *apiBookManagerController) createChapter(w http.ResponseWriter, r *http.
 		return
 	}
 
-	olresponse.NewAPIResponse(app.Int64String(result.ID)).Write(w)
+	olhttp.NewAPIResponse(app.Int64String(result.ID)).Write(w)
 }

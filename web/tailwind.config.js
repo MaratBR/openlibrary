@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
   darkMode: 'selector',
   content: [
-    path.resolve(__dirname, 'olresponse') + '/*.templ',
+    path.resolve(__dirname, 'olhttp') + '/*.templ',
     path.resolve(__dirname, 'public/templates') + '/*.templ',
     path.resolve(__dirname, 'admin/templates') + '/*.templ',
     path.resolve(__dirname, 'frontend', 'src') + '/**/*.{js,ts,jsx,tsx,svelte}',

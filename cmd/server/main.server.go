@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -27,6 +29,9 @@ import (
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 )
+
+//go:embed default_robots.txt
+var robotsTxt string
 
 type cliParams struct {
 	Dev            bool
@@ -84,6 +89,7 @@ func mainServer(
 	// --------------------------------------
 
 	r := chi.NewRouter()
+
 	r.Use(olhttp.ReqCtxMiddleware)
 	r.Use(reqid.New())
 	r.Use(olhttp.MakeRecoveryMiddleware())
@@ -99,6 +105,11 @@ func mainServer(
 
 	frontend.AttachAssetsInliningHandler(embedAssetsFS, "embed-assets", r)
 	frontend.AttachAssetsInliningHandler(assetsFS, "assets", r)
+
+	r.Get("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		s := strings.ReplaceAll(robotsTxt, "{{sitemap}}", fmt.Sprintf("https://%s/sitemap.xml", r.Host))
+		w.Write([]byte(s))
+	})
 
 	r.Mount("/_/embed-assets/", http.StripPrefix("/_/embed-assets/", embedAssetsHandler))
 	r.Mount("/_/assets/cats", http.StripPrefix("/_/assets/cats", http.FileServer(http.Dir("./cats"))))

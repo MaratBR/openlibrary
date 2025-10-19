@@ -1,6 +1,6 @@
 package templates
 
-import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/flash"
 
 templ logo() {
@@ -39,7 +39,7 @@ templ dashboardLayout(title string) {
 }
 
 templ baseLayout(title string) {
-    @olresponse.Doc(ctx, olresponse.DocSettings{
+    @olhttp.Doc(ctx, olhttp.DocSettings{
         Title: "Admin - " + title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/admin-common.js", "/_/assets/admin-alpinejs.js" },
         CSS: []string{ "/_/assets/common.css", "/_/assets/admin-common.css", "/_/embed-assets/fonts.css" },

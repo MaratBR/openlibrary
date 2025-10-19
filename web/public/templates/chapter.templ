@@ -6,7 +6,6 @@ import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "fmt"
 import "strconv"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
-import "github.com/MaratBR/openlibrary/web/olresponse"
 
 type ChapterProgressTrackerOptions struct {
     JumpedBackward bool
@@ -25,7 +24,7 @@ templ Chapter(
     }}
 
     @htmlLayout(htmlLayoutProps{Title: chapter.Name}) {
-        @olresponse.JSServerData("chapterId", fmt.Sprintf("%d", chapterWithDetails.Chapter.ID))
+        @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapterWithDetails.Chapter.ID))
 
         @siteHeaderLayout() {
             <div class="h-full flex-nowrap overflow-x-auto whitespace-nowrap items-center flex gap-2">

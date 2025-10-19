@@ -3,7 +3,7 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
-import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/csrf"
 
 templ Users(resp app.UserListResponse, query *app.UsersQuery) {
@@ -36,7 +36,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
             <div class="admin-card p-4 mt-4">
 
                 {{
-                    pagination := olresponse.Pagination(resp.Page, uint32(resp.TotalPages), 9)
+                    pagination := olhttp.Pagination(resp.Page, uint32(resp.TotalPages), 9)
                 }}
 
                 @pagination

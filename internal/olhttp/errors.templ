@@ -1,7 +1,6 @@
-package olresponse
+package olhttp
 
 import "github.com/MaratBR/openlibrary/internal/reqid"
-import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ errorLayout(title string) {
     @Doc(ctx, DocSettings{
@@ -18,7 +17,7 @@ templ err500(err error) {
             <!-- yknow, for nerds -->
             <h2 class="text-2xl">nerd corner</h2>
             {{
-                r := olhttp.GetRequest(ctx)
+                r := GetRequest(ctx)
                 requestID := reqid.Get(r)
             }}
             <pre class="text-sm">

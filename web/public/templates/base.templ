@@ -1,10 +1,9 @@
 package templates
 
-import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/flash"
-import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 
@@ -70,7 +69,7 @@ templ htmlLayout(params htmlLayoutProps) {
         
     }}
 
-    @olresponse.Doc(ctx, olresponse.DocSettings{
+    @olhttp.Doc(ctx, olhttp.DocSettings{
         Title: params.Title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
         CSS: css,

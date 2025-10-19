@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -27,5 +27,5 @@ func (t *apiTagsController) Tags(w http.ResponseWriter, r *http.Request) {
 		apiWriteApplicationError(w, err)
 		return
 	}
-	olresponse.NewAPIResponse(tags).Write(w)
+	olhttp.NewAPIResponse(tags).Write(w)
 }

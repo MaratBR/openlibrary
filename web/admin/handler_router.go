@@ -6,8 +6,8 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/flash"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
-	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 )
@@ -23,7 +23,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		r.Use(flash.Middleware)
 		r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
 			OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
-				olresponse.Write500(w, r, err)
+				olhttp.Write500(w, r, err)
 			},
 		}))
 

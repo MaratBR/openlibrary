@@ -19,7 +19,7 @@
         "OLAPI",
         "olhttp",
         "olproto",
-        "olresponse",
+        "olhttp",
         "openlibrary",
         "pgconn",
         "pgtype",

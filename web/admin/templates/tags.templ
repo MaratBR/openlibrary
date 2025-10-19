@@ -6,7 +6,7 @@ import "fmt"
 import "net/url"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/i18n"
-import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/csrf"
 import "encoding/json"
 
@@ -19,7 +19,7 @@ type TagsSearchRequest struct {
 templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
     {{
         l := i18n.GetLocalizer(ctx)
-        pagination := olresponse.Pagination(result.Page, result.TotalPages, 9)
+        pagination := olhttp.Pagination(result.Page, result.TotalPages, 9)
     }}
 
 

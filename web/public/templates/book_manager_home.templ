@@ -1,13 +1,13 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/i18n"
-import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 
 templ bookManagerLayoutBase(title string, sitebar bool) {
-	@olresponse.Doc(ctx, olresponse.DocSettings{
+	@olhttp.Doc(ctx, olhttp.DocSettings{
 		Title:        title,
 		Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js", "/_/assets/bookmanager-common.js"},
 		CSS:          []string{"/_/assets/common.css", "/_/assets/bookmanager-common.css"},
@@ -69,7 +69,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 						<i class="fa-solid fa-pencil"></i>
 						{ _t(l, "bookManager.createNewBook") }
 					</a>
-					@olresponse.Pagination(books.Page, books.TotalPages, 10)
+					@olhttp.Pagination(books.Page, books.TotalPages, 10)
 
 					<ol-island 
 						data={ fmt.Sprintf("{\"selector\": \"#%s\"}", "books-manager-books") }
@@ -81,7 +81,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 							@bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
 						}
 					</section>
-					@olresponse.Pagination(books.Page, books.TotalPages, 10)
+					@olhttp.Pagination(books.Page, books.TotalPages, 10)
 				}
 			</div>
 		</section>

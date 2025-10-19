@@ -4,7 +4,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import (
     "fmt"
     "time"
-	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 )
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "encoding/json"
@@ -226,7 +226,7 @@ templ ModBookLog(book app.BookModerationInfo, logs app.BookLogResult) {
                 @modLogTable(logs.Entries)
             </section>
 
-            @olresponse.Pagination(uint32(logs.Page), logs.TotalPages, 9)
+            @olhttp.Pagination(uint32(logs.Page), logs.TotalPages, 9)
         </div>
     }
 }

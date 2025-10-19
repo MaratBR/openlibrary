@@ -3,7 +3,7 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
-import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/gofrs/uuid"
 
 
@@ -34,7 +34,7 @@ templ SearchResultFragment(
         l := i18n.GetLocalizer(ctx)
         var pagination templ.Component
         if result.TotalPages > 1 {
-            pagination = olresponse.PaginationImpl(olresponse.PaginationImplProps{
+            pagination = olhttp.PaginationImpl(olhttp.PaginationImplProps{
                 Page: result.Page,
                 TotalPages: result.TotalPages,
                 Size: 9,

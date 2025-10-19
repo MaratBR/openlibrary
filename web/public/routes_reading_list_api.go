@@ -7,8 +7,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
-	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
-	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
 )
@@ -80,7 +79,7 @@ func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	olresponse.NewAPIResponse(state.Value).Write(w)
+	olhttp.NewAPIResponse(state.Value).Write(w)
 }
 
 func (c *apiReadingListController) UpdateCurrentChapter(w http.ResponseWriter, r *http.Request) {

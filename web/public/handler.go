@@ -9,7 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	"github.com/MaratBR/openlibrary/internal/flash"
-	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/NYTimes/gziphandler"
 	"github.com/elastic/go-elasticsearch/v9"
@@ -117,7 +117,7 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 func methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 
-	if olresponse.PreferredMimeTypeIsJSON(r) {
+	if olhttp.PreferredMimeTypeIsJSON(r) {
 		w.Write([]byte("Method Not Allowed"))
 	} else {
 		templates.MethodNotAllowedPage().Render(r.Context(), w)

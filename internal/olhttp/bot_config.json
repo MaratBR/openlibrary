@@ -1,0 +1,345 @@
+{
+    "defaultBannedCategories": ["ai_crawler"],
+    "defaultBanMethod": "robots",
+    "categories": [
+        {
+            "id": "ai_crawler",
+            "description": "AI crawlers that feed your data to LLMs"
+        },
+        {
+            "id": "ai_on_demand",
+            "description": "AI agents that request data when user requests AI to do it, if blocked, then AI agents won't be able to view the content even if user requests AI to view/analyze it"
+        },
+        {
+            "id": "ai_organic",
+            "description": "These categories correspond to requests made by AI that were directly initiated by the user. Unlike \"ai_on_demand\" these requests usually result in a user view/interaction."
+        },
+        {
+            "id": "search",
+            "description": "Good ol search indexing."
+        },
+        {
+            "id": "search_and_ai",
+            "description": "Good ol search indexing AND some AI on top. They really do love AI nowadays, huh?"
+        },
+        {
+            "id": "preview",
+            "description": "Used for generating previews of links."
+        }
+    ],
+    "rules": [
+        {
+            "name": "ChatGPT",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "GPTBot",
+                    "description": "Large-scale gptbot crawler that gathers public text for ChatGPT & GPT-4o"
+                }
+            ]
+        },
+        {
+            "name": "Anthropic (Claude)",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "anthropic-ai",
+                    "description": "Large-scale gptbot crawler that gathers public text for ChatGPT & GPT-4o"
+                },
+                {
+                    "test": "claude-web",
+                    "description": "Targeted crawler for recent web content, feeding the Claude browser agent with updated site data."
+                }
+            ]
+        },
+        {
+            "name": "Perplexity",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "PerplexityBot",
+                    "description": "Primary PerplexityBot crawler that indexes sites to build the Perplexity AI search engine."
+                }
+            ]
+        },
+        {
+            "name": "Google AI",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "Google-Extended",
+                    "description": "Used for Gemini and AI-related indexing beyond standard search."
+                }
+            ]
+        },
+        {
+            "name": "Amazon (Alexa & FireOS)",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "Amazonbot",
+                    "description": "Amazonbot that crawls sites to support Alexa’s queries, Fire OS AI, and product recommendations."
+                }
+            ]
+        },
+        {
+            "name": "Apple AI",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "Applebot-Extended",
+                    "description": "Opt-in extended crawler collecting data for Apple's future AI models."
+                }
+            ]
+        },
+        {
+            "name": "Bytespider",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "Bytespider",
+                    "description": "Feeds TikTok search, CapCut AI captions, and Toutiao headlines by crawling global webpages."
+                }
+            ]
+        },
+        {
+            "name": "DuckDuckGo AI",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "DuckAssistBot",
+                    "description": "Scrapes fact-based snippets for DuckAssist, DuckDuckGo’s private AI answer feature."
+                }
+            ]
+        },
+        {
+            "name": "Cohere",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "cohere-ai",
+                    "description": "Collects textual data for Cohere’s language models, helping refine large-scale text generation."
+                }
+            ]
+        },
+        {
+            "name": "Allen Institute",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "AI2Bot",
+                    "description": "Academic crawler powering Semantic Scholar and other Allen Institute AI research tools."
+                }
+            ]
+        },
+        {
+            "name": "Common Crawl",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "CCBot",
+                    "description": "Indexes public websites for Common Crawl’s open dataset, used by many open-source AI projects."
+                }
+            ]
+        },
+        {
+            "name": "Diffbot",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "Diffbot",
+                    "description": "Transforms webpages into structured data like product listings, articles, or FAQs for ML pipelines."
+                }
+            ]
+        },
+        {
+            "name": "Omgili",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "omgili",
+                    "description": "Focuses on indexing forums, comments, and discussion boards for deeper conversation insights."
+                }
+            ]
+        },
+        {
+            "name": "You.com",
+            "category": "ai_crawler",
+            "userAgents": [
+                {
+                    "test": "YouBot",
+                    "description": "Crawler behind You.com’s AI search and browser assistant, indexing content for real-time answers."
+                }
+            ]
+        },
+
+        {
+            "name": "OpenAI On-Demand",
+            "category": "ai_on_demand",
+            "userAgents": [
+                {
+                    "test": "OAI-SearchBot",
+                    "description": "Retrieval-augmented openai searchbot that indexes pages for ChatGPT’s research and live references."
+                },
+                {
+                    "test": "ChatGPT-User/1.0",
+                    "robots": "ChatGPT-User",
+                    "description": "Legacy ChatGPT user fetcher that loads URLs on demand when a user shares links or ChatGPT needs additional data."
+                },
+                {
+                    "test": "ChatGPT-User/2.0",
+                    "description": "Up-to-date ChatGPT user agent replacing version 1.0 for on-demand fetching and in-response lookups."
+                }
+            ]
+        },
+        {
+            "name": "Anthropic (Claude) On-Demand",
+            "category": "ai_on_demand",
+            "userAgents": [
+                {
+                    "test": "ClaudeBot",
+                    "description": "Real-time fetcher used by Claude to retrieve cited URLs during AI chat sessions."
+                }
+            ]
+        },
+        {
+            "name": "Mistral",
+            "category": "ai_on_demand",
+            "userAgents": [
+                {
+                    "test": "MistralAI-User",
+                    "description": "Mistral’s real-time citation fetcher for “Le Chat” assistant."
+                }
+            ]
+        },
+
+        {
+            "name": "Perplexity On-Demand",
+            "category": "ai_organic",
+            "ignoresRobots": true,
+            "userAgents": [
+                {
+                    "test": "Perplexity-User",
+                    "description": "Loads a page only when a user clicks a Perplexity citation; treated as human-like traffic, bypasses robots.txt."
+                }
+            ]
+        },
+
+        {
+            "name": "Bing Search & AI",
+            "category": "search_and_ai",
+            "userAgents": [
+                {
+                    "test": "BingBot",
+                    "description": "Default bing bot crawling service that powers Bing Search and Bing Chat (Copilot) answers."
+                }
+            ]
+        },
+
+        {
+            "name": "Google Search",
+            "category": "search",
+            "userAgents": [
+                {
+                    "test": "Googlebot",
+                    "description": "Good old Google (not evil)"
+                }
+            ]
+        },
+        {
+            "name": "Yahoo!",
+            "category": "search",
+            "userAgents": [
+                {
+                    "test": "Slurp",
+                    "description": "Okay, I have two questions. 1) Why is it called 'Slurp'? Who signed off on this? 2) Who uses Yahoo? My grandma?"
+                }
+            ]
+        },
+        {
+            "name": "Baidu",
+            "category": "search",
+            "userAgents": [
+                {
+                    "test": "Baiduspider",
+                    "description": "Bot behind China’s biggest search engine, Baidu. If you block this, you get -1000 social points."
+                }
+            ]
+        },
+        {
+            "name": "Yandex",
+            "category": "search",
+            "userAgents": [
+                {
+                    "test": "YandexBot",
+                    "description": "Russia's biggest search engine."
+                }
+            ]
+        },
+        {
+            "name": "Apple search (Siri & Spotlight)",
+            "category": "search",
+            "userAgents": [
+                {
+                    "test": "Applebot",
+                    "description": "Primary crawler for Siri and Spotlight, indexing webpages to improve Apple’s search features."
+                }
+            ]
+        },
+        {
+            "name": "Timpi search",
+            "category": "search",
+            "userAgents": [
+                {
+                    "test": "Timpibot",
+                    "description": "Decentralized search startup crawler with lower traffic, aiming to build a distributed indexing network."
+                }
+            ]
+        },
+
+        {
+            "name": "Facebook Preview",
+            "category": "preview",
+            "userAgents": [
+                {
+                    "test": "FacebookBot",
+                    "description": "Fallback fetcher used if FacebookBot fails, ensuring external content can still render on Meta platforms."
+                },
+                {
+                    "test": "meta-externalagent",
+                    "description": "Fallback fetcher used if FacebookBot fails, ensuring external content can still render on Meta platforms."
+                }
+            ]
+        },
+        {
+            "name": "Twitter/X",
+            "category": "preview",
+            "userAgents": [
+                {
+                    "test": "Twitterbot",
+                    "description": "Used by Twitter (or \"X\" if you are into that) to generate link previews."
+                }
+            ]
+        },
+        {
+            "name": "Pinterest",
+            "category": "preview",
+            "userAgents": [
+                {
+                    "test": "Pinterestbot",
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "name": "LinkedIn Preview",
+            "category": "preview",
+            "userAgents": [
+                {
+                    "test": "LinkedInBot",
+                    "description": "LinkedInBot that extracts Open Graph data for previews in posts, messages, and articles."
+                }
+            ]
+        }
+    ]
+}

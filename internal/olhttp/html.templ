@@ -1,8 +1,8 @@
-package olresponse
+package olhttp
 
 import "context"
-import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/mileusna/useragent"
 
 
 templ Doc(
@@ -15,7 +15,7 @@ templ Doc(
         if ok {
             lang = l.Lang().String()
         }
-        r := olhttp.GetRequest(ctx)
+        r := GetRequest(ctx)
         theme, err := r.Cookie("_theme")
         var isDark bool
 
@@ -42,7 +42,7 @@ templ Doc(
         if l != nil && l.Passthrough() {
             <meta name="openlibrary-debug-meta:localizer-passthrough-mode" content="true" />
         }
-        if isBot(r) {
+        if useragent.Parse(r.UserAgent()).Bot {
             <script>window.IS_BOT=true</script>
         }
         <title>{ settings.Title }</title>

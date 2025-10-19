@@ -1,4 +1,4 @@
-package olresponse
+package olhttp
 
 import (
 	"net/http"

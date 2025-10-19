@@ -8,9 +8,9 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/i18n"
-	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
+
 	"github.com/MaratBR/openlibrary/web/admin/templates"
-	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/ggicci/httpin"
 	"github.com/gofrs/uuid"
 )
@@ -50,7 +50,7 @@ func (c *usersController) Users(w http.ResponseWriter, r *http.Request) {
 
 	users, err := c.service.ListUsers(r.Context(), appQuery)
 	if err != nil {
-		olresponse.Write500(w, r, err)
+		olhttp.Write500(w, r, err)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (c *usersController) sendUserEditForm(w http.ResponseWriter, r *http.Reques
 		UserID: uuid.NullUUID{Valid: true, UUID: currentUser.ID},
 	})
 	if err != nil {
-		olresponse.Write500(w, r, err)
+		olhttp.Write500(w, r, err)
 		return
 	}
 

@@ -4,14 +4,14 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
-import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ UserNotFound() {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
     @baseLayout("404 - " + _t(l, "user.notFound")) {
-        @olresponse.ErrorPage("404", _t(l, "user.notFound"), _t(l, "user.notFoundDescription"))
+        @olhttp.ErrorPage("404", _t(l, "user.notFound"), _t(l, "user.notFoundDescription"))
     }
 }
 

@@ -2,7 +2,7 @@ package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
-import "github.com/MaratBR/openlibrary/web/olresponse"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/auth"
 
@@ -25,7 +25,7 @@ templ Collection(
             </header>
 
             {{
-                pagination := olresponse.PaginationImpl(olresponse.PaginationImplProps{
+                pagination := olhttp.PaginationImpl(olhttp.PaginationImplProps{
                     Size: 9,
                     Page: uint32(result.Page),
                     TotalPages: uint32(result.TotalPages),

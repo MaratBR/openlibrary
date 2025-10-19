@@ -6,8 +6,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
-	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
-	"github.com/MaratBR/openlibrary/web/olresponse"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -57,7 +56,7 @@ func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	olresponse.NewAPIResponseOK().Write(w)
+	olhttp.NewAPIResponseOK().Write(w)
 }
 
 func (c *apiBookController) GetReview(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +76,7 @@ func (c *apiBookController) GetReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	olresponse.NewAPIResponse(review).Write(w)
+	olhttp.NewAPIResponse(review).Write(w)
 }
 
 func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +104,7 @@ func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	olresponse.NewAPIResponseOK().Write(w)
+	olhttp.NewAPIResponseOK().Write(w)
 }
 
 type createReviewRequest struct {
@@ -135,7 +134,7 @@ func (c *apiBookController) UpdateOrCreateReview(w http.ResponseWriter, r *http.
 		return
 	}
 
-	olresponse.NewAPIResponse(review).Write(w)
+	olhttp.NewAPIResponse(review).Write(w)
 }
 
 func (c *apiBookController) DeleteReview(w http.ResponseWriter, r *http.Request) {
@@ -152,5 +151,5 @@ func (c *apiBookController) DeleteReview(w http.ResponseWriter, r *http.Request)
 		apiWriteApplicationError(w, err)
 		return
 	}
-	olresponse.NewAPIResponseOK().Write(w)
+	olhttp.NewAPIResponseOK().Write(w)
 }

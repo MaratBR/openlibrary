@@ -6,8 +6,8 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/upload"
-	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -34,7 +34,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	h.r.Group(func(r chi.Router) {
 		r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
 			OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
-				olresponse.Write500(w, r, err)
+				olhttp.Write500(w, r, err)
 			},
 		}))
 
@@ -57,7 +57,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 		r.Route("/debug", func(r chi.Router) {
 			r.Handle("/500", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				olresponse.Write500(w, r, errors.New("test error"))
+				olhttp.Write500(w, r, errors.New("test error"))
 			}))
 		})
 
@@ -70,7 +70,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 			r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusNotFound)
-				olresponse.NewAPIError(errors.New("not found")).Write(w)
+				olhttp.NewAPIError(errors.New("not found")).Write(w)
 			})
 		})
 

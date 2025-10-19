@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/commonutil"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/session"
-	"github.com/MaratBR/openlibrary/web/olresponse"
 )
 
 type csrfTokenKeyType struct{}
@@ -168,7 +168,7 @@ func NewHandler(secret string) *Handler {
 
 func writeCsrfError(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(http.StatusForbidden)
-	olresponse.WriteCustomErrorPage(w, r, "CSRF", "CSRF verification error. This can usually be fixed by refreshing the page or by clearing browser's cache.", err)
+	olhttp.WriteCustomErrorPage(w, r, "CSRF", "CSRF verification error. This can usually be fixed by refreshing the page or by clearing browser's cache.", err)
 }
 
 func getCsrfHMACPayload(sid, secret, randomValue string) string {

@@ -1,12 +1,11 @@
-package olresponse
+package olhttp
 
 import "context"
-import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "net/url"
 import "fmt"
 
 func getPageURL(ctx context.Context, page uint32) templ.SafeURL {
-    r := olhttp.GetRequest(ctx)
+    r := GetRequest(ctx)
     u := new(url.URL)
     *u = *r.URL
     query := u.Query()

@@ -8,9 +8,9 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/i18n"
-	olhttp "github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
+
 	"github.com/MaratBR/openlibrary/web/admin/templates"
-	"github.com/MaratBR/openlibrary/web/olresponse"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
@@ -64,13 +64,13 @@ func (c *tagsController) Home(w http.ResponseWriter, r *http.Request) {
 func (c *tagsController) Tag(w http.ResponseWriter, r *http.Request) {
 	id, err := olhttp.URLParamInt64(r, "id")
 	if err != nil {
-		olresponse.Write500(w, r, err)
+		olhttp.Write500(w, r, err)
 		return
 	}
 
 	tag, err := c.service.GetTag(r.Context(), id)
 	if err != nil {
-		olresponse.Write500(w, r, err)
+		olhttp.Write500(w, r, err)
 		return
 	}
 
@@ -89,7 +89,7 @@ type tagEditBody struct {
 func (c *tagsController) TagEdit(w http.ResponseWriter, r *http.Request) {
 	id, err := olhttp.URLParamInt64(r, "id")
 	if err != nil {
-		olresponse.Write500(w, r, err)
+		olhttp.Write500(w, r, err)
 		return
 	}
 
@@ -124,7 +124,7 @@ func (c *tagsController) TagEdit(w http.ResponseWriter, r *http.Request) {
 
 	tag, err := c.service.GetTag(r.Context(), id)
 	if err != nil {
-		olresponse.Write500(w, r, err)
+		olhttp.Write500(w, r, err)
 		return
 	}
 

@@ -1,0 +1,28 @@
+# AI be gone
+User-Agent: GPTBot
+User-Agent: anthropic-ai
+User-Agent: claude-web
+User-Agent: PerplexityBot
+User-Agent: Google-Extended
+User-Agent: Amazonbot
+User-Agent: Applebot-Extended
+User-Agent: Bytespider
+User-Agent: DuckAssistBot
+User-Agent: cohere-ai
+User-Agent: AI2Bot
+User-Agent: CCBot
+User-Agent: Diffbot
+User-Agent: omgili
+User-Agent: YouBot
+Disallow: /
+
+User-Agent: Googlebot
+Disallow: /_api
+Disallow: /admin
+Disallow: /*__fragment
+
+User-Agent: *
+Disallow: /_api
+Disallow: /admin
+
+Sitemap: {{sitemap}}
