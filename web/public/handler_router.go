@@ -8,6 +8,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/upload"
+	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -40,6 +41,10 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 		r.NotFound(notFoundHandler)
 		r.MethodNotAllowed(methodNotAllowed)
+
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			olhttp.WriteTemplate(w, r.Context(), templates.Home())
+		})
 
 		newAuthController(authService, h.csrfHandler).Register(r)
 		newBookController(bookService, reviewsService, readingListService).Register(r)

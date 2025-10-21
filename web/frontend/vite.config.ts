@@ -6,6 +6,7 @@ import type { OutputAsset } from 'rollup'
 import { build as esbuild } from 'esbuild'
 import { readFile } from 'node:fs/promises'
 import glob from 'fast-glob'
+import UnoCSS from 'unocss/vite'
 
 type AutoInjectCSSAsLinkOptions = {
   baseUrl: string
@@ -144,6 +145,7 @@ export default defineConfig((env) => ({
     'process.env.NODE_ENV': JSON.stringify(env.mode),
   },
   plugins: [
+    UnoCSS(),
     preact({
       devToolsEnabled: true,
       prefreshEnabled: true,

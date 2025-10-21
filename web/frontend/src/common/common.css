@@ -1,5 +1,4 @@
-
-@import "./style/theme.css";
+/* @import "./style/theme.css";
 
 @import "./style/util.scss";
 
@@ -33,11 +32,13 @@
 @import "./style/profile.scss";
 @import "./style/book.scss";
 @import "./style/search.scss";
-@import "./style/book-reader.scss";
+@import "./style/book-reader.scss"; */
 
-@tailwind components;
+/* @tailwind components;
 @tailwind utilities;
-@tailwind base;
+@tailwind base; */
+
+
 
 * {
     @apply border-border;
