@@ -41,7 +41,7 @@ templ BookPage(
     
     @bookPageLayout(book, readingListStatus) {
         if replaceURLWithSlug {
-            @replaceURLWith(fmt.Sprintf("/book/%d/%s", book.ID, book.Slug))
+            @replaceURLWith(fmt.Sprintf("/book/%s-%d", book.Slug, book.ID))
         }
         <div x-ignore class="mt-4 __user-content">
             @templ.Raw(book.Summary)

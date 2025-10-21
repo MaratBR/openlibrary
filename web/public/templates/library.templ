@@ -4,6 +4,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/MaratBR/openlibrary/internal/csrf"
 
 templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
     {{
@@ -145,14 +146,37 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
                 pagination := olhttp.Pagination(uint32(result.Page), uint32(result.TotalPages), 6)
             }}
         
-            <div class="library-body">
-                if result.TotalPages == 0 {
-                    <p>{ _t(l, "library.noCollections") }</p>
-                    TODO: add button to create first collection
-                } else {
-                    @pagination
+            <div class="library-body" x-data="{name:'',open:false}">
+                <button x-show="!open" @click="open=true" class="flex items-center gap-4 hover:bg-highlight w-full transition-colors -m-2 p-2 rounded-lg">
+                    <div class="bg-muted text-2xl rounded-full size-16 flex items-center justify-center">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+
+                    <span class="font-medium text-lg">
+                        {_t(l, "collection.createCollection")}
+                    </span>
+                </button>
+
+                <section class="card border-none relative" x-cloak x-show="open">
+                    <form method="post" x-data="{name:''}" class="m-2">
+                        @csrf.CSRFInputTempl(ctx)
+                        <input @blur="if (!$event.target.value) open=false" name="name" required maxlength="255" x-model="name" class="w-full block text-3xl font-medium !outline-none bg-transparent" placeholder={_t(l, "collection.namePlaceholder")} />
+                        <div x-collapse x-cloak x-show="name.trim().length>0">
+                            <button type="submit" class="mt-4 btn btn--outline btn--lg">
+                                {_t(l, "collection.createCollection")}
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                if result.TotalPages > 0 {
+                    if result.TotalPages > 1 {
+                        @pagination
+                    }
                     @collectionsList(result.Collections, booksMap)
-                    @pagination
+                    if result.TotalPages > 1 {
+                        @pagination
+                    }
                 }
             </div>
         </main>
@@ -173,7 +197,13 @@ templ collectionsList(collections []app.CollectionDto, booksMap map[int64][]app.
 templ libraryCollectionCard(collection app.CollectionDto, books []app.CollectionBookDto) {
     <li class="library-user-collection">
         <a href={ templ.SafeURL(fmt.Sprintf("/col/%d", collection.ID)) } class="library-user-collection__header">
-            <div class="library-user-collection__name">{ collection.Name }</div>
+            {{
+                name := collection.Name
+                if name == "" {
+                    name = "NO_NAME"
+                }
+            }}
+            <div class="library-user-collection__name">{ name }</div>
 
             <div class="text-muted-foreground">
                 {{

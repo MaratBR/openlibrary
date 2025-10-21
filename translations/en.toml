@@ -257,7 +257,7 @@ title = "My library"
 archive = "Archive"
 collections = "Collections"
 archiveDescription = "Books that you read or did not finish will appear here"
-noCollections = "You do not have any collections yet."
+noCollections = "You do not have any collections yet. Create your first collection below."
 
 
 [collection]
@@ -265,7 +265,9 @@ collection = "Collection"
 books = "{{.count}} books"
 emptyCollection = "This collection is empty"
 emptyCollectionYours = "Your collection is empty"
-
+createCollection = "Create collection"
+namePlaceholder = "Put new collection name here to create it"
+backToLibrary = "Back to library"
 
 #####################
 #                   #

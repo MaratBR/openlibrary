@@ -50,10 +50,22 @@ templ PaginationImpl(
         if remaining > 0 && left < opts.Page - 1 {
             left += min(remaining, opts.Page - 1 - left)
         }
+
+
     }}
 
     <nav role="listbox" class="pagination">
-        for i := opts.Page - left; i < opts.Page; i++ {
+        if opts.Page != 1 {
+            <a 
+                href={ getPageURL(ctx, 1) } class="pagination__item" 
+                if opts.UseAlpineJsAjax {
+                    x-target.push="PaginationAjaxSlot"
+                }
+            >
+                { fmt.Sprintf("%d", 1) }
+            </a>
+        }
+        for i := opts.Page - left + 1; i < opts.Page; i++ {
             {{
                 href := getPageURL(ctx, i)
             }}
@@ -69,7 +81,7 @@ templ PaginationImpl(
         <a href="#" class="pagination__item pagination__item--active">
             { fmt.Sprintf("%d", opts.Page) }
         </a>
-        for i := opts.Page + 1; i <= opts.Page + right; i++ {
+        for i := opts.Page + 1; i <= opts.Page + right - 1; i++ {
             {{
                 href := getPageURL(ctx, i)
             }}
@@ -80,6 +92,16 @@ templ PaginationImpl(
                 }
             >
                 { fmt.Sprintf("%d", i) }
+            </a>
+        }
+        if opts.Page != opts.TotalPages {
+            <a 
+                href={ getPageURL(ctx, opts.TotalPages) } class="pagination__item" 
+                if opts.UseAlpineJsAjax {
+                    x-target.push="PaginationAjaxSlot"
+                }
+            >
+                { fmt.Sprintf("%d", opts.TotalPages) }
             </a>
         }
     </nav>

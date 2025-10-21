@@ -437,6 +437,7 @@ type BookView struct {
 type Collection struct {
 	ID            int64
 	Name          string
+	Slug          string
 	UserID        pgtype.UUID
 	CreatedAt     pgtype.Timestamptz
 	BooksCount    int32

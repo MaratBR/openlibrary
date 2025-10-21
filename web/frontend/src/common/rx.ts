@@ -13,7 +13,7 @@ export interface Writeable<T> {
 }
 
 export interface WithValue<T> {
-  getValue(): T
+  get(): T
 }
 
 export class OLEvent<TEvent> implements Subscribable<TEvent>, Writeable<TEvent> {
@@ -55,13 +55,13 @@ export class Subject<T> extends OLEvent<T> implements WithValue<T> {
     })
   }
 
-  getValue(): T {
+  get(): T {
     return this._value
   }
 }
 
 export function useSubject<T>(subject: Subscribable<T> & WithValue<T>): T {
-  const [value, setValue] = useState<T>(subject.getValue())
+  const [value, setValue] = useState<T>(subject.get())
 
   useEffect(() => {
     return subject.subscribe(setValue)
@@ -117,7 +117,7 @@ export class Derived<
     }
   }
 
-  getValue(): Result {
+  get(): Result {
     return this.result
   }
 

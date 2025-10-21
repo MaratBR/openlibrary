@@ -164,7 +164,7 @@ export default defineConfig((env) => ({
     autoInjectCSSAsLinkTagPlugin({
       baseUrl: '/_/assets/',
     }),
-    esbuildMinifyPlugin(),
+    // esbuildMinifyPlugin(),
   ],
 
   resolve: {

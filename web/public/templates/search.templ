@@ -128,7 +128,7 @@ templ bookSearchCard(id int64, name, slug, summary, cover, authorName string, au
         </div>
         
         <div class="book-search-card__right">
-            <a href={ templ.SafeURL(fmt.Sprintf("/book/%d/%s", id, slug)) } class="link book-search-card__link">{ name }</a>                    
+            <a href={ templ.SafeURL(fmt.Sprintf("/book/%s-%d", slug, id)) } class="link book-search-card__link">{ name }</a>                    
             <br />
             by
             <a class="link book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", authorID.String())) }>
@@ -164,6 +164,8 @@ templ bookSearchCard(id int64, name, slug, summary, cover, authorName string, au
                 }
             }
         </div>
+
+        { children... }
     </li>
 }
 

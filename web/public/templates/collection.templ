@@ -18,9 +18,16 @@ templ Collection(
             <header class="mb-8">
                 <h1 class="font-semibold text-4xl">{ result.Collection.Name }</h1>
                 <p class="mt-2">
-                    <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", result.Collection.UserID.String())) }>
-                        { result.Collection.UserName }
-                    </a>
+                    if isAuthorized && result.Collection.UserID == session.UserID {
+                        <a class="btn btn--secondary btn--sm ml-2" href="/library/collections">
+                            <i class="fa-solid fa-arrow-left"></i>&nbsp;
+                            { _t(l, "collection.backToLibrary") }
+                        </a>
+                    } else {
+                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", result.Collection.UserID.String())) }>
+                            { result.Collection.UserName }
+                        </a>
+                    }
                 </p>
             </header>
 
@@ -39,7 +46,13 @@ templ Collection(
                     }
                     <ul class="my-2">
                         for _, book := range result.Books {
-                            @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.AuthorName, book.AuthorID, book.Tags)
+                            @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.AuthorName, book.AuthorID, book.Tags) {
+                                <div class="absolute top-1 right-1">
+                                    <button class="btn btn--ghost btn--destructive">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            }
                         }
                     </ul>
                     if !(result.TotalPages == 1 && result.Page == 1) {

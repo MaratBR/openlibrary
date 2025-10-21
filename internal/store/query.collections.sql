@@ -1,6 +1,6 @@
 -- name: Collection_Insert :exec
-insert into collections (id, name, user_id)
-values ($1, $2, $3);
+insert into collections (id, name, slug, user_id)
+values ($1, $2, $3, $4);
 
 -- name: Collection_GetByUser :many
 select *

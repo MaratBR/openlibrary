@@ -8,14 +8,12 @@ import (
 	"io"
 	"log/slog"
 	"math"
-	"strings"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
-	"github.com/gosimple/slug"
 	"github.com/minio/minio-go/v7"
 )
 
@@ -150,14 +148,6 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 	}, nil
 }
 
-func makeBookNameSlug(name string) string {
-	slug := slug.Make(strings.ToLower(name))
-	if len(slug) > 80 {
-		slug = slug[:80]
-	}
-	return slug
-}
-
 func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCommand) (int64, error) {
 	err := validateBookName(input.Name)
 	if err != nil {
@@ -178,7 +168,7 @@ func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 	err = s.queries.Book_Insert(ctx, store.Book_InsertParams{
 		ID:                 id,
 		Name:               input.Name,
-		Slug:               makeBookNameSlug(input.Name),
+		Slug:               makeSlug(input.Name),
 		AuthorUserID:       uuidDomainToDb(input.UserID),
 		CreatedAt:          timeToTimestamptz(time.Now()),
 		TagIds:             tags.TagIds,

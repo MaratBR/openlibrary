@@ -29,7 +29,6 @@ func newBookController(service app.BookService, reviewService app.ReviewsService
 func (b *bookController) Register(r chi.Router) {
 	// book page and its fragments
 	r.Get("/book/{bookID}", b.GetBook)
-	r.Get("/book/{bookID}/{slug}", b.GetBook)
 	r.Get("/book/{bookID}/__fragment/preview-card", b.GetBookPreview)
 	r.Get("/book/{bookID}/__fragment/toc", b.GetBookTOC)
 	r.Get("/book/{bookID}/__fragment/review", b.GetBookReview)
@@ -37,9 +36,10 @@ func (b *bookController) Register(r chi.Router) {
 }
 
 func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
-	bookID, err := olhttp.URLParamInt64(r, "bookID")
-	if err != nil {
-		writeBadRequest(w, r, err)
+	param := chi.URLParam(r, "bookID")
+	bookID, slug := olhttp.ParseInt64Slug(param)
+	if bookID == 0 {
+		olhttp.WriteTemplate(w, r.Context(), templates.BookNotFoundPage())
 		return
 	}
 
@@ -57,7 +57,6 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var replaceURLWithSlug bool
-	slug := chi.URLParam(r, "slug")
 	if book.Slug != slug {
 		replaceURLWithSlug = true
 	}

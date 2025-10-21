@@ -1,6 +1,7 @@
 package public
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -25,6 +26,8 @@ func (c *libraryController) Register(r chi.Router) {
 		r.Get("/", c.index)
 		r.Get("/archive", c.archive)
 		r.Get("/collections", c.collections)
+		r.Post("/collections", c.createCollection)
+
 	})
 }
 
@@ -116,4 +119,24 @@ func (c *libraryController) collections(w http.ResponseWriter, r *http.Request) 
 	}
 
 	olhttp.WriteTemplate(w, r.Context(), templates.LibraryCollections(result, booksMap))
+}
+
+func (c *libraryController) createCollection(w http.ResponseWriter, r *http.Request) {
+	session := auth.RequireSession(r.Context())
+	if err := r.ParseForm(); err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	name := r.Form.Get("name")
+	collectionID, err := c.collectionService.CreateCollection(r.Context(), app.CreateCollectionCommand{
+		UserID: session.UserID,
+		Name:   name,
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/col/%d", collectionID), http.StatusSeeOther)
 }

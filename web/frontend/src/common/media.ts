@@ -19,8 +19,8 @@ export class MatchesMedia implements Subscribable<boolean>, WithValue<boolean> {
   subscribe(callback: (event: boolean) => void): Dispose {
     return this._subject.subscribe(callback)
   }
-  getValue(): boolean {
-    return this._subject.getValue()
+  get(): boolean {
+    return this._subject.get()
   }
 }
 

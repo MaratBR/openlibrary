@@ -55,7 +55,9 @@
 }
 
 .book-search-card {
-    @apply md:grid md:grid-cols-[165px_1fr] border-b-2 md:border-b md:pb-2 md:pt-4;
+    @apply
+        border-b-2 relative
+        md:grid md:grid-cols-[165px_1fr] md:border-b md:pb-2 md:pt-4;
 
     &__left {
         @apply bg-secondary md:bg-transparent py-2 mb-4 md:mb-0 flex flex-col items-center justify-start;

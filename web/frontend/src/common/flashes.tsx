@@ -9,7 +9,7 @@ class Notifications extends Subject<OLNotification[]> {
   }
 
   remove(notification: OLNotification) {
-    const value = this.getValue()
+    const value = this.get()
     const idx = value.indexOf(notification)
     if (idx !== -1) {
       const newValue = [...value]
@@ -19,7 +19,7 @@ class Notifications extends Subject<OLNotification[]> {
   }
 
   add(notification: OLNotification) {
-    this.set([...this.getValue(), notification])
+    this.set([...this.get(), notification])
   }
 
   public static instance: Notifications = new Notifications()

@@ -13,7 +13,7 @@ namespace OLTheme {
   export const theme = new Subject<Theme>(SYSTEM_THEME)
 
   export function toggle() {
-    const value = theme.getValue()
+    const value = theme.get()
 
     switch (value) {
       case 'system':
@@ -58,7 +58,7 @@ namespace OLTheme {
     ) {
       theme.set(themeFromCookie)
     } else {
-      setCookie(THEME_COOKIE, theme.getValue())
+      setCookie(THEME_COOKIE, theme.get())
     }
   }
 
@@ -81,11 +81,11 @@ executeAfterDOMIsReady(() => {
     HTML.classList.toggle('dark', isDark)
   }
   OLTheme.isDarkThemeActive.subscribe(isDarkCb)
-  isDarkCb(OLTheme.isDarkThemeActive.getValue())
+  isDarkCb(OLTheme.isDarkThemeActive.get())
 
   const themeCb = (theme: Theme) => {
     HTML.setAttribute('data-theme', theme)
   }
   OLTheme.theme.subscribe(themeCb)
-  themeCb(OLTheme.theme.getValue())
+  themeCb(OLTheme.theme.get())
 })

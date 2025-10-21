@@ -170,6 +170,7 @@ func (c *collectionService) CreateCollection(ctx context.Context, cmd CreateColl
 	err := c.queries.Collection_Insert(ctx, store.Collection_InsertParams{
 		ID:     id,
 		Name:   cmd.Name,
+		Slug:   makeSlug(cmd.Name),
 		UserID: uuidDomainToDb(cmd.UserID),
 	})
 	if err != nil {

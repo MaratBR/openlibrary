@@ -45,7 +45,7 @@ func (q *Queries) Collection_DeleteBookFromCollection(ctx context.Context, arg C
 }
 
 const collection_Get = `-- name: Collection_Get :one
-select c.id, c.name, c.user_id, c.created_at, c.books_count, c.last_updated_at, u.name as user_name
+select c.id, c.name, c.slug, c.user_id, c.created_at, c.books_count, c.last_updated_at, u.name as user_name
 from collections c
 join users u on c.user_id = u.id
 where c.id = $1
@@ -54,6 +54,7 @@ where c.id = $1
 type Collection_GetRow struct {
 	ID            int64
 	Name          string
+	Slug          string
 	UserID        pgtype.UUID
 	CreatedAt     pgtype.Timestamptz
 	BooksCount    int32
@@ -67,6 +68,7 @@ func (q *Queries) Collection_Get(ctx context.Context, id int64) (Collection_GetR
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Slug,
 		&i.UserID,
 		&i.CreatedAt,
 		&i.BooksCount,
@@ -163,7 +165,7 @@ func (q *Queries) Collection_GetBooks(ctx context.Context, arg Collection_GetBoo
 }
 
 const collection_GetByBook = `-- name: Collection_GetByBook :many
-select c.id, c.name, c.user_id, c.created_at, c.books_count, c.last_updated_at
+select c.id, c.name, c.slug, c.user_id, c.created_at, c.books_count, c.last_updated_at
 from collections c
 join collection_books cb on cb.collection_id = c.id
 where c.user_id = $1 and cb.book_id = $2
@@ -187,6 +189,7 @@ func (q *Queries) Collection_GetByBook(ctx context.Context, arg Collection_GetBy
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Slug,
 			&i.UserID,
 			&i.CreatedAt,
 			&i.BooksCount,
@@ -203,7 +206,7 @@ func (q *Queries) Collection_GetByBook(ctx context.Context, arg Collection_GetBy
 }
 
 const collection_GetByUser = `-- name: Collection_GetByUser :many
-select id, name, user_id, created_at, books_count, last_updated_at
+select id, name, slug, user_id, created_at, books_count, last_updated_at
 from collections
 where user_id = $3
 order by created_at desc
@@ -228,6 +231,7 @@ func (q *Queries) Collection_GetByUser(ctx context.Context, arg Collection_GetBy
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Slug,
 			&i.UserID,
 			&i.CreatedAt,
 			&i.BooksCount,
@@ -257,7 +261,7 @@ func (q *Queries) Collection_GetMaxOrder(ctx context.Context, collectionID int64
 }
 
 const collection_GetRecentByUser = `-- name: Collection_GetRecentByUser :many
-select id, name, user_id, created_at, books_count, last_updated_at
+select id, name, slug, user_id, created_at, books_count, last_updated_at
 from collections
 where user_id = $1
 order by last_updated_at desc
@@ -281,6 +285,7 @@ func (q *Queries) Collection_GetRecentByUser(ctx context.Context, arg Collection
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Slug,
 			&i.UserID,
 			&i.CreatedAt,
 			&i.BooksCount,
@@ -297,18 +302,24 @@ func (q *Queries) Collection_GetRecentByUser(ctx context.Context, arg Collection
 }
 
 const collection_Insert = `-- name: Collection_Insert :exec
-insert into collections (id, name, user_id)
-values ($1, $2, $3)
+insert into collections (id, name, slug, user_id)
+values ($1, $2, $3, $4)
 `
 
 type Collection_InsertParams struct {
 	ID     int64
 	Name   string
+	Slug   string
 	UserID pgtype.UUID
 }
 
 func (q *Queries) Collection_Insert(ctx context.Context, arg Collection_InsertParams) error {
-	_, err := q.db.Exec(ctx, collection_Insert, arg.ID, arg.Name, arg.UserID)
+	_, err := q.db.Exec(ctx, collection_Insert,
+		arg.ID,
+		arg.Name,
+		arg.Slug,
+		arg.UserID,
+	)
 	return err
 }
 
@@ -337,7 +348,7 @@ func (q *Queries) Collections_CountByUser(ctx context.Context, userID pgtype.UUI
 }
 
 const collections_ListByID = `-- name: Collections_ListByID :many
-select id, name, user_id, created_at, books_count, last_updated_at
+select id, name, slug, user_id, created_at, books_count, last_updated_at
 from collections
 where id = ANY($1::int8[])
 `
@@ -354,6 +365,7 @@ func (q *Queries) Collections_ListByID(ctx context.Context, dollar_1 []int64) ([
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Slug,
 			&i.UserID,
 			&i.CreatedAt,
 			&i.BooksCount,

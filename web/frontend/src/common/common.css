@@ -1,3 +1,4 @@
+
 @import "./style/theme.css";
 
 @import "./style/util.scss";
@@ -62,3 +63,4 @@
   --tw-ring-offset-color: hsl(var(--background));
 }
 
+.no-transition { transition: none !important; }

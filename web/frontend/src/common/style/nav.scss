@@ -32,6 +32,22 @@
     &__user {
         @apply lg:ml-auto flex items-stretch;
     }
+
+    &__himage {
+        --scale: 0.5;
+        background-image: url('/_/embed-assets/img/headerImage.png');
+        height: calc(var(--h) * var(--scale));
+        width: calc(var(--w) * var(--scale));
+        background-position: var(--offset) 0;
+        background-size: calc(var(--w) * var(--scale)) calc(var(--h) * var(--scale));
+
+
+        &[data-image="1"] {
+            --h: 162px;
+            --w: 171px;
+            --offset: 0px;
+        }
+    }
 }
 
 .site-nav-overlay {
@@ -50,10 +66,11 @@
 
 .nav-link {
     @apply 
-        inline-flex items-center font-medium text-foreground/80 text-[1rem] px-5 rounded-xl my-2
+        inline-flex items-center font-medium text-foreground/80 text-[1rem] px-5  h-16
+        lg:h-[initial] lg:my-2 lg:rounded-xl
         hover:text-foreground hover:bg-accent
         active:text-primary;
-    
+
     &__icon {
         @apply mr-2;   
     }
@@ -61,7 +78,7 @@
 
 .nav-user {
     @apply 
-        relative h-full ml-4 mt-0
+        relative h-full ml-4 mt-0 w-full
         lg:min-w-12 lg:max-w-24;
 
     &__btn {
@@ -74,7 +91,7 @@
             lg:bg-muted lg:rounded-xl lg:absolute lg:top-full lg:right-0 lg:p-1 lg:space-y-1 lg:min-w-48 lg:flex lg:flex-col lg:shadow-md;
 
         &__item {
-            @apply px-2 py-2 min-h-10 flex items-center rounded-md transition-all duration-100
+            @apply px-2 py-2 min-h-10 flex items-center rounded-md transition-all duration-100 w-full
                 hover:bg-card hover:shadow-sm
                 active:bg-muted-2;
         }

@@ -3,6 +3,7 @@ import './util'
 import './cookies'
 import './theme'
 import './scrollable'
+import './nav'
 
 import './__server__'
 import './delay'
