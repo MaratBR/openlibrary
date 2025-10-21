@@ -20,6 +20,7 @@
     "@types/sanitize-html": "^2.13.0",
     "@types/toastify-js": "^1.12.3",
     "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@unocss/cli": "^66.5.4",
     "@unocss/preset-wind4": "^66.5.4",
     "autoprefixer": "^10.4.20",
     "esbuild": "^0.25.10",

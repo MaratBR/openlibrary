@@ -12,7 +12,7 @@ type AssetsConfig struct {
 
 func AssetsFS(config AssetsConfig) fs.FS {
 	if config.Dev {
-		return os.DirFS("./web/frontend/dist")
+		return os.DirFS("./dist")
 	} else {
 		panic("not implemented")
 	}

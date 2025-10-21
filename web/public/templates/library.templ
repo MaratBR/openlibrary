@@ -147,7 +147,7 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
             }}
         
             <div class="library-body" x-data="{name:'',open:false}">
-                <button x-show="!open" @click="open=true" class="flex items-center gap-4 hover:bg-highlight w-full transition-colors -m-2 p-2 rounded-lg">
+                <button x-show="!open" @click="open=true" class="flex items-center gap-4 hover:bg-highlight w-full transition-colors p-2 rounded-lg">
                     <div class="bg-muted text-2xl rounded-full size-16 flex items-center justify-center">
                         <i class="fa-solid fa-plus"></i>
                     </div>

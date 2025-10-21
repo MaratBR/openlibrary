@@ -180,6 +180,9 @@ importers:
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.20.0
         version: 8.25.0(@typescript-eslint/parser@8.25.0(eslint@9.21.0(jiti@2.6.1))(typescript@5.6.3))(eslint@9.21.0(jiti@2.6.1))(typescript@5.6.3)
+      '@unocss/cli':
+        specifier: ^66.5.4
+        version: 66.5.4
       '@unocss/preset-wind4':
         specifier: ^66.5.4
         version: 66.5.4

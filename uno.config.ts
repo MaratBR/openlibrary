@@ -1,45 +1,58 @@
-import path from 'path'
 import { defineConfig, transformerDirectives, transformerVariantGroup } from 'unocss'
 import presetWind4 from '@unocss/preset-wind4'
 
-const paths = [
-  `${path.resolve(__dirname, '../../internal/olhttp')}/*.templ`,
-  `${path.resolve(__dirname, '../public/templates')}/*.templ`,
-  `${path.resolve(__dirname, '../admin/templates')}/*.templ`,
-  `${path.resolve(__dirname, 'frontend', 'src')}/**/*.{js,ts,jsx,tsx}`,
-]
+// const paths = [
+//   `${path.resolve(__dirname, './internal/olhttp')}/*.templ`,
+//   `${path.resolve(__dirname, './web/public/templates')}/*.templ`,
+//   `${path.resolve(__dirname, './web/admin/templates')}/*.templ`,
+//   // `${path.resolve(__dirname, './web/frontend', 'src')}/**/*.{js,ts,jsx,tsx}`,
+// ]
+
+// console.log('UnoCSS paths:', paths)
 
 export default defineConfig({
   shortcuts: [
     // ...
   ],
   content: {
-    filesystem: paths,
+    filesystem: [
+      'web/public/templates/*.templ',
+      'web/admin/templates/*.templ',
+      'internal/olhttp/*.templ',
+      'web/frontend/src/**/*.{js,ts,jsx,tsx,css,scss}',
+    ],
+
+    pipeline: {
+      include: [/\.([jt]sx|vine.ts|mdx?|html|templ)($|\?)/],
+    },
   },
 
-  extractors: [],
+  extractors: [
+    // {
+    //   name: 'templ-extractor',
+    //   order: -1,
+    //   async extract(code) {
+    //     console.log(code.id)
+    //     return new Set()
+    //   },
+    // },
+  ],
+
+  // extractorDefault: false,
 
   theme: {
-    keyframes: {
-      'collapsible-down': {
-        '0%': { height: '0' },
-        '100%': { height: 'var(--radix-collapsible-content-height)' },
-      },
-      'collapsible-up': {
-        '0%': { height: 'var(--radix-collapsible-content-height)' },
-        '100%': { height: '0' },
-      },
-    },
     animation: {
-      'collapsible-down': 'collapsible-down 0.2s ease-out',
-      'collapsible-up': 'collapsible-up 0.2s ease-out',
+      keyframes: {
+        'collapsible-down': 'collapsible-down 0.2s ease-out',
+        'collapsible-up': 'collapsible-up 0.2s ease-out',
+      },
     },
-    borderRadius: {
+    radius: {
       lg: 'var(--radius)',
       md: 'calc(var(--radius) - 2px)',
       sm: 'calc(var(--radius) - 4px)',
     },
-    fontFamily: {
+    font: {
       title: 'var(--font-title)',
       text: 'var(--font-text)',
       book: 'var(--font-book)',

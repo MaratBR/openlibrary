@@ -145,7 +145,9 @@ export default defineConfig((env) => ({
     'process.env.NODE_ENV': JSON.stringify(env.mode),
   },
   plugins: [
-    UnoCSS(),
+    UnoCSS({
+      // mode: 'dist-chunk',
+    }),
     preact({
       devToolsEnabled: true,
       prefreshEnabled: true,
@@ -171,12 +173,12 @@ export default defineConfig((env) => ({
 
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      '@': resolve(__dirname, './web/frontend/src'),
     },
   },
 
   esbuild: {
-    legalComments: 'none',
+    // legalComments: 'none',
     minifyWhitespace: true,
     minifyIdentifiers: true,
     minifySyntax: true,
@@ -207,7 +209,7 @@ export default defineConfig((env) => ({
       name: 'ol-public-ui',
       formats: ['es'],
       entry: Object.fromEntries(
-        ENTRIES.map((entry) => [entry, resolve(__dirname, 'src', entry, 'index.ts')]),
+        ENTRIES.map((entry) => [entry, resolve(__dirname, 'web/frontend/src', entry, 'index.ts')]),
       ),
     },
   },

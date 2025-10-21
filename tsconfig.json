@@ -27,8 +27,8 @@
     "noUncheckedSideEffectImports": true,
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./web/frontend/src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["web/frontend/src"]
 }

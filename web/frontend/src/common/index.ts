@@ -13,6 +13,7 @@ import '../lib/ScrollBlocker'
 import '../toast/toast'
 
 import '@/http-client'
+import './components.css'
 import 'virtual:uno.css'
 import './common.css'
 

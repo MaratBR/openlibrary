@@ -40,9 +40,9 @@
         "web/public/templates",
         "web/frontend/src"
     ],
-    "unocss.root": [
-        "web/frontend"
-    ],
+    // "unocss.root": [
+    //     "web/frontend"
+    // ],
     "unocss.languageIds": [
         "templ",
         "typescript",
