@@ -11,9 +11,6 @@ import presetWind4 from '@unocss/preset-wind4'
 // console.log('UnoCSS paths:', paths)
 
 export default defineConfig({
-  shortcuts: [
-    // ...
-  ],
   content: {
     filesystem: [
       'web/public/templates/*.templ',
@@ -23,22 +20,11 @@ export default defineConfig({
     ],
 
     pipeline: {
-      include: [/\.([jt]sx|vine.ts|mdx?|html|templ)($|\?)/],
+      include: [/\.([jt]sx|mdx?|html|templ)($|\?)/],
     },
   },
 
-  extractors: [
-    // {
-    //   name: 'templ-extractor',
-    //   order: -1,
-    //   async extract(code) {
-    //     console.log(code.id)
-    //     return new Set()
-    //   },
-    // },
-  ],
-
-  // extractorDefault: false,
+  safelist: ['bg-primary', 'bg-destructive', 'bg-background', 'bg-foreground'],
 
   theme: {
     animation: {

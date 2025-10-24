@@ -1,12 +1,13 @@
 /* eslint-disable no-undef */
 import { dirname, resolve } from 'node:path'
 import { defineConfig, Plugin } from 'vite'
-import preact from '@preact/preset-vite'
 import type { OutputAsset } from 'rollup'
 import { build as esbuild } from 'esbuild'
 import { readFile } from 'node:fs/promises'
 import glob from 'fast-glob'
 import UnoCSS from 'unocss/vite'
+import chokidar, { FSWatcher } from 'chokidar'
+import preact from '@preact/preset-vite'
 
 type AutoInjectCSSAsLinkOptions = {
   baseUrl: string
@@ -105,6 +106,44 @@ function esbuildMinifyPlugin(): Plugin {
   }
 }
 
+function watchExternalPlugin(options: { paths?: string[] } = {}): Plugin {
+  const { paths = [] } = options
+  let watcher: FSWatcher
+
+  return {
+    name: 'watch-external',
+
+    buildStart() {
+      // Initial file registration
+      paths.forEach((p) => {
+        const files = glob.sync(paths)
+        files.forEach((file) => {
+          this.addWatchFile(file)
+        })
+      })
+    },
+
+    buildEnd() {
+      if (!watcher && this.meta.watchMode) {
+        watcher = chokidar.watch(paths, {
+          ignoreInitial: true,
+        })
+
+        watcher.on('add', (file) => {
+          console.log(`New external file detected: ${file}`)
+          // File will be picked up on next rebuild
+        })
+      }
+    },
+
+    closeBundle() {
+      if (watcher) {
+        watcher.close()
+      }
+    },
+  }
+}
+
 const ENTRIES = [
   'common',
   'alpinejs',
@@ -145,9 +184,14 @@ export default defineConfig((env) => ({
     'process.env.NODE_ENV': JSON.stringify(env.mode),
   },
   plugins: [
-    UnoCSS({
-      // mode: 'dist-chunk',
+    watchExternalPlugin({
+      paths: [
+        'web/public/templates/*.templ',
+        'web/admin/templates/*.templ',
+        'internal/olhttp/*.templ',
+      ],
     }),
+    UnoCSS(),
     preact({
       devToolsEnabled: true,
       prefreshEnabled: true,

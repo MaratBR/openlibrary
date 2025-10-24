@@ -1,6 +1,9 @@
 @import "./style/theme.css";
-
 @import "./style/util.scss";
+
+button, [role=button] {
+    cursor: pointer;
+}
 
 * {
     @apply border-border;
