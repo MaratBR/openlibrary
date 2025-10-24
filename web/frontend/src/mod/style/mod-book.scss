@@ -5,7 +5,7 @@
 .mod-action-card {
     @apply transition-shadow cursor-pointer bg-card rounded-sm border-2 border-slate-400 p-4 max-w-64 
         hover:shadow-md
-        data-[active=true]:border-orange-600 data-[active=true]:bg-secondary;
+        data-[active=true]:border-orange-600;
 
     &__name {
         @apply font-medium text-lg flex items-center gap-2 mb-2;
