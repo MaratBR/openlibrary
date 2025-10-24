@@ -1,43 +1,9 @@
-
 @import "./style/theme.css";
-
 @import "./style/util.scss";
 
-@import "./style/button.scss";
-@import "./style/checkbox.scss";
-@import "./style/input.scss";
-@import "./style/table.scss";
-
-@import "./style/age-rating.scss";
-@import "./style/alert.scss";
-@import "./style/animations.scss";
-@import "./style/avatar.scss";
-@import "./style/book-rating.scss";
-@import "./style/card.scss";
-@import "./style/chip.scss";
-@import "./style/error.scss";
-@import "./style/flash.scss";
-@import "./style/list.scss";
-@import "./style/loader.scss";
-@import "./style/modal.scss";
-@import "./style/nav.scss";
-@import "./style/pagination.scss";
-@import "./style/star-rating.scss";
-@import "./style/switch.scss";
-@import "./style/tabs.scss";
-@import "./style/tag.scss";
-@import "./style/toast.scss";
-@import "./style/user-content.scss";
-
-@import "./style/library.scss";
-@import "./style/profile.scss";
-@import "./style/book.scss";
-@import "./style/search.scss";
-@import "./style/book-reader.scss";
-
-@tailwind components;
-@tailwind utilities;
-@tailwind base;
+button, [role=button] {
+    cursor: pointer;
+}
 
 * {
     @apply border-border;

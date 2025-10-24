@@ -147,7 +147,7 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
             }}
         
             <div class="library-body" x-data="{name:'',open:false}">
-                <button x-show="!open" @click="open=true" class="flex items-center gap-4 hover:bg-highlight w-full transition-colors -m-2 p-2 rounded-lg">
+                <button x-show="!open" @click="open=true" class="flex items-center gap-4 hover:bg-highlight w-full transition-colors p-2 rounded-lg mb-8">
                     <div class="bg-muted text-2xl rounded-full size-16 flex items-center justify-center">
                         <i class="fa-solid fa-plus"></i>
                     </div>
@@ -157,7 +157,7 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
                     </span>
                 </button>
 
-                <section class="card border-none relative" x-cloak x-show="open">
+                <section class="card border-none relative mb-11" x-cloak x-show="open">
                     <form method="post" x-data="{name:''}" class="m-2">
                         @csrf.CSRFInputTempl(ctx)
                         <input @blur="if (!$event.target.value) open=false" name="name" required maxlength="255" x-model="name" class="w-full block text-3xl font-medium !outline-none bg-transparent" placeholder={_t(l, "collection.namePlaceholder")} />

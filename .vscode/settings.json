@@ -36,6 +36,23 @@
     "tailwindCSS.includeLanguages": {
         "templ": "html"  
     },
+    "unocss.include": [
+        "web/public/templates",
+        "web/frontend/src"
+    ],
+    // "unocss.root": [
+    //     "web/frontend"
+    // ],
+    "unocss.languageIds": [
+        "templ",
+        "typescript",
+        "typescriptreact",
+        "javascript",
+        "javascriptreact",
+        "css",
+        "scss",
+        "html"
+    ],
     "eslint.useFlatConfig": true,
     "[templ]": {
         "editor.defaultFormatter": "a-h.templ"

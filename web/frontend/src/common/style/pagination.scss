@@ -5,7 +5,7 @@
         @apply 
             rounded-xl flex items-center justify-center font-semibold
             text-lg size-12 min-w-12 bg-muted-2/40 transition-colors
-            hover:bg-muted-2 hover:ring
+            hover:bg-muted-2 hover:ring hover:ring-primary/50 hover:ring-3
             active:bg-secondary;
 
         &--active {

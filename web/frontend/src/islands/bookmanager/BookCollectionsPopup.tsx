@@ -135,7 +135,7 @@ function BookCollectionsPopup({ data }: PreactIslandProps) {
           <p class="font-medium">{window._('book.collection.collectionsListTitle')}</p>
         </header>
 
-        <ul>
+        <ul class="max-h-96 overflow-y-auto" style="scrollbar-width:thin">
           {isLoading && (
             <div class="flex items-center justify-center my-8">
               <span class="loader" />
