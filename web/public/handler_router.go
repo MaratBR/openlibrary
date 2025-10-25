@@ -29,8 +29,10 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	modBookService := app.NewModerationBookService(db)
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, h.uploadService, userService, h.esClient), h.cache)
 	collectionService := app.NewCollectionsService(db, tagsService, h.uploadService)
-
 	bookManagerService := app.NewBookManagerService(db, tagsService, h.uploadService, userService, bgServices.BookReindex)
+
+	counters := app.NewAnalyticsCounters(h.redisClient)
+	analyticsService := app.NewAnalyticsViewsService(db, counters)
 
 	h.r.Group(func(r chi.Router) {
 		r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
@@ -47,8 +49,8 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 		})
 
 		newAuthController(authService, h.csrfHandler).Register(r)
-		newBookController(bookService, reviewsService, readingListService).Register(r)
-		newChaptersController(bookService, readingListService).Register(r)
+		newBookController(bookService, reviewsService, readingListService, analyticsService).Register(r)
+		newChaptersController(bookService, readingListService, analyticsService).Register(r)
 		newSearchController(searchService, bookService).Register(r)
 		newTagsController(tagsService).Register(r)
 		newProfileController(userService, bookService, searchService, collectionService).Register(r)

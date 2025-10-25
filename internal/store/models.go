@@ -7,7 +7,6 @@ package store
 import (
 	"database/sql/driver"
 	"fmt"
-	"net/netip"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -397,14 +396,6 @@ type Book struct {
 	IsShadowBanned     bool
 }
 
-type BookBanHistory struct {
-	BookID    int64
-	UserID    pgtype.UUID
-	CreatedAt pgtype.Timestamptz
-	Reason    string
-	Action    string
-}
-
 type BookChapter struct {
 	ID                int64
 	Name              string
@@ -426,12 +417,6 @@ type BookLog struct {
 	Payload     []byte
 	ActorUserID pgtype.UUID
 	Reason      string
-}
-
-type BookView struct {
-	IpAddress  netip.Addr
-	BookID     int64
-	RecordedAt pgtype.Timestamptz
 }
 
 type Collection struct {
@@ -497,6 +482,12 @@ type DraftLog struct {
 	CreatedAt pgtype.Timestamptz
 	UserID    pgtype.UUID
 	Payload   []byte
+}
+
+type OlAnalyticsViewBucket struct {
+	Period int32
+	BookID int64
+	Count  int64
 }
 
 type Rating struct {

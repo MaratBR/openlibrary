@@ -5,7 +5,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
-	"github.com/MaratBR/openlibrary/internal/commonutil"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
 )
@@ -13,10 +13,11 @@ import (
 type chaptersController struct {
 	service            app.BookService
 	readingListService app.ReadingListService
+	analytics          app.AnalyticsViewsService
 }
 
-func newChaptersController(service app.BookService, readingListService app.ReadingListService) *chaptersController {
-	return &chaptersController{service: service, readingListService: readingListService}
+func newChaptersController(service app.BookService, readingListService app.ReadingListService, analytics app.AnalyticsViewsService) *chaptersController {
+	return &chaptersController{service: service, readingListService: readingListService, analytics: analytics}
 }
 
 func (c *chaptersController) Register(r chi.Router) {
@@ -25,14 +26,13 @@ func (c *chaptersController) Register(r chi.Router) {
 }
 
 func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) {
-
-	bookID, err := commonutil.URLParamInt64(r, "bookID")
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		writeBadRequest(w, r, err)
 		return
 	}
 
-	chapterID, err := commonutil.URLParamInt64(r, "chapterID")
+	chapterID, err := olhttp.URLParamInt64(r, "chapterID")
 	if err != nil {
 		writeBadRequest(w, r, err)
 		return
@@ -61,10 +61,6 @@ func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) 
 	session, ok := auth.GetSession(r.Context())
 	if ok {
 		options.Enable = true
-
-		if session == nil {
-			panic("wtf")
-		}
 
 		status, err := c.readingListService.GetStatus(r.Context(), session.UserID, bookID)
 		if err == nil && status.Valid && status.Value.ChapterID.Valid {

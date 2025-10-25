@@ -37,15 +37,6 @@ create index ix_books_age_rating on books (age_rating);
 create index ix_books_tags on books using gin(cached_parent_tag_ids);
 create index ix_books_name on books using gin(name);
 
-
-create table book_ban_history (
-    book_id int8 not null references books(id) primary key,
-    user_id uuid not null references users(id),
-    created_at timestamptz not null default now(),
-    reason text not null default '',
-    action text not null
-);
-
 create table book_chapters (
     id int8 primary key,
     name varchar(255) not null,
@@ -61,10 +52,3 @@ create table book_chapters (
 
 create index ix_bok_chapters_book_id on book_chapters (book_id);
 create index ix_bok_chapters_order on book_chapters ("order");
-
-create table book_view (
-    ip_address inet not null,
-    book_id int8 not null references books(id),
-    recorded_at timestamptz not null 
-);
-

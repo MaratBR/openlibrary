@@ -15,6 +15,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
+	"github.com/redis/go-redis/v9"
 )
 
 type Handler struct {
@@ -25,6 +26,7 @@ type Handler struct {
 	db            app.DB
 	esClient      *elasticsearch.TypedClient
 	cfg           *koanf.Koanf
+	redisClient   *redis.Client
 	cache         *cache.Cache
 	csrfHandler   *csrf.Handler
 	uploadService *app.UploadService
@@ -33,6 +35,7 @@ type Handler struct {
 func NewHandler(
 	db app.DB,
 	cfg *koanf.Koanf,
+	redisService *redis.Client,
 	cache *cache.Cache,
 	csrfHandler *csrf.Handler,
 	bgServices *app.BackgroundServices,
@@ -56,6 +59,7 @@ func NewHandler(
 		db:            db,
 		cfg:           cfg,
 		cache:         cache,
+		redisClient:   redisService,
 		csrfHandler:   csrfHandler,
 		uploadService: uploadService,
 		esClient:      esClient,

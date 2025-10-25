@@ -16,13 +16,15 @@ type bookController struct {
 	service            app.BookService
 	reviewService      app.ReviewsService
 	readingListService app.ReadingListService
+	analytics          app.AnalyticsViewsService
 }
 
-func newBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService) *bookController {
+func newBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService, analytics app.AnalyticsViewsService) *bookController {
 	return &bookController{
 		service:            service,
 		reviewService:      reviewService,
 		readingListService: readingListService,
+		analytics:          analytics,
 	}
 }
 

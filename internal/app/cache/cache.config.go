@@ -15,9 +15,9 @@ func CacheBackendFromConfig(cfg *koanf.Koanf) (CacheBackend, error) {
 	case "memory":
 		return NewMemoryCacheBackend(), nil
 	case "redis":
-		url := cfg.String("cache.redis.url")
+		url := cfg.String("redis.url")
 		if strings.Trim(url, " \n\t") == "" {
-			return nil, fmt.Errorf("cache.redis.url is empty")
+			return nil, fmt.Errorf("redis.url is empty")
 		}
 
 		return NewRedisCacheBackend(
