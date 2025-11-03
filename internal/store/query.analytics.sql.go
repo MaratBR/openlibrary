@@ -9,6 +9,19 @@ import (
 	"context"
 )
 
+const analytics_GetTotalViews = `-- name: Analytics_GetTotalViews :one
+select count
+from ol_analytics.view_bucket
+where book_id = $1 and "period" = 0
+`
+
+func (q *Queries) Analytics_GetTotalViews(ctx context.Context, bookID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, analytics_GetTotalViews, bookID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const analytics_GetViewBuckets = `-- name: Analytics_GetViewBuckets :many
 select "period", count
 from ol_analytics.view_bucket
@@ -102,10 +115,10 @@ func (q *Queries) Analytics_GetViews(ctx context.Context, arg Analytics_GetViews
 }
 
 const analytics_IncrView = `-- name: Analytics_IncrView :exec
-insert into ol_analytics.view_bucket ("period", book_id, count)
+insert into ol_analytics.view_bucket ("period", book_id, "count")
 values ($1, $2, $3)
 on conflict ("period", book_id)
-do update set count = count + $3
+do update set "count" = EXCLUDED."count" + ol_analytics.view_bucket."count"
 `
 
 type Analytics_IncrViewParams struct {

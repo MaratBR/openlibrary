@@ -1,8 +1,8 @@
 -- name: Analytics_IncrView :exec
-insert into ol_analytics.view_bucket ("period", book_id, count)
+insert into ol_analytics.view_bucket ("period", book_id, "count")
 values ($1, $2, $3)
 on conflict ("period", book_id)
-do update set count = count + $3;
+do update set "count" = EXCLUDED."count" + ol_analytics.view_bucket."count";
 
 -- name: Analytics_GetViews :many
 select "period", count
@@ -21,3 +21,8 @@ where
 select "period", count
 from ol_analytics.view_bucket
 where book_id = $1 and "period" >= sqlc.arg('from') and "period" <= sqlc.arg('to');
+
+-- name: Analytics_GetTotalViews :one
+select count
+from ol_analytics.view_bucket
+where book_id = $1 and "period" = 0; 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -62,15 +63,58 @@ func (a *analyticsViewsService) GetBookViews(ctx context.Context, bookID int64) 
 }
 
 // IncrBookView implements AnalyticsViewsService.
-func (a *analyticsViewsService) IncrBookView(ctx context.Context, bookID int64, userID Nullable[uuid.UUID], ip net.IP) error {
+func (a *analyticsViewsService) IncrBookView(ctx context.Context, bookID int64, userID uuid.NullUUID, ip net.IP) error {
 	var uniqueId string
 	if userID.Valid {
-		uniqueId = userID.Value.String()
+		uniqueId = userID.UUID.String()
 	} else {
 		uniqueId = ip.String()
 	}
 	err := a.counter.Incr(ctx, fmt.Sprintf("%d", bookID), uniqueId, 1, time.Hour)
 	return err
+}
+
+func (a *analyticsViewsService) ApplyPendingViews(ctx context.Context) {
+	queries := store.New(a.db)
+
+	periods := CurrentAnalyticsPeriods(time.Now())
+
+	views, err := a.counter.GetPendingCounters(ctx)
+	if err != nil {
+		slog.Error("could not find pending counters", "err", err)
+		return
+	}
+
+	slog.Warn("found pending counters", "count", len(views))
+	for key, count := range views {
+		if count <= 0 {
+			continue
+		}
+		id, err := strconv.ParseInt(key, 10, 62)
+		if err != nil {
+			continue
+		}
+
+		updateCounter(queries, ctx, periods.Hour, id, count)
+		updateCounter(queries, ctx, periods.Day, id, count)
+		updateCounter(queries, ctx, periods.Week, id, count)
+		updateCounter(queries, ctx, periods.Month, id, count)
+		updateCounter(queries, ctx, periods.Year, id, count)
+		updateCounter(queries, ctx, AnalyticsPeriodTotal, id, count)
+	}
+
+}
+
+func updateCounter(queries *store.Queries, ctx context.Context, period AnalyticsPeriod, bookID int64, incr int64) {
+	slog.Debug("incrementing views counter", "period", period, "bookID", bookID, "incrBy", incr)
+	err := queries.Analytics_IncrView(ctx, store.Analytics_IncrViewParams{
+		BookID: bookID,
+		Count:  incr,
+		Period: int32(period),
+	})
+	if err != nil {
+		slog.Error("failed to update counter for period", "period", period, "err", err)
+	}
 }
 
 func NewAnalyticsViewsService(db DB, counters AnalyticsCounters) AnalyticsViewsService {

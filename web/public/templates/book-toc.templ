@@ -22,46 +22,48 @@ templ BookTOC(
             </section>
         } else {
             <ol-scroll-blocker />
-            <ul class="book-toc contain-layout p-1 contain-paint" role="listbox">
-                for i, chapter := range chapters {
-                    <li role="listitem">
-                        <a
-                            href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
-                            if chapter.ID == activeChapterID {
-                                class="book-toc__item book-toc__item--readingNow"
-                            } else {
-                                class="book-toc__item"
-                            }
-                            >
-                            <div class="book-toc__num">
-                                <span>{ commonutil.FormatInt(i + 1) }</span>
+            <div class="book-toc" role="listbox">
+                <ul class="contain-layout p-1 contain-paint">
+                    for i, chapter := range chapters {
+                        <li role="listitem" aria-label={ chapter.Name }>
+                            <a
+                                href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
                                 if chapter.ID == activeChapterID {
-                                    <span class="book-toc__mark">
-                                        <i class="fa-solid fa-bookmark"></i>
-                                    </span>
+                                    class="book-toc__item book-toc__item--readingNow"
+                                } else {
+                                    class="book-toc__item"
                                 }
-                            </div>
-                            <div>
-                                <div class="mb-1">
-                                    { chapter.Name }
+                                >
+                                <div class="book-toc__num">
+                                    <span>{ commonutil.FormatInt(i + 1) }</span>
+                                    if chapter.ID == activeChapterID {
+                                        <span class="book-toc__mark">
+                                            <i class="fa-solid fa-bookmark"></i>
+                                        </span>
+                                    }
                                 </div>
-                                <span class="text-sm text-muted-foreground">
-                                    {relativeTime(l, chapter.CreatedAt)},&nbsp;
-                                    { _tt(l, "book.words", map[string]string{
-                                        "count": commonutil.FormatInt(chapter.Words),
-                                    }) }
-                                </span>
-                            </div>
-                        </a>
+                                <div>
+                                    <div class="mb-1">
+                                        { chapter.Name }
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">
+                                        {relativeTime(l, chapter.CreatedAt)},&nbsp;
+                                        { _tt(l, "book.words", map[string]string{
+                                            "count": commonutil.FormatInt(chapter.Words),
+                                        }) }
+                                    </span>
+                                </div>
+                            </a>
 
-                        // if chapter.Summary != "" {
-                        //     <article class="ml-4 mt-1 mb-4 text-sm __user-content" x-ignore>
-                        //         @templ.Raw( chapter.Summary )
-                        //     </article>
-                        // }
-                    </li>
-                }
-            </ul>
+                            // if chapter.Summary != "" {
+                            //     <article class="ml-4 mt-1 mb-4 text-sm __user-content" x-ignore>
+                            //         @templ.Raw( chapter.Summary )
+                            //     </article>
+                            // }
+                        </li>
+                    }
+                </ul>
+            </div>
         }
         
     </div>

@@ -100,8 +100,14 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 		reviews = reviewsResult.Reviews
 	}
 
+	ip := olhttp.GetIP(r)
+	b.analytics.IncrBookView(r.Context(), bookID, userID, ip)
+
+	views, err := b.analytics.GetBookViews(r.Context(), bookID)
+
 	templates.BookPage(
 		book,
+		views,
 		ratingAndReview,
 		readingListStatus,
 		reviews,

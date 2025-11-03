@@ -1,6 +1,75 @@
+:root {
+    --btn-tint: #000000;
+}
+
+.dark {
+    --btn-tint: #ffffff;
+}
+
 .btn {
     @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
     @apply h-10 px-4 py-2 rounded-full cursor-pointer;
+
+
+    &, &--primary {
+        --btn-colors-main: var(--colors-primary-DEFAULT);
+        --btn-colors-text: var(--colors-primary-foreground);
+    }
+
+    --btn-tint-frac: 13%;
+    --btn-bg-opacity: 0%;
+    --btn-colors-main-hover: color-mix(in srgb, var(--btn-colors-main), var(--btn-tint) var(--btn-tint-frac));
+    
+    background-color: var(--btn-colors-main);
+    color: var(--btn-colors-text);
+
+    &:hover {
+        background-color: var(--btn-colors-main-hover);
+    }
+
+    // COLORS
+
+    &--secondary {
+        --btn-colors-main: var(--colors-secondary-DEFAULT);
+        --btn-colors-text: var(--colors-secondary-foreground);
+    }
+
+    &--destructive {
+        --btn-colors-main: var(--colors-destructive-DEFAULT);
+        --btn-colors-text: var(--colors-destructive-foreground);
+    }
+
+
+    // VARIANTS
+
+
+    &--ghost {
+        color: var(--btn-colors-main);
+        background-color: transparent;
+
+        --btn-colors-main: var(--colors-foreground);
+        --btn-colors-text: var(--colors-foreground);
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--btn-colors-main) 13%, transparent);
+        }
+    }
+
+    &--outline {
+        // @apply border-2 bg-background border-gray-600
+        //     hover:bg-accent hover:text-accent-foreground 
+        //     focus:border-black focus:outline focus:outline-1 focus:outline-black hover:border-black 
+        //     dark:border-zinc-300 dark:focus:outline-white dark:focus:border-white;
+
+        --btn-colors-main: var(--colors-foreground);
+        --btn-colors-text: var(--colors-foreground);
+
+        border: 2px solid var(--btn-colors-main);
+        @apply bg-card transition-all hover:bg-card hover:ring;
+    }
+
+
+    // SIZES
 
     &--sm {
         @apply h-9 px-3;
@@ -12,29 +81,6 @@
 
     &--icon {
         @apply h-10 w-10 rounded-full;
-    }
-
-    &--outline {
-        @apply border-2 bg-background border-gray-600
-            hover:bg-accent hover:text-accent-foreground 
-            focus:border-black focus:outline focus:outline-1 focus:outline-black hover:border-black 
-            dark:border-zinc-300 dark:focus:outline-white dark:focus:border-white;
-    }
-
-    &--secondary {
-        @apply bg-muted text-secondary-foreground hover:bg-muted-2;
-    }
-
-    &--ghost {
-        @apply text-muted-foreground hover:bg-accent hover:text-accent-foreground;
-    }
-
-    &--primary {
-        @apply bg-primary text-primary-foreground hover:bg-primary/90 active:shadow-[0_0_7px] ring-black ring-offset-2 active:ring-2 dark:active:ring-white;
-    }
-
-    &--destructive {
-        @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
     }
 
 

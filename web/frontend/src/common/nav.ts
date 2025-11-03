@@ -1,5 +1,5 @@
 import { Derived, Subject } from './rx'
-import { debounce } from './util/debounce'
+import { debounce } from './util/fn'
 
 function findAllNavigationContents(parent: HTMLElement): {
   element: HTMLTemplateElement

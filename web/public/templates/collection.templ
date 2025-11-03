@@ -4,33 +4,39 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "fmt"
-import "github.com/MaratBR/openlibrary/internal/auth"
 
 templ Collection(
     result app.GetCollectionBooksResult,
+    canEdit bool,
 ) {
     {{
         l := i18n.GetLocalizer(ctx)
-        session, isAuthorized := auth.GetSession(ctx)
     }}
     @baseLayout(_t(l, "collection.collection") + " - " + result.Collection.Name) {
-        <div class="ol-container my-12 px-2" >
-            <header class="mb-8">
+        <header class="mb-8 card border-0 border-b-1 pt-8">
+            <div class="ol-container">
                 <h1 class="font-semibold text-4xl">{ result.Collection.Name }</h1>
-                <p class="mt-2">
-                    if isAuthorized && result.Collection.UserID == session.UserID {
-                        <a class="btn btn--secondary btn--sm ml-2" href="/library/collections">
-                            <i class="fa-solid fa-arrow-left"></i>&nbsp;
-                            { _t(l, "collection.backToLibrary") }
-                        </a>
+                <div class="my-4">
+                    if canEdit {
+                        <div class="btn-group">
+                            <a class="btn btn--ghost btn--sm" href="/library/collections">
+                                <i class="fa-solid fa-arrow-left"></i>&nbsp;
+                                { _t(l, "collection.backToLibrary") }
+                            </a>
+                            <a class="btn btn--ghost btn--sm" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", result.Collection.ID)) }>
+                                <i class="fa-solid fa-table-list"></i>&nbsp;
+                                { _t(l, "collection.manage") }
+                            </a>
+                        </div>
                     } else {
                         <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", result.Collection.UserID.String())) }>
                             { result.Collection.UserName }
                         </a>
                     }
-                </p>
-            </header>
-
+                </div>
+            </div>
+        </header>
+        <div class="ol-container px-2" >
             {{
                 pagination := olhttp.PaginationImpl(olhttp.PaginationImplProps{
                     Size: 9,
@@ -47,11 +53,13 @@ templ Collection(
                     <ul class="my-2">
                         for _, book := range result.Books {
                             @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.AuthorName, book.AuthorID, book.Tags) {
-                                <div class="absolute top-1 right-1">
-                                    <button class="btn btn--ghost btn--destructive">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </div>
+                                if canEdit {
+                                    <div class="absolute top-1 right-1">
+                                        <button class="btn btn--ghost btn--destructive">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                }
                             }
                         }
                     </ul>
@@ -60,7 +68,7 @@ templ Collection(
                     }
                 } else {
                     <p class="mt-4">
-                        if isAuthorized && result.Collection.UserID == session.UserID {
+                        if canEdit {
                             { _t(l, "collection.emptyCollectionYours") }
                         } else {
                             { _t(l, "collection.emptyCollection") }

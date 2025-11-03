@@ -13,9 +13,7 @@ import './rating-input'
 import './collapse'
 import './page-progress'
 import './navbar'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(window as any).Alpine = Alpine
+;(window as unknown as { Alpine: typeof Alpine }).Alpine = Alpine
 
 Alpine.plugin(ajax)
 Alpine.plugin(collapse)

@@ -2,7 +2,10 @@ package app
 
 import (
 	"context"
+	"log/slog"
 	"net"
+	"runtime/debug"
+	"sync"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -52,6 +55,79 @@ func CurrentAnalyticsPeriods(now time.Time) AnalyticsPeriods {
 }
 
 type AnalyticsViewsService interface {
-	IncrBookView(ctx context.Context, bookID int64, userID Nullable[uuid.UUID], ip net.IP) error
+	IncrBookView(ctx context.Context, bookID int64, userID uuid.NullUUID, ip net.IP) error
 	GetBookViews(ctx context.Context, bookID int64) (Views, error)
+
+	ApplyPendingViews(ctx context.Context)
+}
+
+type AnalyticsBackgroundService struct {
+	started        bool
+	mx             sync.Mutex
+	analytics      AnalyticsViewsService
+	stopWg         sync.WaitGroup
+	stopRequested  bool
+	nextLaunchTime time.Time
+	parentCtx      context.Context
+}
+
+func NewAnalyticsBackgroundService(analytics AnalyticsViewsService) *AnalyticsBackgroundService {
+	srv := &AnalyticsBackgroundService{analytics: analytics}
+	return srv
+}
+
+func (s *AnalyticsBackgroundService) Start() {
+	s.mx.Lock()
+	defer s.mx.Unlock()
+
+	if s.started {
+		return
+	}
+
+	s.started = true
+	go s.start()
+}
+
+func (s *AnalyticsBackgroundService) start() {
+	s.stopWg.Add(1)
+	defer s.stopWg.Done()
+
+	var cancel context.CancelFunc
+	s.parentCtx, cancel = context.WithCancel(context.Background())
+	defer cancel()
+
+	for !s.stopRequested {
+		time.Sleep(time.Minute)
+
+		if s.itIsTime() {
+			s.nextLaunchTime = s.calculateNextLaunchTime()
+			s.process()
+		}
+	}
+}
+
+func (s *AnalyticsBackgroundService) process() {
+	defer func() {
+		if rec := recover(); rec != nil {
+			slog.Error("AnalyticsBackgroundService panicked")
+			debug.PrintStack()
+		}
+	}()
+
+	s.analytics.ApplyPendingViews(s.parentCtx)
+}
+
+func (s *AnalyticsBackgroundService) itIsTime() bool {
+	if (s.nextLaunchTime == time.Time{}) {
+		return true
+	}
+
+	now := time.Now()
+	return s.nextLaunchTime.Before(now)
+}
+
+func (s *AnalyticsBackgroundService) calculateNextLaunchTime() time.Time {
+	now := time.Now().UTC()
+	nextHourStart := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, time.UTC).Add(time.Hour)
+	return nextHourStart
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
@@ -45,5 +46,8 @@ func (c *collectionController) books(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	olhttp.WriteTemplate(w, r.Context(), templates.Collection(result))
+	session, isAuthorized := auth.GetSession(r.Context())
+	canEdit := isAuthorized && result.Collection.UserID == session.UserID
+
+	olhttp.WriteTemplate(w, r.Context(), templates.Collection(result, canEdit))
 }

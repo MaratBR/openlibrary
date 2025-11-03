@@ -15,7 +15,7 @@
     }
 
     &__rating-card {
-        @apply inline-flex gap-2 items-center p-4 rounded-md transition-shadow hover:bg-highlight mt-2 text-muted-foreground;
+        @apply text-md text-muted-foreground ml-2 inline-block bg-secondary rounded-xl py-2 px-4;
     }
 }
 
@@ -25,7 +25,13 @@
 //                   //
 // ----------------- //
 .book-toc {
-    @apply md:grid md:grid-cols-2 mt-3 gap-1 items-stretch;
+    ul {
+        @apply md:grid md:grid-cols-2 mt-3 gap-1 items-stretch;
+    }
+
+    &__search {
+        @apply col-end-2;
+    }
 
     &__item {
         @apply 

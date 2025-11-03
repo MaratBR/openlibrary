@@ -29,6 +29,7 @@ script replaceURLWith(s string) {
 
 templ BookPage(
     book app.BookDetailsDto,
+    views app.Views,
     ratingAndReview app.RatingAndReview,
     readingListStatus app.Nullable[app.BookReadingListDto],
     topReviews []app.ReviewDto,
@@ -52,7 +53,7 @@ templ BookPage(
         <div class="mt-6">
             @bookTags(book.Tags)
         </div>
-        @bookRating(&book)
+        @bookRating(&book, views)
 
         <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) }>
             <header role="tablist" class="flex gap-4 items-baseline">
@@ -209,14 +210,15 @@ templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookR
 }
 
 
-templ bookRating(book *app.BookDetailsDto) {
-    <a id="rating-card" href="#reviews" class="book-page__rating-card">
-        @starRating(book.Rating.Value, 0.5)
-        <div class="text-xs inline-block">
-            {formatInt32(book.Votes)} votes <br />
-            {formatInt32(book.Reviews)} reviews
+templ bookRating(book *app.BookDetailsDto, views app.Views) {
+    <div id="rating-card" class="book-page__rating-card">
+        @starRating(book.Rating.Value, 0.4)
+        <div class="flex gap-1 mt-3">
+            <i class="fa-solid fa-square-poll-vertical"></i> {formatInt32(book.Votes)}&nbsp;&nbsp;
+            <i class="fa-solid fa-comment"></i> {formatInt32(book.Reviews)}&nbsp;&nbsp;
+            <i class="fa-solid fa-eye"></i> {formatInt32(int32(views.Total))}
         </div>
-    </a>
+    </div>
 }
 
 
