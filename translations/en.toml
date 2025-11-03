@@ -192,6 +192,7 @@ targetAudience = "Adults only (18+)"
 parentalGuidance = "Not appropriate for anyone under 18 under any circumstances"
 
 [book]
+startReading = "Start reading"
 words = "{{.count}} words"
 chapters = "%s chapters"
 nextChapter = "Next chapter"

@@ -6,7 +6,7 @@ import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/auth"
 import "net/url"
 
-templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadingListDto]) {
+templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[app.BookReadingListDto]) {
     {{ 
         _, isAuthorized := auth.GetSession(ctx)
         l := i18n.GetLocalizer(ctx) 
@@ -65,9 +65,25 @@ templ bookReadingList(bookID int64, readingListStatus app.Nullable[app.BookReadi
                 }
             </ul>
         } else {
-            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", bookID)))) } class="btn btn--primary btn--lg  w-full">
+            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="btn btn--primary btn--lg  w-full">
                 {l.T("readingList.want_to_read")}
             </a>
+        }
+        if readingListStatus.Valid {
+
+        } else {
+            if book.FirstChapterID.Valid {
+                {{
+                    var chapterQuery string
+                    if isAuthorized {
+                        chapterQuery = "?rl=1"
+                    }
+                }}
+                <a href={templ.URL(fmt.Sprintf("/book/%d/chapters/%d%s", book.ID, book.FirstChapterID.Value, chapterQuery))} 
+                    class="btn btn--secondary w-full mt-2">
+                    {_t(l, "book.startReading")}&nbsp;<i class="fa-solid fa-arrow-right"></i>
+                </a>
+            }
         }
     </section>
 }

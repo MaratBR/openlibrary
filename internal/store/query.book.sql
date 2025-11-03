@@ -101,3 +101,10 @@ limit $2;
 select created_at, has_cover, id
 from books
 where id = any(sqlc.arg(ids)::int8[]);
+
+-- name: Book_GetFirstChapterID :one
+select id
+from book_chapters
+where book_id = $1
+order by "order"
+limit 1;

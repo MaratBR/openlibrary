@@ -32,6 +32,7 @@ type BookDetailsDto struct {
 	Reviews             int32                 `json:"reviews"`
 	IsPubliclyAvailable bool                  `json:"isPubliclyAvailable"`
 	Slug                string                `json:"slug"`
+	FirstChapterID      Nullable[int64]       `json:"firstChapterId"`
 }
 
 type GetBookQuery struct {

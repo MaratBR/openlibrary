@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -86,6 +87,16 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (B
 		return BookDetailsDto{}, err
 	}
 
+	var firstChapterID Nullable[int64]
+	firstChapterIDInt, err := s.queries.Book_GetFirstChapterID(ctx, book.ID)
+	if err != nil {
+		if err != store.ErrNoRows {
+			slog.Warn("failed to execute Book_GetFirstChapterID", "err", err)
+		}
+	} else {
+		firstChapterID = Value(firstChapterIDInt)
+	}
+
 	bookDto := BookDetailsDto{
 		ID:              book.ID,
 		Name:            book.Name,
@@ -108,6 +119,7 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (B
 		Reviews:             book.TotalReviews,
 		Votes:               book.TotalRatings,
 		IsPubliclyAvailable: book.IsPubliclyVisible,
+		FirstChapterID:      firstChapterID,
 	}
 
 	if userPermissionState.IsOwner {
@@ -184,6 +196,7 @@ type ChapterDto struct {
 }
 
 type ChapterWithDetails struct {
+	BookID  int64
 	Chapter ChapterDto
 }
 
@@ -229,6 +242,7 @@ func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQu
 
 	return GetBookChapterResult{
 		ChapterWithDetails: ChapterWithDetails{
+			BookID: chapter.BookID,
 			Chapter: ChapterDto{
 				ID:              chapter.ID,
 				Name:            chapter.Name,

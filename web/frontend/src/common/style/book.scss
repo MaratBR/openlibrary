@@ -7,7 +7,7 @@
     @apply md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[100ch] py-4;
 
     &__left {
-        @apply md:col-span-3 flex flex-col items-center;
+        @apply md:col-span-3 flex flex-col items-center mb-10 md:mb-0;
     }
 
     &__right {

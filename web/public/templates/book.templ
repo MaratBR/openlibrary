@@ -38,71 +38,117 @@ templ BookPage(
     {{
         l := i18n.GetLocalizer(ctx)
         tab := "reviews"
+        user, isAuthenticated := auth.GetUser(ctx)
     }}
-    
-    @bookPageLayout(book, readingListStatus) {
+
+    @baseLayout(book.Name) {
         if replaceURLWithSlug {
             @replaceURLWith(fmt.Sprintf("/book/%s-%d", book.Slug, book.ID))
         }
-        <div x-ignore class="mt-4 __user-content">
-            @templ.Raw(book.Summary)
-        </div>
-        <div class="mt-4 text-muted-foreground font-medium">
-            @bookRatingBadge(book.AgeRating)
-        </div>
-        <div class="mt-6">
-            @bookTags(book.Tags)
-        </div>
-        @bookRating(&book, views)
 
-        <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) }>
-            <header role="tablist" class="flex gap-4 items-baseline">
-                <span role="tab"
-                    @click.prevent="tab='reviews'"
-                    if tab == "reviews" {
-                        data-active="true"
-                    }
-                    :data-active="tab==='reviews'"
-                    class="cursor-pointer font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
-                    { l.T("reviews.title") }
-                </span>
-                <span role="tab" data-no-instant
-                    @click.prevent="tab='toc'"
-                    if tab == "toc" {
-                        data-active="true"
-                    }
-                    :data-active="tab==='toc'"
-                    class="cursor-pointer font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
-                    { l.T("book.toc") }
-                </span>
-            </header>
-
-            <div
-                role="tabpanel"
-                if tab != "reviews" {
-                    x-cloak
-                } 
-                class="contents" 
-                x-show="tab==='reviews'">
-                @BookMyReview(book.ID, ratingAndReview)
-                @bookTopReviews(topReviews, book.Author.ID)
+        if !book.IsPubliclyAvailable && isAuthenticated && user.ID == book.Author.ID {
+            <div class="ol-container ol-container--big p-4 bg-yellow-300 text-black border-yellow-600 border-2">
+                {_t(l, "book.notPubliclyAvailableNotice")} <br /> <a class="link" href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))}>{_t(l, "book.goToBookManager")}</a>
             </div>
+        }
 
-            <div 
-                role="tabpanel" 
-                class="contents" 
-                id="slot-book-toc" 
-                x-merge="replace" 
-                x-cloak 
-                x-show="tab==='toc'" 
-                x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/__fragment/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
-                <div class="h-[600px] mt-4">
-                    <span class="loader mt-4"></span>
+        @i18nExtractKeysByPrefix(l, "book")
+
+        <div 
+            id="book" 
+            class="book-page" 
+            x-data={ convertBookDetailsToAlpineState(&book, readingListStatus) }>
+            @serverData(map[string]any{
+                "bookId": fmt.Sprintf("%d", book.ID),
+            })
+            <div class="book-page__left">
+                @bookCover(book.Cover, book.Name, 300)
+                @bookReadingList(&book, readingListStatus)
+
+                <div class="flex gap-1 mt-4">
+                    <ol-island src="bookmanager" name="BookCollectionsPopup" active="true" data={ fmt.Sprintf("{\"bookId\": \"%d\"}", book.ID) } />
+                    <button class="btn btn--ghost relative" id="BookCollectionsPopup:target">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
                 </div>
+
+                if isAuthenticated {
+                    if user.ID == book.Author.ID {
+                        <a href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] ">
+                            Book manager
+                        </a>
+                    }
+                }
             </div>
-        </section>
+            <div class="book-page__right">
+                <header>
+                    <h1 class="page-header">{book.Name}</h1>
+                    <p>
+                        <a class="link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
+                    </p>
+                </header>
 
+                <main class="contents" id="slot-book-page">
+                    <div x-ignore class="mt-4 __user-content">
+                        @templ.Raw(book.Summary)
+                    </div>
+                    <div class="mt-4 text-muted-foreground font-medium">
+                        @bookRatingBadge(book.AgeRating)
+                    </div>
+                    <div class="mt-6">
+                        @bookTags(book.Tags)
+                    </div>
+                    @bookRating(&book, views)
 
+                    <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) }>
+                        <header role="tablist" class="flex gap-4 items-baseline">
+                            <span role="tab"
+                                @click.prevent="tab='reviews'"
+                                if tab == "reviews" {
+                                    data-active="true"
+                                }
+                                :data-active="tab==='reviews'"
+                                class="cursor-pointer font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
+                                { l.T("reviews.title") }
+                            </span>
+                            <span role="tab" data-no-instant
+                                @click.prevent="tab='toc'"
+                                if tab == "toc" {
+                                    data-active="true"
+                                }
+                                :data-active="tab==='toc'"
+                                class="cursor-pointer font-title text-2xl my-2 font-medium text-muted-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
+                                { l.T("book.toc") }
+                            </span>
+                        </header>
+
+                        <div
+                            role="tabpanel"
+                            if tab != "reviews" {
+                                x-cloak
+                            } 
+                            class="contents" 
+                            x-show="tab==='reviews'">
+                            @BookMyReview(book.ID, ratingAndReview)
+                            @bookTopReviews(topReviews, book.Author.ID)
+                        </div>
+
+                        <div 
+                            role="tabpanel" 
+                            class="contents" 
+                            id="slot-book-toc" 
+                            x-merge="replace" 
+                            x-cloak 
+                            x-show="tab==='toc'" 
+                            x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/__fragment/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
+                            <div class="h-[600px] mt-4">
+                                <span class="loader mt-4"></span>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        </div>
     }
 }
 
@@ -142,78 +188,10 @@ func getBookCoverURL(name string, height int) string {
     return fmt.Sprintf("/_/embed-assets/cover/%d.jpg", id)
 }
 
-templ bookPageLayout(book app.BookDetailsDto, readingList app.Nullable[app.BookReadingListDto]) {
-    {{
-        user, isAuthenticated := auth.GetUser(ctx)
-    }}
-
-    @baseLayout(book.Name) {
-        {{
-            l := i18n.GetLocalizer(ctx)
-            session, hasSession := auth.GetSession(ctx)
-        }}
-        if !book.IsPubliclyAvailable && hasSession && session.UserID == book.Author.ID {
-            <div class="ol-container ol-container--big p-4 bg-yellow-300 text-black border-yellow-600 border-2">
-                {_t(l, "book.notPubliclyAvailableNotice")} <br /> <a class="link" href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))}>{_t(l, "book.goToBookManager")}</a>
-            </div>
-        }
-
-        @i18nExtractKeysByPrefix(l, "book")
-
-        <div 
-            id="book" 
-            class="book-page" 
-            x-data={ convertBookDetailsToAlpineState(&book, readingList) }>
-            @serverData(map[string]any{
-                "bookId": fmt.Sprintf("%d", book.ID),
-            })
-            <div class="book-page__left">
-                @bookCover(book.Cover, book.Name, 300)
-                @bookReadingList(book.ID, readingList)
-
-
-                <div class="flex gap-1 mt-4">
-                    <ol-island src="bookmanager" name="BookCollectionsPopup" active="true" data={ fmt.Sprintf("{\"bookId\": \"%d\"}", book.ID) } />
-                    <button class="btn btn--ghost relative" id="BookCollectionsPopup:target">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-
-                    if isAuthenticated && user.Role.IsModOrHigher() {
-                        <a href={templ.URL(fmt.Sprintf("/mod/book/%d", book.ID))} class="btn btn--ghost text-orange-600">
-                            <i class="fa-solid fa-shield-halved"></i>
-                        </a>
-                    }
-                </div>
-
-                if isAuthenticated {
-                    if user.ID == book.Author.ID {
-                        <a href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] ">
-                            Book manager
-                        </a>
-                    }
-                }
-            </div>
-            <div class="book-page__right">
-                <header>
-                    <h1 class="page-header">{book.Name}</h1>
-                    <p>
-                        <a class="link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
-                    </p>
-                </header>
-
-                <main class="contents" id="slot-book-page">
-                    { children... }
-                </main>
-            </div>
-        </div>
-    }
-}
-
-
 templ bookRating(book *app.BookDetailsDto, views app.Views) {
-    <div id="rating-card" class="book-page__rating-card">
+    <div id="rating-card" class="book-page__rating-card mt-4">
         @starRating(book.Rating.Value, 0.4)
-        <div class="flex gap-1 mt-3">
+        <div class="align-middle">
             <i class="fa-solid fa-square-poll-vertical"></i> {formatInt32(book.Votes)}&nbsp;&nbsp;
             <i class="fa-solid fa-comment"></i> {formatInt32(book.Reviews)}&nbsp;&nbsp;
             <i class="fa-solid fa-eye"></i> {formatInt32(int32(views.Total))}

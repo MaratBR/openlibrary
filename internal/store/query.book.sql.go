@@ -11,6 +11,21 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const book_GetFirstChapterID = `-- name: Book_GetFirstChapterID :one
+select id
+from book_chapters
+where book_id = $1
+order by "order"
+limit 1
+`
+
+func (q *Queries) Book_GetFirstChapterID(ctx context.Context, bookID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, book_GetFirstChapterID, bookID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getAllBookChapters = `-- name: GetAllBookChapters :many
 select c.id, c.name, c.book_id, c.content, c."order", c.created_at, c.words, c.is_adult_override, c.summary, c.is_publicly_visible, 
   cast(coalesce((select id from drafts where drafts.chapter_id = c.id order by created_at desc limit 1), 0) as int8) as latest_draft_id
