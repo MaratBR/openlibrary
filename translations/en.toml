@@ -269,6 +269,13 @@ createCollection = "Create collection"
 namePlaceholder = "Put new collection name here to create it"
 backToLibrary = "Back to library"
 manage = "Manage"
+bookRemovedFromCollection = "Book was removed from collection"
+
+[collection.edit]
+enterNameToDelete = "Enter name of the collection to delete collection"
+nameLabel = "Collection name"
+isPublicLabel = "Public collection"
+deleted = "Collection was deleted"
 
 #####################
 #                   #

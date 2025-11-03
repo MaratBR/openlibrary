@@ -4,6 +4,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "fmt"
+import "github.com/MaratBR/openlibrary/internal/csrf"
 
 templ Collection(
     result app.GetCollectionBooksResult,
@@ -13,10 +14,10 @@ templ Collection(
         l := i18n.GetLocalizer(ctx)
     }}
     @baseLayout(_t(l, "collection.collection") + " - " + result.Collection.Name) {
-        <header class="mb-8 card border-0 border-b-1 pt-8">
+        <header class="hero hero--header">
             <div class="ol-container">
                 <h1 class="font-semibold text-4xl">{ result.Collection.Name }</h1>
-                <div class="my-4">
+                <div class="mt-2">
                     if canEdit {
                         <div class="btn-group">
                             <a class="btn btn--ghost btn--sm" href="/library/collections">
@@ -55,9 +56,12 @@ templ Collection(
                             @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.AuthorName, book.AuthorID, book.Tags) {
                                 if canEdit {
                                     <div class="absolute top-1 right-1">
-                                        <button class="btn btn--ghost btn--destructive">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
+                                        <form action={ templ.URL(fmt.Sprintf("/_api/collections/removeBook/%d/%d", result.Collection.ID, book.ID)) } method="post">
+                                            @csrf.CSRFInputTempl(ctx)
+                                            <button type="submit" class="btn btn--ghost btn--destructive">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 }
                             }
@@ -76,6 +80,81 @@ templ Collection(
                     </p>
                 }
             </main>  
+        </div>
+    }
+}
+
+templ CollectionManage(
+    collection app.CollectionDto,
+) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    @baseLayout(_t(l, "collection.collection") + " - " + collection.Name) {
+        <header class="hero hero--header">
+            <div class="ol-container">
+                <h1 class="font-semibold text-4xl">
+                    { collection.Name }
+                </h1>
+            </div>
+        </header>
+
+        <div class="ol-container pt-4" x-data="{deleting:false,confirmationPhrase:''}">
+            <form method="post">
+                @csrf.CSRFInputTempl(ctx)
+                <div class="form-control">
+                    <div class="form-control__label">
+                        <label for="CollectionManage-name" class="label">
+                            { _t(l, "collection.edit.nameLabel") }
+                        </label>
+                    </div>
+                    <div class="form-control__value">
+                        <input required value={ collection.Name } id="CollectionManage-name" name="name" class="input" placeholder={ _t(l, "collection.edit.nameLabel") } />
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <div class="form-control__label">
+                        <label for="CollectionManage-public" class="label">
+                            { _t(l, "collection.edit.isPublicLabel") }
+                        </label>
+                    </div>
+                    <div class="form-control__value">
+                        <label class="switch">
+                            <input
+                                if true {
+                                    checked
+                                }
+                                id="CollectionManage-public" name="public" type="checkbox">
+                            <span class="switch__slider" />
+                        </label>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="flex gap-1">
+                    <button type="submit" class="btn">
+                        { _t(l, "common.save") }
+                    </button>
+
+                    <button @click.prevent="deleting=true" class="btn btn--destructive">
+                        { _t(l, "common.delete") }
+                    </button>
+                </div>
+            </form>
+
+            <form method="post" action="?act=delete" x-show="deleting" x-cloak class="card card--elevated mt-4">
+                <label for="CollectionManage-deleteConfirmation" class="label mb-2">{ _t(l, "collection.edit.enterNameToDelete") }</label>
+                <input x-model="confirmationPhrase" id="CollectionManage-deleteConfirmation" class="input" placeholder={ collection.Name } />
+                <button type="submit"
+                    disabled 
+                    :disabled={ fmt.Sprintf("confirmationPhrase!==%q", collection.Name) } 
+                    class="btn btn--destructive mt-2">
+                    { _t(l, "common.delete") }
+                </button>
+                @csrf.CSRFInputTempl(ctx)
+            </form>
         </div>
     }
 }

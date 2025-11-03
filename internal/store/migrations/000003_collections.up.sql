@@ -5,7 +5,8 @@ create table collections (
     user_id uuid not null references users(id),
     created_at timestamptz not null default now(),
     books_count int4 not null default 0,
-    last_updated_at timestamptz null
+    last_updated_at timestamptz null,
+    is_public boolean not null default true
 );
 
 create index ix_collections_user_id on collections (user_id);

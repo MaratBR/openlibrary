@@ -3,10 +3,11 @@ insert into collections (id, name, slug, user_id)
 values ($1, $2, $3, $4);
 
 -- name: Collection_GetByUser :many
-select *
+select collections.*, users.name as user_name
 from collections
-where user_id = $3
-order by created_at desc
+join users on users.id = collections.user_id
+where collections.user_id = $3
+order by collections.created_at desc
 limit $1 offset $2;
 
 -- name: Collections_CountByUser :one
@@ -31,8 +32,9 @@ order by last_updated_at desc
 limit $2;
 
 -- name: Collection_GetByBook :many
-select c.*
+select c.*, u.name as user_name
 from collections c
+join users u on u.id = c.user_id
 join collection_books cb on cb.collection_id = c.id
 where c.user_id = $1 and cb.book_id = $2
 order by last_updated_at desc;
@@ -70,3 +72,10 @@ where id = ANY($1::int8[]);
 update collections
 set books_count = coalesce((select count(*) from collection_books where collection_id = sqlc.arg('collection_id')), 0)
 where id = sqlc.arg('collection_id');
+
+-- name: Collection_DeleteAllBooks :exec
+delete from collection_books
+where collection_id = $1;
+
+-- name: Collection_Delete :exec
+delete from collections where id = $1;

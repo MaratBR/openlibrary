@@ -12,7 +12,7 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
     }}
 
     @baseLayout(_t(l, "library.title")) {
-        <header class="library-header">
+        <header class="hero hero--header library-header">
             <div class="ol-container flex gap-4">
                 @libraryTab(_t(l, "library.title"), "/library", true)
                 @libraryTab(_t(l, "library.archive"), "/library/archive", false)
@@ -27,9 +27,9 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
         
             <div class="library-body">
                 if len(reading) + len(paused) + len(wantToRead) == 0 {
-                    <p>
+                    @alertInfo() {
                         {_t(l, "library.libraryDescription")}
-                    </p>
+                    }
                 }
 
                 if len(reading) != 0 {
@@ -90,7 +90,7 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
     }}
 
     @baseLayout(_t(l, "library.title")) {
-        <header class="library-header">
+        <header class="hero hero--header library-header">
             <div class="ol-container flex gap-4">
                 @libraryTab(_t(l, "library.title"), "/library", false)
                 @libraryTab(_t(l, "library.archive"), "/library/archive", true)
@@ -107,9 +107,9 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
         
             <div class="library-body">
                 if len(read) + len(dnf) == 0 {
-                    <p>
+                    @alertInfo() {
                         {_t(l, "library.archiveDescription")}
-                    </p>
+                    }
                 }
 
                 if len(read) != 0 {
@@ -128,7 +128,7 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
         l := i18n.GetLocalizer(ctx)
     }}
         @baseLayout(_t(l, "library.title")) {
-        <header class="library-header">
+        <header class="hero hero--header library-header">
             <div class="ol-container flex gap-4">
                 @libraryTab(_t(l, "library.title"), "/library", false)
                 @libraryTab(_t(l, "library.archive"), "/library/archive", false)

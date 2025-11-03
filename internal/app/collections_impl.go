@@ -27,7 +27,13 @@ func storeCollectionToCollectionDto(row store.Collection) CollectionDto {
 		Name:          row.Name,
 		LastUpdatedAt: timeNullableDbToDomain(row.LastUpdatedAt),
 		BooksCount:    int(row.BooksCount),
+		UserID:        uuidDbToDomain(row.UserID),
+		UserName:      "",
 	}
+}
+
+func (c *collectionService) authorizeCollectionModification(ctx context.Context, userID uuid.UUID, collectionID int64) error {
+	return nil
 }
 
 func (c *collectionService) GetUserCollections(ctx context.Context, query GetUserCollectionsQuery) (GetUserCollectionsResult, error) {
@@ -40,7 +46,9 @@ func (c *collectionService) GetUserCollections(ctx context.Context, query GetUse
 		return GetUserCollectionsResult{}, wrapUnexpectedDBError(err)
 	}
 
-	collections := MapSlice(rows, storeCollectionToCollectionDto)
+	collections := MapSlice(rows, func(row store.Collection_GetByUserRow) CollectionDto {
+		return newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic)
+	})
 
 	count, err := c.queries.Collections_CountByUser(ctx, uuidDomainToDb(query.UserID))
 	if err != nil {
@@ -165,6 +173,29 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 	return nil
 }
 
+func (c *collectionService) RemoveFromCollection(ctx context.Context, cmd RemoveFromCollectionCommand) error {
+	err := c.authorizeCollectionModification(ctx, cmd.UserID, cmd.CollectionID)
+	if err != nil {
+		return err
+	}
+
+	err = c.queries.Collection_DeleteBookFromCollection(ctx, store.Collection_DeleteBookFromCollectionParams{
+		BookID:       cmd.BookID,
+		CollectionID: cmd.CollectionID,
+	})
+
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	err = c.queries.Collection_RecalculateCounter(ctx, cmd.CollectionID)
+	if err != nil {
+		slog.Warn("failed to recalculate collection book counter", "err", err)
+	}
+
+	return nil
+}
+
 func (c *collectionService) CreateCollection(ctx context.Context, cmd CreateCollectionCommand) (int64, error) {
 	id := GenID()
 	err := c.queries.Collection_Insert(ctx, store.Collection_InsertParams{
@@ -189,7 +220,9 @@ func (c *collectionService) GetBookCollections(ctx context.Context, query GetBoo
 		return nil, wrapUnexpectedDBError(err)
 	}
 
-	return MapSlice(rows, storeCollectionToCollectionDto), nil
+	return MapSlice(rows, func(row store.Collection_GetByBookRow) CollectionDto {
+		return newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic)
+	}), nil
 
 }
 
@@ -249,7 +282,7 @@ func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCol
 
 	return GetCollectionBooksResult{
 		Books: books,
-		Collection: Collection2Dto{
+		Collection: CollectionDto{
 			ID:            collection.ID,
 			Name:          collection.Name,
 			BooksCount:    int(collection.BooksCount),
@@ -297,6 +330,27 @@ func (c *collectionService) GetCollectionBooksMap(ctx context.Context, collectio
 	}
 
 	return m, nil
+}
+
+func (c *collectionService) GetCollection(ctx context.Context, id int64) (Nullable[CollectionDto], error) {
+	row, err := c.queries.Collection_Get(ctx, id)
+	if err != nil {
+		return Nullable[CollectionDto]{}, wrapUnexpectedDBError(err)
+	}
+
+	return Value(newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic)), nil
+}
+
+func (c *collectionService) DeleteCollection(ctx context.Context, cmd DeleteCollectionCommand) error {
+	err := c.queries.Collection_DeleteAllBooks(ctx, cmd.CollectionID)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	err = c.queries.Collection_Delete(ctx, cmd.CollectionID)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	return nil
 }
 
 func NewCollectionsService(db DB, tagsService TagsService, uploadService *UploadService) CollectionService {

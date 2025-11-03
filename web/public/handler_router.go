@@ -88,12 +88,25 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-func redirectToLoginOnUnauthorized(next http.Handler) http.Handler {
+func requiresAuthorizationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, ok := auth.GetSession(r.Context())
 
 		if !ok {
 			redirectToLogin(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func apiRequiresAuthorizationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, ok := auth.GetSession(r.Context())
+
+		if !ok {
+			apiWriteUnauthorized(w)
 			return
 		}
 

@@ -24,7 +24,7 @@ func newBookManagerController(service app.BookManagerService, collectionService 
 
 func (c *bookManagerController) Register(r chi.Router) {
 	r.Route("/books-manager", func(r chi.Router) {
-		r.Use(redirectToLoginOnUnauthorized)
+		r.Use(requiresAuthorizationMiddleware)
 
 		r.Get("/", c.index)
 		r.Get("/new", c.newBook)

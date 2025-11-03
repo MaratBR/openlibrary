@@ -1,0 +1,7 @@
+.hero {
+    @apply mb-8 bg-card py-8;
+
+    &--header {
+        @apply border-b-1;
+    }
+}

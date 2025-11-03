@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 var (
@@ -35,15 +36,28 @@ type CollectionDto struct {
 	BooksCount    int
 	LastUpdatedAt Nullable[time.Time]
 	UserID        uuid.UUID
+	UserName      string
+	IsPublic      bool
 }
 
-type Collection2Dto struct {
-	ID            int64
-	Name          string
-	BooksCount    int
-	LastUpdatedAt Nullable[time.Time]
-	UserID        uuid.UUID
-	UserName      string
+func newCollectionDto(
+	id int64,
+	name string,
+	booksCount int,
+	lastUpdatedAt pgtype.Timestamptz,
+	userID pgtype.UUID,
+	userName string,
+	isPublic bool,
+) CollectionDto {
+	return CollectionDto{
+		ID:            id,
+		Name:          name,
+		BooksCount:    booksCount,
+		LastUpdatedAt: timeNullableDbToDomain(lastUpdatedAt),
+		UserID:        uuidDbToDomain(userID),
+		UserName:      userName,
+		IsPublic:      isPublic,
+	}
 }
 
 type CreateCollectionCommand struct {
@@ -87,10 +101,21 @@ type GetCollectionBooksQuery struct {
 
 type GetCollectionBooksResult struct {
 	Books      []CollectionBook2Dto
-	Collection Collection2Dto
+	Collection CollectionDto
 	Page       int32
 	TotalPages int32
 	PageSize   int32
+}
+
+type RemoveFromCollectionCommand struct {
+	CollectionID int64
+	BookID       int64
+	UserID       uuid.UUID
+}
+
+type DeleteCollectionCommand struct {
+	ActorUserID  uuid.UUID
+	CollectionID int64
 }
 
 type CollectionService interface {
@@ -98,8 +123,11 @@ type CollectionService interface {
 	GetRecentUserCollections(ctx context.Context, query GetRecentCollectionsQuery) ([]CollectionDto, error)
 	CreateCollection(ctx context.Context, cmd CreateCollectionCommand) (int64, error)
 	AddToCollections(ctx context.Context, cmd AddToCollectionsCommand) error
+	RemoveFromCollection(ctx context.Context, cmd RemoveFromCollectionCommand) error
 	GetBookCollections(ctx context.Context, query GetBookCollectionsQuery) ([]CollectionDto, error)
 
 	GetCollectionBooks(ctx context.Context, query GetCollectionBooksQuery) (GetCollectionBooksResult, error)
 	GetCollectionBooksMap(ctx context.Context, collections []CollectionDto) (map[int64][]CollectionBookDto, error)
+	GetCollection(ctx context.Context, id int64) (Nullable[CollectionDto], error)
+	DeleteCollection(ctx context.Context, cmd DeleteCollectionCommand) error
 }

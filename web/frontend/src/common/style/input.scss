@@ -20,7 +20,7 @@ textarea.input {
 }
 
 .label {
-    @apply block text-sm text-foreground;
+    @apply block text-sm text-foreground font-medium;
 
     &[for] {
         @apply cursor-pointer;
@@ -67,6 +67,10 @@ textarea.input {
 
     &__label {
         @apply text-foreground p-2;
+
+        & > .label {
+            @apply mb-0;
+        }
 
         & > label {
             @apply mb-2;

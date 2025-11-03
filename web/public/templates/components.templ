@@ -45,3 +45,14 @@ templ starRatingInput(scale, initialValue float64, onInput string) {
             class="absolute pointer-events-none left-0 top-0 star-background star-background--filled h-full"></div>
     </div>
 }
+
+templ alertInfo() {
+    <div class="bg-primary/10 rounded-xl p-4 flex">
+        <div class="h-8 min-w-8 bg-primary rounded-md flex items-center justify-center text-white">
+            <i class="fa-solid fa-info"></i>
+        </div>
+        <div class="ml-4">
+            { children... }
+        </div>
+    </div>
+}

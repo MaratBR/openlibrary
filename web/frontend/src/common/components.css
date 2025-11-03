@@ -23,6 +23,8 @@
 @import "./style/tag.scss";
 @import "./style/toast.scss";
 @import "./style/user-content.scss";
+@import "./style/hero.scss";
+
 
 @import "./style/library.scss";
 @import "./style/profile.scss";

@@ -1,10 +1,13 @@
 package public
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/flash"
+	"github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
@@ -22,11 +25,13 @@ func newAPICollectionController(collectionService app.CollectionService) *apiCol
 
 func (c *apiCollectionController) Register(r chi.Router) {
 	r.Route("/collections", func(r chi.Router) {
+		r.Use(apiRequiresAuthorizationMiddleware)
 		r.Get("/recent", c.getRecent)
 		r.Get("/containingBook", c.containingBook)
-
 		r.With(httpin.NewInput(&createCollectionInput{})).Post("/", c.createCollection)
 		r.With(httpin.NewInput(&addToCollectionInput{})).Post("/addBook", c.addToCollection)
+		r.Delete("/removeBook/{collectionID}/{bookID}", c.removeFromCollection)
+		r.Post("/removeBook/{collectionID}/{bookID}", c.removeFromCollection)
 	})
 }
 
@@ -81,6 +86,36 @@ func (c *apiCollectionController) addToCollection(w http.ResponseWriter, r *http
 	}
 
 	olhttp.NewAPIResponseOK().Write(w)
+}
+
+func (c *apiCollectionController) removeFromCollection(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	collectionID, err := olhttp.URLParamInt64(r, "collectionID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	session := auth.RequireSession(r.Context())
+
+	err = c.collectionService.RemoveFromCollection(r.Context(), app.RemoveFromCollectionCommand{
+		BookID:       bookID,
+		CollectionID: collectionID,
+		UserID:       session.UserID,
+	})
+
+	if r.Method == http.MethodPost {
+		// received a form
+		l := i18n.GetLocalizer(r.Context())
+		flash.Add(r, flash.Text(l.T("collection.bookRemovedFromCollection")))
+		http.Redirect(w, r, fmt.Sprintf("/col/%d", collectionID), http.StatusFound)
+	} else {
+		apiWriteOK(w)
+	}
 }
 
 type recentCollectionDto struct {

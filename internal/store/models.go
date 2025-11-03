@@ -427,6 +427,7 @@ type Collection struct {
 	CreatedAt     pgtype.Timestamptz
 	BooksCount    int32
 	LastUpdatedAt pgtype.Timestamptz
+	IsPublic      bool
 }
 
 type CollectionBook struct {

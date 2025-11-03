@@ -6,6 +6,8 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/flash"
+	"github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
@@ -22,12 +24,13 @@ func newLibraryController(service app.ReadingListService, collectionService app.
 
 func (c *libraryController) Register(r chi.Router) {
 	r.Route("/library", func(r chi.Router) {
-		r.Use(redirectToLoginOnUnauthorized)
+		r.Use(requiresAuthorizationMiddleware)
 		r.Get("/", c.index)
 		r.Get("/archive", c.archive)
 		r.Get("/collections", c.collections)
 		r.Post("/collections", c.createCollection)
-
+		r.Get("/collections/{collectionID}/manage", c.manageCollection)
+		r.Post("/collections/{collectionID}/manage", c.manageCollectionAct)
 	})
 }
 
@@ -65,6 +68,46 @@ func (c *libraryController) index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates.Library(wantToRead, reading, paused).Render(r.Context(), w)
+}
+
+func (c *libraryController) manageCollectionAct(w http.ResponseWriter, r *http.Request) {
+	collectionID, err := olhttp.URLParamInt64(r, "collectionID")
+	session := auth.RequireSession(r.Context())
+	if err != nil {
+		writeBadRequest(w, r, err)
+		return
+	}
+	act := r.URL.Query().Get("act")
+
+	if act == "delete" {
+		c.collectionService.DeleteCollection(r.Context(), app.DeleteCollectionCommand{
+			ActorUserID:  session.UserID,
+			CollectionID: collectionID,
+		})
+		l := i18n.GetLocalizer(r.Context())
+		flash.Add(r, flash.Text(l.T("collection.edit.deleted")))
+		http.Redirect(w, r, "/library/collections", http.StatusFound)
+	} else {
+		http.Redirect(w, r, fmt.Sprintf("/library/collections/%d/manage", collectionID), http.StatusFound)
+	}
+}
+
+func (c *libraryController) manageCollection(w http.ResponseWriter, r *http.Request) {
+	collectionID, err := olhttp.URLParamInt64(r, "collectionID")
+	if err != nil {
+		writeBadRequest(w, r, err)
+		return
+	}
+	col, err := c.collectionService.GetCollection(r.Context(), collectionID)
+
+	if !col.Valid {
+		notFoundHandler(w, r)
+		return
+	}
+
+	olhttp.WriteTemplate(
+		w, r.Context(), templates.CollectionManage(col.Value),
+	)
 }
 
 func (c *libraryController) archive(w http.ResponseWriter, r *http.Request) {
