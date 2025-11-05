@@ -193,6 +193,7 @@ parentalGuidance = "Not appropriate for anyone under 18 under any circumstances"
 
 [book]
 startReading = "Start reading"
+continueReading = "Continue reading"
 words = "{{.count}} words"
 chapters = "%s chapters"
 nextChapter = "Next chapter"

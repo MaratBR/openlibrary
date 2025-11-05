@@ -70,7 +70,12 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
             </a>
         }
         if readingListStatus.Valid {
-
+            if readingListStatus.Value.ChapterID.Valid && readingListStatus.Value.Status == app.ReadingListStatusReading {
+                <a href={templ.URL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, readingListStatus.Value.ChapterID.Value))} 
+                    class="btn btn--secondary w-full mt-2">
+                    {_t(l, "book.continueReading")}&nbsp;<i class="fa-solid fa-arrow-right"></i>
+                </a>
+            }
         } else {
             if book.FirstChapterID.Valid {
                 {{
