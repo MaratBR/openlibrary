@@ -9,10 +9,13 @@ LOCAL_DB := postgres://$(LOCAL_DB_USER):$(LOCAL_DB_PASSWORD)@$(LOCAL_DB_HOST):$(
 PGX_MIGRATIONS := file://internal/store/migrations
 MIGRATE_ARGS := -source=$(PGX_MIGRATIONS) -database=$(LOCAL_DB)
 
+__verify:
+	@./scripts/verify_cli.sh
+
 build_server:
 	go build -o $(EXE) ./cmd/server
 
-build: codegen build_server
+build: __verify codegen build_server
 
 main_watch:
 	gow run ./cmd/server server --dev --bypass-tls-check --static-dir ./cmd/server/ui/dist
@@ -63,10 +66,10 @@ db_sqlc:
 #
 
 ui_watch:
-	cd ./web/frontend && pnpm run dev
+	pnpm run dev
 
 ui_build:
-	cd ./web/frontend && pnpm run build
+	pnpm run build
 
 codegen: db_sqlc templ
 
