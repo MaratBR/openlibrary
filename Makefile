@@ -71,7 +71,12 @@ ui_watch:
 ui_build:
 	pnpm run build
 
+
+# CODEGEN
+
 codegen: db_sqlc templ
+
+# DB STUFF
 
 db_populate:
 	go run ./cmd/server populate

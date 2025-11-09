@@ -22,7 +22,7 @@ where id = $1;
 
 -- name: RecalculateBookStats :exec
 update books
-set words = stat.words, chapters = stat.chapters
+set words = coalesce(stat.words, 0), chapters = coalesce(stat.words, 0)
 from (select sum(words) as words, count(1) as chapters from book_chapters where book_id = $1 and is_publicly_visible = true) as stat
 where books.id = $1;
 

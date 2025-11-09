@@ -96,7 +96,7 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
           <div class="relative">
             <div
               data-open={publishPopupOpen}
-              class="card p-4 shadow-2xl absolute right-0 top-0 rounded-2xl min-w-48 transition-opacity data-[open=true]:opacity-1 data-[open=false]:opacity-0 data-[open=false]:pointer-events-none"
+              class="card p-4 shadow-2xl absolute right-0 top-0 rounded-2xl min-w-48 transition-opacity data-[open=true]:opacity-100 data-[open=false]:opacity-0 data-[open=false]:pointer-events-none"
             >
               <strong>{window._('editor.publishAreYouSure')}</strong>
               <p>{window._('editor.publishWarning')}</p>

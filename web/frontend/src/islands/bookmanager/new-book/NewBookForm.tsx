@@ -54,6 +54,13 @@ export default function NewBookForm() {
           <input
             value={name}
             onInput={(e) => setName((e.target as HTMLInputElement).value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                e.stopPropagation()
+                setStage(1)
+              }
+            }}
             autofocus
             placeholder={window._('bookManager.newBook.namePlaceholder')}
             required
