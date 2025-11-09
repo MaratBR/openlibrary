@@ -200,13 +200,13 @@ func (c *Client) GetBookWithChapters(bookID int) (*BookWithChapters, error) {
 		Chapters: make([]*ChapterPage, len(page.Chapters)),
 	}
 
-	// for i := range page.Chapters {
-	// 	slog.Debug("downloading chapter", "chapterID", page.Chapters[i].ID)
-	// 	book.Chapters[i], err = c.GetChapterPage(bookID, page.Chapters[i].ID)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("failed to fetching chapter %d (id=%d): %s", i+1, page.Chapters[i].ID, err.Error())
-	// 	}
-	// }
+	for i := range page.Chapters {
+		slog.Debug("downloading chapter", "chapterID", page.Chapters[i].ID)
+		book.Chapters[i], err = c.GetChapterPage(bookID, page.Chapters[i].ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetching chapter %d (id=%d): %s", i+1, page.Chapters[i].ID, err.Error())
+		}
+	}
 
 	return book, nil
 }
