@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	royalroadapi "github.com/MaratBR/openlibrary/internal/royal-road-api"
@@ -51,19 +54,6 @@ func main() {
 	}
 	close(downloadBooks)
 	dwnldWg.Wait()
-
-	// book, err := c.GetBookWithChapters(21220)
-	// if err != nil {
-	// 	slog.Error("failed to get book page", "err", err)
-	// 	return
-	// }
-
-	// slog.Info("got book page", "title", book.Book.Name, "description", book.Book.Description)
-
-	// for _, chapter := range book.Chapters {
-	// 	slog.Info("got chapter", "content", chapter.Content)
-	// }
-
 }
 
 func loadAllBestRatedBooks(ch chan royalroadapi.BestRatedBook, c *royalroadapi.Client) {
@@ -96,24 +86,51 @@ func downloadAllBooks(
 	workers int,
 ) *sync.WaitGroup {
 	wg := new(sync.WaitGroup)
+	var totalSize int64
+	var activeWorkers int32
 
-	for i := 0; i < workers; i++ {
+	pausedNotifCh := make(chan struct{})
+	pauseChannels := make([]chan struct{}, 0, workers)
+	resumeChannels := make([]chan struct{}, 0, workers)
+
+	for range workers {
+		activeWorkers++
+		pauseChannel := make(chan struct{})
+		resumeChannel := make(chan struct{})
+
+		pauseChannels = append(pauseChannels, pauseChannel)
+		resumeChannels = append(resumeChannels, resumeChannel)
+
 		wg.Add(1)
 		go func() {
-			for book := range ch {
-				fileName := fmt.Sprintf("rr-books/%d.json", book.ID)
+			defer atomic.AddInt32(&activeWorkers, -1)
+			for {
+				select {
+				case <-pauseChannel:
+					pausedNotifCh <- struct{}{}
+					// pause requested - waiting until all
+					<-resumeChannel
+					continue
+				default:
+				}
+
+				bookEntry, ok := <-ch
+				if !ok {
+					break
+				}
+				fileName := fmt.Sprintf("rr-books/%d.json", bookEntry.ID)
 
 				_, err := os.Stat(fileName)
 				if err == nil {
-					slog.Debug("book already downloaded", "bookID", book.ID)
+					slog.Debug("book already downloaded", "bookID", bookEntry.ID)
 					continue
 				} else if !os.IsNotExist(err) {
 					slog.Error("failed to check if file exists", "err", err)
 					continue
 				}
 
-				slog.Debug("downloading book", "bookID", book.ID)
-				book, err := c.GetBookWithChapters(book.ID)
+				slog.Debug("downloading book", "bookID", bookEntry.ID)
+				book, err := c.GetBookWithChapters(bookEntry.ID)
 				if err != nil {
 					slog.Error("failed to get book with chapters", "err", err)
 					continue
@@ -124,20 +141,103 @@ func downloadAllBooks(
 					slog.Error("failed to create file", "err", err, "bookID", book.Book.ID)
 					continue
 				}
-				defer f.Close()
 
 				enc := json.NewEncoder(f)
 				enc.SetIndent("", "  ")
 				err = enc.Encode(book)
+				f.Close()
 				if err != nil {
 					slog.Error("failed to encode book", "err", err, "bookID", book.Book.ID)
 					continue
+				}
+
+				fileInfo, err := os.Stat(fileName)
+				if err != nil {
+					slog.Error("failed to stat file", "file", fileName, "err", err)
+				} else {
+					atomic.AddInt64(&totalSize, fileInfo.Size())
 				}
 
 				time.Sleep(time.Millisecond)
 			}
 			wg.Done()
 		}()
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				time.Sleep(time.Second * 10)
+				activeWorkersCurrent := atomic.LoadInt32(&activeWorkers)
+				if activeWorkersCurrent == 0 {
+					break
+				}
+
+				totalSizeCurrent := atomic.LoadInt64(&totalSize)
+				if totalSizeCurrent < 1000 {
+					continue
+				}
+
+				// request all works pause
+				slog.Info("reached file threshold, requesting all workers pause")
+				for _, ch := range pauseChannels {
+					ch <- struct{}{}
+				}
+
+				// wait until all workers are paused
+				for range pauseChannels {
+					<-pausedNotifCh
+				}
+
+				slog.Info("all workers are paused gzipping JSON files...")
+				time.Sleep(time.Second)
+				tarGzAllFiles()
+
+				slog.Info("gzip done, resuming workers")
+				for _, ch := range resumeChannels {
+					ch <- struct{}{}
+				}
+
+				time.Sleep(time.Second)
+			}
+		}()
 	}
+
 	return wg
+}
+
+func tarGzAllFiles() {
+	err := runCommand("mkdir", "-p", "tar")
+	if err != nil {
+		slog.Error("Error running mkdir", "err", err)
+	}
+
+	files, err := filepath.Glob("./rr-books/*")
+	if err != nil {
+		slog.Error("Error finding files", "err", err)
+	}
+
+	if len(files) == 0 {
+		slog.Error("No files found to archive")
+		return
+	}
+
+	tarFile := fmt.Sprintf("tar/%s.tar.gz", time.Now().Format(time.RFC3339))
+	args := append([]string{"-czf", tarFile}, files...)
+	err = runCommand("tar", args...)
+	if err != nil {
+		slog.Error("Error running tar", "err", err)
+	}
+
+	for _, file := range files {
+		os.Remove(file)
+	}
+
+}
+
+func runCommand(name string, args ...string) error {
+	cmd := exec.Command(name, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

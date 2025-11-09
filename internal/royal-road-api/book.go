@@ -13,13 +13,19 @@ import (
 )
 
 type BookPage struct {
-	ID          int
-	Name        string
-	CoverURL    string
-	Description string
-	Author      BookPageAuthor
-	Chapters    []BookPageChapter
-	Tags        []string
+	ID            int
+	Name          string
+	CoverURL      string
+	Description   string
+	Author        BookPageAuthor
+	Chapters      []BookPageChapter
+	Tags          []string
+	ReviewsCount  int
+	TotalViews    int
+	Favortites    int
+	Followers     int
+	Ratings       int
+	AverageRating float64
 }
 
 type BookPageAuthor struct {
@@ -88,6 +94,30 @@ func parseBookPage(r io.Reader) (*BookPage, error) {
 		page.Tags = append(page.Tags, s.Text())
 	})
 
+	dataReviewsPage, ok := doc.Find(".reviews-container ul.pagination").First().Find("li").Last().Find("a").First().Attr("data-page")
+	if ok {
+		reviewsPages, err := strconv.ParseInt(dataReviewsPage, 10, 64)
+		if err == nil {
+			page.ReviewsCount = int(10 * reviewsPages) // approx number of reviews
+		}
+	}
+
+	statsContainer := doc.Find(".stats-content").First()
+	overallScore := statsContainer.Find(".list-item").First().Find("span").First()
+	label, _ := overallScore.Attr("aria-label")
+	ratingStr := strings.TrimSuffix(label, " stars")
+	rating, err := strconv.ParseFloat(ratingStr, 64)
+	if err == nil {
+		page.AverageRating = rating
+	}
+
+	secondColumnUL := statsContainer.Find(".col-sm-6").Last().Find("ul").First()
+
+	page.TotalViews = parseIntStat(secondColumnUL.Find("li").Eq(1))
+	page.Followers = parseIntStat(secondColumnUL.Find("li").Eq(5))
+	page.Favortites = parseIntStat(secondColumnUL.Find("li").Eq(7))
+	page.Ratings = parseIntStat(secondColumnUL.Find("li").Eq(9))
+
 	doc.Find(".chapter-row").Each(func(i int, s *goquery.Selection) {
 		link := s.Find("td").First().Find("a").First()
 		title := link.Text()
@@ -96,9 +126,7 @@ func parseBookPage(r io.Reader) (*BookPage, error) {
 			return
 		}
 		prefix := fmt.Sprintf("%d. ", i+1)
-		if strings.HasPrefix(title, prefix) {
-			title = strings.TrimPrefix(title, prefix)
-		}
+		title = strings.TrimPrefix(title, prefix)
 		title = strings.Trim(title, " \n\t")
 
 		url, _ := link.Attr("href")
@@ -129,6 +157,13 @@ func parseBookPage(r io.Reader) (*BookPage, error) {
 
 	return page, nil
 
+}
+
+func parseIntStat(s *goquery.Selection) int {
+	text := s.Text()
+	text = strings.Replace(text, ",", "", -1)
+	integer, _ := strconv.ParseInt(text, 10, 64)
+	return int(integer)
 }
 
 func parseChapterIDFromRelativeURL(s string) (int, error) {
@@ -165,13 +200,13 @@ func (c *Client) GetBookWithChapters(bookID int) (*BookWithChapters, error) {
 		Chapters: make([]*ChapterPage, len(page.Chapters)),
 	}
 
-	for i := range page.Chapters {
-		slog.Debug("downloading chapter", "chapterID", page.Chapters[i].ID)
-		book.Chapters[i], err = c.GetChapterPage(bookID, page.Chapters[i].ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to fetching chapter %d (id=%d): %s", i+1, page.Chapters[i].ID, err.Error())
-		}
-	}
+	// for i := range page.Chapters {
+	// 	slog.Debug("downloading chapter", "chapterID", page.Chapters[i].ID)
+	// 	book.Chapters[i], err = c.GetChapterPage(bookID, page.Chapters[i].ID)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("failed to fetching chapter %d (id=%d): %s", i+1, page.Chapters[i].ID, err.Error())
+	// 	}
+	// }
 
 	return book, nil
 }

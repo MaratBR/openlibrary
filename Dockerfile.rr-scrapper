@@ -1,0 +1,22 @@
+FROM golang:1.25.1 AS build
+
+WORKDIR /app
+
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY cmd/rr-scrapper cmd/rr-scrapper
+COPY internal internal
+COPY lib /lib
+
+RUN go build -trimpath -ldflags="-s -w" -o rr-scrapper ./cmd/rr-scrapper
+
+FROM alpine:latest
+
+RUN apk add --no-cache ca-certificates tzdata
+
+COPY --from=build /app/rr-scrapper /app/rr-scrapper
+
+ENTRYPOINT ["/app/rr-scrapper"]
