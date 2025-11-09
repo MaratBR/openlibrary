@@ -174,7 +174,7 @@ func downloadAllBooks(
 				}
 
 				totalSizeCurrent := atomic.LoadInt64(&totalSize)
-				if totalSizeCurrent < 1000 {
+				if totalSizeCurrent < 200_000_000 {
 					continue
 				}
 
