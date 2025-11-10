@@ -534,6 +534,11 @@ type Session struct {
 	IsTerminated bool
 }
 
+type SiteConfig struct {
+	Value []byte
+	Key   string
+}
+
 type User struct {
 	ID                    pgtype.UUID
 	Name                  string

@@ -30,6 +30,7 @@ type Handler struct {
 	cache         *cache.Cache
 	csrfHandler   *csrf.Handler
 	uploadService *app.UploadService
+	siteConfig    *app.SiteConfig
 }
 
 func NewHandler(
@@ -41,6 +42,7 @@ func NewHandler(
 	bgServices *app.BackgroundServices,
 	uploadService *app.UploadService,
 	esClient *elasticsearch.TypedClient,
+	siteConfig *app.SiteConfig,
 ) *Handler {
 	if cache == nil {
 		panic("cache is nil")
@@ -63,6 +65,7 @@ func NewHandler(
 		csrfHandler:   csrfHandler,
 		uploadService: uploadService,
 		esClient:      esClient,
+		siteConfig:    siteConfig,
 	}
 	h.initRouter()
 	h.setupRouter(bgServices)

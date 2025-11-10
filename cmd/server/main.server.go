@@ -85,9 +85,36 @@ func mainServer(
 	sessionStore := session.NewRedisStore(redisClient)
 
 	// --------------------------------------
+	// create and start background services
+	// --------------------------------------
+	bgServices := app.NewBackgroundServices(db, esClient)
+	err = bgServices.Start()
+	if err != nil {
+		panic("failed to start background services: " + err.Error())
+	}
+	defer bgServices.Stop()
+
+	uploadService := app.NewUploadServiceFromApplicationConfig(config)
+
+	// global site config service
+	siteConfig := app.NewSiteConfig(db)
+
+	publicUIHandler := public.NewHandler(db, config, redisClient, cacheInstance, csrfHandler, bgServices, uploadService, esClient, siteConfig)
+	adminHandler := admin.NewHandler(db, config, cacheInstance, bgServices, esClient)
+
+	err = publicUIHandler.Start()
+	if err != nil {
+		panic("failed to start public ui handler: " + err.Error())
+	}
+
+	err = adminHandler.Start()
+	if err != nil {
+		panic("failed to start admin handler: " + err.Error())
+	}
+
+	// --------------------------------------
 	// initialize web server
 	// --------------------------------------
-
 	r := chi.NewRouter()
 
 	r.Use(olhttp.ReqCtxMiddleware)
@@ -114,31 +141,6 @@ func mainServer(
 	r.Mount("/_/embed-assets/", http.StripPrefix("/_/embed-assets/", embedAssetsHandler))
 	r.Mount("/_/assets/cats", http.StripPrefix("/_/assets/cats", http.FileServer(http.Dir("./cats"))))
 	r.Mount("/_/assets/", http.StripPrefix("/_/assets/", assetsHandler))
-
-	// --------------------------------------
-	// create and start background services
-	// --------------------------------------
-	bgServices := app.NewBackgroundServices(db, esClient)
-	err = bgServices.Start()
-	if err != nil {
-		panic("failed to start background services: " + err.Error())
-	}
-	defer bgServices.Stop()
-
-	uploadService := app.NewUploadServiceFromApplicationConfig(config)
-
-	publicUIHandler := public.NewHandler(db, config, redisClient, cacheInstance, csrfHandler, bgServices, uploadService, esClient)
-	adminHandler := admin.NewHandler(db, config, cacheInstance, bgServices, esClient)
-
-	err = publicUIHandler.Start()
-	if err != nil {
-		panic("failed to start public ui handler: " + err.Error())
-	}
-
-	err = adminHandler.Start()
-	if err != nil {
-		panic("failed to start admin handler: " + err.Error())
-	}
 
 	// the area where all the fun happens
 	r.Group(func(r chi.Router) {

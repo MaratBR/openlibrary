@@ -51,6 +51,11 @@ username = "Username"
 password = "Password"
 login = "Sign in"
 logout = "Log out"
+dontHaveAccountYet = "Don't have an account yet?"
+
+[signup]
+signup = "Sign up"
+repeatPassword = "Repeat password"
 
 [account]
 profile = "Profile"

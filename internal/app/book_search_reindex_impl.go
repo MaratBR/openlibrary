@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"sync"
+	"time"
 
 	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -43,8 +44,9 @@ func (s *bookReindexService) ScheduleReindexAll() error {
 	return nil
 }
 
-func (s *bookReindexService) ScheduleReindex(ctx context.Context, id int64) {
+func (s *bookReindexService) ScheduleReindex(_ context.Context, id int64) {
 	go func() {
+		ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(time.Second*10))
 		err := s.Reindex(ctx, id)
 		if err != nil {
 			slog.Error("failed to reindex book", "err", err)

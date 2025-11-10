@@ -8,6 +8,7 @@
 
 .btn {
     @apply flex items-center p-2;
+    @apply rounded-md;
 
     &:has(input:checked) {
         @apply text-primary;

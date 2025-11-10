@@ -9,6 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/csrf"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/session"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
@@ -17,20 +18,24 @@ import (
 type authController struct {
 	authService app.AuthService
 	csrfHandler *csrf.Handler
+	siteConfig  *app.SiteConfig
 }
 
-func newAuthController(authService app.AuthService, csrfHandler *csrf.Handler) *authController {
-	return &authController{authService: authService, csrfHandler: csrfHandler}
+func newAuthController(authService app.AuthService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig) *authController {
+	return &authController{authService: authService, csrfHandler: csrfHandler, siteConfig: siteConfig}
 }
 
 func (c *authController) Register(r chi.Router) {
 	// public auth pages
-	r.HandleFunc("/login", c.LogIn)
-	r.HandleFunc("/logout", c.LogOut)
+	r.HandleFunc("/login", c.login)
+	r.HandleFunc("/logout", c.logout)
+	r.HandleFunc("/signup", c.signup)
+
 }
 
-func (c *authController) LogIn(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
+func (c *authController) login(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
 		_, ok := auth.GetSession(r.Context())
 		if ok {
 			http.Redirect(w, r, "/", http.StatusFound)
@@ -38,10 +43,10 @@ func (c *authController) LogIn(w http.ResponseWriter, r *http.Request) {
 		}
 
 		c.writeLoginForm(w, r, templates.LoginData{})
-	} else if r.Method == http.MethodPost {
+	case http.MethodPost:
 		c.handleSignIn(w, r)
-	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	default:
+		methodNotAllowed(w, r)
 	}
 }
 
@@ -57,7 +62,7 @@ func (c *authController) writeLoginForm(w http.ResponseWriter, r *http.Request, 
 		data.IsToAdmin = true
 	}
 
-	templates.Login(data).Render(r.Context(), w)
+	olhttp.WriteTemplate(w, r.Context(), templates.Login(data))
 }
 
 func (c *authController) handleSignIn(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +122,7 @@ func (c *authController) redirectToNext(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (c *authController) LogOut(w http.ResponseWriter, r *http.Request) {
+func (c *authController) logout(w http.ResponseWriter, r *http.Request) {
 	session, ok := auth.GetSession(r.Context())
 	if !ok {
 		http.Redirect(w, r, "/", http.StatusFound)
@@ -134,4 +139,15 @@ func (c *authController) LogOut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Set-Cookie", "auth_ll=deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT")
 	c.csrfHandler.WriteAnonymousCSRFToken(w)
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func (c *authController) signup(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		olhttp.WriteTemplate(w, r.Context(), templates.SignUp(c.siteConfig))
+	case http.MethodPost:
+
+	default:
+		methodNotAllowed(w, r)
+	}
 }

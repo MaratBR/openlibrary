@@ -33,6 +33,8 @@ url = "http://localhost:9200"
 type = "disabled"
 
 
-
 [redis]
 url = "localhost:6379"
+
+[site-config]
+default = 

@@ -114,7 +114,7 @@ export default function BookContentEditorHeadingMenu({
     <button
       ref={buttonRef}
       onClick={() => setOpen((x) => !x)}
-      class="btn btn--ghost font-book text-lg relative text-foreground"
+      class="btn btn--ghost rounded-md font-book text-lg relative text-foreground"
     >
       <span>{window._(displayed.key)}</span>
       {createPortal(

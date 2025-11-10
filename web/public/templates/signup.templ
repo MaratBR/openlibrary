@@ -1,28 +1,18 @@
 package templates
 
-import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/csrf"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/MaratBR/openlibrary/internal/app"
 
-type LoginData struct {
-    InitialLogin string
-    Error string
-	IsToAdmin bool
-}
-
-templ Login(data LoginData) {
+templ SignUp(siteConfig *app.SiteConfig) {
     {{
         l := i18n.GetLocalizer(ctx)
+        passwordSettings := siteConfig.PasswordRequirements()
     }}
 
     @htmlLayout(htmlLayoutProps{Title: _t(l, "login.login")}) {
         <div class="p-8 w-screen h-screen flex items-center justify-center bg-secondary">
             <main class="w-[400px] min-h-[450px] bg-card p-4 shadow-lg rounded-sm">
-                if data.IsToAdmin {
-                    <section class="p-2 bg-emerald-500 text-white rounded-sm -m-3 text-sm text-center">
-                        { _t(l, "admin.login.redirectNotice") }
-                    </section>
-                }
-
                 <div class="flex justify-center">
                     <img class="block dark:hidden" src="/_/embed-assets/logo.svg" />
                     <img class="hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
@@ -30,12 +20,17 @@ templ Login(data LoginData) {
 
                 <form method="post" class="flex flex-col">
                     @csrf.CSRFInputTempl(ctx)
+                    
+                    {{
+                        passwordSettingsjson, _ := templ.JSONString(passwordSettings)
+                    }}
+                    <pre>{passwordSettingsjson}</pre>
 
                     <div class="mb-4">
                         <label for="username" class="label">
                             { l.T("login.username") }
                         </label>
-                        <input name="username" id="username" value={ data.InitialLogin } class="input" type="text" />
+                        <input name="username" id="username" class="input" type="text" />
                     </div>
 
                     <div class="mb-4">
@@ -45,22 +40,18 @@ templ Login(data LoginData) {
                         <input name="password" id="password" class="input" type="password" />
                     </div>
 
+                    <div class="mb-4">
+                        <label for="password" class="label">
+                            { l.T("signup.repeatPassword") }
+                        </label>
+                        <input name="repeatPassword" id="password" class="input" type="password" />
+                    </div>
+
                     <div class="flex gap-2 justify-center">
                         <button type="submit" class="btn btn--lg btn--primary">
-                            { l.T("login.login") }
+                            { l.T("signup.signup") }
                         </button>
                     </div>
-
-
-                    <div class="text-center mt-4 text-sm">
-                        { _t(l, "login.dontHaveAccountYet") } <a class="link" href="/signup">{ _t(l, "signup.signup") }</a>
-                    </div>
-
-                    if data.Error != "" {
-                        <div class="border-destructive border bg-destructive/20 p-4 mt-4 rounded-lg text-sm">
-                            { data.Error }
-                        </div>
-                    }
                 </form>
             </main>
         </div>

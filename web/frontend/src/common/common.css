@@ -10,7 +10,7 @@ button, [role=button] {
 }
 
 .link {
-    @apply text-foreground/80 underline-offset-4 hover:text-foreground hover:underline focus:underline;
+    @apply text-primary underline-offset-4 hover:text-foreground hover:underline focus:underline;
 }
 
 .link--primary {

@@ -48,7 +48,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 			olhttp.WriteTemplate(w, r.Context(), templates.Home())
 		})
 
-		newAuthController(authService, h.csrfHandler).Register(r)
+		newAuthController(authService, h.csrfHandler, h.siteConfig).Register(r)
 		newBookController(bookService, reviewsService, readingListService, analyticsService).Register(r)
 		newChaptersController(bookService, readingListService, analyticsService).Register(r)
 		newSearchController(searchService, bookService).Register(r)

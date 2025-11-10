@@ -192,6 +192,7 @@ func downloadAllBooks(
 				slog.Info("all workers are paused gzipping JSON files...")
 				time.Sleep(time.Second)
 				tarGzAllFiles()
+				atomic.StoreInt64(&totalSizeCurrent, 0)
 
 				slog.Info("gzip done, resuming workers")
 				for _, ch := range resumeChannels {
