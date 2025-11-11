@@ -9,42 +9,25 @@ import (
 	"context"
 )
 
-const siteConfig_All = `-- name: SiteConfig_All :many
-select value, key from site_config
+const siteConfig_Get = `-- name: SiteConfig_Get :one
+select "value" from site_config
+where "key" = 'main'
 `
 
-func (q *Queries) SiteConfig_All(ctx context.Context) ([]SiteConfig, error) {
-	rows, err := q.db.Query(ctx, siteConfig_All)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []SiteConfig
-	for rows.Next() {
-		var i SiteConfig
-		if err := rows.Scan(&i.Value, &i.Key); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) SiteConfig_Get(ctx context.Context) ([]byte, error) {
+	row := q.db.QueryRow(ctx, siteConfig_Get)
+	var value []byte
+	err := row.Scan(&value)
+	return value, err
 }
 
 const siteConfig_Set = `-- name: SiteConfig_Set :exec
 insert into site_config ("key", "value")
-values ($1, $2)
+values ('main', $1)
 on conflict ("key") do update set "value" = EXCLUDED."value"
 `
 
-type SiteConfig_SetParams struct {
-	Key   string
-	Value []byte
-}
-
-func (q *Queries) SiteConfig_Set(ctx context.Context, arg SiteConfig_SetParams) error {
-	_, err := q.db.Exec(ctx, siteConfig_Set, arg.Key, arg.Value)
+func (q *Queries) SiteConfig_Set(ctx context.Context, value []byte) error {
+	_, err := q.db.Exec(ctx, siteConfig_Set, value)
 	return err
 }

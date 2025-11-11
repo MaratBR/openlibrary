@@ -3,7 +3,7 @@
         border-gray-400 dark:border-gray-600 border 
         rounded-sm px-3 w-full bg-card
         hover:border-black dark:hover:border-white
-        focus:outline focus:outline-primary focus:border-primary text-foreground
+        focus:outline focus:outline-primary !focus:border-primary text-foreground
         disabled:opacity-80 disabled:pointer-events-none;
 }
 
@@ -66,7 +66,7 @@ textarea.input {
     }
 
     &__label {
-        @apply text-foreground p-2;
+        @apply text-foreground px-2;
 
         & > .label {
             @apply mb-0;
@@ -75,6 +75,10 @@ textarea.input {
         & > label {
             @apply mb-2;
         }
+    }
+
+    &--horizontal &__label {
+        @apply py-2;
     }
 
     &__value {

@@ -51,11 +51,18 @@ username = "Username"
 password = "Password"
 login = "Sign in"
 logout = "Log out"
+email = "Email"
 dontHaveAccountYet = "Don't have an account yet?"
 
 [signup]
 signup = "Sign up"
 repeatPassword = "Repeat password"
+
+[password]
+mustHaveSymbol = "Must have at least one symbol"
+mustHaveCases = "Must have at least one capital letter and one lowercase"
+mustHaveDigits = "Must have at least one digit"
+minLength = "Must be at least {{.characters}} characters long"
 
 [account]
 profile = "Profile"

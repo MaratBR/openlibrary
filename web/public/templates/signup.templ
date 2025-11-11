@@ -7,7 +7,6 @@ import "github.com/MaratBR/openlibrary/internal/app"
 templ SignUp(siteConfig *app.SiteConfig) {
     {{
         l := i18n.GetLocalizer(ctx)
-        passwordSettings := siteConfig.PasswordRequirements()
     }}
 
     @htmlLayout(htmlLayoutProps{Title: _t(l, "login.login")}) {
@@ -20,40 +19,22 @@ templ SignUp(siteConfig *app.SiteConfig) {
 
                 <form method="post" class="flex flex-col">
                     @csrf.CSRFInputTempl(ctx)
-                    
                     {{
-                        passwordSettingsjson, _ := templ.JSONString(passwordSettings)
+                        var islandData struct {
+                            PasswordRequirements app.PasswordRequirements
+                            PrefilledEmail string
+                            PrefilledUsername string
+                        }
+                        islandData.PasswordRequirements = siteConfig.Get().PasswordRequirements
+                        islandDataJSON, _ := templ.JSONString(islandData)
                     }}
-                    <pre>{passwordSettingsjson}</pre>
-
-                    <div class="mb-4">
-                        <label for="username" class="label">
-                            { l.T("login.username") }
-                        </label>
-                        <input name="username" id="username" class="input" type="text" />
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="password" class="label">
-                            { l.T("login.password") }
-                        </label>
-                        <input name="password" id="password" class="input" type="password" />
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="password" class="label">
-                            { l.T("signup.repeatPassword") }
-                        </label>
-                        <input name="repeatPassword" id="password" class="input" type="password" />
-                    </div>
-
-                    <div class="flex gap-2 justify-center">
-                        <button type="submit" class="btn btn--lg btn--primary">
-                            { l.T("signup.signup") }
-                        </button>
-                    </div>
+                    @i18nExtractKeysByPrefix(l, "login")
+                    @i18nExtractKeysByPrefix(l, "signup")
+                    @i18nExtractKeysByPrefix(l, "password")
+                    <ol-island active="true" name="SignUpForm" src="/_/assets/islands/signup.js" data={islandDataJSON} />
                 </form>
             </main>
         </div>
     }
 }
+

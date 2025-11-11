@@ -12,6 +12,7 @@ import './book-reader'
 import './rating-input'
 import './collapse'
 import './page-progress'
+import './passwordInput'
 import './navbar'
 ;(window as unknown as { Alpine: typeof Alpine }).Alpine = Alpine
 

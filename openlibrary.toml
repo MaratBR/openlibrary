@@ -36,5 +36,18 @@ type = "disabled"
 [redis]
 url = "localhost:6379"
 
-[site-config]
-default = 
+[siteConfig.default]
+
+    [siteConfig.default.PasswordRequirements]
+    Digits = true
+    Symbols = "!@#$%^&*()_+-=<>{}[]\"':;?~`"
+    SymbolsEnabled = true
+    DifferentCases = true
+    MinLength = 8
+
+    [siteConfig.default.ContentRestrictions]
+    AdultWebsite = false
+
+    [siteConfig.default.CaptchaSettings]
+    Type = "none"
+    GoogleRecaptchaKey = ""

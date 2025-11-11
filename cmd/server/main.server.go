@@ -97,7 +97,7 @@ func mainServer(
 	uploadService := app.NewUploadServiceFromApplicationConfig(config)
 
 	// global site config service
-	siteConfig := app.NewSiteConfig(db)
+	siteConfig := app.NewSiteConfig(db, config)
 
 	publicUIHandler := public.NewHandler(db, config, redisClient, cacheInstance, csrfHandler, bgServices, uploadService, esClient, siteConfig)
 	adminHandler := admin.NewHandler(db, config, cacheInstance, bgServices, esClient)

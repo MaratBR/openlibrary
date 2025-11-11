@@ -4,108 +4,141 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"reflect"
 	"sync"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
+	"github.com/knadh/koanf/v2"
 )
 
 type SiteConfigEntry json.RawMessage
 
+type SiteConfigData struct {
+	CaptchaSettings      CaptchaSettings
+	PasswordRequirements PasswordRequirements
+	ContentRestrictions  ContentRestrictions
+}
+
+func (d SiteConfigData) Equal(other SiteConfigData) bool {
+	return reflect.DeepEqual(d, other)
+}
+
 type SiteConfig struct {
-	mx          sync.Mutex
-	changedKeys map[string]struct{}
+	changed     bool
 	db          DB
 	lastFetched time.Time
-	map_        map[string]SiteConfigEntry
+	staticCfg   *koanf.Koanf
+
+	activeConfigMX sync.RWMutex
+	saveMX         sync.Mutex
+
+	activeConfig  SiteConfigData
+	defaultConfig SiteConfigData
+	dbConfig      *SiteConfigData
 }
 
-func (c *SiteConfig) get(key string, dest any) (error, bool) {
-	bytes, ok := c.map_[key]
-	if !ok || bytes == nil {
-		return nil, false
-	}
-	err := json.Unmarshal(bytes, dest)
-	if err != nil {
-		slog.Error("failed to unmarshal site config", "key", key, "json", string(bytes))
-		return err, false
-	}
-
-	return nil, true
+type CaptchaSettings struct {
+	GoogleRecaptchaKey string
+	Type               string
 }
 
-func (c *SiteConfig) set(key string, v any) error {
-	json, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	c.mx.Lock()
-	defer c.mx.Unlock()
-	c.map_[key] = json
-	if c.changedKeys == nil {
-		c.changedKeys = map[string]struct{}{}
-	}
-	c.changedKeys[key] = struct{}{}
-	return nil
+type PasswordRequirements struct {
+	Digits         bool
+	Symbols        string
+	SymbolsEnabled bool
+	DifferentCases bool
+	MinLength      int
 }
 
-func NewSiteConfig(db DB) *SiteConfig {
+type ContentRestrictions struct {
+	// if true - whole website is considered "adult"
+	AdultWebsite bool
+}
+
+func NewSiteConfig(db DB, staticCfg *koanf.Koanf) *SiteConfig {
 	cfg := &SiteConfig{
-		map_: map[string]SiteConfigEntry{},
-		db:   db,
+		db:        db,
+		staticCfg: staticCfg,
+	}
+	err := cfg.loadDefault()
+	if err != nil {
+		slog.Error("failed to load default site config", "err", err)
 	}
 	return cfg
 }
 
-func (s *SiteConfig) Load(ctx context.Context) error {
-	if s.shouldRefresh() {
-		return s.fetch(ctx)
+func (c *SiteConfig) loadDefault() error {
+	value := c.staticCfg.Get("siteConfig.default")
+	jsonString, err := json.Marshal(value)
+	if err != nil {
+		return err
 	}
+	err = json.Unmarshal(jsonString, &c.defaultConfig)
+	if err != nil {
+		return err
+	}
+	c.activeConfig = c.defaultConfig
 	return nil
 }
 
-func (s *SiteConfig) Save(ctx context.Context) error {
-	if len(s.changedKeys) == 0 {
-		return nil
-	}
-
-	for changedKey := range s.changedKeys {
-		queries := store.New(s.db)
-		value, ok := s.map_[changedKey]
-		if !ok {
-			continue
-		}
-		err := queries.SiteConfig_Set(ctx, store.SiteConfig_SetParams{
-			Key:   changedKey,
-			Value: value,
-		})
-		if err != nil {
-			slog.Error("failed to update site settings", "err", err)
-		}
-	}
-
-	return s.Load(ctx)
-}
-
-func (s *SiteConfig) shouldRefresh() bool {
-	return s.lastFetched == time.Time{} || s.lastFetched.Before(time.Now().Add(-time.Second*30))
-}
-
-func (s *SiteConfig) fetch(ctx context.Context) error {
+func (s *SiteConfig) Load(ctx context.Context) error {
 	queries := store.New(s.db)
-	cfg, err := queries.SiteConfig_All(ctx)
+	jsonCfg, err := queries.SiteConfig_Get(ctx)
+	if err != nil {
+		if err == store.ErrNoRows {
+			return nil
+		} else {
+			return wrapUnexpectedDBError(err)
+		}
+	}
+
+	cfg := new(SiteConfigData)
+	err = json.Unmarshal(jsonCfg, cfg)
+
+	s.activeConfigMX.Lock()
+	defer s.activeConfigMX.Unlock()
+	s.dbConfig = cfg
+	s.activeConfig = *cfg
+
+	return nil
+}
+
+func (s *SiteConfig) Get() *SiteConfigData {
+	s.activeConfigMX.RLock()
+	defer s.activeConfigMX.RUnlock()
+	return &s.activeConfig
+}
+
+func (s *SiteConfig) Save(ctx context.Context, force bool) error {
+	currentConfig := *s.Get()
+
+	s.saveMX.Lock()
+	defer s.saveMX.Unlock()
+
+	if force {
+		err := s.save(ctx, currentConfig)
+		return err
+	} else {
+		if s.dbConfig != nil && currentConfig.Equal(*s.dbConfig) {
+			// no changes
+			return nil
+		}
+
+		err := s.save(ctx, currentConfig)
+		return err
+	}
+}
+
+func (s *SiteConfig) save(ctx context.Context, cfg SiteConfigData) error {
+	newJson, err := json.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	queries := store.New(s.db)
+	err = queries.SiteConfig_Set(ctx, newJson)
 	if err != nil {
 		return wrapUnexpectedDBError(err)
 	}
-
-	s.mx.Lock()
-	defer s.mx.Unlock()
-
-	s.changedKeys = nil
-	s.map_ = map[string]SiteConfigEntry{}
-	for _, row := range cfg {
-		s.map_[row.Key] = SiteConfigEntry(row.Value)
-	}
-
 	return nil
 }
