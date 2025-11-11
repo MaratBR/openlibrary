@@ -174,7 +174,7 @@ func downloadAllBooks(
 				}
 
 				totalSizeCurrent := atomic.LoadInt64(&totalSize)
-				if totalSizeCurrent < 200_000_000 {
+				if totalSizeCurrent < 2_000_000_000 {
 					continue
 				}
 
@@ -192,7 +192,7 @@ func downloadAllBooks(
 				slog.Info("all workers are paused gzipping JSON files...")
 				time.Sleep(time.Second)
 				tarGzAllFiles()
-				atomic.StoreInt64(&totalSizeCurrent, 0)
+				atomic.StoreInt64(&totalSize, 0)
 
 				slog.Info("gzip done, resuming workers")
 				for _, ch := range resumeChannels {
