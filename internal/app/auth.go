@@ -16,7 +16,7 @@ var (
 
 type AuthService interface {
 	SignIn(ctx context.Context, input SignInCommand) (SignInResult, error)
-	SignUp(ctx context.Context, input SignUpCommand) (SignUpResult, error)
+	CreateSessionForUser(ctx context.Context, userID uuid.UUID, userAgent, ip string) (string, error)
 	SignOut(ctx context.Context, sessionID string) error
 	EnsureAdminUserExists(ctx context.Context) error
 }
@@ -32,14 +32,8 @@ type SignInResult struct {
 	SessionID string
 }
 
-type SignUpCommand struct {
-	Username  string
-	Password  string
-	UserAgent string
-	IpAddress string
-}
-
 type SignUpResult struct {
-	SessionID string
-	UserID    uuid.UUID
+	Created       bool
+	CreatedUserID uuid.UUID
+	EmailTaken    bool
 }

@@ -17,6 +17,7 @@ type fakeUser struct {
 
 func CreateUsers(
 	service app.AuthService,
+	signUpService app.SignUpService,
 	count int,
 ) ([]uuid.UUID, error) {
 	var user fakeUser
@@ -32,7 +33,7 @@ func CreateUsers(
 			panic(err)
 		}
 
-		result, err := service.SignUp(context.Background(), app.SignUpCommand{
+		result, err := signUpService.SignUp(context.Background(), app.SignUpCommand{
 			Username:  user.Name,
 			Password:  user.Password,
 			UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
@@ -42,7 +43,7 @@ func CreateUsers(
 			return nil, err
 		}
 
-		userIds[i] = result.UserID
+		userIds[i] = result.CreatedUserID
 	}
 
 	return userIds, nil

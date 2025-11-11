@@ -27,6 +27,11 @@ select exists(select 1
 from users
 where name = $1);
 
+-- name: UserExistsByEmail :one
+select exists(select 1
+from users
+where email = $1);
+
 -- name: InsertUser :exec
 insert into users
 (id, name, password_hash, joined_at)

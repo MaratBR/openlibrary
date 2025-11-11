@@ -14,6 +14,7 @@ create type censor_mode as enum (
 create table users (
     id uuid primary key,
     name varchar(255) not null,
+    email varchar(255) not null default '', -- for compat with system users
     joined_at timestamptz not null default now(),
     password_hash text not null,
     "role" user_role not null default 'user',
@@ -40,6 +41,10 @@ create table users (
     censored_tags text[] not null default '{}',
     censored_tags_mode censor_mode not null default 'none'
 );
+
+create unique index ix_users_name on users (name);
+create unique index ix_users_email on users (email) where (email != ''); 
+
 
 create type type_of_2fa as enum (
     'totp',

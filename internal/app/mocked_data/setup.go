@@ -18,6 +18,7 @@ type Setup struct {
 	reviewsService     app.ReviewsService
 	bookManagerService app.BookManagerService
 	authService        app.AuthService
+	signUpService      app.SignUpService
 }
 
 func NewSetup(tagsService app.TagsService, reviewsService app.ReviewsService, bookManagerService app.BookManagerService, authService app.AuthService) Setup {
@@ -48,7 +49,7 @@ func (s *Setup) Run(options SetupOptions) error {
 	)
 
 	slog.Info("creating users...", "count", options.Users)
-	if userIds, err = CreateUsers(s.authService, options.Users); err != nil {
+	if userIds, err = CreateUsers(s.authService, s.signUpService, options.Users); err != nil {
 		return err
 	}
 

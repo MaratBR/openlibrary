@@ -1,6 +1,7 @@
 package public
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -16,12 +17,13 @@ import (
 )
 
 type authController struct {
-	authService app.AuthService
-	csrfHandler *csrf.Handler
-	siteConfig  *app.SiteConfig
+	authService   app.AuthService
+	signUpService app.SignUpService
+	csrfHandler   *csrf.Handler
+	siteConfig    *app.SiteConfig
 }
 
-func newAuthController(authService app.AuthService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig) *authController {
+func newAuthController(authService app.AuthService, signUpService app.SignUpService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig) *authController {
 	return &authController{authService: authService, csrfHandler: csrfHandler, siteConfig: siteConfig}
 }
 
@@ -146,8 +148,57 @@ func (c *authController) signup(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		olhttp.WriteTemplate(w, r.Context(), templates.SignUp(c.siteConfig))
 	case http.MethodPost:
-
+		c.handleSignUp(w, r)
 	default:
 		methodNotAllowed(w, r)
 	}
+}
+
+func (c *authController) handleSignUp(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		writeBadRequest(w, r, err)
+		return
+	}
+	userName := r.FormValue("username")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	ip := olhttp.GetIP(r).String()
+	userAgent := r.UserAgent()
+	result, err := c.signUpService.SignUp(r.Context(), app.SignUpCommand{
+		Username:  userName,
+		Password:  password,
+		Email:     email,
+		IpAddress: ip,
+		UserAgent: userAgent,
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	// create session and send them on their way
+	if result.Created {
+		sessionID, err := c.authService.CreateSessionForUser(r.Context(), result.CreatedUserID, userAgent, ip)
+
+		if err != nil {
+			// TODO redirect to login page and let them login?
+			writeApplicationError(w, r, err)
+			return
+		}
+
+		session.WriteSIDCookie(w, sessionID, time.Hour*24*30, r.URL.Scheme == "https")
+		http.Redirect(w, r, "/", http.StatusFound)
+	} else {
+		if result.EmailTaken {
+			// TODO impelement a email reclaim page or something
+			write500(w, r, errors.New("dev is lazy and did not implement this yet"))
+			return
+		}
+
+		// some weird stuff is going on
+		write500(w, r, errors.New("unknown error while trying to create a user, if you see this that means some really weird stuff is going on and the developer of this site is probably the one to blaim (but please be nice ok?)"))
+	}
+
 }

@@ -20,50 +20,6 @@ func (s *authService) SignOut(ctx context.Context, sessionID string) error {
 	return s.sessions.TerminateBySID(ctx, sessionID)
 }
 
-// SignUp creates a new user and a new session, and returns a session ID.
-//
-// The function will return SignUpResult with IsSuccess set to false if the user
-// with the provided username already exists. The error will be nil in this case.
-//
-// If the user is created and the session is created, the function returns
-// SignUpResult with IsSuccess set to true, and the session ID.
-func (s *authService) SignUp(ctx context.Context, input SignUpCommand) (SignUpResult, error) {
-	tx, err := s.db.Begin(ctx)
-	if err != nil {
-		return SignUpResult{}, err
-	}
-	queries := s.queries.WithTx(tx)
-	exists, err := queries.UserExistsByUsername(ctx, input.Username)
-	if err != nil {
-		rollbackTx(ctx, tx)
-		return SignUpResult{}, err
-	}
-
-	if exists {
-		rollbackTx(ctx, tx)
-		return SignUpResult{}, ErrUsernameTaken
-	}
-
-	userID, err := createUser(ctx, queries, input.Username, input.Password, RoleUser)
-	if err != nil {
-		rollbackTx(ctx, tx)
-		return SignUpResult{}, err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return SignUpResult{}, err
-	}
-
-	sessionID, err := s.createNewSession(ctx, queries, userID, input.UserAgent, input.IpAddress)
-	if err != nil {
-		rollbackTx(ctx, tx)
-		return SignUpResult{}, err
-	}
-
-	return SignUpResult{SessionID: sessionID, UserID: userID}, nil
-}
-
 func createUser(ctx context.Context, queries *store.Queries, username, password string, role UserRole) (id uuid.UUID, err error) {
 	userID := uuidV4()
 	hashedPassword, err := hashPassword(password)
@@ -165,6 +121,10 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 	}
 
 	return SignInResult{SessionID: sessionID}, nil
+}
+
+func (s *authService) CreateSessionForUser(ctx context.Context, userID uuid.UUID, userAgent, ip string) (string, error) {
+	return s.createNewSession(ctx, s.queries, userID, userAgent, ip)
 }
 
 func (s *authService) createNewSession(ctx context.Context, queries *store.Queries, userID uuid.UUID, userAgent, ip string) (string, error) {

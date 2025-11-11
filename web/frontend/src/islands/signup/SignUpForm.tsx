@@ -19,6 +19,10 @@ function isValidEmail(value: string) {
   return /.+@.+/.test(value)
 }
 
+function normalizeUsername(value: string): string {
+  return value.replace(/[^0-9a-zA-Z_]/g, '')
+}
+
 export default function SignUpForm({ data: dataParam }: PreactIslandProps) {
   const { PasswordRequirements } = useMemo(() => signUpFormDataSchema.parse(dataParam), [dataParam])
 
@@ -78,7 +82,7 @@ export default function SignUpForm({ data: dataParam }: PreactIslandProps) {
             class="input"
             type="text"
             value={username}
-            onChange={(e) => setUsername((e.target as HTMLInputElement).value)}
+            onChange={(e) => setUsername(normalizeUsername((e.target as HTMLInputElement).value))}
           />
         </div>
       </div>

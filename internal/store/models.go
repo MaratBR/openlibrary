@@ -542,6 +542,7 @@ type SiteConfig struct {
 type User struct {
 	ID                    pgtype.UUID
 	Name                  string
+	Email                 string
 	JoinedAt              pgtype.Timestamptz
 	PasswordHash          string
 	Role                  UserRole

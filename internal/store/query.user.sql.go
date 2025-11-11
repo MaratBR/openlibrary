@@ -39,7 +39,7 @@ func (q *Queries) DeleteUserFollow(ctx context.Context, arg DeleteUserFollowPara
 }
 
 const findUserByUsername = `-- name: FindUserByUsername :one
-select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
+select id, name, email, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
 from users
 where name = $1
 limit 1
@@ -51,6 +51,7 @@ func (q *Queries) FindUserByUsername(ctx context.Context, name string) (User, er
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Email,
 		&i.JoinedAt,
 		&i.PasswordHash,
 		&i.Role,
@@ -147,7 +148,7 @@ func (q *Queries) GetSessionInfo(ctx context.Context, sid string) (GetSessionInf
 }
 
 const getUser = `-- name: GetUser :one
-select id, name, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
+select id, name, email, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
 from users
 where id = $1
 limit 1
@@ -159,6 +160,7 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Email,
 		&i.JoinedAt,
 		&i.PasswordHash,
 		&i.Role,
@@ -359,7 +361,7 @@ func (q *Queries) GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]Ge
 
 const getUserWithDetails = `-- name: GetUserWithDetails :one
 select 
-    users.id, users.name, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
+    users.id, users.name, users.email, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
     (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned and chapters > 0) as books_total,
     (select count(*) from user_follower where followed_id = users.id) as followers,
     (select count(*) from user_follower where follower_id = users.id) as "following",
@@ -378,6 +380,7 @@ type GetUserWithDetailsParams struct {
 type GetUserWithDetailsRow struct {
 	ID                    pgtype.UUID
 	Name                  string
+	Email                 string
 	JoinedAt              pgtype.Timestamptz
 	PasswordHash          string
 	Role                  UserRole
@@ -407,6 +410,7 @@ func (q *Queries) GetUserWithDetails(ctx context.Context, arg GetUserWithDetails
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Email,
 		&i.JoinedAt,
 		&i.PasswordHash,
 		&i.Role,
@@ -663,6 +667,19 @@ type UpdateUserRoleParams struct {
 func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) error {
 	_, err := q.db.Exec(ctx, updateUserRole, arg.ID, arg.Role)
 	return err
+}
+
+const userExistsByEmail = `-- name: UserExistsByEmail :one
+select exists(select 1
+from users
+where email = $1)
+`
+
+func (q *Queries) UserExistsByEmail(ctx context.Context, email string) (bool, error) {
+	row := q.db.QueryRow(ctx, userExistsByEmail, email)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const userExistsByUsername = `-- name: UserExistsByUsername :one

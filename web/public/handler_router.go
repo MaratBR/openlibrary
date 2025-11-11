@@ -20,6 +20,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	// application layer services
 	sessionService := app.NewCachedSessionService(app.NewSessionService(db), h.cache)
 	authService := app.NewAuthService(db, sessionService)
+	signUpService := app.NewSignUpService(db)
 
 	tagsService := app.NewTagsService(db)
 	readingListService := app.NewReadingListService(db, h.uploadService)
@@ -48,7 +49,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 			olhttp.WriteTemplate(w, r.Context(), templates.Home())
 		})
 
-		newAuthController(authService, h.csrfHandler, h.siteConfig).Register(r)
+		newAuthController(authService, signUpService, h.csrfHandler, h.siteConfig).Register(r)
 		newBookController(bookService, reviewsService, readingListService, analyticsService).Register(r)
 		newChaptersController(bookService, readingListService, analyticsService).Register(r)
 		newSearchController(searchService, bookService).Register(r)
