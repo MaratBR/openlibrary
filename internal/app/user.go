@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -47,10 +48,39 @@ func ParseUserRole(role string) (UserRole, error) {
 	}
 }
 
+func ValidateUserName(value string) error {
+	if len(value) < 2 {
+		return ErrUserNameInvalid.New("name is too short - at least one character is required")
+	}
+	if len(value) > 15 {
+		return ErrUserNameInvalid.New("name is too long - at most 15 characters")
+	}
+	if match, err := regexp.Match("^[0-9a-zA-Z-_]+$", []byte(value)); err == nil && !match {
+		return ErrUserNameInvalid.New("name can only contain latin letters, digits, dash and underscore characters")
+	} else if err != nil {
+		return ErrUserNameInvalid.Wrap(err, "error while compiling regex")
+	}
+
+	return nil
+}
+
+var (
+	regexEmail = regexp.MustCompile(`^.+@.+\..+$`)
+)
+
+func ValidateEmail(email string) error {
+	if !regexEmail.Match([]byte(email)) {
+		return ErrEmailInvalid.New("email must match pattern *@*.*")
+	}
+	return nil
+}
+
 var (
 	ErrUserNotFound    = AppErrors.NewType("user_not_found", ErrTraitEntityNotFound).New("user not found")
 	ErrFollowYourself  = AppErrors.NewType("follow_yourself").New("you can't follow yourself")
 	ErrInvalidUserRole = AppErrors.NewType("invalid_user_role").New("invalid user role")
+	ErrUserNameInvalid = AppErrors.NewType("invalid_username")
+	ErrEmailInvalid    = AppErrors.NewType("invalid_email")
 )
 
 type UserDetailsDto struct {
@@ -90,6 +120,7 @@ type SelfUserDto struct {
 	} `json:"avatar"`
 	JoinedAt          time.Time  `json:"joinedAt"`
 	IsBanned          bool       `json:"isBlocked"`
+	IsEmailVerified   bool       `json:"isEmailVerified"`
 	PreferredTheme    string     `json:"preferredTheme"`
 	ShowAdultContent  bool       `json:"showAdultContent"`
 	BookCensoredTags  []string   `json:"bookCensoredTags"`

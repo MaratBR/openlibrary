@@ -38,6 +38,54 @@ func (q *Queries) DeleteUserFollow(ctx context.Context, arg DeleteUserFollowPara
 	return err
 }
 
+const emailVerification_Delete = `-- name: EmailVerification_Delete :exec
+delete from email_verification where email = $1
+`
+
+func (q *Queries) EmailVerification_Delete(ctx context.Context, email string) error {
+	_, err := q.db.Exec(ctx, emailVerification_Delete, email)
+	return err
+}
+
+const emailVerification_Get = `-- name: EmailVerification_Get :one
+select email, user_id, verification_code_hash, created_at, valid_through from email_verification where email = $1
+`
+
+func (q *Queries) EmailVerification_Get(ctx context.Context, email string) (EmailVerification, error) {
+	row := q.db.QueryRow(ctx, emailVerification_Get, email)
+	var i EmailVerification
+	err := row.Scan(
+		&i.Email,
+		&i.UserID,
+		&i.VerificationCodeHash,
+		&i.CreatedAt,
+		&i.ValidThrough,
+	)
+	return i, err
+}
+
+const emailVerification_Insert = `-- name: EmailVerification_Insert :exec
+insert into email_verification (email, user_id, valid_through, verification_code_hash)
+values ($1, $2, $3, $4)
+`
+
+type EmailVerification_InsertParams struct {
+	Email                string
+	UserID               pgtype.UUID
+	ValidThrough         pgtype.Timestamptz
+	VerificationCodeHash string
+}
+
+func (q *Queries) EmailVerification_Insert(ctx context.Context, arg EmailVerification_InsertParams) error {
+	_, err := q.db.Exec(ctx, emailVerification_Insert,
+		arg.Email,
+		arg.UserID,
+		arg.ValidThrough,
+		arg.VerificationCodeHash,
+	)
+	return err
+}
+
 const findUserByUsername = `-- name: FindUserByUsername :one
 select id, name, email, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
 from users

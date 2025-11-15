@@ -2,6 +2,11 @@ package app
 
 import "context"
 
+var (
+	SignUpErrors       = AppErrors.NewSubNamespace("signup")
+	SignUpInvalidInput = SignUpErrors.NewType("invalid")
+)
+
 type SignUpCommand struct {
 	Username  string
 	Password  string

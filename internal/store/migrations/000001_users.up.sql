@@ -15,6 +15,7 @@ create table users (
     id uuid primary key,
     name varchar(255) not null,
     email varchar(255) not null default '', -- for compat with system users
+    email_verified boolean not null default false,
     joined_at timestamptz not null default now(),
     password_hash text not null,
     "role" user_role not null default 'user',
@@ -68,6 +69,14 @@ create table user_bans (
     banned_by_user_id uuid null references users(id),
     note text not null default '',
     expires_at timestamptz not null
+);
+
+create table email_verification (
+    email text primary key,
+    user_id uuid not null references users (id),
+    verification_code_hash text not null,
+    created_at timestamptz not null default now(),
+    valid_through timestamptz not null
 );
 
 create table user_follower (

@@ -163,3 +163,13 @@ where id = $1;
 select name, id
 from users
 where id = any(sqlc.arg(ids)::uuid[]);
+
+-- name: EmailVerification_Delete :exec
+delete from email_verification where email = $1;
+
+-- name: EmailVerification_Insert :exec
+insert into email_verification (email, user_id, valid_through, verification_code_hash)
+values ($1, $2, $3, $4);
+
+-- name: EmailVerification_Get :one
+select * from email_verification where email = $1;

@@ -285,6 +285,7 @@ func (u *userService) GetUserSelfData(ctx context.Context, userID uuid.UUID) (*S
 		ShowAdultContent:  user.ShowAdultContent,
 		BookCensoredTags:  user.CensoredTags,
 		BookCensoringMode: CensorMode(user.CensoredTagsMode),
+		IsEmailVerified: user.,
 	}
 
 	details.Avatar.MD = getUserAvatar(user.Name, 84)

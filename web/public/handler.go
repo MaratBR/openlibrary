@@ -7,6 +7,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
+	"github.com/MaratBR/openlibrary/internal/app/email"
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
@@ -31,7 +32,10 @@ type Handler struct {
 	csrfHandler   *csrf.Handler
 	uploadService *app.UploadService
 	siteConfig    *app.SiteConfig
+	emailService  email.Service
 }
+
+// i should really do something with number of params in this function...
 
 func NewHandler(
 	db app.DB,
@@ -43,6 +47,7 @@ func NewHandler(
 	uploadService *app.UploadService,
 	esClient *elasticsearch.TypedClient,
 	siteConfig *app.SiteConfig,
+	emailService email.Service,
 ) *Handler {
 	if cache == nil {
 		panic("cache is nil")
@@ -66,6 +71,7 @@ func NewHandler(
 		uploadService: uploadService,
 		esClient:      esClient,
 		siteConfig:    siteConfig,
+		emailService:  emailService,
 	}
 	h.initRouter()
 	h.setupRouter(bgServices)

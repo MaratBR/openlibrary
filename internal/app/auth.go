@@ -33,7 +33,8 @@ type SignInResult struct {
 }
 
 type SignUpResult struct {
-	Created       bool
-	CreatedUserID uuid.UUID
-	EmailTaken    bool
+	Created                   bool
+	CreatedUserID             uuid.UUID
+	EmailTaken                bool
+	EmailVerificationRequired bool
 }

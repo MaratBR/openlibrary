@@ -485,6 +485,14 @@ type DraftLog struct {
 	Payload   []byte
 }
 
+type EmailVerification struct {
+	Email                string
+	UserID               pgtype.UUID
+	VerificationCodeHash string
+	CreatedAt            pgtype.Timestamptz
+	ValidThrough         pgtype.Timestamptz
+}
+
 type OlAnalyticsViewBucket struct {
 	Period int32
 	BookID int64

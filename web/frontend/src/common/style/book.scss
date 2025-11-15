@@ -74,7 +74,7 @@
     }
 
     &__link {
-        @apply text-2xl font-title;
+        @apply text-2xl font-title !text-muted-2-foreground !hover:text-foreground;
     }
 
     &__author {

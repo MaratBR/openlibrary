@@ -12,6 +12,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
+	"github.com/MaratBR/openlibrary/internal/app/email"
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
 	i18n "github.com/MaratBR/openlibrary/internal/i18n"
@@ -26,6 +27,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/knadh/koanf/v2"
+	"github.com/mailgun/errors"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 )
@@ -72,6 +74,11 @@ func mainServer(
 	slog.Debug("connecting to cache")
 	cacheInstance := createCache(config)
 
+	mailService, err := createMailService(config)
+	if err != nil {
+		panic(err)
+	}
+
 	slog.Debug("connecting to elasticsearch client")
 	esClient := setupElasticsearch(config)
 
@@ -99,7 +106,7 @@ func mainServer(
 	// global site config service
 	siteConfig := app.NewSiteConfig(db, config)
 
-	publicUIHandler := public.NewHandler(db, config, redisClient, cacheInstance, csrfHandler, bgServices, uploadService, esClient, siteConfig)
+	publicUIHandler := public.NewHandler(db, config, redisClient, cacheInstance, csrfHandler, bgServices, uploadService, esClient, siteConfig, mailService)
 	adminHandler := admin.NewHandler(db, config, cacheInstance, bgServices, esClient)
 
 	err = publicUIHandler.Start()
@@ -239,8 +246,63 @@ func connectToDatabase(config *koanf.Koanf) app.DB {
 	return db
 }
 
+func createMailService(cfg *koanf.Koanf) (email.Service, error) {
+	type_ := cfg.String("mail.type")
+
+	switch type_ {
+	case "mailgun":
+		{
+			domain := cfg.String("mailgun.domain")
+			key := cfg.String("mailgun.key")
+			senderName := cfg.String("mailgun.senderName")
+			isEU := cfg.Bool("mailgun.isEU")
+
+			if key == "" {
+			}
+
+			slog.Debug("mailgun is being used as email service of choice", "domain", domain, "key", "[REDACTED... DUH]")
+
+			mg, err := email.NewMailgunEmailService(domain, key, senderName, isEU)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to create mailgun service")
+			}
+			return mg, nil
+		}
+	case "console":
+		return email.NewConsole(), nil
+	case "":
+		slog.Warn("empty mail.type value - falling back to 'console' email service")
+		return email.NewConsole(), nil
+	default:
+		return nil, fmt.Errorf("unknown email type: %s", type_)
+	}
+}
+
+func createCacheBackend(cfg *koanf.Koanf) (cache.CacheBackend, error) {
+	backend := cfg.String("cache.type")
+	switch backend {
+	case "disabled":
+		return cache.NewDisabledCacheBackend(), nil
+	case "memory":
+		return cache.NewMemoryCacheBackend(), nil
+	case "redis":
+		url := cfg.String("redis.url")
+		if strings.Trim(url, " \n\t") == "" {
+			return nil, fmt.Errorf("redis.url is empty")
+		}
+
+		return cache.NewRedisCacheBackend(
+			url,
+			cache.NewMemoryCacheBackend(),
+		), nil
+	default:
+		return nil, fmt.Errorf("unknown cache backend: %s", backend)
+	}
+
+}
+
 func createCache(config *koanf.Koanf) *cache.Cache {
-	cacheBackend, err := cache.CacheBackendFromConfig(config)
+	cacheBackend, err := createCacheBackend(config)
 	if err != nil {
 		panic(err)
 	}

@@ -32,9 +32,12 @@ url = "http://localhost:9200"
 # type = "memory"
 type = "disabled"
 
-
 [redis]
 url = "localhost:6379"
+
+[auth]
+    requireEmail = true
+    emailVerification = true
 
 [siteConfig.default]
 

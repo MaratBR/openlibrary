@@ -4,7 +4,7 @@ import "github.com/MaratBR/openlibrary/internal/csrf"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
 
-templ SignUp(siteConfig *app.SiteConfig) {
+templ SignUp(siteConfig *app.SiteConfig, requireEmail bool) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
@@ -12,7 +12,7 @@ templ SignUp(siteConfig *app.SiteConfig) {
     @htmlLayout(htmlLayoutProps{Title: _t(l, "login.login")}) {
         <div class="p-8 w-screen h-screen flex items-center justify-center bg-secondary">
             <main class="w-[400px] min-h-[450px] bg-card p-4 shadow-lg rounded-sm">
-                <div class="flex justify-center">
+                <div class="flex justify-center select-none">
                     <img class="block dark:hidden" src="/_/embed-assets/logo.svg" />
                     <img class="hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
                 </div>

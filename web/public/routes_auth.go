@@ -14,6 +14,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/session"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
+	"github.com/knadh/koanf/v2"
 )
 
 type authController struct {
@@ -21,10 +22,11 @@ type authController struct {
 	signUpService app.SignUpService
 	csrfHandler   *csrf.Handler
 	siteConfig    *app.SiteConfig
+	cfg           *koanf.Koanf
 }
 
-func newAuthController(authService app.AuthService, signUpService app.SignUpService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig) *authController {
-	return &authController{authService: authService, csrfHandler: csrfHandler, siteConfig: siteConfig}
+func newAuthController(authService app.AuthService, signUpService app.SignUpService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig, cfg *koanf.Koanf) *authController {
+	return &authController{authService: authService, csrfHandler: csrfHandler, siteConfig: siteConfig, cfg: cfg, signUpService: signUpService}
 }
 
 func (c *authController) Register(r chi.Router) {
@@ -146,7 +148,7 @@ func (c *authController) logout(w http.ResponseWriter, r *http.Request) {
 func (c *authController) signup(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		olhttp.WriteTemplate(w, r.Context(), templates.SignUp(c.siteConfig))
+		olhttp.WriteTemplate(w, r.Context(), templates.SignUp(c.siteConfig, c.cfg.Bool("auth.requireEmail")))
 	case http.MethodPost:
 		c.handleSignUp(w, r)
 	default:
@@ -181,7 +183,6 @@ func (c *authController) handleSignUp(w http.ResponseWriter, r *http.Request) {
 	// create session and send them on their way
 	if result.Created {
 		sessionID, err := c.authService.CreateSessionForUser(r.Context(), result.CreatedUserID, userAgent, ip)
-
 		if err != nil {
 			// TODO redirect to login page and let them login?
 			writeApplicationError(w, r, err)
@@ -189,6 +190,11 @@ func (c *authController) handleSignUp(w http.ResponseWriter, r *http.Request) {
 		}
 
 		session.WriteSIDCookie(w, sessionID, time.Hour*24*30, r.URL.Scheme == "https")
+		if result.EmailVerificationRequired {
+			http.Redirect(w, r, "/signup/email-verification-code", http.StatusFound)
+			return
+		}
+
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
 		if result.EmailTaken {
