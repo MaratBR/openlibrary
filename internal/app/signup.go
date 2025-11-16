@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -34,8 +35,14 @@ type SendEmailVerificationCommand struct {
 	BypassRateLimit bool
 }
 
+type EmailVerificationStatus struct {
+	CanSendAgainAfter Nullable[time.Time]
+	WasSent           bool
+}
+
 type SignUpService interface {
 	SignUp(ctx context.Context, cmd SignUpCommand) (SignUpResult, error)
 	VerifyEmail(ctx context.Context, cmd VerifyEmailCommand) error
 	SendEmailVerification(ctx context.Context, cmd SendEmailVerificationCommand) error
+	GetEmailVerificationStatus(ctx context.Context, userID uuid.UUID) (EmailVerificationStatus, error)
 }

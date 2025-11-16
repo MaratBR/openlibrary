@@ -3,6 +3,7 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/csrf"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
+import "time"
 
 templ SignUp(siteConfig *app.SiteConfig, requireEmail bool) {
     {{
@@ -39,14 +40,16 @@ templ SignUp(siteConfig *app.SiteConfig, requireEmail bool) {
 }
 
 
-templ SignUpEmailVerification(email string) {
+templ SignUpEmailVerification(email string, status app.EmailVerificationStatus) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
     @htmlLayout(htmlLayoutProps{Title: _t(l, "login.login")}) {
         <div class="p-8 w-screen h-screen flex items-center justify-center bg-secondary">
             <main class="w-[400px] min-h-[450px] bg-card p-4 shadow-lg rounded-sm">
-                <form method="post" x-data="{code:''}">
+                <form method="post" x-data="{
+                    code:''
+                }">
                     @csrf.CSRFInputTempl(ctx)
                     <h1 class="text-2xl font-medium">
                         { _t(l, "signup.emailVerification.title") }
@@ -67,6 +70,52 @@ templ SignUpEmailVerification(email string) {
                             spellcheck="false"
                             placeholder="______"
                             class="input py-6 text-4xl font-semibold font-mono" style="letter-spacing: 0.3ch;" />
+                    </div>
+                    @i18nExtractKeys(l, []string{
+                        "signup.emailVerification.canResendIn",
+                    })
+                    <div 
+                        if status.CanSendAgainAfter.Valid {
+                            data-can-resend-after={ status.CanSendAgainAfter.Value.Format(time.RFC3339) }
+                        }
+                        x-cloak class="mt-4" x-data="{
+                        resending: false,
+                        canResendAfter: new Date(),
+                        canResend: false,
+                        __interval: 0,
+                        init() {
+                            const canResend = this.$root.dataset.canResendAfter;
+                            if (!canResend) {
+                                this.canResendAfter = new Date(0);
+                            } else {
+                                this.canResendAfter = new Date(canResend);
+                            }
+                            this.canResend = new Date() > this.canResendAfter;
+                            this.__interval = setInterval(() => {
+                                this.canResend = new Date() > this.canResendAfter;
+                            }, 500);
+                        },
+                        destroy() {
+                            clearInterval(this.__interval);
+                        },
+                        get text() {
+                            const diff = this.canResendAfter - new Date();
+                            return `${diff}`;
+                        },
+                        resend() {
+                            if (this.resending) return;
+                            this.resending = true;
+                            fetch('?act=resend', { method: 'PATCH' })
+                                .finally(() => (this.resending = false));
+                        }
+                    }">
+                        <button x-show="canResend"
+                            :disabled="resending"
+                            @click.prevent="resend()"
+                            class="link">
+                            { _t(l, "signup.emailVerification.resend") }
+                        </button>
+                        <p x-show="!canResend" x-text="window._('signup.emailVerification.canResendIn', { text: text })" />
                     </div>
                     <button disabled :disabled="code.length !== 6" class="mt-4 btn btn--lg">
                         { _t(l, "signup.emailVerification.verify") }

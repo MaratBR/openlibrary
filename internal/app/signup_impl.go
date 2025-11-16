@@ -15,18 +15,22 @@ import (
 )
 
 type signUpService struct {
-	db           DB
-	cfg          *koanf.Koanf
-	siteConfig   *SiteConfig
-	emailService email.Service
+	db                     DB
+	cfg                    *koanf.Koanf
+	siteConfig             *SiteConfig
+	emailService           email.Service
+	emailCodeValidDuration time.Duration
+	emailCodeResendAfter   time.Duration
 }
 
 func NewSignUpService(db DB, cfg *koanf.Koanf, siteConfig *SiteConfig, emailService email.Service) SignUpService {
 	return &signUpService{
-		db:           db,
-		cfg:          cfg,
-		siteConfig:   siteConfig,
-		emailService: emailService,
+		db:                     db,
+		cfg:                    cfg,
+		siteConfig:             siteConfig,
+		emailService:           emailService,
+		emailCodeValidDuration: time.Hour * 12,
+		emailCodeResendAfter:   time.Minute * 2,
 	}
 }
 
@@ -131,7 +135,7 @@ func (s *signUpService) verifyEmailRequest(ctx context.Context, email string, us
 	err = queries.EmailVerification_Insert(ctx, store.EmailVerification_InsertParams{
 		UserID:               uuidDomainToDb(userID),
 		Email:                email,
-		ValidThrough:         timeToTimestamptz(time.Now().Add(time.Hour * 6)),
+		ValidThrough:         timeToTimestamptz(time.Now().Add(s.emailCodeValidDuration)),
 		VerificationCodeHash: hash,
 	})
 	if err != nil {
@@ -236,10 +240,31 @@ func (s *signUpService) SendEmailVerification(ctx context.Context, cmd SendEmail
 		return wrapUnexpectedDBError(err)
 	}
 
-	rateLimit := time.Minute * 2
-	if verification.UserID == user.ID && time.Now().Sub(verification.CreatedAt.Time) < rateLimit && !cmd.BypassRateLimit {
+	if verification.UserID == user.ID && time.Now().Sub(verification.CreatedAt.Time) < s.emailCodeResendAfter && !cmd.BypassRateLimit {
 		return SignUpEmailVerificationRateLimit.New("request for verification was rate limited, please wait")
 	}
 
 	return s.verifyEmailRequest(ctx, user.Email, cmd.UserID)
+}
+
+func (s *signUpService) GetEmailVerificationStatus(ctx context.Context, userID uuid.UUID) (EmailVerificationStatus, error) {
+	queries := store.New(s.db)
+
+	user, err := queries.GetUser(ctx, uuidDomainToDb(userID))
+	if err != nil {
+		return EmailVerificationStatus{}, wrapUnexpectedDBError(err)
+	}
+	verification, err := queries.EmailVerification_Get(ctx, user.Email)
+	if err != nil && err != store.ErrNoRows {
+		return EmailVerificationStatus{}, wrapUnexpectedDBError(err)
+	}
+
+	status := EmailVerificationStatus{}
+
+	if err != store.ErrNoRows {
+		status.CanSendAgainAfter = Value(verification.CreatedAt.Time.Add(s.emailCodeResendAfter))
+		status.WasSent = time.Now().Before(verification.ValidThrough.Time)
+	}
+
+	return status, nil
 }

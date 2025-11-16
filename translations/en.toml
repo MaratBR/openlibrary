@@ -62,7 +62,8 @@ repeatPassword = "Repeat password"
 title = "Email verification"
 description = "Put a code we sent you at {{.email}}"
 verify = "Verify"
-
+resend = "Re-send"
+canResendIn = "You can re-send the code in {{.text}}"
 
 [password]
 mustHaveSymbol = "Must have at least one symbol"

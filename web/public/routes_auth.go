@@ -44,8 +44,13 @@ func (c *authController) emailVerification(w http.ResponseWriter, r *http.Reques
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
-		olhttp.WriteTemplate(w, r.Context(), templates.SignUpEmailVerification(user.Email))
-	} else {
+		status, err := c.signUpService.GetEmailVerificationStatus(r.Context(), user.ID)
+		if err != nil {
+			writeApplicationError(w, r, err)
+			return
+		}
+		olhttp.WriteTemplate(w, r.Context(), templates.SignUpEmailVerification(user.Email, status))
+	} else if r.Method == http.MethodPost {
 		if !isAuthorized {
 			writeUnauthorizedError(w)
 			return
@@ -59,6 +64,23 @@ func (c *authController) emailVerification(w http.ResponseWriter, r *http.Reques
 			writeApplicationError(w, r, err)
 			return
 		}
+	} else if r.Method == http.MethodPatch {
+		act := r.URL.Query().Get("act")
+		if act == "resend" {
+			err := c.signUpService.SendEmailVerification(r.Context(), app.SendEmailVerificationCommand{
+				UserID:          user.ID,
+				BypassRateLimit: false,
+			})
+			if err != nil {
+				apiWriteApplicationError(w, err)
+				return
+			}
+			apiWriteOK(w)
+		} else {
+			apiWriteUnprocessableEntity(w, errors.New("unknown act value"))
+		}
+	} else {
+		methodNotAllowed(w, r)
 	}
 }
 
