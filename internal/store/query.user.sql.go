@@ -710,16 +710,17 @@ func (q *Queries) User_FindByLogin(ctx context.Context, name string) (User, erro
 
 const user_Insert = `-- name: User_Insert :exec
 insert into users
-(id, name, password_hash, joined_at, email)
-values ($1, $2, $3, $4, $5)
+(id, name, password_hash, joined_at, email, email_verified)
+values ($1, $2, $3, $4, $5, $6)
 `
 
 type User_InsertParams struct {
-	ID           pgtype.UUID
-	Name         string
-	PasswordHash string
-	JoinedAt     pgtype.Timestamptz
-	Email        string
+	ID            pgtype.UUID
+	Name          string
+	PasswordHash  string
+	JoinedAt      pgtype.Timestamptz
+	Email         string
+	EmailVerified bool
 }
 
 func (q *Queries) User_Insert(ctx context.Context, arg User_InsertParams) error {
@@ -729,6 +730,7 @@ func (q *Queries) User_Insert(ctx context.Context, arg User_InsertParams) error 
 		arg.PasswordHash,
 		arg.JoinedAt,
 		arg.Email,
+		arg.EmailVerified,
 	)
 	return err
 }

@@ -34,10 +34,12 @@ func CreateUsers(
 		}
 
 		result, err := signUpService.SignUp(context.Background(), app.SignUpCommand{
-			Username:  user.Name,
-			Password:  user.Password,
-			UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
-			IpAddress: user.IPV4,
+			Username:                  user.Name,
+			Password:                  user.Password,
+			UserAgent:                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
+			IpAddress:                 user.IPV4,
+			BypassEmailRequirement:    true,
+			BypassPasswordRequirement: true,
 		})
 		if err != nil {
 			return nil, err

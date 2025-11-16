@@ -21,12 +21,13 @@ type Setup struct {
 	signUpService      app.SignUpService
 }
 
-func NewSetup(tagsService app.TagsService, reviewsService app.ReviewsService, bookManagerService app.BookManagerService, authService app.AuthService) Setup {
+func NewSetup(tagsService app.TagsService, reviewsService app.ReviewsService, bookManagerService app.BookManagerService, authService app.AuthService, signUpService app.SignUpService) Setup {
 	return Setup{
 		tagsService:        tagsService,
 		reviewsService:     reviewsService,
 		bookManagerService: bookManagerService,
 		authService:        authService,
+		signUpService:      signUpService,
 	}
 }
 

@@ -18,11 +18,13 @@ var (
 )
 
 type SignUpCommand struct {
-	Username  string
-	Password  string
-	Email     string
-	UserAgent string
-	IpAddress string
+	Username                  string
+	Password                  string
+	Email                     string
+	UserAgent                 string
+	IpAddress                 string
+	BypassEmailRequirement    bool
+	BypassPasswordRequirement bool
 }
 
 type VerifyEmailCommand struct {
@@ -40,9 +42,13 @@ type EmailVerificationStatus struct {
 	WasSent           bool
 }
 
+type SendEmailVerificationResult struct {
+	CanResendAfter time.Time
+}
+
 type SignUpService interface {
 	SignUp(ctx context.Context, cmd SignUpCommand) (SignUpResult, error)
 	VerifyEmail(ctx context.Context, cmd VerifyEmailCommand) error
-	SendEmailVerification(ctx context.Context, cmd SendEmailVerificationCommand) error
+	SendEmailVerification(ctx context.Context, cmd SendEmailVerificationCommand) (SendEmailVerificationResult, error)
 	GetEmailVerificationStatus(ctx context.Context, userID uuid.UUID) (EmailVerificationStatus, error)
 }

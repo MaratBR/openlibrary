@@ -58,6 +58,7 @@
 //                   //
 // ----------------- //
 .book-search-results {
+    @apply lg:bg-card lg:shadow-md;
 }
 
 .book-search-card {

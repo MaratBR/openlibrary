@@ -20,18 +20,19 @@ func (s *authService) SignOut(ctx context.Context, sessionID string) error {
 	return s.sessions.TerminateBySID(ctx, sessionID)
 }
 
-func createUser(ctx context.Context, queries *store.Queries, username, email, password string, role UserRole) (id uuid.UUID, err error) {
+func createUser(ctx context.Context, queries *store.Queries, username, email, password string, role UserRole, emailVerified bool) (id uuid.UUID, err error) {
 	userID := uuidV4()
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		return
 	}
 	err = queries.User_Insert(ctx, store.User_InsertParams{
-		ID:           uuidDomainToDb(userID),
-		PasswordHash: hashedPassword,
-		Name:         username,
-		JoinedAt:     timeToTimestamptz(time.Now()),
-		Email:        email,
+		ID:            uuidDomainToDb(userID),
+		PasswordHash:  hashedPassword,
+		Name:          username,
+		JoinedAt:      timeToTimestamptz(time.Now()),
+		Email:         email,
+		EmailVerified: emailVerified,
 	})
 	if err == nil {
 		id = userID
@@ -71,7 +72,7 @@ func (s *authService) EnsureAdminUserExists(ctx context.Context) error {
 		return err
 	}
 
-	_, err = createUser(ctx, queries, "admin", "", "admin", RoleAdmin)
+	_, err = createUser(ctx, queries, "admin", "", "admin", RoleAdmin, true)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return err

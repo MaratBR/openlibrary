@@ -39,8 +39,9 @@ func (c *authController) Register(r chi.Router) {
 
 func (c *authController) emailVerification(w http.ResponseWriter, r *http.Request) {
 	user, isAuthorized := auth.GetUser(r.Context())
-	if r.Method == http.MethodGet {
-		if !isAuthorized {
+	switch r.Method {
+	case http.MethodGet:
+		if !isAuthorized || user.IsEmailVerified {
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
@@ -50,7 +51,7 @@ func (c *authController) emailVerification(w http.ResponseWriter, r *http.Reques
 			return
 		}
 		olhttp.WriteTemplate(w, r.Context(), templates.SignUpEmailVerification(user.Email, status))
-	} else if r.Method == http.MethodPost {
+	case http.MethodPost:
 		if !isAuthorized {
 			writeUnauthorizedError(w)
 			return
@@ -64,10 +65,11 @@ func (c *authController) emailVerification(w http.ResponseWriter, r *http.Reques
 			writeApplicationError(w, r, err)
 			return
 		}
-	} else if r.Method == http.MethodPatch {
+		http.Redirect(w, r, "/", http.StatusFound)
+	case http.MethodPatch:
 		act := r.URL.Query().Get("act")
 		if act == "resend" {
-			err := c.signUpService.SendEmailVerification(r.Context(), app.SendEmailVerificationCommand{
+			result, err := c.signUpService.SendEmailVerification(r.Context(), app.SendEmailVerificationCommand{
 				UserID:          user.ID,
 				BypassRateLimit: false,
 			})
@@ -75,11 +77,15 @@ func (c *authController) emailVerification(w http.ResponseWriter, r *http.Reques
 				apiWriteApplicationError(w, err)
 				return
 			}
-			apiWriteOK(w)
+			var resp struct {
+				CanResendAfter time.Time `json:"canResendAfter"`
+			}
+			resp.CanResendAfter = result.CanResendAfter
+			olhttp.NewAPIResponse(resp).Write(w)
 		} else {
 			apiWriteUnprocessableEntity(w, errors.New("unknown act value"))
 		}
-	} else {
+	default:
 		methodNotAllowed(w, r)
 	}
 }

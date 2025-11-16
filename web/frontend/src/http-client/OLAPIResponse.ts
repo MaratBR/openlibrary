@@ -12,15 +12,24 @@ export type OLNotification = z.infer<typeof notificationSchema>
 
 const NO_BODY_SCHEMA = z.literal('ok')
 
+export const olErrorSchema = z.object({
+  message: z.string(),
+  cause: z.string(),
+  code: z.string(),
+})
+
+export type OLErrorSchema = z.infer<typeof olErrorSchema>
+
 export class OLAPIResponse<T> {
   private readonly response: Response
   private _notifications?: OLNotification[] = undefined
   private _data?: T
+  private _error?: OLErrorSchema
   private readonly _schema: ZodSchema<T>
 
   public static async create<T>(
     response: Response,
-    schema: ZodSchema<T>,
+    schema: ZodSchema<T> = z.any(),
   ): Promise<OLAPIResponse<T>> {
     const resp = new OLAPIResponse<T>(response, schema)
     await resp._loadData()
@@ -46,6 +55,10 @@ export class OLAPIResponse<T> {
     return this.response.ok
   }
 
+  get error() {
+    return this._error
+  }
+
   get notifications() {
     if (this._notifications === undefined) {
       this._notifications = OLAPIResponse.parseNotifications(this.response)
@@ -63,7 +76,13 @@ export class OLAPIResponse<T> {
   private async _loadData() {
     if (this._data !== undefined) return
 
-    this._data = await this._schema.parseAsync(await this.response.json())
+    const json = await this.response.json()
+
+    if (this.response.status >= 400 || this.response.status <= 599) {
+      this._error = await olErrorSchema.parseAsync(json)
+    }
+
+    this._data = await this._schema.parseAsync(json)
   }
 
   private static parseNotifications(response: KyResponse): OLNotification[] {

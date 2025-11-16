@@ -34,8 +34,8 @@ where email = $1);
 
 -- name: User_Insert :exec
 insert into users
-(id, name, password_hash, joined_at, email)
-values ($1, $2, $3, $4, $5);
+(id, name, password_hash, joined_at, email, email_verified)
+values ($1, $2, $3, $4, $5, $6);
 
 -- name: User_SetEmailVerified :exec
 update users

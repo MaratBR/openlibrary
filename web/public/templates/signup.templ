@@ -82,6 +82,8 @@ templ SignUpEmailVerification(email string, status app.EmailVerificationStatus) 
                         resending: false,
                         canResendAfter: new Date(),
                         canResend: false,
+                        text:'',
+                        error:'',
                         __interval: 0,
                         init() {
                             const canResend = this.$root.dataset.canResendAfter;
@@ -91,21 +93,38 @@ templ SignUpEmailVerification(email string, status app.EmailVerificationStatus) 
                                 this.canResendAfter = new Date(canResend);
                             }
                             this.canResend = new Date() > this.canResendAfter;
-                            this.__interval = setInterval(() => {
+                            const update = () => {
                                 this.canResend = new Date() > this.canResendAfter;
-                            }, 500);
+                                
+                                const diff = this.canResendAfter - new Date();
+                                const minutes = Math.floor(diff / 60000);
+                                const seconds = Math.floor((diff - minutes * 60000) / 1000);
+                                this.text = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                            };
+                            update();
+                            this.__interval = setInterval(update, 500);
                         },
                         destroy() {
                             clearInterval(this.__interval);
                         },
-                        get text() {
-                            const diff = this.canResendAfter - new Date();
-                            return `${diff}`;
-                        },
                         resend() {
                             if (this.resending) return;
                             this.resending = true;
+                            this.error = ''
+                            const delay = window.delay(500);
                             fetch('?act=resend', { method: 'PATCH' })
+                                .then(OLAPIResponse.create)
+                                .then(async r => {
+                                    await delay
+                                    return r
+                                })
+                                .then(resp => {
+                                    if (!resp.ok) {
+                                        this.error = getErrorMessage(resp)
+                                    } else {
+                                        this.canResendAfter = new Date(resp.data.canResendAfter);
+                                    }
+                                })
                                 .finally(() => (this.resending = false));
                         }
                     }">
@@ -116,6 +135,8 @@ templ SignUpEmailVerification(email string, status app.EmailVerificationStatus) 
                             { _t(l, "signup.emailVerification.resend") }
                         </button>
                         <p x-show="!canResend" x-text="window._('signup.emailVerification.canResendIn', { text: text })" />
+                        <span class="loader" x-show="resending"></span>
+                        <p class="error" x-text="error" x-show="!resending && error"></p>
                     </div>
                     <button disabled :disabled="code.length !== 6" class="mt-4 btn btn--lg">
                         { _t(l, "signup.emailVerification.verify") }

@@ -43,15 +43,17 @@ func NewSignUpService(db DB, cfg *koanf.Koanf, siteConfig *SiteConfig, emailServ
 // SignUpResult with IsSuccess set to true, and the session ID.
 func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUpResult, error) {
 	// VALIDATION
-	if s.cfg.Bool("auth.requireEmail") && input.Email == "" {
+	if s.cfg.Bool("auth.requireEmail") && input.Email == "" && !input.BypassEmailRequirement {
 		return SignUpResult{}, SignUpInvalidInput.New("email is required")
 	}
 	if err := ValidateUserName(input.Username); err != nil {
 		return SignUpResult{}, SignUpInvalidInput.Wrap(err, "invalid username")
 	}
-	passwordRequirements := s.siteConfig.Get().PasswordRequirements
-	if err := ValidatePassword(input.Password, passwordRequirements); err != nil {
-		return SignUpResult{}, SignUpInvalidInput.Wrap(err, "invalid password")
+	if !input.BypassPasswordRequirement {
+		passwordRequirements := s.siteConfig.Get().PasswordRequirements
+		if err := ValidatePassword(input.Password, passwordRequirements); err != nil {
+			return SignUpResult{}, SignUpInvalidInput.Wrap(err, "invalid password")
+		}
 	}
 	if input.Email != "" {
 		if err := ValidateEmail(input.Email); err != nil {
@@ -95,7 +97,7 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 		return SignUpResult{}, ErrUsernameTaken
 	}
 
-	userID, err := createUser(ctx, queries, input.Username, input.Email, input.Password, RoleUser)
+	userID, err := createUser(ctx, queries, input.Username, input.Email, input.Password, RoleUser, false)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return SignUpResult{}, err
@@ -107,7 +109,7 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 	}
 
 	if emailVerificationRequired {
-		err := s.verifyEmailRequest(ctx, input.Email, userID)
+		_, err := s.verifyEmailRequest(ctx, input.Email, userID)
 		if err != nil {
 			return SignUpResult{}, err
 		}
@@ -116,21 +118,21 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 	return SignUpResult{CreatedUserID: userID, EmailVerificationRequired: emailVerificationRequired, Created: true}, nil
 }
 
-func (s *signUpService) verifyEmailRequest(ctx context.Context, email string, userID uuid.UUID) error {
+func (s *signUpService) verifyEmailRequest(ctx context.Context, email string, userID uuid.UUID) (time.Time, error) {
 	hash, code, err := newEmailVerificationCode()
 	if err != nil {
-		return err
+		return time.Time{}, err
 	}
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return time.Time{}, wrapUnexpectedDBError(err)
 	}
 	queries := store.New(s.db).WithTx(tx)
 	err = queries.EmailVerification_Delete(ctx, email)
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return time.Time{}, wrapUnexpectedDBError(err)
 	}
 	err = queries.EmailVerification_Insert(ctx, store.EmailVerification_InsertParams{
 		UserID:               uuidDomainToDb(userID),
@@ -140,22 +142,22 @@ func (s *signUpService) verifyEmailRequest(ctx context.Context, email string, us
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return time.Time{}, wrapUnexpectedDBError(err)
 	}
 
 	// TODO some good looking message or something
 	err = s.emailService.Send(ctx, email, "OL verification code", fmt.Sprintf("Your verification code is %s\n\nIf you did not sign up, please just ignore this message and apologies for disturbance :)", code))
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return err
+		return time.Time{}, err
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return time.Time{}, wrapUnexpectedDBError(err)
 	}
 
-	return nil
+	return time.Now().Add(s.emailCodeResendAfter), nil
 }
 
 func newEmailVerificationCode() (hash string, code string, err error) {
@@ -223,28 +225,35 @@ func (s *signUpService) VerifyEmail(ctx context.Context, cmd VerifyEmailCommand)
 
 }
 
-func (s *signUpService) SendEmailVerification(ctx context.Context, cmd SendEmailVerificationCommand) error {
+func (s *signUpService) SendEmailVerification(ctx context.Context, cmd SendEmailVerificationCommand) (SendEmailVerificationResult, error) {
 	queries := store.New(s.db)
 
 	user, err := queries.GetUser(ctx, uuidDomainToDb(cmd.UserID))
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return SendEmailVerificationResult{}, wrapUnexpectedDBError(err)
 	}
 
 	if user.Email == "" {
-		return SignUpEmailVerificationNA.New("this user does not have email and cannot be verified")
+		return SendEmailVerificationResult{}, SignUpEmailVerificationNA.New("this user does not have email and cannot be verified")
 	}
 
 	verification, err := queries.EmailVerification_Get(ctx, user.Email)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return SendEmailVerificationResult{}, wrapUnexpectedDBError(err)
 	}
 
 	if verification.UserID == user.ID && time.Now().Sub(verification.CreatedAt.Time) < s.emailCodeResendAfter && !cmd.BypassRateLimit {
-		return SignUpEmailVerificationRateLimit.New("request for verification was rate limited, please wait")
+		return SendEmailVerificationResult{}, SignUpEmailVerificationRateLimit.New("request for verification was rate limited, please wait")
 	}
 
-	return s.verifyEmailRequest(ctx, user.Email, cmd.UserID)
+	canResendAfter, err := s.verifyEmailRequest(ctx, user.Email, cmd.UserID)
+	if err != nil {
+		return SendEmailVerificationResult{}, err
+	}
+
+	return SendEmailVerificationResult{
+		CanResendAfter: canResendAfter,
+	}, nil
 }
 
 func (s *signUpService) GetEmailVerificationStatus(ctx context.Context, userID uuid.UUID) (EmailVerificationStatus, error) {
