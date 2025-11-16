@@ -38,3 +38,41 @@ templ SignUp(siteConfig *app.SiteConfig, requireEmail bool) {
     }
 }
 
+
+templ SignUpEmailVerification(email string) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    @htmlLayout(htmlLayoutProps{Title: _t(l, "login.login")}) {
+        <div class="p-8 w-screen h-screen flex items-center justify-center bg-secondary">
+            <main class="w-[400px] min-h-[450px] bg-card p-4 shadow-lg rounded-sm">
+                <form method="post" x-data="{code:''}">
+                    @csrf.CSRFInputTempl(ctx)
+                    <h1 class="text-2xl font-medium">
+                        { _t(l, "signup.emailVerification.title") }
+                    </h1>
+                    <p>
+                        { _tt(l, "signup.emailVerification.description", map[string]string{
+                            "email": email,
+                        }) }
+                    </p>
+                    <div class="mt-4">
+                        <input 
+                            :value="code" 
+                            @input="code=$event.target.value.toUpperCase()" 
+                            maxlength="6" 
+                            required
+                            name="code"
+                            autocomplete="off"
+                            spellcheck="false"
+                            placeholder="______"
+                            class="input py-6 text-4xl font-semibold font-mono" style="letter-spacing: 0.3ch;" />
+                    </div>
+                    <button disabled :disabled="code.length !== 6" class="mt-4 btn btn--lg">
+                        { _t(l, "signup.emailVerification.verify") }
+                    </button>
+                </form>
+            </main>
+        </div>
+    }
+}

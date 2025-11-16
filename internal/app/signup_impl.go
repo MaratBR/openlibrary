@@ -69,7 +69,7 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 	queries := store.New(s.db).WithTx(tx)
 
 	if input.Email != "" {
-		userWithSameEmailExists, err := queries.UserExistsByEmail(ctx, input.Username)
+		userWithSameEmailExists, err := queries.User_ExistsByEmail(ctx, input.Username)
 		if err != nil {
 			rollbackTx(ctx, tx)
 			return SignUpResult{}, wrapUnexpectedDBError(err)
@@ -80,7 +80,7 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 		}
 	}
 
-	userWithSameNameExists, err := queries.UserExistsByUsername(ctx, input.Username)
+	userWithSameNameExists, err := queries.User_ExistsByUsername(ctx, input.Username)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return SignUpResult{}, wrapUnexpectedDBError(err)
@@ -91,7 +91,7 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 		return SignUpResult{}, ErrUsernameTaken
 	}
 
-	userID, err := createUser(ctx, queries, input.Username, input.Password, RoleUser)
+	userID, err := createUser(ctx, queries, input.Username, input.Email, input.Password, RoleUser)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return SignUpResult{}, err
@@ -164,4 +164,82 @@ func newEmailVerificationCode() (hash string, code string, err error) {
 	hashBytes := h.Sum(nil)
 	hash = hex.Dump(hashBytes)
 	return
+}
+
+func verifyEmailCode(hash, code string) bool {
+	h := sha256.New()
+	h.Write([]byte(code))
+	hashBytes := h.Sum(nil)
+	return hex.Dump(hashBytes) == hash
+}
+
+func (s *signUpService) VerifyEmail(ctx context.Context, cmd VerifyEmailCommand) error {
+	queries := store.New(s.db)
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+	queries = queries.WithTx(tx)
+
+	user, err := queries.GetUser(ctx, uuidDomainToDb(cmd.UserID))
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	if user.Email == "" {
+		return SignUpEmailVerificationNA.New("this user does not have email and cannot be verified")
+	}
+
+	verification, err := queries.EmailVerification_Get(ctx, user.Email)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	if verification.ValidThrough.Time.Before(time.Now()) {
+		return SignUpEmailVerificationTimedOut.New("email verification code is no longer valid")
+	}
+
+	if verifyEmailCode(verification.VerificationCodeHash, cmd.Code) {
+		err = queries.User_SetEmailVerified(ctx, store.User_SetEmailVerifiedParams{
+			ID:            uuidDomainToDb(cmd.UserID),
+			EmailVerified: true,
+		})
+		if err != nil {
+			return wrapUnexpectedDBError(err)
+		}
+		err = tx.Commit(ctx)
+		if err != nil {
+			return wrapUnexpectedDBError(err)
+		}
+		return nil
+	} else {
+		rollbackTx(ctx, tx)
+		return SignUpEmailVerificationInvalidCode.New("invalid verification code")
+	}
+
+}
+
+func (s *signUpService) SendEmailVerification(ctx context.Context, cmd SendEmailVerificationCommand) error {
+	queries := store.New(s.db)
+
+	user, err := queries.GetUser(ctx, uuidDomainToDb(cmd.UserID))
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	if user.Email == "" {
+		return SignUpEmailVerificationNA.New("this user does not have email and cannot be verified")
+	}
+
+	verification, err := queries.EmailVerification_Get(ctx, user.Email)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	rateLimit := time.Minute * 2
+	if verification.UserID == user.ID && time.Now().Sub(verification.CreatedAt.Time) < rateLimit && !cmd.BypassRateLimit {
+		return SignUpEmailVerificationRateLimit.New("request for verification was rate limited, please wait")
+	}
+
+	return s.verifyEmailRequest(ctx, user.Email, cmd.UserID)
 }

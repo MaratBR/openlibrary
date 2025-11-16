@@ -2,7 +2,9 @@ package public
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+	"net/url"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
@@ -85,16 +87,42 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	})
 }
 
+func redirectWithNextParameter(w http.ResponseWriter, r *http.Request, path string) {
+	next := r.URL.Path
+	if r.URL.RawQuery != "" {
+		next += "?" + r.URL.RawQuery
+	}
+	println(next)
+
+	u, err := url.Parse(path)
+	if err != nil {
+		slog.Error("failed to parse redirect url")
+	} else {
+		// TODO remove next param is next is the same as the URL we are redirecting too, for some reason
+		q := u.Query()
+		q.Set("next", next)
+		u.RawQuery = q.Encode()
+		path = u.String()
+	}
+
+	http.Redirect(w, r, path, http.StatusFound)
+}
+
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/login", http.StatusFound)
+	redirectWithNextParameter(w, r, "/login")
 }
 
 func requiresAuthorizationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, ok := auth.GetSession(r.Context())
+		user, ok := auth.GetUser(r.Context())
 
 		if !ok {
 			redirectToLogin(w, r)
+			return
+		}
+
+		if !user.IsEmailVerified {
+			redirectWithNextParameter(w, r, "/signup/email-verification-code")
 			return
 		}
 

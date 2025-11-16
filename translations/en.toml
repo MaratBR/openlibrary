@@ -58,6 +58,12 @@ dontHaveAccountYet = "Don't have an account yet?"
 signup = "Sign up"
 repeatPassword = "Repeat password"
 
+[signup.emailVerification]
+title = "Email verification"
+description = "Put a code we sent you at {{.email}}"
+verify = "Verify"
+
+
 [password]
 mustHaveSymbol = "Must have at least one symbol"
 mustHaveCases = "Must have at least one capital letter and one lowercase"

@@ -20,17 +20,18 @@ func (s *authService) SignOut(ctx context.Context, sessionID string) error {
 	return s.sessions.TerminateBySID(ctx, sessionID)
 }
 
-func createUser(ctx context.Context, queries *store.Queries, username, password string, role UserRole) (id uuid.UUID, err error) {
+func createUser(ctx context.Context, queries *store.Queries, username, email, password string, role UserRole) (id uuid.UUID, err error) {
 	userID := uuidV4()
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		return
 	}
-	err = queries.InsertUser(ctx, store.InsertUserParams{
+	err = queries.User_Insert(ctx, store.User_InsertParams{
 		ID:           uuidDomainToDb(userID),
 		PasswordHash: hashedPassword,
 		Name:         username,
 		JoinedAt:     timeToTimestamptz(time.Now()),
+		Email:        email,
 	})
 	if err == nil {
 		id = userID
@@ -52,7 +53,7 @@ func createUser(ctx context.Context, queries *store.Queries, username, password 
 }
 
 func (s *authService) EnsureAdminUserExists(ctx context.Context) error {
-	exists, err := s.queries.UserExistsByUsername(ctx, "admin")
+	exists, err := s.queries.User_ExistsByUsername(ctx, "admin")
 	if err != nil {
 		return err
 	}
@@ -70,7 +71,7 @@ func (s *authService) EnsureAdminUserExists(ctx context.Context) error {
 		return err
 	}
 
-	_, err = createUser(ctx, queries, "admin", "admin", RoleAdmin)
+	_, err = createUser(ctx, queries, "admin", "", "admin", RoleAdmin)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return err
@@ -93,7 +94,7 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 		return SignInResult{}, err
 	}
 	queries := s.queries.WithTx(tx)
-	user, err := queries.FindUserByUsername(ctx, input.Username)
+	user, err := queries.User_FindByLogin(ctx, input.Username)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return SignInResult{}, ErrInvalidCredentials

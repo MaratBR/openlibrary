@@ -86,41 +86,6 @@ func (q *Queries) EmailVerification_Insert(ctx context.Context, arg EmailVerific
 	return err
 }
 
-const findUserByUsername = `-- name: FindUserByUsername :one
-select id, name, email, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
-from users
-where name = $1
-limit 1
-`
-
-func (q *Queries) FindUserByUsername(ctx context.Context, name string) (User, error) {
-	row := q.db.QueryRow(ctx, findUserByUsername, name)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.JoinedAt,
-		&i.PasswordHash,
-		&i.Role,
-		&i.IsBanned,
-		&i.AvatarFile,
-		&i.About,
-		&i.Gender,
-		&i.ProfileCss,
-		&i.EnableProfileCss,
-		&i.DefaultTheme,
-		&i.PrivacyHideStats,
-		&i.PrivacyHideComments,
-		&i.PrivacyHideEmail,
-		&i.PrivacyAllowSearching,
-		&i.ShowAdultContent,
-		&i.CensoredTags,
-		&i.CensoredTagsMode,
-	)
-	return i, err
-}
-
 const get2FADevices = `-- name: Get2FADevices :many
 select id, user_id, type, key, created_at, initialized, active
 from user_2fa
@@ -196,7 +161,7 @@ func (q *Queries) GetSessionInfo(ctx context.Context, sid string) (GetSessionInf
 }
 
 const getUser = `-- name: GetUser :one
-select id, name, email, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
+select id, name, email, email_verified, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
 from users
 where id = $1
 limit 1
@@ -209,6 +174,7 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.EmailVerified,
 		&i.JoinedAt,
 		&i.PasswordHash,
 		&i.Role,
@@ -409,7 +375,7 @@ func (q *Queries) GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]Ge
 
 const getUserWithDetails = `-- name: GetUserWithDetails :one
 select 
-    users.id, users.name, users.email, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
+    users.id, users.name, users.email, users.email_verified, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
     (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned and chapters > 0) as books_total,
     (select count(*) from user_follower where followed_id = users.id) as followers,
     (select count(*) from user_follower where follower_id = users.id) as "following",
@@ -429,6 +395,7 @@ type GetUserWithDetailsRow struct {
 	ID                    pgtype.UUID
 	Name                  string
 	Email                 string
+	EmailVerified         bool
 	JoinedAt              pgtype.Timestamptz
 	PasswordHash          string
 	Role                  UserRole
@@ -459,6 +426,7 @@ func (q *Queries) GetUserWithDetails(ctx context.Context, arg GetUserWithDetails
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.EmailVerified,
 		&i.JoinedAt,
 		&i.PasswordHash,
 		&i.Role,
@@ -484,74 +452,6 @@ func (q *Queries) GetUserWithDetails(ctx context.Context, arg GetUserWithDetails
 	return i, err
 }
 
-const insertSession = `-- name: InsertSession :exec
-insert into sessions
-(id, sid, user_id, created_at, user_agent, ip_address, expires_at)
-values ($1, $2, $3, $4, $5, $6, $7)
-`
-
-type InsertSessionParams struct {
-	ID        int64
-	Sid       string
-	UserID    pgtype.UUID
-	CreatedAt pgtype.Timestamptz
-	UserAgent string
-	IpAddress string
-	ExpiresAt pgtype.Timestamptz
-}
-
-func (q *Queries) InsertSession(ctx context.Context, arg InsertSessionParams) error {
-	_, err := q.db.Exec(ctx, insertSession,
-		arg.ID,
-		arg.Sid,
-		arg.UserID,
-		arg.CreatedAt,
-		arg.UserAgent,
-		arg.IpAddress,
-		arg.ExpiresAt,
-	)
-	return err
-}
-
-const insertUser = `-- name: InsertUser :exec
-insert into users
-(id, name, password_hash, joined_at)
-values ($1, $2, $3, $4)
-`
-
-type InsertUserParams struct {
-	ID           pgtype.UUID
-	Name         string
-	PasswordHash string
-	JoinedAt     pgtype.Timestamptz
-}
-
-func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
-	_, err := q.db.Exec(ctx, insertUser,
-		arg.ID,
-		arg.Name,
-		arg.PasswordHash,
-		arg.JoinedAt,
-	)
-	return err
-}
-
-const insertUserFollow = `-- name: InsertUserFollow :exec
-insert into user_follower
-(follower_id, followed_id)
-values ($1, $2)
-`
-
-type InsertUserFollowParams struct {
-	FollowerID pgtype.UUID
-	FollowedID pgtype.UUID
-}
-
-func (q *Queries) InsertUserFollow(ctx context.Context, arg InsertUserFollowParams) error {
-	_, err := q.db.Exec(ctx, insertUserFollow, arg.FollowerID, arg.FollowedID)
-	return err
-}
-
 const isFollowing = `-- name: IsFollowing :one
 select exists(select 1
 from user_follower
@@ -570,25 +470,54 @@ func (q *Queries) IsFollowing(ctx context.Context, arg IsFollowingParams) (bool,
 	return exists, err
 }
 
-const terminateSession = `-- name: TerminateSession :exec
+const session_Insert = `-- name: Session_Insert :exec
+insert into sessions
+(id, sid, user_id, created_at, user_agent, ip_address, expires_at)
+values ($1, $2, $3, $4, $5, $6, $7)
+`
+
+type Session_InsertParams struct {
+	ID        int64
+	Sid       string
+	UserID    pgtype.UUID
+	CreatedAt pgtype.Timestamptz
+	UserAgent string
+	IpAddress string
+	ExpiresAt pgtype.Timestamptz
+}
+
+func (q *Queries) Session_Insert(ctx context.Context, arg Session_InsertParams) error {
+	_, err := q.db.Exec(ctx, session_Insert,
+		arg.ID,
+		arg.Sid,
+		arg.UserID,
+		arg.CreatedAt,
+		arg.UserAgent,
+		arg.IpAddress,
+		arg.ExpiresAt,
+	)
+	return err
+}
+
+const session_Terminate = `-- name: Session_Terminate :exec
 update sessions
 set is_terminated = true
 where sid = $1
 `
 
-func (q *Queries) TerminateSession(ctx context.Context, sid string) error {
-	_, err := q.db.Exec(ctx, terminateSession, sid)
+func (q *Queries) Session_Terminate(ctx context.Context, sid string) error {
+	_, err := q.db.Exec(ctx, session_Terminate, sid)
 	return err
 }
 
-const terminateSessionsByUserID = `-- name: TerminateSessionsByUserID :exec
+const session_TerminateAllByUserID = `-- name: Session_TerminateAllByUserID :exec
 update sessions
 set is_terminated = true
 where user_id = $1
 `
 
-func (q *Queries) TerminateSessionsByUserID(ctx context.Context, userID pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, terminateSessionsByUserID, userID)
+func (q *Queries) Session_TerminateAllByUserID(ctx context.Context, userID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, session_TerminateAllByUserID, userID)
 	return err
 }
 
@@ -717,28 +646,121 @@ func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) 
 	return err
 }
 
-const userExistsByEmail = `-- name: UserExistsByEmail :one
+const user_ExistsByEmail = `-- name: User_ExistsByEmail :one
 select exists(select 1
 from users
 where email = $1)
 `
 
-func (q *Queries) UserExistsByEmail(ctx context.Context, email string) (bool, error) {
-	row := q.db.QueryRow(ctx, userExistsByEmail, email)
+func (q *Queries) User_ExistsByEmail(ctx context.Context, email string) (bool, error) {
+	row := q.db.QueryRow(ctx, user_ExistsByEmail, email)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
 }
 
-const userExistsByUsername = `-- name: UserExistsByUsername :one
+const user_ExistsByUsername = `-- name: User_ExistsByUsername :one
 select exists(select 1
 from users
 where name = $1)
 `
 
-func (q *Queries) UserExistsByUsername(ctx context.Context, name string) (bool, error) {
-	row := q.db.QueryRow(ctx, userExistsByUsername, name)
+func (q *Queries) User_ExistsByUsername(ctx context.Context, name string) (bool, error) {
+	row := q.db.QueryRow(ctx, user_ExistsByUsername, name)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
+}
+
+const user_FindByLogin = `-- name: User_FindByLogin :one
+select id, name, email, email_verified, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
+from users
+where name = $1 or email = $1
+limit 1
+`
+
+func (q *Queries) User_FindByLogin(ctx context.Context, name string) (User, error) {
+	row := q.db.QueryRow(ctx, user_FindByLogin, name)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.EmailVerified,
+		&i.JoinedAt,
+		&i.PasswordHash,
+		&i.Role,
+		&i.IsBanned,
+		&i.AvatarFile,
+		&i.About,
+		&i.Gender,
+		&i.ProfileCss,
+		&i.EnableProfileCss,
+		&i.DefaultTheme,
+		&i.PrivacyHideStats,
+		&i.PrivacyHideComments,
+		&i.PrivacyHideEmail,
+		&i.PrivacyAllowSearching,
+		&i.ShowAdultContent,
+		&i.CensoredTags,
+		&i.CensoredTagsMode,
+	)
+	return i, err
+}
+
+const user_Insert = `-- name: User_Insert :exec
+insert into users
+(id, name, password_hash, joined_at, email)
+values ($1, $2, $3, $4, $5)
+`
+
+type User_InsertParams struct {
+	ID           pgtype.UUID
+	Name         string
+	PasswordHash string
+	JoinedAt     pgtype.Timestamptz
+	Email        string
+}
+
+func (q *Queries) User_Insert(ctx context.Context, arg User_InsertParams) error {
+	_, err := q.db.Exec(ctx, user_Insert,
+		arg.ID,
+		arg.Name,
+		arg.PasswordHash,
+		arg.JoinedAt,
+		arg.Email,
+	)
+	return err
+}
+
+const user_InsertFollow = `-- name: User_InsertFollow :exec
+insert into user_follower
+(follower_id, followed_id)
+values ($1, $2)
+`
+
+type User_InsertFollowParams struct {
+	FollowerID pgtype.UUID
+	FollowedID pgtype.UUID
+}
+
+func (q *Queries) User_InsertFollow(ctx context.Context, arg User_InsertFollowParams) error {
+	_, err := q.db.Exec(ctx, user_InsertFollow, arg.FollowerID, arg.FollowedID)
+	return err
+}
+
+const user_SetEmailVerified = `-- name: User_SetEmailVerified :exec
+update users
+set email_verified = $1
+where id = $2
+`
+
+type User_SetEmailVerifiedParams struct {
+	EmailVerified bool
+	ID            pgtype.UUID
+}
+
+func (q *Queries) User_SetEmailVerified(ctx context.Context, arg User_SetEmailVerifiedParams) error {
+	_, err := q.db.Exec(ctx, user_SetEmailVerified, arg.EmailVerified, arg.ID)
+	return err
 }

@@ -45,7 +45,7 @@ func (s *sessionService) Create(ctx context.Context, command CreateSessionComman
 		return nil, err
 	}
 
-	err = s.queries.InsertSession(ctx, store.InsertSessionParams{
+	err = s.queries.Session_Insert(ctx, store.Session_InsertParams{
 		ID:        GenID(),
 		Sid:       sessionID,
 		UserID:    uuidDomainToDb(command.UserID),
@@ -112,13 +112,13 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 		}
 		return nil, wrapUnexpectedDBError(err)
 	}
-	err = queries.TerminateSession(ctx, command.SessionID)
+	err = queries.Session_Terminate(ctx, command.SessionID)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return nil, wrapUnexpectedDBError(err)
 	}
 
-	err = queries.InsertSession(ctx, store.InsertSessionParams{
+	err = queries.Session_Insert(ctx, store.Session_InsertParams{
 		ID:        GenID(),
 		Sid:       command.SessionID,
 		UserID:    session.UserID,
@@ -147,7 +147,7 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 
 // TerminateAllByUserID implements SessionService.
 func (s *sessionService) TerminateAllByUserID(ctx context.Context, userID uuid.UUID) error {
-	err := s.queries.TerminateSessionsByUserID(ctx, uuidDomainToDb(userID))
+	err := s.queries.Session_TerminateAllByUserID(ctx, uuidDomainToDb(userID))
 	if err != nil {
 		return wrapUnexpectedDBError(err)
 	}
@@ -156,7 +156,7 @@ func (s *sessionService) TerminateAllByUserID(ctx context.Context, userID uuid.U
 
 // TerminateBySID implements SessionService.
 func (s *sessionService) TerminateBySID(ctx context.Context, sessionID string) error {
-	err := s.queries.TerminateSession(ctx, sessionID)
+	err := s.queries.Session_Terminate(ctx, sessionID)
 	if err != nil {
 		return wrapUnexpectedDBError(err)
 	}

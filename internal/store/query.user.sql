@@ -16,39 +16,44 @@ left join user_follower on user_follower.followed_id = users.id and user_followe
 where users.id = $1
 limit 1;
 
--- name: FindUserByUsername :one
+-- name: User_FindByLogin :one
 select *
 from users
-where name = $1
+where name = $1 or email = $1
 limit 1;
 
--- name: UserExistsByUsername :one
+-- name: User_ExistsByUsername :one
 select exists(select 1
 from users
 where name = $1);
 
--- name: UserExistsByEmail :one
+-- name: User_ExistsByEmail :one
 select exists(select 1
 from users
 where email = $1);
 
--- name: InsertUser :exec
+-- name: User_Insert :exec
 insert into users
-(id, name, password_hash, joined_at)
-values ($1, $2, $3, $4);
+(id, name, password_hash, joined_at, email)
+values ($1, $2, $3, $4, $5);
 
--- name: InsertSession :exec
+-- name: User_SetEmailVerified :exec
+update users
+set email_verified = $1
+where id = $2;
+
+-- name: Session_Insert :exec
 insert into sessions
 (id, sid, user_id, created_at, user_agent, ip_address, expires_at)
 values ($1, $2, $3, $4, $5, $6, $7);
 
--- name: TerminateSession :exec
+-- name: Session_Terminate :exec
 update sessions
 set is_terminated = true
 where sid = $1;
 
 
--- name: TerminateSessionsByUserID :exec
+-- name: Session_TerminateAllByUserID :exec
 update sessions
 set is_terminated = true
 where user_id = $1;
@@ -139,7 +144,7 @@ delete
 from user_follower
 where follower_id = $1 and followed_id = $2;
 
--- name: InsertUserFollow :exec
+-- name: User_InsertFollow :exec
 insert into user_follower
 (follower_id, followed_id)
 values ($1, $2);

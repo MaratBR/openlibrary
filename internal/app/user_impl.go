@@ -76,7 +76,7 @@ func (u *userService) FollowUser(ctx context.Context, cmd FollowUserCommand) err
 		return nil
 	}
 
-	err = u.queries.InsertUserFollow(ctx, store.InsertUserFollowParams{
+	err = u.queries.User_InsertFollow(ctx, store.User_InsertFollowParams{
 		FollowerID: uuidDomainToDb(cmd.Follower),
 		FollowedID: uuidDomainToDb(cmd.UserID),
 	})
@@ -278,6 +278,7 @@ func (u *userService) GetUserSelfData(ctx context.Context, userID uuid.UUID) (*S
 	details := &SelfUserDto{
 		ID:                uuidDbToDomain(user.ID),
 		Name:              user.Name,
+		Email:             user.Email,
 		JoinedAt:          timeDbToDomain(user.JoinedAt),
 		IsBanned:          false,
 		PreferredTheme:    "dark",
@@ -285,7 +286,7 @@ func (u *userService) GetUserSelfData(ctx context.Context, userID uuid.UUID) (*S
 		ShowAdultContent:  user.ShowAdultContent,
 		BookCensoredTags:  user.CensoredTags,
 		BookCensoringMode: CensorMode(user.CensoredTagsMode),
-		IsEmailVerified: user.,
+		IsEmailVerified:   user.EmailVerified,
 	}
 
 	details.Avatar.MD = getUserAvatar(user.Name, 84)

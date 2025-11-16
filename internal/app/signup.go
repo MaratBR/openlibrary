@@ -1,10 +1,19 @@
 package app
 
-import "context"
+import (
+	"context"
+
+	"github.com/gofrs/uuid"
+)
 
 var (
-	SignUpErrors       = AppErrors.NewSubNamespace("signup")
-	SignUpInvalidInput = SignUpErrors.NewType("invalid")
+	SignUpErrors                       = AppErrors.NewSubNamespace("signup")
+	SignUpInvalidInput                 = SignUpErrors.NewType("invalid")
+	SignUpEmailVerificationErrors      = SignUpErrors.NewSubNamespace("email_verification")
+	SignUpEmailVerificationNA          = SignUpEmailVerificationErrors.NewType("na")
+	SignUpEmailVerificationRateLimit   = SignUpEmailVerificationErrors.NewType("rate_limit")
+	SignUpEmailVerificationTimedOut    = SignUpEmailVerificationErrors.NewType("timedout")
+	SignUpEmailVerificationInvalidCode = SignUpEmailVerificationErrors.NewType("invalid_code")
 )
 
 type SignUpCommand struct {
@@ -15,6 +24,18 @@ type SignUpCommand struct {
 	IpAddress string
 }
 
+type VerifyEmailCommand struct {
+	UserID uuid.UUID
+	Code   string
+}
+
+type SendEmailVerificationCommand struct {
+	UserID          uuid.UUID
+	BypassRateLimit bool
+}
+
 type SignUpService interface {
-	SignUp(ctx context.Context, input SignUpCommand) (SignUpResult, error)
+	SignUp(ctx context.Context, cmd SignUpCommand) (SignUpResult, error)
+	VerifyEmail(ctx context.Context, cmd VerifyEmailCommand) error
+	SendEmailVerification(ctx context.Context, cmd SendEmailVerificationCommand) error
 }

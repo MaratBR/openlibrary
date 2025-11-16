@@ -34,7 +34,32 @@ func (c *authController) Register(r chi.Router) {
 	r.HandleFunc("/login", c.login)
 	r.HandleFunc("/logout", c.logout)
 	r.HandleFunc("/signup", c.signup)
+	r.HandleFunc("/signup/email-verification-code", c.emailVerification)
+}
 
+func (c *authController) emailVerification(w http.ResponseWriter, r *http.Request) {
+	user, isAuthorized := auth.GetUser(r.Context())
+	if r.Method == http.MethodGet {
+		if !isAuthorized {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+		olhttp.WriteTemplate(w, r.Context(), templates.SignUpEmailVerification(user.Email))
+	} else {
+		if !isAuthorized {
+			writeUnauthorizedError(w)
+			return
+		}
+
+		err := c.signUpService.VerifyEmail(r.Context(), app.VerifyEmailCommand{
+			Code:   r.FormValue("code"),
+			UserID: user.ID,
+		})
+		if err != nil {
+			writeApplicationError(w, r, err)
+			return
+		}
+	}
 }
 
 func (c *authController) login(w http.ResponseWriter, r *http.Request) {
@@ -148,6 +173,12 @@ func (c *authController) logout(w http.ResponseWriter, r *http.Request) {
 func (c *authController) signup(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
+		_, isAuthorized := auth.GetSession(r.Context())
+		if isAuthorized {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+
 		olhttp.WriteTemplate(w, r.Context(), templates.SignUp(c.siteConfig, c.cfg.Bool("auth.requireEmail")))
 	case http.MethodPost:
 		c.handleSignUp(w, r)
