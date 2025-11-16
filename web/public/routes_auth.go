@@ -42,7 +42,7 @@ func (c *authController) emailVerification(w http.ResponseWriter, r *http.Reques
 	switch r.Method {
 	case http.MethodGet:
 		if !isAuthorized || user.IsEmailVerified {
-			http.Redirect(w, r, "/", http.StatusFound)
+			redirectToNext(w, r)
 			return
 		}
 		status, err := c.signUpService.GetEmailVerificationStatus(r.Context(), user.ID)
@@ -155,10 +155,10 @@ func (c *authController) signIn(username string, password string, w http.Respons
 	c.csrfHandler.WriteCSRFToken(w, result.SessionID)
 	w.Header().Add("Set-Cookie", "auth_ll="+username)
 
-	c.redirectToNext(w, r)
+	redirectToNext(w, r)
 }
 
-func (c *authController) redirectToNext(w http.ResponseWriter, r *http.Request) {
+func redirectToNext(w http.ResponseWriter, r *http.Request) {
 	next := r.URL.Query().Get("next")
 	if next == "" {
 		http.Redirect(w, r, "/", http.StatusFound)
