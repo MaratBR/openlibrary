@@ -107,10 +107,17 @@ func (c *userController) GetCollections(w http.ResponseWriter, r *http.Request) 
 		Page:     int32(page),
 		PageSize: 20,
 	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
 	booksMap, err := c.collectionService.GetCollectionBooksMap(r.Context(), result.Collections)
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
 
-	// TODO add pagination here too
-	olhttp.WriteTemplate(w, r.Context(), templates.ProfileCollections(user, result.Collections, booksMap))
+	olhttp.WriteTemplate(w, r.Context(), templates.ProfileCollections(user, result, booksMap))
 }
 
 func (c *userController) GetProfile(w http.ResponseWriter, r *http.Request) {

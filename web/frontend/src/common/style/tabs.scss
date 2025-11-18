@@ -23,10 +23,10 @@
 
     &--primary-b {
         .tab {
-            @apply border-b-2 border-transparent text-lg text-muted-foreground hover:text-foreground;
+            @apply border-b-2 font-medium border-transparent text-lg text-muted-foreground hover:text-foreground;
 
             &--active {
-                @apply font-medium border-current text-foreground;
+                @apply font-semibold border-current text-foreground;
             }
 
             & > a {

@@ -284,7 +284,7 @@ func (q *Queries) ManagerGetUserBooksCount(ctx context.Context, authorUserID pgt
 
 const recalculateBookStats = `-- name: RecalculateBookStats :exec
 update books
-set words = coalesce(stat.words, 0), chapters = coalesce(stat.words, 0)
+set words = coalesce(stat.words, 0), chapters = coalesce(stat.chapters, 0)
 from (select sum(words) as words, count(1) as chapters from book_chapters where book_id = $1 and is_publicly_visible = true) as stat
 where books.id = $1
 `

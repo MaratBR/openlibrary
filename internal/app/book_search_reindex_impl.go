@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"strconv"
 	"sync"
 	"time"
 
@@ -75,7 +76,7 @@ func (s *bookReindexService) Reindex(ctx context.Context, id int64) error {
 			int(book.Chapters))),
 	}
 	idx.Normalize()
-	_, err = s.client.Index(elasticstore.BOOKS_INDEX_NAME).Request(idx).Do(ctx)
+	_, err = s.client.Index(elasticstore.BOOKS_INDEX_NAME).Id(strconv.FormatInt(book.ID, 10)).Request(idx).Do(ctx)
 	if err != nil {
 		return err
 	}

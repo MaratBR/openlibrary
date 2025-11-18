@@ -3,6 +3,7 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 
 templ ProfileBooks(
@@ -16,9 +17,9 @@ templ ProfileBooks(
     }}
 
     @baseLayout(title) {
-        <div class="sticky top-[var(--header-height)] z-20">
-            <nav class="ol-container shadow-md rounded-b-md bg-card px-3">
-                <ul class="tabs tabs--primary-b">
+        <div class="sticky top-[calc(var(--header-height)+10px)] z-20">
+            <nav class="ol-container shadow-md bg-card rounded-full">
+                <ul class="tabs tabs--primary-b px-6">
                     <li role="button" class="tab tab--active">
                         <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ _t(l, "profile.books") }</a>
                     </li>
@@ -39,7 +40,7 @@ templ ProfileBooks(
 
 templ ProfileCollections(
     user *app.UserDetailsDto,
-    collections []app.CollectionDto,
+    result app.GetUserCollectionsResult,
     booksMap map[int64][]app.CollectionBookDto,
 ) {
     {{
@@ -48,9 +49,9 @@ templ ProfileCollections(
     }}
 
     @baseLayout(title) {
-        <div class="sticky top-[var(--header-height)] z-20">
-            <nav class="ol-container shadow-md rounded-b-md bg-card px-3">
-                <ul class="tabs tabs--primary-b">
+        <div class="sticky top-[calc(var(--header-height)+10px)] z-20">
+            <nav class="ol-container shadow-md bg-card rounded-full">
+                <ul class="tabs tabs--primary-b px-6">
                     <li role="button" class="tab">
                         <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ _t(l, "profile.books") }</a>
                     </li>
@@ -64,7 +65,23 @@ templ ProfileCollections(
         @i18nExtractKeysByPrefix(l, "search")
 
         <div class="ol-container my-12 px-2">
-            @collectionsList(collections, booksMap)
+            if result.TotalPages == 0 {
+                @alertInfo() {
+                    { _t(l, "profile.userHasNoCollection") }
+                }
+            } else {
+                {{
+                    var pagination templ.Component
+                    if result.TotalPages > 0 {
+                        pagination = olhttp.Pagination(uint32(result.Page), uint32(result.TotalPages), 9)
+                    } else {
+                        pagination = templ.NopComponent
+                    }
+                }}
+                @pagination
+                @collectionsList(result.Collections, booksMap)
+                @pagination
+            }
         </div>
     }
 }
