@@ -27,6 +27,8 @@ func (c *bookManagerController) Register(r chi.Router) {
 		r.Use(requiresAuthorizationMiddleware)
 
 		r.Get("/", c.index)
+		r.Get("/collections", c.collections)
+		r.Get("/books", c.yourBooks)
 		r.Get("/new", c.newBook)
 		r.Get("/book/{bookID}", c.book)
 		r.Get("/book/{bookID}/chapter/{chapterID}", c.chapter)
@@ -35,51 +37,47 @@ func (c *bookManagerController) Register(r chi.Router) {
 }
 
 func (c *bookManagerController) index(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query()
-	tab := query.Get("tab")
+	templates.BookManager().Render(r.Context(), w)
+}
 
+func (c *bookManagerController) yourBooks(w http.ResponseWriter, r *http.Request) {
+	session := auth.RequireSession(r.Context())
+	page, _ := olhttp.URLQueryParamInt64(r, "p")
+	if page < 1 {
+		page = 1
+	} else if page > 10000 {
+		page = 10000
+	}
+	books, err := c.service.GetUserBooks(r.Context(), app.GetUserBooksQuery{
+		UserID:   session.UserID,
+		PageSize: 20,
+		Page:     uint32(page),
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	templates.BookManagerBooks(books).Render(r.Context(), w)
+
+}
+
+func (c *bookManagerController) collections(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 
-	if tab == "" {
-		templates.BookManager().Render(r.Context(), w)
+	page := olhttp.GetPage(r.URL.Query(), "page")
+	pageSize := olhttp.GetPageSize(r.URL.Query(), "pageSize", 1, 100, 15)
+	result, err := c.collectionService.GetUserCollections(r.Context(), app.GetUserCollectionsQuery{
+		UserID:   session.UserID,
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
 		return
-	} else if tab == "books" {
-		page, _ := olhttp.URLQueryParamInt64(r, "p")
-		if page < 1 {
-			page = 1
-		} else if page > 10000 {
-			page = 10000
-		}
-		books, err := c.service.GetUserBooks(r.Context(), app.GetUserBooksQuery{
-			UserID:   session.UserID,
-			PageSize: 20,
-			Page:     uint32(page),
-		})
-		if err != nil {
-			writeApplicationError(w, r, err)
-			return
-		}
-
-		templates.BookManagerBooks(books).Render(r.Context(), w)
-		return
-	} else if tab == "collections" {
-		page := olhttp.GetPage(r.URL.Query(), "page")
-		pageSize := olhttp.GetPageSize(r.URL.Query(), "pageSize", 1, 100, 15)
-		result, err := c.collectionService.GetUserCollections(r.Context(), app.GetUserCollectionsQuery{
-			UserID:   session.UserID,
-			Page:     int32(page),
-			PageSize: int32(pageSize),
-		})
-		if err != nil {
-			writeApplicationError(w, r, err)
-			return
-		}
-
-		templates.BookManagerCollections(result.Collections).Render(r.Context(), w)
-		return
-	} else {
-		http.Redirect(w, r, "/books-manager", http.StatusFound)
 	}
+
+	templates.BookManagerCollections(result.Collections).Render(r.Context(), w)
 }
 
 func (c *bookManagerController) newBook(w http.ResponseWriter, r *http.Request) {
@@ -139,7 +137,7 @@ func (c *bookManagerController) sendBookEditorPage(bookID int64, w http.Response
 
 	if err != nil {
 		if err == store.ErrNoRows {
-			http.Redirect(w, r, "/books-manager?tab=books", http.StatusFound)
+			http.Redirect(w, r, "/books-manager/books", http.StatusFound)
 		}
 
 		writeApplicationError(w, r, err)

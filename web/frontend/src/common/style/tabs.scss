@@ -1,22 +1,35 @@
 .tabs {
+    --tab-height: 36px;
+    --tab-border-color-active: var(--colors-primary-DEFAULT);
     @apply flex gap-1;
 
     .tab {
         @apply cursor-pointer;
+        height: var(--tab-height);
+        line-height: var(--tab-height);
     }
 
     &--primary {
         .tab {
-            @apply 
-                text-lg font-medium 
-                relative 
-                hover:bg-secondary 
-                transition-all
-                rounded-lg;
+            @apply font-medium relative mx-2 border-transparent text-muted-foreground hover:text-foreground;
+            padding-bottom: 3px;
+
+            &::after {
+                content: ' ';
+                @apply block absolute left-0 right-0 bottom-0;
+                height: 3px;
+            }
 
             &--active {
-                @apply 
-                    text-primary after:scale-y-100 bg-primary/10 !rounded-lg;
+                @apply border-primary font-semibold text-foreground;
+
+                &::after {
+                    background-color: var(--tab-border-color-active);
+                }
+            }
+
+            &--active:hover::after {
+                height: 4px;
             }
         }
     }

@@ -9,7 +9,7 @@ templ BookManagerNewBook() {
         l := i18n.GetLocalizer(ctx)
     }}
 
-	@bookManagerLayoutBase(_t(l, "bookManager.newBook.title"), false) {
+	@bmLayoutBase(_t(l, "bookManager.newBook.title"), false) {
         <div class="ol-container ol-container--big">
             <div class="pt-2">
                 @i18nExtractKeysByPrefix(l, "bookManager.newBook")

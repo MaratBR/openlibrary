@@ -1,10 +1,16 @@
 import clsx from 'clsx'
-import { createContext, PropsWithChildren, useContext, useRef } from 'preact/compat'
+import {
+  createContext,
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  PropsWithChildren,
+  useContext,
+  useRef,
+} from 'preact/compat'
 
 export type TabsProps = PropsWithChildren<{
   value?: string
-  type: string
-
   onChange: (value: string) => void
 }>
 
@@ -14,16 +20,14 @@ const TabCallbackContext = createContext<{ current: (value: string) => void }>({
   current: () => {},
 })
 
-export function Tabs({ value, type, children, onChange }: TabsProps) {
+function TabsRoot({ value, children, onChange }: TabsProps) {
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
 
   return (
-    <div role="tablist" class={`tabs tabs--${type}`}>
-      <TabCallbackContext.Provider value={onChangeRef}>
-        <TabValueContext.Provider value={value || ''}>{children}</TabValueContext.Provider>
-      </TabCallbackContext.Provider>
-    </div>
+    <TabCallbackContext.Provider value={onChangeRef}>
+      <TabValueContext.Provider value={value || ''}>{children}</TabValueContext.Provider>
+    </TabCallbackContext.Provider>
   )
 }
 
@@ -31,21 +35,58 @@ export type TabProps = PropsWithChildren<{
   value: string
 }>
 
-export function Tab({ value, children }: TabProps) {
+function TabsTab({ value, children }: TabProps) {
   const activeValue = useContext(TabValueContext)
   const onChangeRef = useContext(TabCallbackContext)
 
   return (
-    <div
+    <li
       role="tab"
-      onClick={() => onChangeRef.current(value)}
       class={clsx('tab', {
         'tab--active': value === activeValue,
       })}
+      onClick={(e) => {
+        e.preventDefault()
+        onChangeRef.current(value)
+      }}
     >
-      {children}
-    </div>
+      <span class="tabs__tab__title">{children}</span>
+    </li>
   )
 }
 
-export function TabPanel() {}
+const TabsBody = forwardRef(
+  (
+    { class: class_, className, ...props }: HTMLAttributes<HTMLDivElement>,
+    ref: ForwardedRef<HTMLDivElement>,
+  ) => {
+    return <div ref={ref} class={clsx('tabs__body', className || class_)} {...props} />
+  },
+)
+
+const TabsMenu = forwardRef(
+  (
+    { class: class_, className, children, ...props }: HTMLAttributes<HTMLDivElement>,
+    ref: ForwardedRef<HTMLDivElement>,
+  ) => {
+    return (
+      <ul
+        ref={ref}
+        role="tablist"
+        class={clsx('tabs tabs--primary', className || class_)}
+        {...props}
+      >
+        {children}
+      </ul>
+    )
+  },
+)
+
+const Tabs = {
+  Root: TabsRoot,
+  List: TabsMenu,
+  Tab: TabsTab,
+  Body: TabsBody,
+}
+
+export default Tabs

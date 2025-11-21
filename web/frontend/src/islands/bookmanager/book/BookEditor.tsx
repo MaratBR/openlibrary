@@ -5,7 +5,7 @@ import BookCover from './BookCover'
 import Chapters from './Chapters'
 import { useHashQueryValue } from '@/lib/url-hooks'
 import { PreactIslandProps } from '@/islands/common/preact-island'
-import SideTabs from '@/components/SideTabs'
+import Tabs from '@/components/Tabs'
 
 export default function BookEditor({ data: dataUnknown, rootElement: _ }: PreactIslandProps) {
   const data = useMemo(() => managerBookDetailsSchema.parse(dataUnknown), [dataUnknown])
@@ -15,28 +15,24 @@ export default function BookEditor({ data: dataUnknown, rootElement: _ }: Preact
 
   return (
     <>
-      <header class="page-header my-8">
-        <h1 class="page-header-text">{data.name}</h1>
-        <div class="text-sm">
-          <a href="/books-manager?tab=books" class="link">
-            {window._('bookManager.edit.backToBooksManager')}
-          </a>
-          &nbsp;|&nbsp;
-          <a href={`/book/${data.id}`} class="link">
-            {window._('bookManager.edit.goToPage')}
-          </a>
-        </div>
-      </header>
+      <h1 class="page-header inline-block mr-2">{data.name}</h1>
+      <div class="page-header__after">
+        <a href="/books-manager/books" class="link">
+          {window._('bookManager.edit.backToBooksManager')}
+        </a>
+        &nbsp;|&nbsp;
+        <a href={`/book/${data.id}`} class="link">
+          {window._('bookManager.edit.goToPage')}
+        </a>
+      </div>
 
-      <SideTabs.Root onChange={setTab} value={tab}>
-        <SideTabs.List>
-          <SideTabs.Tab value="general">
-            {window._('bookManager.edit.generalInformation')}
-          </SideTabs.Tab>
-          <SideTabs.Tab value="cover">{window._('bookManager.edit.cover')}</SideTabs.Tab>
-          <SideTabs.Tab value="chapters">{window._('bookManager.edit.chapters')}</SideTabs.Tab>
-        </SideTabs.List>
-        <SideTabs.Body class="card">
+      <Tabs.Root onChange={setTab} value={tab}>
+        <Tabs.List>
+          <Tabs.Tab value="general">{window._('bookManager.edit.generalInformation')}</Tabs.Tab>
+          <Tabs.Tab value="cover">{window._('bookManager.edit.cover')}</Tabs.Tab>
+          <Tabs.Tab value="chapters">{window._('bookManager.edit.chapters')}</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Body class="card">
           <div style={{ display: tab === 'general' ? 'block' : 'none' }}>
             <GeneralInformation data={data} />
           </div>
@@ -50,8 +46,8 @@ export default function BookEditor({ data: dataUnknown, rootElement: _ }: Preact
               <Chapters book={data} />
             </div>
           )}
-        </SideTabs.Body>
-      </SideTabs.Root>
+        </Tabs.Body>
+      </Tabs.Root>
     </>
   )
 }

@@ -6,7 +6,7 @@ import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 
-templ bookManagerLayoutBase(title string, sitebar bool) {
+templ bmLayoutBase(title string, sitebar bool) {
 	@olhttp.Doc(ctx, olhttp.DocSettings{
 		Title:        title,
 		Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js", "/_/assets/bookmanager-common.js"},
@@ -22,21 +22,54 @@ templ bookManagerLayoutBase(title string, sitebar bool) {
 		}}
 		@i18nExtractKeysByPrefix(l, "common")
 		@renderUISettings()
-		if sitebar {
-			@siteHeader()
+
+		<div class="sitebar-back" />
+		<aside class="sitebar">
+			<ul class="sitebar-list">
+				@bmSidebarItem("fa-solid fa-house", "/books-manager", _t(l, "bookManager.home"))
+				@bmSidebarItem("fa-solid fa-book", "/books-manager/books", _t(l, "bookManager.books.title"))
+				@bmSidebarItem("fa-solid fa-rectangle-list", "/books-manager/collections", _t(l, "bookManager.collections"))
+			</ul>
+		</aside>
+		<div class="sitebar-body">
+			<div class="sitebar-body__content">
+				{ children... }
+			</div>
+		</div>
+	}
+}
+
+templ bmSidebarItem(icon, url, text string) {
+	{{
+		r := olhttp.GetRequest(ctx)
+		active := r.URL.Path == url
+	}}
+	<li
+		if active {
+			class="sitebar-item sitebar-item--active"
+		} else {
+			class="sitebar-item"
 		}
+		>
+		<a href={ url }>
+			<div class="sitebar-item__icon">
+				<i class={ icon }></i>
+			</div>
+			<div class="sitebar-item__label">
+				{ text }
+			</div>
+		</a>
+	</li>
+}
+
+templ bmLayout(title string) {
+	@bmLayoutBase(title, true) {
 		{ children... }
 	}
 }
 
-templ bookManagerLayout(title string) {
-	@bookManagerLayoutBase(title, true) {
-		{ children... }
-	}
-}
-
-templ bookManagerLayoutNoSiteBar(title string) {
-	@bookManagerLayoutBase(title, false) {
+templ bmLayoutNoSiteBar(title string) {
+	@bmLayoutBase(title, false) {
 		{ children... }
 	}
 }
@@ -51,12 +84,16 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 	{{
 	l := i18n.GetLocalizer(ctx)
 	}}
-	@bookManagerMainPage("books") {
+	@bookManagerMainPage("books.title") {
 		<section>
-			<h1 class="page-header mb-4">
-				{ _t(l, "bookManager.books") }
+			<h1 class="page-header inline-block">
+				{ _t(l, "bookManager.books.title") }
 			</h1>
-			<div class="card mt-4 p-4">
+			<a class="btn btn--sm btn--outlined rounded-md" href="/books-manager/new?ol.from=books-manager">
+				<i class="fa-solid fa-pencil"></i>
+				{ _t(l, "bookManager.createNewBook") }
+			</a>
+			<div class="mt-4">
 				if len(books.Books) == 0 {
 					<p class="my-8">
 						{ _t(l, "bookManager.noBooks") }
@@ -65,10 +102,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 						{ _t(l, "bookManager.writeYourFirstBook") }
 					</a>
 				} else {
-					<a class="mb-4 btn btn--lg btn--secondary rounded-full" href="/books-manager/new?ol.from=books-manager">
-						<i class="fa-solid fa-pencil"></i>
-						{ _t(l, "bookManager.createNewBook") }
-					</a>
+					
 					@olhttp.Pagination(books.Page, books.TotalPages, 10)
 
 					<ol-island 
@@ -77,9 +111,39 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 						active="true" />
 
 					<section class="my-4 space-y-2" id="books-manager-books">
-						for _, book := range books.Books {
-							@bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
-						}
+						<table class="table">
+							<thead>
+								<tr>
+									<th width="80" />
+									<th>
+										{ _t(l, "bookManager.books.name") }
+									</th>
+									<th>
+										{ _t(l, "bookManager.books.stats") }
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								for _, book := range books.Books {
+									<tr>
+										<td>
+											@bookCover(book.Cover, book.Name, 100)
+										</td>
+										<td>
+											<span>{ book.Name }</span>
+											<div>
+												<a class="link" href={ fmt.Sprintf("/books-manager/book/%d", book.ID) }>{ _t(l, "common.edit") }</a> | 
+												<button class="link">{ _t(l, "common.trash") }</button> | 
+												<a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>{ _t(l, "common.view") }</a>
+											</div>
+										</td>
+										<td>
+										</td>
+									</tr>
+									// @bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
+								}
+							</tbody>
+						</table>
 					</section>
 					@olhttp.Pagination(books.Page, books.TotalPages, 10)
 				}
@@ -126,47 +190,9 @@ templ BookManagerCollections(collections []app.CollectionDto) {
 
 templ bookManagerMainPage(tab string) {
 	{{
-	l := i18n.GetLocalizer(ctx)
+		l := i18n.GetLocalizer(ctx)
 	}}
-	@bookManagerLayout(_t(l, "bookManager.title")) {
-		<div class="ol-container ol-container--big side-tabs mt-4">
-			<aside class="side-tabs__menu">
-				<ul>
-					<a
-						href="/books-manager"
-						if tab == "" {
-							class="side-tabs__tab side-tabs__tab--active"
-						} else {
-							class="side-tabs__tab"
-						}
-					>
-						<span class="side-tabs__tab__title">{ _t(l, "bookManager.home") }</span>
-					</a>
-					<a
-						href="?tab=books"
-						if tab == "books" {
-							class="side-tabs__tab side-tabs__tab--active"
-						} else {
-							class="side-tabs__tab"
-						}
-					>
-						<span class="side-tabs__tab__title">{ _t(l, "bookManager.books") }</span>
-					</a>
-					<a
-						href="?tab=collections"
-						if tab == "collections" {
-							class="side-tabs__tab side-tabs__tab--active"
-						} else {
-							class="side-tabs__tab"
-						}
-					>
-						<span class="side-tabs__tab__title">{ _t(l, "bookManager.collections") }</span>
-					</a>
-				</ul>
-			</aside>
-			<div class="side-tabs__body">
-				{ children... }
-			</div>
-		</div>
+	@bmLayout(_t(l, "bookManager."+tab)) {
+		{ children... }
 	}
 }

@@ -188,7 +188,7 @@ templ BookMyReview(
                                     { text }
                                 </span>
                             </div>
-                            <button class="btn btn--outline btn--lg text-lg p-6 " @click="requestEditing()">
+                            <button class="btn btn--outline btn--lg " @click="requestEditing()">
                                 <span x-show="!loading">
                                     { l.T("book.writeReview") }
                                 </span>
@@ -206,7 +206,7 @@ templ BookMyReview(
                         }
                         href := "/login?" + query.Encode()
                     }}
-                    <a class="btn btn--outline btn--lg text-lg p-6  mt-4" href={templ.URL(href)}>
+                    <a class="btn btn--outline btn--lg mt-4" href={templ.URL(href)}>
                         { l.T("book.writeReviewLogin") }
                     </a>
                 }

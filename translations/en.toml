@@ -5,6 +5,7 @@ save = "Save"
 saveChanges = "Save changes"
 apply = "Apply"
 delete = "Delete"
+trash = "Trash"
 edit = "Edit"
 update = "Update"
 report = "Report"
@@ -16,6 +17,7 @@ collections = "Collections"
 none = "None"
 change = "Change"
 open = "Open"
+view = "View"
 
 [uiTheme]
 dark = "Dark"
@@ -306,13 +308,17 @@ deleted = "Collection was deleted"
 
 [bookManager]
 home = "Home"
-books = "Your books"
 collections = "Collections"
 noBooks = "You have yet to write your first book! If you want to try yourself as as an author you can do that here... or not we're coal either way."
 writeYourFirstBook = "Write your first book"
 createNewBook = "Create new book"
 title = "Book manager"
 emptyBookSummary = "This book has no summary"
+
+[bookManager.books]
+title = "Your books"
+name = "Name"
+stats = "Stats"
 
 [bookManager.newBook]
 title = "New book"
@@ -358,7 +364,7 @@ cancel = "Cancel"
 changesPending = "You have changed the order of {count} chapters"
 adult = "Adult"
 chapterHidden = "Hidden"
-activeDraft = "Active draft"
+pendingChanges = "Pending changes"
 editDraft = "Edit draft"
 
 #####################

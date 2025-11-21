@@ -20,7 +20,7 @@ export default function NewBookForm() {
 
   return (
     <form
-      class="anim-appear px-2 space-y-4 md:space-y-0 md:px-0 md:mt-20 md:grid md:grid-cols-[300px_1fr] md:gap-2"
+      class="anim-appear px-2 space-y-4 md:space-y-0 md:px-0 md:mt-20 md:grid md:grid-cols-[150px_1fr] md:gap-2"
       action="/books-manager/new"
       method="post"
     >

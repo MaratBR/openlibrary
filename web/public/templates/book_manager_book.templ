@@ -7,19 +7,16 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @bookManagerLayout(_t(l, "bookManager.title") + " - " + book.Name) {
+    @bmLayout(_t(l, "bookManager.title") + " - " + book.Name) {
         {{
             data, _ := templ.JSONString(book)
         }}
-        <div class="ol-container ol-container--big" x-data="{tab:'general',cover:false}">
-            @i18nExtractKeysByPrefix(l, "bookManager.edit")
+        @i18nExtractKeysByPrefix(l, "bookManager.edit")
 
-            <ol-island x-show="tab==='general'" active="true" src="/_/assets/islands/bookmanager.js" name="Book" data={data}>
-                <template data-type="loader">
-                    <span class="loader mt-2"></span>
-                </template>
-            </ol-island>
-
-        </div>
+        <ol-island x-show="tab==='general'" active="true" src="/_/assets/islands/bookmanager.js" name="Book" data={data}>
+            <template data-type="loader">
+                <span class="loader mt-2"></span>
+            </template>
+        </ol-island>
     }
 }

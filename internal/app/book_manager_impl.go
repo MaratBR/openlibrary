@@ -325,6 +325,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 
 			book = ManagerAuthorBookDto{
 				ID:                row.ID,
+				Slug:              row.Slug,
 				Name:              row.Name,
 				CreatedAt:         row.CreatedAt.Time,
 				AgeRating:         ageRatingFromDbValue(row.AgeRating),

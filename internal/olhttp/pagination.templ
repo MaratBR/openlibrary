@@ -36,19 +36,19 @@ templ PaginationImpl(
     opts PaginationImplProps,
 ) {
     {{
-        remaining := opts.Size - 1
+        var remaining int = int(opts.Size) - 1
         left := remaining / 2
-        if left > opts.Page - 1  {
-            left = opts.Page - 1
+        if left > int(opts.Page) - 1  {
+            left = int(opts.Page) - 1
         }
         remaining -= left
         right := remaining
-        if opts.Page + right > opts.TotalPages {
-            right = opts.TotalPages - opts.Page
+        if int(opts.Page) + right > int(opts.TotalPages) {
+            right = int(opts.TotalPages) - int(opts.Page)
         }
         remaining -= right
-        if remaining > 0 && left < opts.Page - 1 {
-            left += min(remaining, opts.Page - 1 - left)
+        if remaining > 0 && left < int(opts.Page) - 1 {
+            left += min(remaining, int(opts.Page) - 1 - left)
         }
 
 
@@ -65,9 +65,9 @@ templ PaginationImpl(
                 { fmt.Sprintf("%d", 1) }
             </a>
         }
-        for i := opts.Page - left + 1; i < opts.Page; i++ {
+        for i := int(opts.Page) - left + 1; i < int(opts.Page); i++ {
             {{
-                href := getPageURL(ctx, i)
+                href := getPageURL(ctx, uint32(i))
             }}
             <a 
                 href={ href } class="pagination__item" 
@@ -81,9 +81,9 @@ templ PaginationImpl(
         <a href="#" class="pagination__item pagination__item--active">
             { fmt.Sprintf("%d", opts.Page) }
         </a>
-        for i := opts.Page + 1; i <= opts.Page + right - 1; i++ {
+        for i := int(opts.Page) + 1; i <= int(opts.Page) + right - 1; i++ {
             {{
-                href := getPageURL(ctx, i)
+                href := getPageURL(ctx, uint32(i))
             }}
             <a 
                 href={ href } class="pagination__item" 
@@ -94,7 +94,7 @@ templ PaginationImpl(
                 { fmt.Sprintf("%d", i) }
             </a>
         }
-        if opts.Page != opts.TotalPages {
+        if opts.Page < opts.TotalPages {
             <a 
                 href={ getPageURL(ctx, opts.TotalPages) } class="pagination__item" 
                 if opts.UseAlpineJsAjax {

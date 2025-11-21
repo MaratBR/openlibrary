@@ -7,8 +7,16 @@
 }
 
 .btn {
-    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
-    @apply h-10 px-4 py-2 rounded-full cursor-pointer;
+
+    @apply 
+        inline-block v-middle whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors rounded-full cursor-pointer
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
+        disabled:pointer-events-none disabled:opacity-50 leading-[2.4];
+
+
+    & > i.fa-solid:first-child {
+        @apply mr-2;
+    }
 
 
     &, &--primary {
@@ -16,12 +24,16 @@
         --btn-colors-text: var(--colors-primary-foreground);
     }
 
+    --btn-height: calc(var(--spacing) * 9);
     --btn-tint-frac: 13%;
     --btn-bg-opacity: 0%;
     --btn-colors-main-hover: color-mix(in srgb, var(--btn-colors-main), var(--btn-tint) var(--btn-tint-frac));
     
     background-color: var(--btn-colors-main);
     color: var(--btn-colors-text);
+    // height: var(--btn-height);
+    line-height: var(--btn-height);
+    padding: 0 calc(var(--btn-height) / 3);
 
     &:hover {
         background-color: var(--btn-colors-main-hover);
@@ -72,14 +84,16 @@
     // SIZES
 
     &--sm {
-        @apply h-9 px-3;
+        @apply text-sm;
     }
 
     &--lg {
-        @apply h-11 px-8;
+        --btn-height: calc(var(--spacing) * 11);
+        @apply text-lg;
     }
 
     &--icon {
+        --btn-height: calc(var(--spacing) * 10);
         @apply h-10 w-10 rounded-full;
     }
 

@@ -1,17 +1,25 @@
 .table {
-    @apply w-full;
+    width: 100%;
+    table-layout: fixed;
+    @apply border border-border border-b-2 bg-card;
 
     td, th {
-        @apply p-2 border-border border-b text-start;
+        @apply p-2 text-start font-normal;
     }
 
-    th {
-        @apply font-[400] bg-secondary text-lg;
+    td {
+        @apply v-start;
     }
 
     thead {
         tr:last-child {
-            @apply border-b-2;
+            @apply border-b;
+        }
+    }
+
+    tfoot {
+        tr:first-child {
+            @apply border-t;
         }
     }
 }

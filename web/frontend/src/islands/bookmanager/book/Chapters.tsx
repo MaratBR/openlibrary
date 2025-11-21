@@ -272,7 +272,9 @@ function ChapterCard({ chapter, bookId }: { chapter: Chapter; bookId: string }) 
         <span class="text-xl font-medium leading-10">{chapter.name}</span>&nbsp;&mdash;&nbsp;
         <span class="text-sm">
           <a class="link" href={`/books-manager/book/${bookId}/chapter/${chapter.id}`}>
-            {window._('bookManager.edit.editDraft')}
+            {chapter.draftId
+              ? window._('bookManager.edit.editDraft')
+              : window._('bookManager.edit.edit')}
           </a>
         </span>
       </header>
@@ -284,10 +286,10 @@ function ChapterCard({ chapter, bookId }: { chapter: Chapter; bookId: string }) 
         )}
       </div>
       <div class="px-4 py-2 gap-1 flex">
-        {!chapter.isPubliclyVisible && (
+        {chapter.draftId && (
           <span class="chip border bg-background">
             <i class="fa-solid fa-feather-pointed" />
-            {window._('bookManager.edit.activeDraft')}
+            {window._('bookManager.edit.pendingChanges')}
           </span>
         )}
         {!chapter.isPubliclyVisible && (

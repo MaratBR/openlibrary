@@ -5,7 +5,7 @@ import "encoding/json"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 
 templ ChapterEditor(bookID int64, draft app.DraftDto) {
-    @bookManagerLayoutNoSiteBar(draft.ChapterName) {
+    @bmLayoutNoSiteBar(draft.ChapterName) {
         @siteHeaderLayout() {
             <div class="chapter-editor-page__header">
                 <div class="chapter-editor-page__header-text" id="slot:header-text" /> 
