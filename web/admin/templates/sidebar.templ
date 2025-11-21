@@ -6,62 +6,69 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ sidebar() {
     {{ l := i18n.GetLocalizer(ctx) }}
-    <aside id="sidebar" class="h-screen w-[300px] fixed left-0 top-0 bg-slate-900 text-gray-100">
-        <a href="/?ol.from=admin" class="transition-colors flex gap-1 items-center hover:bg-white/10 hover:text-cyan-300 p-4">
-            <i class="fa-solid fa-arrow-left"></i>
-            { _t(l, "admin.goBackToSite") }
-        </a>
-        <div class="flex justify-center my-4">
-            @logo()
-        </div>
-        <ul class="flex flex-col items-stretch">
-            @sidebarItem("/admin") {
-                <i class="fa-solid fa-house"></i>
-                <span>{ _t(l, "admin.sidebar.home") }</span>
-            }
-            @sidebarItem("/admin/users") {
-                <i class="fa-regular fa-user"></i>
-                <span>{ _t(l, "admin.sidebar.users") }</span>
-            }
-            @sidebarItem("/admin/books") {
-                <i class="fa-solid fa-book"></i>
-                <span>{ _t(l, "admin.sidebar.books") }</span>
-            }
-            @sidebarItem("/admin/tags") {
-                <i class="fa-solid fa-tags"></i>
-                <span>{ _t(l, "admin.sidebar.tags") }</span>
-            }
-            @sidebarItem("/admin/site-settings") {
-                <i class="fa-solid fa-gears"></i>
-                <span>{ _t(l, "admin.sidebar.siteSettings") }</span>
-            }
-            @sidebarItem("/admin/debug") {
-                <i class="fa-solid fa-bug"></i>
-                <span>{ _t(l, "admin.sidebar.debugActions") }</span>
-            }
-        </ul>
-
-        <div class="absolute bottom-0 left-0 right-0">
-            <a href="/logout" class="transition-colors flex gap-1 items-center hover:bg-white/10 hover:text-cyan-300 p-4">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>{ _t(l, "admin.sidebar.logout") }</span>
+		<aside class="sitebar">
+            <div class="flex justify-center my-4">
+                @logo()
+            </div>
+            <a href="/?ol.from=admin" class="sitebar-ghost-btn inline-block text-sm w-full">
+                <i class="fa-solid fa-arrow-left"></i>
+                { _t(l, "admin.goBackToSite") }
             </a>
-        </div>
-    </aside>
+            <hr class="sitebar-hr my-3" />
+			<ul class="sitebar-list">
+                @sidebarItem("/admin", "fa-solid fa-house") {
+                    <span>{ _t(l, "admin.sidebar.home") }</span>
+                }
+                @sidebarItem("/admin/users", "fa-regular fa-user") {
+                    <span>{ _t(l, "admin.sidebar.users") }</span>
+                }
+                @sidebarItem("/admin/books", "fa-solid fa-book") {
+                    <span>{ _t(l, "admin.sidebar.books") }</span>
+                }
+                @sidebarItem("/admin/tags", "fa-solid fa-tags") {
+                    <span>{ _t(l, "admin.sidebar.tags") }</span>
+                }
+                @sidebarItem("/admin/site-settings", "fa-solid fa-gears") {
+                    <span>{ _t(l, "admin.sidebar.siteSettings") }</span>
+                }
+                @sidebarItem("/admin/debug", "fa-solid fa-bug") {
+                    <span>{ _t(l, "admin.sidebar.debugActions") }</span>
+                }
+            </ul>
+
+            <div class="absolute bottom-0 left-0 right-0">
+                <a href="/logout" class="transition-colors flex gap-1 items-center hover:bg-white/10 hover:text-cyan-300 p-4">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>{ _t(l, "admin.sidebar.logout") }</span>
+                </a>
+            </div>
+        </aside>
 }
 
-templ sidebarItem(href string) {
+templ sidebarItem(href, icon string) {
     {{
         r := olhttp.GetRequest(ctx)
         isCurrent := r.URL.Path == href
     }}
     
-    <a 
-    if isCurrent {
-        data-link-active="true"
-    }
-    href={templ.SafeURL(href)} 
-    class="flex items-center gap-2 p-2 transition-colors hover:bg-white/10 data-[link-active=true]:text-cyan-300 data-[link-active=true]:bg-white/20">
-        { children... }
-    </a>
+    <li
+        if isCurrent {
+            class="sitebar-item sitebar-item--active"
+        } else {
+            class="sitebar-item"
+        }
+        >
+        <a 
+            if isCurrent {
+                data-link-active="true"
+            }
+            href={templ.SafeURL(href)}>
+            <div class="sitebar-item__icon">
+                <i class={ icon }></i>
+            </div>
+            <div class="sitebar-item__label">
+                { children... }
+            </div>
+        </a>
+    </li>
 }

@@ -23,7 +23,6 @@ templ bmLayoutBase(title string, sitebar bool) {
 		@i18nExtractKeysByPrefix(l, "common")
 		@renderUISettings()
 
-		<div class="sitebar-back" />
 		<aside class="sitebar">
 			<ul class="sitebar-list">
 				@bmSidebarItem("fa-solid fa-house", "/books-manager", _t(l, "bookManager.home"))

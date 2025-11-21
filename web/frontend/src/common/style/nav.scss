@@ -105,14 +105,17 @@
 }
 
 .sitebar {
-    @apply fixed bg-zinc-800 text-white;
+    @apply fixed bg-zinc-800 text-white h-full;
     width: var(--sitebar-width);
     z-index: 1;
 }
 
-.sitebar-back {
-    @apply bg-zinc-800 fixed h-full;
-    width: var(--sitebar-width);
+.sitebar-ghost-btn {
+    @apply rounded-md p-2 transition-colors hover:bg-white/20 text-white;
+}
+
+.sitebar-hr {
+    @apply border-white/10;
 }
 
 .sitebar-item {

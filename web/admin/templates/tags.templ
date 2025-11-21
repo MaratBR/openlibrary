@@ -25,7 +25,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
     @dashboardLayout("Tags") {
         <div class="admin-page-content">
             <header class="admin-page-header">
-                <h1 class="text-4xl font-title mb-3">Tags</h1>
+                <h1 class="page-header mb-3">Tags</h1>
                 <p>View list of tags and create new tags or edit existing ones.</p>
             </header>
 
@@ -60,10 +60,9 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
 
                 @pagination
 
-                <table id="slot-tags-table" class="-mx-4 my-4 table">
+                <table id="slot-tags-table" class="my-4 table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>{ _t(l, "admin.tags.name") }</th>
                             <th>{ _t(l, "admin.tags.synonym") }</th>
                             <th>{ _t(l, "admin.tags.adult") }</th>
@@ -83,15 +82,19 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                         for _, tag := range result.Tags {
                             <tr>
                                 <td>
-                                    <span class="admin-id">
-                                        { fmt.Sprintf("%d", tag.ID) }
-                                    </span>
-                                </td>
-                                <td>
                                     <a class="link link--primary" href={ templ.SafeURL(fmt.Sprintf("/admin/tags/tag-details/%d", tag.ID)) }>{ tag.Name }</a>
                                     if tag.IsDefault {
                                         <i>({ _t(l, "admin.tags.default") })</i>
                                     }
+                                    <br />
+                                    
+                                    <span class="text-xs">
+                                        <a class="link" href={ fmt.Sprintf("/tag/%d", tag.ID) }>{ _t(l, "common.view") }</a> |
+                                        <a target="_blank" class="link" href={ fmt.Sprintf("/search?it=%d", tag.ID) }>
+                                            { _t(l, "admin.tags.books") }
+                                            <i class="fa-solid fa-up-right-from-square"></i>
+                                        </a>
+                                    </span>
                                 </td>
                                 <td>
                                     if tag.SynonymOf.Valid {
@@ -179,7 +182,7 @@ templ Tag(tag app.TagDetailsItemDto) {
     @dashboardLayout("Admin - " + tag.Name) {
         <div class="admin-page-content">
             <header class="admin-page-header">
-                <h1 class="my-6 font-title text-5xl">
+                <h1 class="page-header mb-3">
                     { tag.Name }
                 </h1>
 
@@ -223,10 +226,10 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                 @csrf.CSRFInputTempl(ctx)
 
                 <header class="admin-page-header">
-                    <input autocomplete="off" name="name" required value={tag.Name} class="input-transparent border-b-2 border-current my-6 font-title text-5xl bg-transparent">
+                    <input autocomplete="off" name="name" required value={tag.Name} class="input-transparent border-b-2 border-current my-6 text-5xl bg-transparent">
 
                     <article class="admin-card">
-                        <textarea rows="10" name="description" class="textarea p-4 w-full" placeholder={_t(l, "admin.tags.noDescription")}>{tag.Description}</textarea>
+                        <textarea maxlength="500" rows="10" name="description" class="textarea p-4 w-full" placeholder={_t(l, "admin.tags.noDescription")}>{tag.Description}</textarea>
                     </article>
                 </header>
 

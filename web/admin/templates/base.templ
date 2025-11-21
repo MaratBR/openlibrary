@@ -32,9 +32,9 @@ templ dashboardLayout(title string) {
     @baseLayout(title) {
         @flashes()
         @sidebar()
-        <main class="ml-[300px] bg-secondary min-h-screen text-foreground" style="">
+		<div class="sitebar-body">
             { children... }
-        </main>
+        </div>
     }
 }
 

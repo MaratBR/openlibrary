@@ -23,7 +23,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
 
 
             <header class="admin-page-header">
-                <h1 class="text-3xl font-title">{ pageTitle }</h1>
+                <h1 class="text-3xl">{ pageTitle }</h1>
             </header>
 
             <div class="flex gap-3">
@@ -33,7 +33,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                 <a href="?" class="link link--primary">{ _t(l, "user.allUsers") }</a>
             </div>
 
-            <div class="admin-card p-4 mt-4">
+            <div class="mt-4">
 
                 {{
                     pagination := olhttp.Pagination(resp.Page, uint32(resp.TotalPages), 9)
@@ -41,7 +41,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
 
                 @pagination
                 
-                <table class="table -mx-4 my-2" style="width: calc(100% + 32px);">
+                <table class="table my-2" style="width: calc(100% + 32px);">
                     <thead>
                         <tr>
                             <th class="w-64">ID</th>
@@ -121,7 +121,7 @@ templ User(user *app.UserDetailsDto) {
     @dashboardLayout(user.Name) {
         <div class="admin-page-content">
             <header class="admin-page-header">
-                <h1 class="text-3xl flex items-center gap-1 font-title">
+                <h1 class="text-3xl flex items-center gap-1">
                     <a href="/admin/users" class="link">{ _t(l, "admin.users.title") }</a>
                     <span class="mx-2 text-muted-foreground text-[0.8em]">/</span>
                     {user.Name}

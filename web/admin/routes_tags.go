@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
@@ -83,7 +84,7 @@ type tagEditBody struct {
 	Name        string `in:"form=name,required"`
 	Type        string `in:"form=type,required"`
 	Description string `in:"form=description,required"`
-	SynonymOf   *int64 `in:"form=synonymOf"`
+	SynonymOf   string `in:"form=synonymOf"`
 }
 
 func (c *tagsController) TagEdit(w http.ResponseWriter, r *http.Request) {
@@ -97,14 +98,17 @@ func (c *tagsController) TagEdit(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPost {
 		body := r.Context().Value(httpin.Input).(*tagEditBody)
-
+		var synonymOf app.Nullable[int64]
+		if integer, err := strconv.ParseInt(body.SynonymOf, 10, 64); err == nil {
+			synonymOf = app.Value(integer)
+		}
 		err := c.service.UpdateTag(r.Context(), app.UpdateTagCommand{
 			ID:             id,
 			Name:           body.Name,
 			Description:    body.Description,
 			IsAdult:        body.Adult == "on",
 			IsSpoiler:      body.Spoiler == "on",
-			SynonymOfTagID: app.NullableFromPtr(body.SynonymOf),
+			SynonymOfTagID: synonymOf,
 			UserID:         session.UserID,
 			Type:           app.TagsCategoryFromName(body.Type),
 		})
