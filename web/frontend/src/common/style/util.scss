@@ -35,6 +35,10 @@
     }
 }
 
+.page-header-container {
+    @apply my-4;
+}
+
 .dl {
     @apply grid grid-cols-[3fr_7fr];
 

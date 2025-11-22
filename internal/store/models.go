@@ -382,6 +382,7 @@ type Book struct {
 	AgeRating          AgeRating
 	IsPubliclyVisible  bool
 	IsBanned           bool
+	IsTrashed          bool
 	Words              int32
 	Chapters           int32
 	TagIds             []int64

@@ -15,17 +15,18 @@ export default function BookEditor({ data: dataUnknown, rootElement: _ }: Preact
 
   return (
     <>
-      <h1 class="page-header inline-block mr-2">{data.name}</h1>
-      <div class="page-header__after">
-        <a href="/books-manager/books" class="link">
-          {window._('bookManager.edit.backToBooksManager')}
-        </a>
-        &nbsp;|&nbsp;
-        <a href={`/book/${data.id}`} class="link">
-          {window._('bookManager.edit.goToPage')}
-        </a>
-      </div>
-
+      <header class="page-header-container">
+        <h1 class="page-header inline-block mr-2">{data.name}</h1>
+        <div class="page-header__after">
+          <a href="/books-manager/books" class="link">
+            {window._('bookManager.edit.backToBooksManager')}
+          </a>
+          &nbsp;|&nbsp;
+          <a href={`/book/${data.id}`} class="link">
+            {window._('bookManager.edit.goToPage')}
+          </a>
+        </div>
+      </header>
       <Tabs.Root onChange={setTab} value={tab}>
         <Tabs.List>
           <Tabs.Tab value="general">{window._('bookManager.edit.generalInformation')}</Tabs.Tab>

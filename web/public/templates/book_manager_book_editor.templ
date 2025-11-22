@@ -10,21 +10,18 @@ templ BookManagerNewBook() {
     }}
 
 	@bmLayoutBase(_t(l, "bookManager.newBook.title"), false) {
-        <div class="ol-container ol-container--big">
-            <div class="pt-2">
-                @i18nExtractKeysByPrefix(l, "bookManager.newBook")
-                for _, ageRating := range app.AllRatings {
-                    @i18nExtractKeys(l, []string{
-                        fmt.Sprintf("ageRating.%s.rating", ageRating),
-                        fmt.Sprintf("ageRating.%s.ratingDescription", ageRating),
-                        fmt.Sprintf("ageRating.%s.examples", ageRating),
-                        fmt.Sprintf("ageRating.%s.targetAudience", ageRating),
-                        fmt.Sprintf("ageRating.%s.parentalGuidance", ageRating),
-                    })
-                }
-                
-                <ol-island active="true" src="/_/assets/islands/bookmanager.js" name="NewBook" />
-            </div>
+        @i18nExtractKeysByPrefix(l, "bookManager.newBook")
+        for _, ageRating := range app.AllRatings {
+            @i18nExtractKeys(l, []string{
+                fmt.Sprintf("ageRating.%s.rating", ageRating),
+                fmt.Sprintf("ageRating.%s.ratingDescription", ageRating),
+                fmt.Sprintf("ageRating.%s.examples", ageRating),
+                fmt.Sprintf("ageRating.%s.targetAudience", ageRating),
+                fmt.Sprintf("ageRating.%s.parentalGuidance", ageRating),
+            })
+        }
+        <div class="card min-h-128 pl-4">
+            <ol-island active="true" src="/_/assets/islands/bookmanager.js" name="NewBook" />
         </div>
     }
 }

@@ -5,6 +5,9 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
+import "github.com/MaratBR/openlibrary/internal/csrf"
+import "net/url"
+import "strings"
 
 templ bmLayoutBase(title string, sitebar bool) {
 	@olhttp.Doc(ctx, olhttp.DocSettings{
@@ -32,6 +35,7 @@ templ bmLayoutBase(title string, sitebar bool) {
 		</aside>
 		<div class="sitebar-body">
 			<div class="sitebar-body__content">
+				@flashMessages()
 				{ children... }
 			</div>
 		</div>
@@ -74,7 +78,7 @@ templ bmLayoutNoSiteBar(title string) {
 }
 
 templ BookManager() {
-	@bookManagerMainPage("") {
+	@bmMainPage("bookManager.home") {
 		Home page
 	}
 }
@@ -83,69 +87,128 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 	{{
 	l := i18n.GetLocalizer(ctx)
 	}}
-	@bookManagerMainPage("books.title") {
+	@bmMainPage("bookManager.books.title") {
 		<section>
-			<h1 class="page-header inline-block">
-				{ _t(l, "bookManager.books.title") }
-			</h1>
-			<a class="btn btn--sm btn--outlined rounded-md" href="/books-manager/new?ol.from=books-manager">
-				<i class="fa-solid fa-pencil"></i>
-				{ _t(l, "bookManager.createNewBook") }
-			</a>
-			<div class="mt-4">
-				if len(books.Books) == 0 {
-					<p class="my-8">
-						{ _t(l, "bookManager.noBooks") }
-					</p>
-					<a class="btn btn--lg btn--primary" href="/books-manager/new?ol.from=books-manager&isFirst=1">
-						{ _t(l, "bookManager.writeYourFirstBook") }
+			<header class="page-header-container">
+				<h1 class="page-header inline-block">
+					{ _t(l, "bookManager.books.title") }
+				</h1>
+				<div class="page-header__after">
+					<a class="btn btn--sm btn--outline btn--primary2 rounded-md" href="/books-manager/new?ol.from=books-manager">
+						<i class="fa-solid fa-pencil"></i>
+						{ _t(l, "bookManager.createNewBook") }
 					</a>
-				} else {
-					
-					@olhttp.Pagination(books.Page, books.TotalPages, 10)
+				</div>
+			</header>
+			<div>
+				@olhttp.Pagination(books.Page, books.TotalPages, 10)
 
-					<ol-island 
-						data={ fmt.Sprintf("{\"selector\": \"#%s\"}", "books-manager-books") }
-						src="/_/assets/islands/book-card-preview.js" 
-						active="true" />
+				<ol-island 
+					data={ fmt.Sprintf("{\"selector\": \"#%s\"}", "books-manager-books") }
+					src="/_/assets/islands/book-card-preview.js" 
+					active="true" />
 
-					<section class="my-4 space-y-2" id="books-manager-books">
-						<table class="table">
-							<thead>
+				<section class="my-4 space-y-2" id="books-manager-books" x-data="{
+					deleteBookId: '',
+					submitted: false,
+					openDelete($event, bookId) {
+						this.deleteBookId = bookId;
+						if (this.$refs.popup) {
+							const $popup = this.$refs.popup;
+							console.log($event);
+							const rec = $event.target.getBoundingClientRect();
+							$popup.style.left = rec.left+'px';
+							$popup.style.top = (rec.top + rec.height)+'px';
+						}
+					},
+					closeDelete() {
+						this.deleteBookId = '';
+					}
+				}">
+					<div class="card fixed" x-ref="popup" x-cloak x-show="!!deleteBookId" @click.outside="closeDelete()">
+						<strong>
+							{ _t(l, "bookManager.books.trashBook.title") }
+						</strong>
+						{{
+							r := olhttp.GetRequest(ctx)
+						}}
+						<form @submit="submitted=true" method="post" action={fmt.Sprintf("/books-manager/books?act=trash&next=%s", url.QueryEscape(r.URL.String()))}>
+							<input aria-hidden="true" class="hidden" name="id" required x-model="deleteBookId" />
+							@csrf.CSRFInputTempl(ctx)
+							<button type="submit" class="btn btn--sm btn--destructive mt-2">
+								<span x-show="submitted" class="loader" />
+								<span x-show="!submitted">
+									{ _t(l, "common.trash") }
+								</span>
+							</button>
+						</form>
+					</div>
+					<table class="table">
+						<thead>
+							<tr>
+								<th width="80" />
+								<th>
+									{ _t(l, "bookManager.books.name") }
+								</th>
+								<th>
+									{ _t(l, "bookManager.books.stats") }
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, book := range books.Books {
 								<tr>
-									<th width="80" />
-									<th>
-										{ _t(l, "bookManager.books.name") }
-									</th>
-									<th>
-										{ _t(l, "bookManager.books.stats") }
-									</th>
+									<td>
+										@bookCover(book.Cover, book.Name, 100)
+									</td>
+									<td>
+										<span>{ book.Name }</span>
+										{{
+											var additionalText []string
+											if book.IsBanned {
+												additionalText = append(additionalText, _t(l, "bookManager.books.banned"))
+											} 
+											if !book.IsPubliclyVisible {
+												additionalText = append(additionalText, _t(l, "bookManager.books.notPublic"))
+											} 
+											if book.IsTrashed {
+												additionalText = append(additionalText, _t(l, "bookManager.books.trashed"))
+											} 
+										}}
+										if len(additionalText) > 0 {
+											&nbsp;&mdash;&nbsp;<span class="font-semibold text-muted-foreground">
+												{ strings.Join(additionalText, ", ") }
+											</span>
+										}
+										<div>
+											<a class="link" href={ fmt.Sprintf("/books-manager/book/%d", book.ID) }>{ _t(l, "common.edit") }</a> | 
+											if !book.IsTrashed {
+												<button 
+													@click={fmt.Sprintf("openDelete($event,'%d')", book.ID)}
+													class="link">{ _t(l, "common.trash") }</button> |
+											} 
+											<a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>{ _t(l, "common.view") }</a>
+										</div>
+									</td>
+									<td>
+									</td>
 								</tr>
-							</thead>
-							<tbody>
-								for _, book := range books.Books {
-									<tr>
-										<td>
-											@bookCover(book.Cover, book.Name, 100)
-										</td>
-										<td>
-											<span>{ book.Name }</span>
-											<div>
-												<a class="link" href={ fmt.Sprintf("/books-manager/book/%d", book.ID) }>{ _t(l, "common.edit") }</a> | 
-												<button class="link">{ _t(l, "common.trash") }</button> | 
-												<a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>{ _t(l, "common.view") }</a>
-											</div>
-										</td>
-										<td>
-										</td>
-									</tr>
-									// @bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
-								}
-							</tbody>
-						</table>
-					</section>
-					@olhttp.Pagination(books.Page, books.TotalPages, 10)
-				}
+								// @bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
+							}
+							if len(books.Books) == 0 {
+								<tr>
+									<td />
+									<td colspan="2">
+										<p class="max-w-128">
+											{ _t(l, "bookManager.noBooks") }
+										</p>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</section>
+				@olhttp.Pagination(books.Page, books.TotalPages, 10)
 			</div>
 		</section>
 	}
@@ -180,18 +243,18 @@ templ bookManagerYourBooksBookCard(bookID int64, name, cover, summary string) {
 }
 
 templ BookManagerCollections(collections []app.CollectionDto) {
-	@bookManagerMainPage("collections") {
+	@bmMainPage("bookManager.collections") {
 		for _, col := range collections {
 			{ col.Name }
 		}
 	}
 }
 
-templ bookManagerMainPage(tab string) {
+templ bmMainPage(tab string) {
 	{{
 		l := i18n.GetLocalizer(ctx)
 	}}
-	@bmLayout(_t(l, "bookManager."+tab)) {
+	@bmLayout(_t(l, tab)) {
 		{ children... }
 	}
 }

@@ -108,7 +108,22 @@ func Search(
 	client *elasticsearch.TypedClient,
 	req SearchRequest,
 ) (SearchResult, error) {
-	must := []types.Query{}
+	must := []types.Query{
+		{
+			Term: map[string]types.TermQuery{
+				"isTrashed": {
+					Value: true,
+				},
+			},
+		},
+		{
+			Term: map[string]types.TermQuery{
+				"isPubliclyVisible": {
+					Value: true,
+				},
+			},
+		},
+	}
 
 	if req.Query != "" {
 		must = append(must, types.Query{

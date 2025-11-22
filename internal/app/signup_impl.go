@@ -187,7 +187,7 @@ func (s *signUpService) VerifyEmail(ctx context.Context, cmd VerifyEmailCommand)
 	}
 	queries = queries.WithTx(tx)
 
-	user, err := queries.GetUser(ctx, uuidDomainToDb(cmd.UserID))
+	user, err := queries.User_Get(ctx, uuidDomainToDb(cmd.UserID))
 	if err != nil {
 		return wrapUnexpectedDBError(err)
 	}
@@ -228,7 +228,7 @@ func (s *signUpService) VerifyEmail(ctx context.Context, cmd VerifyEmailCommand)
 func (s *signUpService) SendEmailVerification(ctx context.Context, cmd SendEmailVerificationCommand) (SendEmailVerificationResult, error) {
 	queries := store.New(s.db)
 
-	user, err := queries.GetUser(ctx, uuidDomainToDb(cmd.UserID))
+	user, err := queries.User_Get(ctx, uuidDomainToDb(cmd.UserID))
 	if err != nil {
 		return SendEmailVerificationResult{}, wrapUnexpectedDBError(err)
 	}
@@ -259,7 +259,7 @@ func (s *signUpService) SendEmailVerification(ctx context.Context, cmd SendEmail
 func (s *signUpService) GetEmailVerificationStatus(ctx context.Context, userID uuid.UUID) (EmailVerificationStatus, error) {
 	queries := store.New(s.db)
 
-	user, err := queries.GetUser(ctx, uuidDomainToDb(userID))
+	user, err := queries.User_Get(ctx, uuidDomainToDb(userID))
 	if err != nil {
 		return EmailVerificationStatus{}, wrapUnexpectedDBError(err)
 	}

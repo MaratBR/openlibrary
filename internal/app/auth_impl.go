@@ -41,7 +41,7 @@ func createUser(ctx context.Context, queries *store.Queries, username, email, pa
 	}
 
 	if role != RoleUser {
-		err = queries.UpdateUserRole(ctx, store.UpdateUserRoleParams{
+		err = queries.User_UpdateRole(ctx, store.User_UpdateRoleParams{
 			Role: store.UserRole(role),
 			ID:   uuidDomainToDb(userID),
 		})

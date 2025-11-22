@@ -20,6 +20,7 @@ create table books (
     age_rating age_rating not null default '?',
     is_publicly_visible boolean not null default true,
     is_banned boolean not null default false,
+    is_trashed boolean not null default false,
     words int4 not null default 0,
     chapters int4 not null default 0,
     tag_ids int8[] not null default '{}',

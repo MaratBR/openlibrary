@@ -27,6 +27,64 @@ func (q *Queries) BookSetHasCover(ctx context.Context, arg BookSetHasCoverParams
 	return err
 }
 
+const book_Book_ManagerGetUserBooksCount = `-- name: Book_Book_ManagerGetUserBooksCount :one
+select count(1)
+from books
+where author_user_id = $1
+`
+
+func (q *Queries) Book_Book_ManagerGetUserBooksCount(ctx context.Context, authorUserID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, book_Book_ManagerGetUserBooksCount, authorUserID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const book_GetChapterOrder = `-- name: Book_GetChapterOrder :many
+select "order", id
+from book_chapters
+where book_id = $1
+order by "order"
+`
+
+type Book_GetChapterOrderRow struct {
+	Order int32
+	ID    int64
+}
+
+func (q *Queries) Book_GetChapterOrder(ctx context.Context, bookID int64) ([]Book_GetChapterOrderRow, error) {
+	rows, err := q.db.Query(ctx, book_GetChapterOrder, bookID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Book_GetChapterOrderRow
+	for rows.Next() {
+		var i Book_GetChapterOrderRow
+		if err := rows.Scan(&i.Order, &i.ID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const book_GetLastChapterOrder = `-- name: Book_GetLastChapterOrder :one
+select cast(coalesce(max("order"), 0) as int4) as last_order
+from book_chapters
+where book_id = $1
+`
+
+func (q *Queries) Book_GetLastChapterOrder(ctx context.Context, bookID int64) (int32, error) {
+	row := q.db.QueryRow(ctx, book_GetLastChapterOrder, bookID)
+	var last_order int32
+	err := row.Scan(&last_order)
+	return last_order, err
+}
+
 const book_Insert = `-- name: Book_Insert :exec
 insert into books 
 (
@@ -102,28 +160,93 @@ func (q *Queries) Book_InsertChapter(ctx context.Context, arg Book_InsertChapter
 	return err
 }
 
-const getChapterOrder = `-- name: GetChapterOrder :many
-select "order", id
-from book_chapters
-where book_id = $1
-order by "order"
+const book_ManagerGetUserBooks = `-- name: Book_ManagerGetUserBooks :many
+select 
+    books.id, books.name, books.slug, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.is_trashed, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned,
+    collections.id as collection_id,
+    collections.name as collection_name,
+    collection_books."order" as collection_position,
+    collections.books_count as collection_size
+from books
+left join collection_books on books.id = collection_books.book_id
+left join collections on collection_books.collection_id = collections.id
+where author_user_id = $1
+order by books.created_at desc
+limit $2 offset $3
 `
 
-type GetChapterOrderRow struct {
-	Order int32
-	ID    int64
+type Book_ManagerGetUserBooksParams struct {
+	AuthorUserID pgtype.UUID
+	Limit        int32
+	Offset       int32
 }
 
-func (q *Queries) GetChapterOrder(ctx context.Context, bookID int64) ([]GetChapterOrderRow, error) {
-	rows, err := q.db.Query(ctx, getChapterOrder, bookID)
+type Book_ManagerGetUserBooksRow struct {
+	ID                 int64
+	Name               string
+	Slug               string
+	Summary            string
+	AuthorUserID       pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	AgeRating          AgeRating
+	IsPubliclyVisible  bool
+	IsBanned           bool
+	IsTrashed          bool
+	Words              int32
+	Chapters           int32
+	TagIds             []int64
+	CachedParentTagIds []int64
+	HasCover           bool
+	View               int32
+	Rating             pgtype.Float8
+	TotalReviews       int32
+	TotalRatings       int32
+	IsPinned           bool
+	IsPermRemoved      bool
+	IsShadowBanned     bool
+	CollectionID       pgtype.Int8
+	CollectionName     pgtype.Text
+	CollectionPosition pgtype.Int4
+	CollectionSize     pgtype.Int4
+}
+
+func (q *Queries) Book_ManagerGetUserBooks(ctx context.Context, arg Book_ManagerGetUserBooksParams) ([]Book_ManagerGetUserBooksRow, error) {
+	rows, err := q.db.Query(ctx, book_ManagerGetUserBooks, arg.AuthorUserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetChapterOrderRow
+	var items []Book_ManagerGetUserBooksRow
 	for rows.Next() {
-		var i GetChapterOrderRow
-		if err := rows.Scan(&i.Order, &i.ID); err != nil {
+		var i Book_ManagerGetUserBooksRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Summary,
+			&i.AuthorUserID,
+			&i.CreatedAt,
+			&i.AgeRating,
+			&i.IsPubliclyVisible,
+			&i.IsBanned,
+			&i.IsTrashed,
+			&i.Words,
+			&i.Chapters,
+			&i.TagIds,
+			&i.CachedParentTagIds,
+			&i.HasCover,
+			&i.View,
+			&i.Rating,
+			&i.TotalReviews,
+			&i.TotalRatings,
+			&i.IsPinned,
+			&i.IsPermRemoved,
+			&i.IsShadowBanned,
+			&i.CollectionID,
+			&i.CollectionName,
+			&i.CollectionPosition,
+			&i.CollectionSize,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -132,6 +255,49 @@ func (q *Queries) GetChapterOrder(ctx context.Context, bookID int64) ([]GetChapt
 		return nil, err
 	}
 	return items, nil
+}
+
+const book_SetChapterOrder = `-- name: Book_SetChapterOrder :exec
+update book_chapters
+set "order" = $2
+where id = $1
+`
+
+type Book_SetChapterOrderParams struct {
+	ID    int64
+	Order int32
+}
+
+func (q *Queries) Book_SetChapterOrder(ctx context.Context, arg Book_SetChapterOrderParams) error {
+	_, err := q.db.Exec(ctx, book_SetChapterOrder, arg.ID, arg.Order)
+	return err
+}
+
+const book_Trash = `-- name: Book_Trash :exec
+update books
+set is_trashed = true, is_publicly_visible = false
+where id = $1
+`
+
+func (q *Queries) Book_Trash(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, book_Trash, id)
+	return err
+}
+
+const book_UnTrash = `-- name: Book_UnTrash :exec
+update books
+set is_trashed = false, is_publicly_visible = $2
+where id = $1
+`
+
+type Book_UnTrashParams struct {
+	ID                int64
+	IsPubliclyVisible bool
+}
+
+func (q *Queries) Book_UnTrash(ctx context.Context, arg Book_UnTrashParams) error {
+	_, err := q.db.Exec(ctx, book_UnTrash, arg.ID, arg.IsPubliclyVisible)
+	return err
 }
 
 const getChaptersOrder = `-- name: GetChaptersOrder :many
@@ -161,127 +327,6 @@ func (q *Queries) GetChaptersOrder(ctx context.Context, bookID int64) ([]int64, 
 	return items, nil
 }
 
-const getLastChapterOrder = `-- name: GetLastChapterOrder :one
-select cast(coalesce(max("order"), 0) as int4) as last_order
-from book_chapters
-where book_id = $1
-`
-
-func (q *Queries) GetLastChapterOrder(ctx context.Context, bookID int64) (int32, error) {
-	row := q.db.QueryRow(ctx, getLastChapterOrder, bookID)
-	var last_order int32
-	err := row.Scan(&last_order)
-	return last_order, err
-}
-
-const managerGetUserBooks = `-- name: ManagerGetUserBooks :many
-select 
-    books.id, books.name, books.slug, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned,
-    collections.id as collection_id,
-    collections.name as collection_name,
-    collection_books."order" as collection_position,
-    collections.books_count as collection_size
-from books
-left join collection_books on books.id = collection_books.book_id
-left join collections on collection_books.collection_id = collections.id
-where author_user_id = $1
-order by books.created_at desc
-limit $2 offset $3
-`
-
-type ManagerGetUserBooksParams struct {
-	AuthorUserID pgtype.UUID
-	Limit        int32
-	Offset       int32
-}
-
-type ManagerGetUserBooksRow struct {
-	ID                 int64
-	Name               string
-	Slug               string
-	Summary            string
-	AuthorUserID       pgtype.UUID
-	CreatedAt          pgtype.Timestamptz
-	AgeRating          AgeRating
-	IsPubliclyVisible  bool
-	IsBanned           bool
-	Words              int32
-	Chapters           int32
-	TagIds             []int64
-	CachedParentTagIds []int64
-	HasCover           bool
-	View               int32
-	Rating             pgtype.Float8
-	TotalReviews       int32
-	TotalRatings       int32
-	IsPinned           bool
-	IsPermRemoved      bool
-	IsShadowBanned     bool
-	CollectionID       pgtype.Int8
-	CollectionName     pgtype.Text
-	CollectionPosition pgtype.Int4
-	CollectionSize     pgtype.Int4
-}
-
-func (q *Queries) ManagerGetUserBooks(ctx context.Context, arg ManagerGetUserBooksParams) ([]ManagerGetUserBooksRow, error) {
-	rows, err := q.db.Query(ctx, managerGetUserBooks, arg.AuthorUserID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ManagerGetUserBooksRow
-	for rows.Next() {
-		var i ManagerGetUserBooksRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Slug,
-			&i.Summary,
-			&i.AuthorUserID,
-			&i.CreatedAt,
-			&i.AgeRating,
-			&i.IsPubliclyVisible,
-			&i.IsBanned,
-			&i.Words,
-			&i.Chapters,
-			&i.TagIds,
-			&i.CachedParentTagIds,
-			&i.HasCover,
-			&i.View,
-			&i.Rating,
-			&i.TotalReviews,
-			&i.TotalRatings,
-			&i.IsPinned,
-			&i.IsPermRemoved,
-			&i.IsShadowBanned,
-			&i.CollectionID,
-			&i.CollectionName,
-			&i.CollectionPosition,
-			&i.CollectionSize,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const managerGetUserBooksCount = `-- name: ManagerGetUserBooksCount :one
-select count(1)
-from books
-where author_user_id = $1
-`
-
-func (q *Queries) ManagerGetUserBooksCount(ctx context.Context, authorUserID pgtype.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, managerGetUserBooksCount, authorUserID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const recalculateBookStats = `-- name: RecalculateBookStats :exec
 update books
 set words = coalesce(stat.words, 0), chapters = coalesce(stat.chapters, 0)
@@ -291,22 +336,6 @@ where books.id = $1
 
 func (q *Queries) RecalculateBookStats(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, recalculateBookStats, id)
-	return err
-}
-
-const setChapterOrder = `-- name: SetChapterOrder :exec
-update book_chapters
-set "order" = $2
-where id = $1
-`
-
-type SetChapterOrderParams struct {
-	ID    int64
-	Order int32
-}
-
-func (q *Queries) SetChapterOrder(ctx context.Context, arg SetChapterOrderParams) error {
-	_, err := q.db.Exec(ctx, setChapterOrder, arg.ID, arg.Order)
 	return err
 }
 

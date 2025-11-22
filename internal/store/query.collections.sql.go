@@ -100,7 +100,7 @@ func (q *Queries) Collection_Get(ctx context.Context, id int64) (Collection_GetR
 }
 
 const collection_GetBooks = `-- name: Collection_GetBooks :many
-select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned, author.name as author_name, cb."order" as order_within_collection
+select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned, author.name as author_name, cb."order" as order_within_collection
 from collection_books cb
 join books b on b.id = cb.book_id
 join users author on author.id = b.author_user_id
@@ -125,6 +125,7 @@ type Collection_GetBooksRow struct {
 	AgeRating             AgeRating
 	IsPubliclyVisible     bool
 	IsBanned              bool
+	IsTrashed             bool
 	Words                 int32
 	Chapters              int32
 	TagIds                []int64
@@ -160,6 +161,7 @@ func (q *Queries) Collection_GetBooks(ctx context.Context, arg Collection_GetBoo
 			&i.AgeRating,
 			&i.IsPubliclyVisible,
 			&i.IsBanned,
+			&i.IsTrashed,
 			&i.Words,
 			&i.Chapters,
 			&i.TagIds,

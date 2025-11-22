@@ -86,211 +86,6 @@ func (q *Queries) EmailVerification_Insert(ctx context.Context, arg EmailVerific
 	return err
 }
 
-const get2FADevices = `-- name: Get2FADevices :many
-select id, user_id, type, key, created_at, initialized, active
-from user_2fa
-where user_id = $1
-`
-
-func (q *Queries) Get2FADevices(ctx context.Context, userID pgtype.UUID) ([]User2fa, error) {
-	rows, err := q.db.Query(ctx, get2FADevices, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []User2fa
-	for rows.Next() {
-		var i User2fa
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Type,
-			&i.Key,
-			&i.CreatedAt,
-			&i.Initialized,
-			&i.Active,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getSessionInfo = `-- name: GetSessionInfo :one
-select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.name as user_name, u.joined_at as user_joined_at, u."role" as user_role
-from sessions s
-join users u on s.user_id = u.id
-where s.sid = $1
-`
-
-type GetSessionInfoRow struct {
-	ID           int64
-	Sid          string
-	UserID       pgtype.UUID
-	CreatedAt    pgtype.Timestamptz
-	UserAgent    string
-	IpAddress    string
-	ExpiresAt    pgtype.Timestamptz
-	IsTerminated bool
-	UserName     string
-	UserJoinedAt pgtype.Timestamptz
-	UserRole     UserRole
-}
-
-func (q *Queries) GetSessionInfo(ctx context.Context, sid string) (GetSessionInfoRow, error) {
-	row := q.db.QueryRow(ctx, getSessionInfo, sid)
-	var i GetSessionInfoRow
-	err := row.Scan(
-		&i.ID,
-		&i.Sid,
-		&i.UserID,
-		&i.CreatedAt,
-		&i.UserAgent,
-		&i.IpAddress,
-		&i.ExpiresAt,
-		&i.IsTerminated,
-		&i.UserName,
-		&i.UserJoinedAt,
-		&i.UserRole,
-	)
-	return i, err
-}
-
-const getUser = `-- name: GetUser :one
-select id, name, email, email_verified, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
-from users
-where id = $1
-limit 1
-`
-
-func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
-	row := q.db.QueryRow(ctx, getUser, id)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.EmailVerified,
-		&i.JoinedAt,
-		&i.PasswordHash,
-		&i.Role,
-		&i.IsBanned,
-		&i.AvatarFile,
-		&i.About,
-		&i.Gender,
-		&i.ProfileCss,
-		&i.EnableProfileCss,
-		&i.DefaultTheme,
-		&i.PrivacyHideStats,
-		&i.PrivacyHideComments,
-		&i.PrivacyHideEmail,
-		&i.PrivacyAllowSearching,
-		&i.ShowAdultContent,
-		&i.CensoredTags,
-		&i.CensoredTagsMode,
-	)
-	return i, err
-}
-
-const getUserAboutSettings = `-- name: GetUserAboutSettings :one
-select 
-    about,
-    gender
-from users
-where id = $1
-`
-
-type GetUserAboutSettingsRow struct {
-	About  string
-	Gender string
-}
-
-func (q *Queries) GetUserAboutSettings(ctx context.Context, id pgtype.UUID) (GetUserAboutSettingsRow, error) {
-	row := q.db.QueryRow(ctx, getUserAboutSettings, id)
-	var i GetUserAboutSettingsRow
-	err := row.Scan(&i.About, &i.Gender)
-	return i, err
-}
-
-const getUserCustomizationSettings = `-- name: GetUserCustomizationSettings :one
-select 
-    profile_css,
-    enable_profile_css,
-    default_theme
-from users
-where id = $1
-`
-
-type GetUserCustomizationSettingsRow struct {
-	ProfileCss       string
-	EnableProfileCss bool
-	DefaultTheme     string
-}
-
-func (q *Queries) GetUserCustomizationSettings(ctx context.Context, id pgtype.UUID) (GetUserCustomizationSettingsRow, error) {
-	row := q.db.QueryRow(ctx, getUserCustomizationSettings, id)
-	var i GetUserCustomizationSettingsRow
-	err := row.Scan(&i.ProfileCss, &i.EnableProfileCss, &i.DefaultTheme)
-	return i, err
-}
-
-const getUserModerationSettings = `-- name: GetUserModerationSettings :one
-select
-    show_adult_content,
-    censored_tags,
-    censored_tags_mode
-from users
-where id = $1
-`
-
-type GetUserModerationSettingsRow struct {
-	ShowAdultContent bool
-	CensoredTags     []string
-	CensoredTagsMode CensorMode
-}
-
-func (q *Queries) GetUserModerationSettings(ctx context.Context, id pgtype.UUID) (GetUserModerationSettingsRow, error) {
-	row := q.db.QueryRow(ctx, getUserModerationSettings, id)
-	var i GetUserModerationSettingsRow
-	err := row.Scan(&i.ShowAdultContent, &i.CensoredTags, &i.CensoredTagsMode)
-	return i, err
-}
-
-const getUserNames = `-- name: GetUserNames :many
-select name, id
-from users
-where id = any($1::uuid[])
-`
-
-type GetUserNamesRow struct {
-	Name string
-	ID   pgtype.UUID
-}
-
-func (q *Queries) GetUserNames(ctx context.Context, ids []pgtype.UUID) ([]GetUserNamesRow, error) {
-	rows, err := q.db.Query(ctx, getUserNames, ids)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetUserNamesRow
-	for rows.Next() {
-		var i GetUserNamesRow
-		if err := rows.Scan(&i.Name, &i.ID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getUserPrivacySettings = `-- name: GetUserPrivacySettings :one
 select
     privacy_hide_stats,
@@ -320,14 +115,54 @@ func (q *Queries) GetUserPrivacySettings(ctx context.Context, id pgtype.UUID) (G
 	return i, err
 }
 
-const getUserSessions = `-- name: GetUserSessions :many
+const session_GetInfo = `-- name: Session_GetInfo :one
+select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.name as user_name, u.joined_at as user_joined_at, u."role" as user_role
+from sessions s
+join users u on s.user_id = u.id
+where s.sid = $1
+`
+
+type Session_GetInfoRow struct {
+	ID           int64
+	Sid          string
+	UserID       pgtype.UUID
+	CreatedAt    pgtype.Timestamptz
+	UserAgent    string
+	IpAddress    string
+	ExpiresAt    pgtype.Timestamptz
+	IsTerminated bool
+	UserName     string
+	UserJoinedAt pgtype.Timestamptz
+	UserRole     UserRole
+}
+
+func (q *Queries) Session_GetInfo(ctx context.Context, sid string) (Session_GetInfoRow, error) {
+	row := q.db.QueryRow(ctx, session_GetInfo, sid)
+	var i Session_GetInfoRow
+	err := row.Scan(
+		&i.ID,
+		&i.Sid,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UserAgent,
+		&i.IpAddress,
+		&i.ExpiresAt,
+		&i.IsTerminated,
+		&i.UserName,
+		&i.UserJoinedAt,
+		&i.UserRole,
+	)
+	return i, err
+}
+
+const session_GetUserSessions = `-- name: Session_GetUserSessions :many
 select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.id as user_id, u.name as user_name, u.joined_at as user_joined_at
 from sessions s
 join users u on s.user_id = u.id
 where s.user_id = $1
 `
 
-type GetUserSessionsRow struct {
+type Session_GetUserSessionsRow struct {
 	ID           int64
 	Sid          string
 	UserID       pgtype.UUID
@@ -341,15 +176,15 @@ type GetUserSessionsRow struct {
 	UserJoinedAt pgtype.Timestamptz
 }
 
-func (q *Queries) GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]GetUserSessionsRow, error) {
-	rows, err := q.db.Query(ctx, getUserSessions, userID)
+func (q *Queries) Session_GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]Session_GetUserSessionsRow, error) {
+	rows, err := q.db.Query(ctx, session_GetUserSessions, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUserSessionsRow
+	var items []Session_GetUserSessionsRow
 	for rows.Next() {
-		var i GetUserSessionsRow
+		var i Session_GetUserSessionsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Sid,
@@ -371,103 +206,6 @@ func (q *Queries) GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]Ge
 		return nil, err
 	}
 	return items, nil
-}
-
-const getUserWithDetails = `-- name: GetUserWithDetails :one
-select 
-    users.id, users.name, users.email, users.email_verified, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
-    (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned and chapters > 0) as books_total,
-    (select count(*) from user_follower where followed_id = users.id) as followers,
-    (select count(*) from user_follower where follower_id = users.id) as "following",
-    (user_follower.created_at is not null)::bool as is_following
-from users
-left join user_follower on user_follower.followed_id = users.id and user_follower.follower_id = $2
-where users.id = $1
-limit 1
-`
-
-type GetUserWithDetailsParams struct {
-	ID          pgtype.UUID
-	ActorUserID pgtype.UUID
-}
-
-type GetUserWithDetailsRow struct {
-	ID                    pgtype.UUID
-	Name                  string
-	Email                 string
-	EmailVerified         bool
-	JoinedAt              pgtype.Timestamptz
-	PasswordHash          string
-	Role                  UserRole
-	IsBanned              bool
-	AvatarFile            pgtype.Text
-	About                 string
-	Gender                string
-	ProfileCss            string
-	EnableProfileCss      bool
-	DefaultTheme          string
-	PrivacyHideStats      bool
-	PrivacyHideComments   bool
-	PrivacyHideEmail      bool
-	PrivacyAllowSearching bool
-	ShowAdultContent      bool
-	CensoredTags          []string
-	CensoredTagsMode      CensorMode
-	BooksTotal            int64
-	Followers             int64
-	Following             int64
-	IsFollowing           bool
-}
-
-func (q *Queries) GetUserWithDetails(ctx context.Context, arg GetUserWithDetailsParams) (GetUserWithDetailsRow, error) {
-	row := q.db.QueryRow(ctx, getUserWithDetails, arg.ID, arg.ActorUserID)
-	var i GetUserWithDetailsRow
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.EmailVerified,
-		&i.JoinedAt,
-		&i.PasswordHash,
-		&i.Role,
-		&i.IsBanned,
-		&i.AvatarFile,
-		&i.About,
-		&i.Gender,
-		&i.ProfileCss,
-		&i.EnableProfileCss,
-		&i.DefaultTheme,
-		&i.PrivacyHideStats,
-		&i.PrivacyHideComments,
-		&i.PrivacyHideEmail,
-		&i.PrivacyAllowSearching,
-		&i.ShowAdultContent,
-		&i.CensoredTags,
-		&i.CensoredTagsMode,
-		&i.BooksTotal,
-		&i.Followers,
-		&i.Following,
-		&i.IsFollowing,
-	)
-	return i, err
-}
-
-const isFollowing = `-- name: IsFollowing :one
-select exists(select 1
-from user_follower
-where follower_id = $1 and followed_id = $2)
-`
-
-type IsFollowingParams struct {
-	FollowerID pgtype.UUID
-	FollowedID pgtype.UUID
-}
-
-func (q *Queries) IsFollowing(ctx context.Context, arg IsFollowingParams) (bool, error) {
-	row := q.db.QueryRow(ctx, isFollowing, arg.FollowerID, arg.FollowedID)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
 }
 
 const session_Insert = `-- name: Session_Insert :exec
@@ -518,131 +256,6 @@ where user_id = $1
 
 func (q *Queries) Session_TerminateAllByUserID(ctx context.Context, userID pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, session_TerminateAllByUserID, userID)
-	return err
-}
-
-const updateUserAboutSettings = `-- name: UpdateUserAboutSettings :exec
-update users
-set about = $2, gender = $3
-where id = $1
-`
-
-type UpdateUserAboutSettingsParams struct {
-	ID     pgtype.UUID
-	About  string
-	Gender string
-}
-
-func (q *Queries) UpdateUserAboutSettings(ctx context.Context, arg UpdateUserAboutSettingsParams) error {
-	_, err := q.db.Exec(ctx, updateUserAboutSettings, arg.ID, arg.About, arg.Gender)
-	return err
-}
-
-const updateUserCustomizationSettings = `-- name: UpdateUserCustomizationSettings :exec
-update users
-set profile_css = $2, enable_profile_css = $3, default_theme = $4
-where id = $1
-`
-
-type UpdateUserCustomizationSettingsParams struct {
-	ID               pgtype.UUID
-	ProfileCss       string
-	EnableProfileCss bool
-	DefaultTheme     string
-}
-
-func (q *Queries) UpdateUserCustomizationSettings(ctx context.Context, arg UpdateUserCustomizationSettingsParams) error {
-	_, err := q.db.Exec(ctx, updateUserCustomizationSettings,
-		arg.ID,
-		arg.ProfileCss,
-		arg.EnableProfileCss,
-		arg.DefaultTheme,
-	)
-	return err
-}
-
-const updateUserModerationSettings = `-- name: UpdateUserModerationSettings :exec
-update users
-set show_adult_content = $2,
-    censored_tags = $3,
-    censored_tags_mode = $4
-where id = $1
-`
-
-type UpdateUserModerationSettingsParams struct {
-	ID               pgtype.UUID
-	ShowAdultContent bool
-	CensoredTags     []string
-	CensoredTagsMode CensorMode
-}
-
-func (q *Queries) UpdateUserModerationSettings(ctx context.Context, arg UpdateUserModerationSettingsParams) error {
-	_, err := q.db.Exec(ctx, updateUserModerationSettings,
-		arg.ID,
-		arg.ShowAdultContent,
-		arg.CensoredTags,
-		arg.CensoredTagsMode,
-	)
-	return err
-}
-
-const updateUserPassword = `-- name: UpdateUserPassword :exec
-update users
-set password_hash = $2
-where id = $1
-`
-
-type UpdateUserPasswordParams struct {
-	ID           pgtype.UUID
-	PasswordHash string
-}
-
-func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
-	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.PasswordHash)
-	return err
-}
-
-const updateUserPrivacySettings = `-- name: UpdateUserPrivacySettings :exec
-update users
-set privacy_hide_stats = $2,
-    privacy_hide_comments = $3,
-    privacy_hide_email = $4,
-    privacy_allow_searching = $5
-where id = $1
-`
-
-type UpdateUserPrivacySettingsParams struct {
-	ID                    pgtype.UUID
-	PrivacyHideStats      bool
-	PrivacyHideComments   bool
-	PrivacyHideEmail      bool
-	PrivacyAllowSearching bool
-}
-
-func (q *Queries) UpdateUserPrivacySettings(ctx context.Context, arg UpdateUserPrivacySettingsParams) error {
-	_, err := q.db.Exec(ctx, updateUserPrivacySettings,
-		arg.ID,
-		arg.PrivacyHideStats,
-		arg.PrivacyHideComments,
-		arg.PrivacyHideEmail,
-		arg.PrivacyAllowSearching,
-	)
-	return err
-}
-
-const updateUserRole = `-- name: UpdateUserRole :exec
-update users
-set "role" = $2
-where id = $1
-`
-
-type UpdateUserRoleParams struct {
-	ID   pgtype.UUID
-	Role UserRole
-}
-
-func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) error {
-	_, err := q.db.Exec(ctx, updateUserRole, arg.ID, arg.Role)
 	return err
 }
 
@@ -708,6 +321,250 @@ func (q *Queries) User_FindByLogin(ctx context.Context, name string) (User, erro
 	return i, err
 }
 
+const user_Get = `-- name: User_Get :one
+select id, name, email, email_verified, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode
+from users
+where id = $1
+limit 1
+`
+
+func (q *Queries) User_Get(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, user_Get, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.EmailVerified,
+		&i.JoinedAt,
+		&i.PasswordHash,
+		&i.Role,
+		&i.IsBanned,
+		&i.AvatarFile,
+		&i.About,
+		&i.Gender,
+		&i.ProfileCss,
+		&i.EnableProfileCss,
+		&i.DefaultTheme,
+		&i.PrivacyHideStats,
+		&i.PrivacyHideComments,
+		&i.PrivacyHideEmail,
+		&i.PrivacyAllowSearching,
+		&i.ShowAdultContent,
+		&i.CensoredTags,
+		&i.CensoredTagsMode,
+	)
+	return i, err
+}
+
+const user_Get2FADevices = `-- name: User_Get2FADevices :many
+select id, user_id, type, key, created_at, initialized, active
+from user_2fa
+where user_id = $1
+`
+
+func (q *Queries) User_Get2FADevices(ctx context.Context, userID pgtype.UUID) ([]User2fa, error) {
+	rows, err := q.db.Query(ctx, user_Get2FADevices, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User2fa
+	for rows.Next() {
+		var i User2fa
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Type,
+			&i.Key,
+			&i.CreatedAt,
+			&i.Initialized,
+			&i.Active,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const user_GetAboutSettings = `-- name: User_GetAboutSettings :one
+select 
+    about,
+    gender
+from users
+where id = $1
+`
+
+type User_GetAboutSettingsRow struct {
+	About  string
+	Gender string
+}
+
+func (q *Queries) User_GetAboutSettings(ctx context.Context, id pgtype.UUID) (User_GetAboutSettingsRow, error) {
+	row := q.db.QueryRow(ctx, user_GetAboutSettings, id)
+	var i User_GetAboutSettingsRow
+	err := row.Scan(&i.About, &i.Gender)
+	return i, err
+}
+
+const user_GetCustomizationSettings = `-- name: User_GetCustomizationSettings :one
+select 
+    profile_css,
+    enable_profile_css,
+    default_theme
+from users
+where id = $1
+`
+
+type User_GetCustomizationSettingsRow struct {
+	ProfileCss       string
+	EnableProfileCss bool
+	DefaultTheme     string
+}
+
+func (q *Queries) User_GetCustomizationSettings(ctx context.Context, id pgtype.UUID) (User_GetCustomizationSettingsRow, error) {
+	row := q.db.QueryRow(ctx, user_GetCustomizationSettings, id)
+	var i User_GetCustomizationSettingsRow
+	err := row.Scan(&i.ProfileCss, &i.EnableProfileCss, &i.DefaultTheme)
+	return i, err
+}
+
+const user_GetDetails = `-- name: User_GetDetails :one
+select 
+    users.id, users.name, users.email, users.email_verified, users.joined_at, users.password_hash, users.role, users.is_banned, users.avatar_file, users.about, users.gender, users.profile_css, users.enable_profile_css, users.default_theme, users.privacy_hide_stats, users.privacy_hide_comments, users.privacy_hide_email, users.privacy_allow_searching, users.show_adult_content, users.censored_tags, users.censored_tags_mode, 
+    (select count(*) from books where author_user_id = users.id and is_publicly_visible and not is_banned and chapters > 0) as books_total,
+    (select count(*) from user_follower where followed_id = users.id) as followers,
+    (select count(*) from user_follower where follower_id = users.id) as "following",
+    (user_follower.created_at is not null)::bool as is_following
+from users
+left join user_follower on user_follower.followed_id = users.id and user_follower.follower_id = $2
+where users.id = $1
+limit 1
+`
+
+type User_GetDetailsParams struct {
+	ID          pgtype.UUID
+	ActorUserID pgtype.UUID
+}
+
+type User_GetDetailsRow struct {
+	ID                    pgtype.UUID
+	Name                  string
+	Email                 string
+	EmailVerified         bool
+	JoinedAt              pgtype.Timestamptz
+	PasswordHash          string
+	Role                  UserRole
+	IsBanned              bool
+	AvatarFile            pgtype.Text
+	About                 string
+	Gender                string
+	ProfileCss            string
+	EnableProfileCss      bool
+	DefaultTheme          string
+	PrivacyHideStats      bool
+	PrivacyHideComments   bool
+	PrivacyHideEmail      bool
+	PrivacyAllowSearching bool
+	ShowAdultContent      bool
+	CensoredTags          []string
+	CensoredTagsMode      CensorMode
+	BooksTotal            int64
+	Followers             int64
+	Following             int64
+	IsFollowing           bool
+}
+
+func (q *Queries) User_GetDetails(ctx context.Context, arg User_GetDetailsParams) (User_GetDetailsRow, error) {
+	row := q.db.QueryRow(ctx, user_GetDetails, arg.ID, arg.ActorUserID)
+	var i User_GetDetailsRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.EmailVerified,
+		&i.JoinedAt,
+		&i.PasswordHash,
+		&i.Role,
+		&i.IsBanned,
+		&i.AvatarFile,
+		&i.About,
+		&i.Gender,
+		&i.ProfileCss,
+		&i.EnableProfileCss,
+		&i.DefaultTheme,
+		&i.PrivacyHideStats,
+		&i.PrivacyHideComments,
+		&i.PrivacyHideEmail,
+		&i.PrivacyAllowSearching,
+		&i.ShowAdultContent,
+		&i.CensoredTags,
+		&i.CensoredTagsMode,
+		&i.BooksTotal,
+		&i.Followers,
+		&i.Following,
+		&i.IsFollowing,
+	)
+	return i, err
+}
+
+const user_GetModerationSettings = `-- name: User_GetModerationSettings :one
+select
+    show_adult_content,
+    censored_tags,
+    censored_tags_mode
+from users
+where id = $1
+`
+
+type User_GetModerationSettingsRow struct {
+	ShowAdultContent bool
+	CensoredTags     []string
+	CensoredTagsMode CensorMode
+}
+
+func (q *Queries) User_GetModerationSettings(ctx context.Context, id pgtype.UUID) (User_GetModerationSettingsRow, error) {
+	row := q.db.QueryRow(ctx, user_GetModerationSettings, id)
+	var i User_GetModerationSettingsRow
+	err := row.Scan(&i.ShowAdultContent, &i.CensoredTags, &i.CensoredTagsMode)
+	return i, err
+}
+
+const user_GetNames = `-- name: User_GetNames :many
+select name, id
+from users
+where id = any($1::uuid[])
+`
+
+type User_GetNamesRow struct {
+	Name string
+	ID   pgtype.UUID
+}
+
+func (q *Queries) User_GetNames(ctx context.Context, ids []pgtype.UUID) ([]User_GetNamesRow, error) {
+	rows, err := q.db.Query(ctx, user_GetNames, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User_GetNamesRow
+	for rows.Next() {
+		var i User_GetNamesRow
+		if err := rows.Scan(&i.Name, &i.ID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const user_Insert = `-- name: User_Insert :exec
 insert into users
 (id, name, password_hash, joined_at, email, email_verified)
@@ -751,6 +608,24 @@ func (q *Queries) User_InsertFollow(ctx context.Context, arg User_InsertFollowPa
 	return err
 }
 
+const user_IsFollowing = `-- name: User_IsFollowing :one
+select exists(select 1
+from user_follower
+where follower_id = $1 and followed_id = $2)
+`
+
+type User_IsFollowingParams struct {
+	FollowerID pgtype.UUID
+	FollowedID pgtype.UUID
+}
+
+func (q *Queries) User_IsFollowing(ctx context.Context, arg User_IsFollowingParams) (bool, error) {
+	row := q.db.QueryRow(ctx, user_IsFollowing, arg.FollowerID, arg.FollowedID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const user_SetEmailVerified = `-- name: User_SetEmailVerified :exec
 update users
 set email_verified = $1
@@ -764,5 +639,130 @@ type User_SetEmailVerifiedParams struct {
 
 func (q *Queries) User_SetEmailVerified(ctx context.Context, arg User_SetEmailVerifiedParams) error {
 	_, err := q.db.Exec(ctx, user_SetEmailVerified, arg.EmailVerified, arg.ID)
+	return err
+}
+
+const user_UpdateAboutSettings = `-- name: User_UpdateAboutSettings :exec
+update users
+set about = $2, gender = $3
+where id = $1
+`
+
+type User_UpdateAboutSettingsParams struct {
+	ID     pgtype.UUID
+	About  string
+	Gender string
+}
+
+func (q *Queries) User_UpdateAboutSettings(ctx context.Context, arg User_UpdateAboutSettingsParams) error {
+	_, err := q.db.Exec(ctx, user_UpdateAboutSettings, arg.ID, arg.About, arg.Gender)
+	return err
+}
+
+const user_UpdateCustomizationSettings = `-- name: User_UpdateCustomizationSettings :exec
+update users
+set profile_css = $2, enable_profile_css = $3, default_theme = $4
+where id = $1
+`
+
+type User_UpdateCustomizationSettingsParams struct {
+	ID               pgtype.UUID
+	ProfileCss       string
+	EnableProfileCss bool
+	DefaultTheme     string
+}
+
+func (q *Queries) User_UpdateCustomizationSettings(ctx context.Context, arg User_UpdateCustomizationSettingsParams) error {
+	_, err := q.db.Exec(ctx, user_UpdateCustomizationSettings,
+		arg.ID,
+		arg.ProfileCss,
+		arg.EnableProfileCss,
+		arg.DefaultTheme,
+	)
+	return err
+}
+
+const user_UpdateModerationSettings = `-- name: User_UpdateModerationSettings :exec
+update users
+set show_adult_content = $2,
+    censored_tags = $3,
+    censored_tags_mode = $4
+where id = $1
+`
+
+type User_UpdateModerationSettingsParams struct {
+	ID               pgtype.UUID
+	ShowAdultContent bool
+	CensoredTags     []string
+	CensoredTagsMode CensorMode
+}
+
+func (q *Queries) User_UpdateModerationSettings(ctx context.Context, arg User_UpdateModerationSettingsParams) error {
+	_, err := q.db.Exec(ctx, user_UpdateModerationSettings,
+		arg.ID,
+		arg.ShowAdultContent,
+		arg.CensoredTags,
+		arg.CensoredTagsMode,
+	)
+	return err
+}
+
+const user_UpdatePassword = `-- name: User_UpdatePassword :exec
+update users
+set password_hash = $2
+where id = $1
+`
+
+type User_UpdatePasswordParams struct {
+	ID           pgtype.UUID
+	PasswordHash string
+}
+
+func (q *Queries) User_UpdatePassword(ctx context.Context, arg User_UpdatePasswordParams) error {
+	_, err := q.db.Exec(ctx, user_UpdatePassword, arg.ID, arg.PasswordHash)
+	return err
+}
+
+const user_UpdatePrivacySettings = `-- name: User_UpdatePrivacySettings :exec
+update users
+set privacy_hide_stats = $2,
+    privacy_hide_comments = $3,
+    privacy_hide_email = $4,
+    privacy_allow_searching = $5
+where id = $1
+`
+
+type User_UpdatePrivacySettingsParams struct {
+	ID                    pgtype.UUID
+	PrivacyHideStats      bool
+	PrivacyHideComments   bool
+	PrivacyHideEmail      bool
+	PrivacyAllowSearching bool
+}
+
+func (q *Queries) User_UpdatePrivacySettings(ctx context.Context, arg User_UpdatePrivacySettingsParams) error {
+	_, err := q.db.Exec(ctx, user_UpdatePrivacySettings,
+		arg.ID,
+		arg.PrivacyHideStats,
+		arg.PrivacyHideComments,
+		arg.PrivacyHideEmail,
+		arg.PrivacyAllowSearching,
+	)
+	return err
+}
+
+const user_UpdateRole = `-- name: User_UpdateRole :exec
+update users
+set "role" = $2
+where id = $1
+`
+
+type User_UpdateRoleParams struct {
+	ID   pgtype.UUID
+	Role UserRole
+}
+
+func (q *Queries) User_UpdateRole(ctx context.Context, arg User_UpdateRoleParams) error {
+	_, err := q.db.Exec(ctx, user_UpdateRole, arg.ID, arg.Role)
 	return err
 }

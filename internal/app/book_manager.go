@@ -75,6 +75,7 @@ type ManagerAuthorBookDto struct {
 	Collections       []BookCollectionDto `json:"collections"`
 	IsPubliclyVisible bool                `json:"isPubliclyVisible"`
 	IsBanned          bool                `json:"isBanned"`
+	IsTrashed         bool                `json:"isTrashed"`
 	Summary           string              `json:"summary"`
 	Cover             string              `json:"cover"`
 }
@@ -241,12 +242,18 @@ type GetBookDraftsQuery struct {
 	Page int
 }
 
+type TrashBookCommand struct {
+	BookID int64
+	UserID uuid.UUID
+}
+
 type BookManagerService interface {
 	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error)
 	GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error)
 	CreateBook(ctx context.Context, input CreateBookCommand) (int64, error)
 	UpdateBook(ctx context.Context, input UpdateBookCommand) error
 	UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (UploadBookCoverResult, error)
+	TrashBook(ctx context.Context, input TrashBookCommand) error
 
 	UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error
 	CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterResult, error)

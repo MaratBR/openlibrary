@@ -15,6 +15,16 @@ update books
 set name = $2, age_rating = $3, tag_ids = $4, cached_parent_tag_ids = $5, summary = $6, is_publicly_visible = $7
 where id = $1;
 
+-- name: Book_Trash :exec
+update books
+set is_trashed = true, is_publicly_visible = false
+where id = $1;
+
+-- name: Book_UnTrash :exec
+update books
+set is_trashed = false, is_publicly_visible = $2
+where id = $1;
+
 -- name: BookSetHasCover :exec
 update books
 set has_cover = $2
@@ -26,7 +36,7 @@ set words = coalesce(stat.words, 0), chapters = coalesce(stat.chapters, 0)
 from (select sum(words) as words, count(1) as chapters from book_chapters where book_id = $1 and is_publicly_visible = true) as stat
 where books.id = $1;
 
--- name: ManagerGetUserBooks :many
+-- name: Book_ManagerGetUserBooks :many
 select 
     books.*,
     collections.id as collection_id,
@@ -40,23 +50,23 @@ where author_user_id = $1
 order by books.created_at desc
 limit $2 offset $3;
 
--- name: ManagerGetUserBooksCount :one
+-- name: Book_Book_ManagerGetUserBooksCount :one
 select count(1)
 from books
 where author_user_id = $1;
 
--- name: SetChapterOrder :exec
+-- name: Book_SetChapterOrder :exec
 update book_chapters
 set "order" = $2
 where id = $1;
 
--- name: GetChapterOrder :many
+-- name: Book_GetChapterOrder :many
 select "order", id
 from book_chapters
 where book_id = $1
 order by "order";
 
--- name: GetLastChapterOrder :one
+-- name: Book_GetLastChapterOrder :one
 select cast(coalesce(max("order"), 0) as int4) as last_order
 from book_chapters
 where book_id = $1;

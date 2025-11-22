@@ -1,16 +1,11 @@
 .flash-container {
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: var(--header-height);
-
     .flash {
         @apply mb-1;
     }
 }
 
 .flash {
-    @apply text-white bg-emerald-500 shadow-md rounded-xl p-2 relative;
+    @apply bg-card border-border shadow-md border-l-2 border-l-emerald p-2 relative;
 
     &__closeContainer {
         @apply absolute right-2 top-0 bottom-0 flex items-center;

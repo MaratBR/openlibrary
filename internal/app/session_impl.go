@@ -16,14 +16,14 @@ type sessionService struct {
 
 // GetByUserID implements SessionService.
 func (s *sessionService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]SessionInfo, error) {
-	sessions, err := s.queries.GetUserSessions(ctx, uuidDomainToDb(userID))
+	sessions, err := s.queries.Session_GetUserSessions(ctx, uuidDomainToDb(userID))
 	if err != nil {
 		if err == store.ErrNoRows {
 			return nil, ErrSessionNotFound
 		}
 		return nil, wrapUnexpectedDBError(err)
 	}
-	return MapSlice(sessions, func(s store.GetUserSessionsRow) SessionInfo {
+	return MapSlice(sessions, func(s store.Session_GetUserSessionsRow) SessionInfo {
 		return SessionInfo{
 			ID:           s.ID,
 			SID:          s.Sid,
@@ -73,7 +73,7 @@ func (s *sessionService) GetBySID(ctx context.Context, sessionID string) (*Sessi
 }
 
 func (s *sessionService) get(ctx context.Context, sessionID string) (SessionInfo, error) {
-	result, err := s.queries.GetSessionInfo(ctx, sessionID)
+	result, err := s.queries.Session_GetInfo(ctx, sessionID)
 	if err != nil {
 		if err == store.ErrNoRows {
 			return SessionInfo{}, ErrSessionNotFound
@@ -104,7 +104,7 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 
 	queries := s.queries.WithTx(tx)
 
-	session, err := queries.GetSessionInfo(ctx, command.SessionID)
+	session, err := queries.Session_GetInfo(ctx, command.SessionID)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		if err == store.ErrNoRows {

@@ -177,7 +177,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 
 		{
 			authorIds := authorIdsSet.Arr()
-			authorNamesRows, err := queries.GetUserNames(ctx, arrUuidDomainToDb(authorIds))
+			authorNamesRows, err := queries.User_GetNames(ctx, arrUuidDomainToDb(authorIds))
 			if err != nil {
 				return nil, wrapUnexpectedDBError(err)
 			}

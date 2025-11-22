@@ -319,6 +319,14 @@ emptyBookSummary = "This book has no summary"
 title = "Your books"
 name = "Name"
 stats = "Stats"
+trashed = "Trashed"
+notPublic = "Not public"
+banned = "Banned"
+
+[bookManager.books.trashBook]
+title = "Delete the book?"
+description = "Are you sure you want to delete this book?"
+trashedBookNotif = "Book was send to trash, it will no longer be visible to all users"
 
 [bookManager.newBook]
 title = "New book"

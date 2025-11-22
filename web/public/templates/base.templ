@@ -14,19 +14,17 @@ templ flashMessages() {
 
     if len(messages) > 0 {
         <div class="flash-container">
-            <div class="ol-container">
-                for _, message := range messages {
-                    <div x-data class="flash">
-                        @message
-                        <div class="flash__closeContainer">
-                            <button @click="$root.remove()" class="flash__close">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
+            for _, message := range messages {
+                <div x-data class="flash">
+                    @message
+                    <div class="flash__closeContainer">
+                        <button @click="$root.remove()" class="flash__close">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
-                }
-                <div id="client-flashes" class="contents" />
-            </div>
+                </div>
+            }
+            <div id="client-flashes" class="contents" />
         </div>
     }
 }

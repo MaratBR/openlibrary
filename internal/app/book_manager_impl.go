@@ -42,7 +42,7 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 		offset = 0
 	}
 
-	books, err := s.queries.ManagerGetUserBooks(ctx, store.ManagerGetUserBooksParams{
+	books, err := s.queries.Book_ManagerGetUserBooks(ctx, store.Book_ManagerGetUserBooksParams{
 		AuthorUserID: uuidDomainToDb(input.UserID),
 		Limit:        limit,
 		Offset:       offset,
@@ -56,7 +56,7 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 		return GetUserBooksResult{}, err
 	}
 
-	count, err := s.queries.ManagerGetUserBooksCount(ctx, uuidDomainToDb(input.UserID))
+	count, err := s.queries.Book_Book_ManagerGetUserBooksCount(ctx, uuidDomainToDb(input.UserID))
 
 	totalPages := uint32(math.Ceil(float64(count) / float64(input.PageSize)))
 
@@ -268,6 +268,16 @@ func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBo
 	return
 }
 
+func (s *bookManagerService) TrashBook(ctx context.Context, input TrashBookCommand) error {
+	// TODO auth
+	err := s.queries.Book_Trash(ctx, input.BookID)
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	return nil
+}
+
 // UpdateBookChaptersOrder updates the order of chapters in a book.
 func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error {
 	tx, err := s.db.Begin(ctx)
@@ -308,7 +318,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 	return nil
 }
 
-func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []store.ManagerGetUserBooksRow) ([]ManagerAuthorBookDto, error) {
+func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []store.Book_ManagerGetUserBooksRow) ([]ManagerAuthorBookDto, error) {
 	var (
 		books   []ManagerAuthorBookDto = []ManagerAuthorBookDto{}
 		book    ManagerAuthorBookDto
@@ -337,6 +347,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 				Summary:           row.Summary,
 				IsPubliclyVisible: row.IsPubliclyVisible,
 				IsBanned:          row.IsBanned,
+				IsTrashed:         row.IsTrashed,
 				Cover:             getBookCoverURL(s.uploadService, row.ID, row.HasCover),
 			}
 		}
@@ -376,7 +387,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 }
 
 func (s *bookManagerService) CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterResult, error) {
-	lastOrder, err := s.queries.GetLastChapterOrder(ctx, input.BookID)
+	lastOrder, err := s.queries.Book_GetLastChapterOrder(ctx, input.BookID)
 	if err != nil {
 		return CreateBookChapterResult{}, err
 	}
@@ -421,7 +432,7 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 	queries := s.queries.WithTx(tx)
 
 	{
-		chapterOrders, err := queries.GetChapterOrder(ctx, input.BookID)
+		chapterOrders, err := queries.Book_GetChapterOrder(ctx, input.BookID)
 		if err != nil {
 			rollbackTx(ctx, tx)
 			return err
@@ -464,7 +475,7 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 		if oldChapterOrder[chapterID] == newOrder {
 			continue
 		}
-		err = queries.SetChapterOrder(ctx, store.SetChapterOrderParams{
+		err = queries.Book_SetChapterOrder(ctx, store.Book_SetChapterOrderParams{
 			ID:    chapterID,
 			Order: int32(newOrder),
 		})

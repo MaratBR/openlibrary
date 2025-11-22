@@ -154,6 +154,8 @@ func (s *bookReindexService) reindexAll(ctx context.Context, batchSize int) {
 					WordsPerChapter: int32(getWordsPerChapter(
 						int(book.Words),
 						int(book.Chapters))),
+					IsPubliclyVisible: book.IsPubliclyVisible,
+					IsTrashed:         book.IsTrashed,
 				}
 				idx.Normalize()
 				_ = enc.Encode(idx)

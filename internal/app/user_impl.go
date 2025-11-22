@@ -65,7 +65,7 @@ func (u *userService) FollowUser(ctx context.Context, cmd FollowUserCommand) err
 		return ErrFollowYourself
 	}
 
-	isFollowing, err := u.queries.IsFollowing(ctx, store.IsFollowingParams{
+	isFollowing, err := u.queries.User_IsFollowing(ctx, store.User_IsFollowingParams{
 		FollowerID: uuidDomainToDb(cmd.Follower),
 		FollowedID: uuidDomainToDb(cmd.UserID),
 	})
@@ -100,7 +100,7 @@ func (u *userService) UnfollowUser(ctx context.Context, cmd UnfollowUserCommand)
 
 // GetUserModerationSettings implements UserService.
 func (u *userService) GetUserModerationSettings(ctx context.Context, userID uuid.UUID) (*UserModerationSettings, error) {
-	user, err := u.queries.GetUserModerationSettings(ctx, uuidDomainToDb(userID))
+	user, err := u.queries.User_GetModerationSettings(ctx, uuidDomainToDb(userID))
 	if err != nil {
 		return nil, wrapUnexpectedDBError(err)
 	}
@@ -127,7 +127,7 @@ func (u *userService) GetUserPrivacySettings(ctx context.Context, userID uuid.UU
 
 // GetUserAboutSettings implements UserService.
 func (u *userService) GetUserAboutSettings(ctx context.Context, userID uuid.UUID) (*UserAboutSettings, error) {
-	user, err := u.queries.GetUserAboutSettings(ctx, uuidDomainToDb(userID))
+	user, err := u.queries.User_GetAboutSettings(ctx, uuidDomainToDb(userID))
 	if err != nil {
 		return nil, wrapUnexpectedDBError(err)
 	}
@@ -139,7 +139,7 @@ func (u *userService) GetUserAboutSettings(ctx context.Context, userID uuid.UUID
 
 // GetUserCustomizationSettings implements UserService.
 func (u *userService) GetUserCustomizationSettings(ctx context.Context, userID uuid.UUID) (*UserCustomizationSetting, error) {
-	user, err := u.queries.GetUserCustomizationSettings(ctx, uuidDomainToDb(userID))
+	user, err := u.queries.User_GetCustomizationSettings(ctx, uuidDomainToDb(userID))
 	if err != nil {
 		return nil, wrapUnexpectedDBError(err)
 	}
@@ -152,7 +152,7 @@ func (u *userService) GetUserCustomizationSettings(ctx context.Context, userID u
 
 // UpdateUserAboutSettings implements UserService.
 func (u *userService) UpdateUserAboutSettings(ctx context.Context, userID uuid.UUID, settings UserAboutSettings) error {
-	err := u.queries.UpdateUserAboutSettings(ctx, store.UpdateUserAboutSettingsParams{
+	err := u.queries.User_UpdateAboutSettings(ctx, store.User_UpdateAboutSettingsParams{
 		About:  settings.About,
 		Gender: settings.Gender,
 		ID:     uuidDomainToDb(userID),
@@ -165,7 +165,7 @@ func (u *userService) UpdateUserAboutSettings(ctx context.Context, userID uuid.U
 
 // UpdateUserCustomizationSettings implements UserService.
 func (u *userService) UpdateUserCustomizationSettings(ctx context.Context, userID uuid.UUID, settings UserCustomizationSetting) error {
-	err := u.queries.UpdateUserCustomizationSettings(ctx, store.UpdateUserCustomizationSettingsParams{
+	err := u.queries.User_UpdateCustomizationSettings(ctx, store.User_UpdateCustomizationSettingsParams{
 		ProfileCss:       settings.ProfileCSS,
 		EnableProfileCss: settings.EnableProfileCSS,
 		DefaultTheme:     settings.DefaultTheme,
@@ -179,7 +179,7 @@ func (u *userService) UpdateUserCustomizationSettings(ctx context.Context, userI
 
 // UpdateUserModerationSettings implements UserService.
 func (u *userService) UpdateUserModerationSettings(ctx context.Context, userID uuid.UUID, settings UserModerationSettings) error {
-	err := u.queries.UpdateUserModerationSettings(ctx, store.UpdateUserModerationSettingsParams{
+	err := u.queries.User_UpdateModerationSettings(ctx, store.User_UpdateModerationSettingsParams{
 		CensoredTags:     settings.CensoredTags,
 		CensoredTagsMode: store.CensorMode(settings.CensoredTagsMode),
 		ShowAdultContent: settings.ShowAdultContent,
@@ -193,7 +193,7 @@ func (u *userService) UpdateUserModerationSettings(ctx context.Context, userID u
 
 // UpdateUserPrivacySettings implements UserService.
 func (u *userService) UpdateUserPrivacySettings(ctx context.Context, userID uuid.UUID, settings UserPrivacySettings) error {
-	err := u.queries.UpdateUserPrivacySettings(ctx, store.UpdateUserPrivacySettingsParams{
+	err := u.queries.User_UpdatePrivacySettings(ctx, store.User_UpdatePrivacySettingsParams{
 		PrivacyHideStats:      settings.HideStats,
 		PrivacyHideComments:   settings.HideComments,
 		PrivacyHideEmail:      settings.HideEmail,
@@ -221,7 +221,7 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 			return wrapUnexpectedAppError(err)
 		}
 
-		err = queries.UpdateUserPassword(ctx, store.UpdateUserPasswordParams{
+		err = queries.User_UpdatePassword(ctx, store.User_UpdatePasswordParams{
 			ID:           uuidDomainToDb(cmd.UserID),
 			PasswordHash: hash,
 		})
@@ -231,7 +231,7 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 		}
 	}
 
-	err = queries.UpdateUserAboutSettings(ctx, store.UpdateUserAboutSettingsParams{
+	err = queries.User_UpdateAboutSettings(ctx, store.User_UpdateAboutSettingsParams{
 		ID:     uuidDomainToDb(cmd.UserID),
 		About:  cmd.About,
 		Gender: cmd.Gender,
@@ -258,7 +258,7 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 }
 
 func (u *userService) updateUserRole(ctx context.Context, queries *store.Queries, userID uuid.UUID, role UserRole) error {
-	err := queries.UpdateUserRole(ctx, store.UpdateUserRoleParams{
+	err := queries.User_UpdateRole(ctx, store.User_UpdateRoleParams{
 		ID:   uuidDomainToDb(userID),
 		Role: store.UserRole(role),
 	})
@@ -270,7 +270,7 @@ func (u *userService) updateUserRole(ctx context.Context, queries *store.Queries
 
 // GetUserSelfData implements UserService.
 func (u *userService) GetUserSelfData(ctx context.Context, userID uuid.UUID) (*SelfUserDto, error) {
-	user, err := u.queries.GetUser(ctx, uuidDomainToDb(userID))
+	user, err := u.queries.User_Get(ctx, uuidDomainToDb(userID))
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +297,7 @@ func (u *userService) GetUserSelfData(ctx context.Context, userID uuid.UUID) (*S
 
 // GetUserDetails implements UserService.
 func (u *userService) GetUserDetails(ctx context.Context, query GetUserQuery) (*UserDetailsDto, error) {
-	user, err := u.queries.GetUserWithDetails(ctx, store.GetUserWithDetailsParams{
+	user, err := u.queries.User_GetDetails(ctx, store.User_GetDetailsParams{
 		ID:          uuidDomainToDb(query.ID),
 		ActorUserID: uuidNullableDomainToDb(query.UserID),
 	})

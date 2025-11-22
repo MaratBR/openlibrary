@@ -1,11 +1,15 @@
 package public
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/flash"
+	"github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/public/templates"
@@ -29,6 +33,7 @@ func (c *bookManagerController) Register(r chi.Router) {
 		r.Get("/", c.index)
 		r.Get("/collections", c.collections)
 		r.Get("/books", c.yourBooks)
+		r.Post("/books", c.booksPost)
 		r.Get("/new", c.newBook)
 		r.Get("/book/{bookID}", c.book)
 		r.Get("/book/{bookID}/chapter/{chapterID}", c.chapter)
@@ -60,6 +65,36 @@ func (c *bookManagerController) yourBooks(w http.ResponseWriter, r *http.Request
 
 	templates.BookManagerBooks(books).Render(r.Context(), w)
 
+}
+
+func (c *bookManagerController) booksPost(w http.ResponseWriter, r *http.Request) {
+	act := r.URL.Query().Get("act")
+
+	switch act {
+	case "trash":
+		c.handleTrashAction(w, r)
+	default:
+		writeBadRequest(w, r, errors.New("unknown act value"))
+	}
+}
+
+func (c *bookManagerController) handleTrashAction(w http.ResponseWriter, r *http.Request) {
+	idStr := r.FormValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		writeBadRequest(w, r, err)
+		return
+	}
+	err = c.service.TrashBook(r.Context(), app.TrashBookCommand{
+		BookID: id,
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+	l := i18n.GetLocalizer(r.Context())
+	flash.Add(r, flash.Text(l.T("bookManager.books.trashBook.trashedBookNotif")))
+	redirectToNext(w, r)
 }
 
 func (c *bookManagerController) collections(w http.ResponseWriter, r *http.Request) {
