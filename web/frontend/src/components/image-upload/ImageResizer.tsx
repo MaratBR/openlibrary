@@ -175,7 +175,7 @@ async function transformImage(
     width: options.width,
     height: options.height,
   })
-  if (options.disableResize) {
+  if (!options.disableResize) {
     file = await resizeImage(file, options.scaleRatio)
   }
   return file
