@@ -8,6 +8,7 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/csrf"
 import "encoding/json"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 type TagsSearchRequest struct {
     SearchQuery string
@@ -33,29 +34,10 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                 <form method="get">
                     <input name="p" type="number" value={ fmt.Sprintf("%d", result.Page) } aria-hidden="true" class="hidden" />
 
-                    <div class="flex gap-8 mb-3">
-                        <div class="flex items-center gap-2">
-                            <input
-                                if searchRequest.OnlyParentTags {
-                                    checked
-                                } 
-                                id="chk_onlyParentTags" name="onlyParentTags" type="checkbox" class="checkbox" />
-                            <label class="label" for="chk_onlyParentTags">{ _t(l, "admin.tags.onlyParentTags") }</label>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <input
-                                if searchRequest.OnlyAdultTags {
-                                    checked
-                                } 
-                                id="chk_onlyAdultTags" name="onlyAdultTags" type="checkbox" class="checkbox" />
-                            <label class="label" for="chk_onlyAdultTags">{ _t(l, "admin.tags.onlyAdultTags") }</label>
-                        </div>
-
-                        <button type="submit" class="btn btn--primary">
-                            { _t(l, "common.apply") }
-                        </button>
-                    </div>
+                    @webcomponents.InlineCheckboxesFormToSelf([]webcomponents.Checkbox{
+                        { ID: "chk_onlyParentTags", Name: "onlyParentTags", Label: _t(l, "admin.tags.onlyParentTags"), Checked: searchRequest.OnlyParentTags },
+                        { ID: "chk_onlyAdultTags", Name: "onlyAdultTags", Label: _t(l, "admin.tags.onlyAdultTags"), Checked: searchRequest.OnlyAdultTags },
+                    })
                 </form>
 
                 @pagination

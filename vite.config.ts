@@ -190,6 +190,7 @@ export default defineConfig((env) => ({
         'web/public/templates/*.templ',
         'web/admin/templates/*.templ',
         'internal/olhttp/*.templ',
+        'internal/olhttp/webcomponents/*.templ',
       ],
     }),
     UnoCSS(),

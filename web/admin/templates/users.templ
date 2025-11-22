@@ -5,6 +5,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/csrf"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     {{ 
@@ -26,12 +27,34 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                 <h1 class="text-3xl">{ pageTitle }</h1>
             </header>
 
-            <div class="flex gap-3">
-                <a href="?usersFilter.role=admin" class="link link--primary">{ _t(l, "role.admin") }</a>|
-                <a href="?usersFilter.role=system" class="link link--primary">{ _t(l, "role.system") }</a>|
-                <a href="?usersFilter.role=moderator" class="link link--primary">{ _t(l, "role.moderator") }</a>|
-                <a href="?" class="link link--primary">{ _t(l, "user.allUsers") }</a>
-            </div>
+            // <div class="flex gap-3">
+            //     <a href= class="link link--primary">{  }</a>|
+            //     <a href="?usersFilter.role=system" class="link link--primary">{ _t(l, "role.system") }</a>|
+            //     <a href="?usersFilter.role=moderator" class="link link--primary">{ _t(l, "role.moderator") }</a>|
+            //     <a href="?" class="link link--primary">{ _t(l, "user.allUsers") }</a>
+            // </div>
+
+            @webcomponents.InlineCategoriesSelection(webcomponents.InlineCategoriesSelectionProps{
+                Categories: []webcomponents.Category{
+                    {
+                        Label: _t(l, "role.admin"),
+                        Href: "/admin/users?usersFilter.role=admin",
+                    },
+                    {
+                        Label: _t(l, "role.system"),
+                        Href: "/admin/users?usersFilter.role=system",
+                    },
+                    {
+                        Label: _t(l, "role.moderator"),
+                        Href: "/admin/users?usersFilter.role=moderator",
+                    },
+                    {
+                        Label: _t(l, "user.allUsers"),
+                        Href: "/admin/users",
+                    },
+                },
+                HighlightSelected: true,
+            })
 
             <div class="mt-4">
 

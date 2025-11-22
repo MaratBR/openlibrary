@@ -2,7 +2,9 @@ package olhttp
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
@@ -37,4 +39,16 @@ func URLParamUUID(r *http.Request, name string) (uuid.UUID, error) {
 		return uuid.Nil, errTypeInvalidUUID.Wrap(err, "failed to parse uuid url parameter")
 	}
 	return id, nil
+}
+
+func IsSameURL(url *url.URL, str string) bool {
+	if str == "" {
+		return false
+	}
+
+	if strings.HasPrefix(str, "?") {
+		return "?"+url.Query().Encode() == str
+	}
+
+	return url.String() == str
 }

@@ -25,7 +25,7 @@
         background-color: var(--btn-colors-main-hover);
     }
 
-    & > i.fa-solid:first-child {
+    & > i.fa-solid:first-child:not(:last-child) {
         @apply mr-2;
     }
 

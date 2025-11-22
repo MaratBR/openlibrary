@@ -16,6 +16,7 @@ export default defineConfig({
       'web/public/templates/*.templ',
       'web/admin/templates/*.templ',
       'internal/olhttp/*.templ',
+      'internal/olhttp/webcomponents/*.templ',
       'web/frontend/src/**/*.{js,ts,jsx,tsx,css,scss}',
     ],
 

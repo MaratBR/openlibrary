@@ -1,0 +1,107 @@
+package webcomponents
+
+import "context"
+import "net/url"
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+
+func getPageURL(ctx context.Context, page uint32) templ.SafeURL {
+    r := olhttp.GetRequest(ctx)
+    u := new(url.URL)
+    *u = *r.URL
+    query := u.Query()
+    query.Del("__fragment")
+    query.Set("p", fmt.Sprintf("%d", page))
+    u.RawQuery = query.Encode()
+    return templ.SafeURL(u.String())
+}
+
+templ Pagination(
+    page, totalPages, size uint32,
+) {
+    @PaginationImpl(PaginationImplProps{
+        Page: page,
+        TotalPages: totalPages,
+        Size: size,
+    })
+}
+
+type PaginationImplProps struct {
+    Page uint32
+    TotalPages uint32
+    Size uint32
+    UseAlpineJsAjax bool
+}
+
+templ PaginationImpl(
+    opts PaginationImplProps,
+) {
+    {{
+        var remaining int = int(opts.Size) - 1
+        left := remaining / 2
+        if left > int(opts.Page) - 1  {
+            left = int(opts.Page) - 1
+        }
+        remaining -= left
+        right := remaining
+        if int(opts.Page) + right > int(opts.TotalPages) {
+            right = int(opts.TotalPages) - int(opts.Page)
+        }
+        remaining -= right
+        if remaining > 0 && left < int(opts.Page) - 1 {
+            left += min(remaining, int(opts.Page) - 1 - left)
+        }
+    }}
+
+    <nav role="listbox" class="pagination">
+        if opts.Page != 1 {
+            <a 
+                href={ getPageURL(ctx, 1) } class="pagination__item" 
+                if opts.UseAlpineJsAjax {
+                    x-target.push="PaginationAjaxSlot"
+                }
+            >
+                { fmt.Sprintf("%d", 1) }
+            </a>
+        }
+        for i := int(opts.Page) - left + 1; i < int(opts.Page); i++ {
+            {{
+                href := getPageURL(ctx, uint32(i))
+            }}
+            <a 
+                href={ href } class="pagination__item" 
+                if opts.UseAlpineJsAjax {
+                    x-target.push="PaginationAjaxSlot"
+                }
+            >
+                { fmt.Sprintf("%d", i) }
+            </a>
+        }
+        <a href="#" class="pagination__item pagination__item--active">
+            { fmt.Sprintf("%d", opts.Page) }
+        </a>
+        for i := int(opts.Page) + 1; i <= int(opts.Page) + right - 1; i++ {
+            {{
+                href := getPageURL(ctx, uint32(i))
+            }}
+            <a 
+                href={ href } class="pagination__item" 
+                if opts.UseAlpineJsAjax {
+                    x-target.push="PaginationAjaxSlot"
+                }
+            >
+                { fmt.Sprintf("%d", i) }
+            </a>
+        }
+        if opts.Page < opts.TotalPages {
+            <a 
+                href={ getPageURL(ctx, opts.TotalPages) } class="pagination__item" 
+                if opts.UseAlpineJsAjax {
+                    x-target.push="PaginationAjaxSlot"
+                }
+            >
+                { fmt.Sprintf("%d", opts.TotalPages) }
+            </a>
+        }
+    </nav>
+}

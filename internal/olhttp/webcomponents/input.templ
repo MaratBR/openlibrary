@@ -1,0 +1,92 @@
+package webcomponents
+
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
+type Category struct {
+    LabelComponent templ.Component
+    Label string
+    Href string
+    Count int
+}
+
+type InlineCategoriesSelectionProps struct {
+    Categories []Category
+    ShowCount bool
+    HighlightSelected bool
+}
+
+templ InlineCategoriesSelection(props InlineCategoriesSelectionProps) {
+    <div class="flex gap-3">
+        for i, category := range props.Categories {
+            if i != 0 {
+                |
+            }
+            if category.LabelComponent != nil {
+                @category.LabelComponent
+            } else {
+                if props.HighlightSelected && olhttp.IsSameURL(olhttp.GetRequest(ctx).URL, category.Href) {
+                    <span class="font-semibold">
+                        { category.Label }
+                        if props.ShowCount {
+                            <span class="text-muted-foreground">
+                                { fmt.Sprintf(" (%d)", category.Count) }
+                            </span>
+                        }
+                    </span>
+                } else {
+                    <a class="link" href={ category.Href }>
+                        { category.Label }
+                        if props.ShowCount {
+                            <span class="text-muted-foreground">
+                                { fmt.Sprintf(" (%d)", category.Count) }
+                            </span>
+                        }
+                    </a>
+                }
+            }
+        }
+    </div>
+}
+
+type Checkbox struct {
+    ID string
+    Label string
+    Name string
+    Checked bool
+    LabelComponent templ.Component
+}
+
+templ InlineCheckboxesList(checkboxes []Checkbox) {
+    <div class="flex-inline gap-8">
+        for _, checkbox := range checkboxes {
+            <div class="flex items-center gap-2">
+                <input 
+                    if checkbox.Checked {
+                        checked
+                    }
+                    type="checkbox" class="checkbox" id={checkbox.ID} name={checkbox.Name} />
+                <label class="label" for={checkbox.ID}>
+                    if checkbox.LabelComponent != nil {
+                        @checkbox.LabelComponent
+                    } else {
+                        { checkbox.Label }
+                    }
+                </label>
+            </div>
+        }
+    </div>
+}
+
+templ InlineCheckboxesFormToSelf(checkboxes []Checkbox) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+    <form method="get">
+        @InlineCheckboxesList(checkboxes)
+        <button class="btn ml-8" type="submit">
+            { l.T("common.apply") }
+        </button>
+    </form>
+}
