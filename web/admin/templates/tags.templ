@@ -33,7 +33,6 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
             <section class="mt-4">
                 <form method="get">
                     <input name="p" type="number" value={ fmt.Sprintf("%d", result.Page) } aria-hidden="true" class="hidden" />
-
                     @webcomponents.InlineCheckboxesFormToSelf([]webcomponents.Checkbox{
                         { ID: "chk_onlyParentTags", Name: "onlyParentTags", Label: _t(l, "admin.tags.onlyParentTags"), Checked: searchRequest.OnlyParentTags },
                         { ID: "chk_onlyAdultTags", Name: "onlyAdultTags", Label: _t(l, "admin.tags.onlyAdultTags"), Checked: searchRequest.OnlyAdultTags },

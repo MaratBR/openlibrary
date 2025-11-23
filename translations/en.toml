@@ -432,6 +432,8 @@ providedByGravatar = "This user's avatar is provided by <a class=\"link link--pr
 resetPassword = "Reset password"
 userWasUpdated = "User was successfully updated"
 noUsers = "No users found, adjust your search query or create more tags"
+profile = "View profile"
+moderation = "Moderation portal"
 
 [admin.books]
 title = "Books"

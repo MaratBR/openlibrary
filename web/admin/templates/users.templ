@@ -67,7 +67,6 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                 <table class="table my-2" style="width: calc(100% + 32px);">
                     <thead>
                         <tr>
-                            <th class="w-64">ID</th>
                             <th>{ _t(l, "admin.users.name") }</th>
                             <th>{ _t(l, "admin.users.role") }</th>
                             <th>{ _t(l, "admin.users.actions") }</th>
@@ -75,11 +74,6 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                     </thead>
 
                     <tbody>
-                        {{
-                            edit := _t(l, "common.edit")
-                            delete := _t(l, "common.delete")
-                        }}
-
                         if len(resp.Users) == 0 {
                             <tr>
                                 <td colspan="4">
@@ -91,15 +85,20 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                         for _, user := range resp.Users {
                             <tr>
                                 <td>
-                                    <span class="admin-id !text-xs">
-                                        { user.ID.String() }
-                                    </span>
-                                </td>
-                                <td>
-                                    <a class="link link--primary" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) } target="_blank">
-                                        { user.Name }
-                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                    </a>
+                                    { user.Name }
+                                    <div class="flex gap-3">
+                                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) }>
+                                            { _t(l, "admin.users.profile") }
+                                        </a>
+                                        |
+                                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/mod/user/%s", user.ID)) }>
+                                            { _t(l, "admin.users.moderation") }
+                                        </a>
+                                        |
+                                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s", user.ID)) }>
+                                            { _t(l, "common.edit") }
+                                        </a>
+                                    </div>
                                     if user.IsBanned {
                                         <div class="text-muted-foreground flex items-center">
                                             <i class="fa-solid fa-flag mr-1"></i>
@@ -115,15 +114,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                     }
                                 </td>
                                 <td>
-                                    <div class="flex gap-1">
-                                        <a aria-label={ edit } class="btn btn--secondary btn--sm" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s", user.ID)) }>
-                                            <i class="fa-solid fa-pencil"></i>
-                                        </a>
-
-                                        <a aria-label={ delete } class="btn btn--secondary btn--sm text-destructive hover:bg-destructive/10" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s/delete", user.ID)) }>
-                                            <i class="fa-solid fa-trash-can"></i>
-                                        </a>
-                                    </div>
+                                    
                                 </td>
                             </tr>
                         }
