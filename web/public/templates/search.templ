@@ -15,7 +15,11 @@ templ SearchPage(
         l := i18n.GetLocalizer(ctx)
     }}
 
-    @baseLayout(_t(l, "search.search")) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: l.T("search.search"),
+        },
+    }) {
         @i18nExtractKeysByPrefix(l, "search")
 
         <div class="ol-container my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
@@ -56,7 +60,7 @@ templ SearchResultFragment(
                     {{ firstTag := explainedQuery.IncludeTags[0] }}
                     <span>{ firstTag.Name }</span>
                 } else {
-                    <span>{ _t(l, "search.search") }</span>
+                    <span>{ l.T("search.search") }</span>
                 }
             </h1>
         }
@@ -68,7 +72,7 @@ templ SearchResultFragment(
         <div class="flex gap-2 my-4">
             <button @click="openFilters=!openFilters" class="btn btn--ghost btn--fg px-0 rounded-md">
                 <i class="fa-solid fa-filter"></i>
-                {_t(l, "search.filters")}
+                {l.T("search.filters")}
                 if activeFilters > 0 {
                     ({ formatInt32(int32(activeFilters)) })
                 }
@@ -153,12 +157,12 @@ templ bookSearchCard(id int64, name, slug, summary, cover, authorName string, au
                             x-show="false" x-cloak
                         }
                         @click="expand=!expand" class="book-search-card__tags__more">
-                        <span x-text="i18n[expand?'common.less':'common.more']">{ _t(l, "common.more") }</span>
+                        <span x-text="i18n[expand?'common.less':'common.more']">{ l.T("common.more") }</span>
                     </li>
                 </ul>
 
                 if summary != "" {
-                    <div class="book-search-card__summary __user-content" x-ignore>
+                    <div class="book-search-card__summary user-content" x-ignore>
                         @templ.Raw(summary)
                     </div>
                 }
@@ -177,7 +181,7 @@ templ searchNoResultsCard() {
             ??
         </div>
 
-        <p class="text-center absolute bottom-10 left-[50%] -translate-x-1/2 z-10 px-2 rounded-md text-black inline-block leading-8">{ _t(l, "search.noResults") }</p>
+        <p class="text-center absolute bottom-10 left-[50%] -translate-x-1/2 z-10 px-2 rounded-md text-black inline-block leading-8">{ l.T("search.noResults") }</p>
     </div>
 }
 
@@ -194,18 +198,18 @@ templ SimpleSearch() {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @htmlLayout(htmlLayoutProps{Title: _t(l, "search.search")}) {
+    @htmlLayout(htmlLayoutProps{Title: l.T("search.search")}) {
         <main class={ simpleSearchCSSRoot() }>
             <img class="dark:hidden" src="/_/embed-assets/logo.svg" />
             <img class="hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
             <form method="get" action="/search">
-                <input placeholder={_t(l, "search.search")} class="w-96 input rounded-full text-lg p-6" name="query" />
+                <input placeholder={l.T("search.search")} class="w-96 input rounded-full text-lg p-6" name="query" />
                 <div class="flex gap-2 justify-center mt-8">
                     <a href="/random" class="btn btn--secondary ">
-                        {_t(l, "search.feelingLucky")}
+                        {l.T("search.feelingLucky")}
                     </a>
                     <button type="submit" class="btn btn--secondary ">
-                        {_t(l, "search.doSearch")}
+                        {l.T("search.doSearch")}
                     </button>
                 </div>
             </form>

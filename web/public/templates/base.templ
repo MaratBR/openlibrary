@@ -7,7 +7,7 @@ import "github.com/MaratBR/openlibrary/internal/flash"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 
-templ flashMessages() {
+templ flashes() {
     {{
         messages := flash.PullFlashes(ctx)
     }}
@@ -29,11 +29,11 @@ templ flashMessages() {
     }
 }
 
-templ renderUISettings() {
+templ settings() {
     {{
-        uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
+        settings := getUIBookSettings(olhttp.GetRequest(ctx))
     }}
-    @templ.Raw(fmt.Sprintf("<style>:root{--book-font-size:%dpx}</style>", uiSettings.FontSize))
+    @templ.Raw(fmt.Sprintf("<style>:root{--book-font-size:%dpx}</style>", settings.FontSize))
 }
 
 templ siteFooter() {
@@ -54,6 +54,7 @@ type htmlLayoutProps struct {
     CSS []string
 }
 
+// htmlLayout is a basic layout of an HTML page with nothing in besides basic JS, CSS, common translations and UI settings
 templ htmlLayout(params htmlLayoutProps) {
     {{
         modCss := "/_/assets/common.css"
@@ -64,11 +65,9 @@ templ htmlLayout(params htmlLayoutProps) {
         } else {
             css = []string{modCss}
         }
-
-        
     }}
 
-    @olhttp.Doc(ctx, olhttp.DocSettings{
+    @olhttp.Doc(ctx, olhttp.DocProps{
         Title: params.Title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
         CSS: css,
@@ -81,39 +80,36 @@ templ htmlLayout(params htmlLayoutProps) {
             l := i18n.GetLocalizer(ctx)
         }}
         @i18nExtractKeysByPrefix(l, "common")
-        @renderUISettings()
+        @settings()
         { children... }
   
     }
 }
 
-templ _baseLayout(params htmlLayoutProps) {
-    @htmlLayout(params) {
-        @siteHeader()
-        @flashMessages()
+type standardPageLayoutProps struct {
+    htmlLayoutProps
+    DisableFooter bool
+    DisableFlashes bool
+    DisableHeader bool
+}
+
+templ standardPageLayout(props standardPageLayoutProps) {
+    @htmlLayout(props.htmlLayoutProps) {
+        if !props.DisableHeader {
+            @siteHeader()
+        }
+        if !props.DisableFlashes {
+            @flashes()
+        }
         { children... }
-        @siteFooter()
+        if !props.DisableFooter {
+            @siteFooter()
+        }
         <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
     }
 }
 
-templ baseLayout(title string) {
-    @_baseLayout(htmlLayoutProps{Title: title}) {
-        { children... }
-    }
-}
 
-
-templ baseLayoutNoFooter(title string) {
-    @htmlLayout(htmlLayoutProps{Title: title}) {
-        @siteHeader()
-        @flashMessages()
-        { children... }
-        <div id="toasts-root" class="flex flex-col left-1 bottom-1 fixed z-10 gap-1"></div>
-    }
-}
-
-// system (default) -> light -> dark 
 script toggleTheme() {
     let theme = getCookie('ui_theme');
     switch (theme) {
@@ -139,7 +135,7 @@ templ themeSwitcher() {
     <button 
         onclick={toggleTheme()}
         class="btn btn--secondary  size-12" 
-        aria-label={_t(l, "uiTheme.switchTheme")}>
+        aria-label={l.T("uiTheme.switchTheme")}>
         <i class="fa-solid fa-sun dark:!hidden"></i>
         <i class="fa-solid fa-moon !hidden dark:!inline-block"></i>
     </button>

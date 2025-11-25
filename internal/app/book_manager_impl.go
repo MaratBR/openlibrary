@@ -278,6 +278,19 @@ func (s *bookManagerService) TrashBook(ctx context.Context, input TrashBookComma
 	return nil
 }
 
+func (s *bookManagerService) UntrashBook(ctx context.Context, input UntrashBookCommand) error {
+	// TODO auth
+	err := s.queries.Book_UnTrash(ctx, store.Book_UnTrashParams{
+		ID:                input.BookID,
+		IsPubliclyVisible: false,
+	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	return nil
+}
+
 // UpdateBookChaptersOrder updates the order of chapters in a book.
 func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error {
 	tx, err := s.db.Begin(ctx)

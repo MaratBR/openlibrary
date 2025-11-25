@@ -34,8 +34,8 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                 <form method="get">
                     <input name="p" type="number" value={ fmt.Sprintf("%d", result.Page) } aria-hidden="true" class="hidden" />
                     @webcomponents.InlineCheckboxesFormToSelf([]webcomponents.Checkbox{
-                        { ID: "chk_onlyParentTags", Name: "onlyParentTags", Label: _t(l, "admin.tags.onlyParentTags"), Checked: searchRequest.OnlyParentTags },
-                        { ID: "chk_onlyAdultTags", Name: "onlyAdultTags", Label: _t(l, "admin.tags.onlyAdultTags"), Checked: searchRequest.OnlyAdultTags },
+                        { ID: "chk_onlyParentTags", Name: "onlyParentTags", Label: l.T("admin.tags.onlyParentTags"), Checked: searchRequest.OnlyParentTags },
+                        { ID: "chk_onlyAdultTags", Name: "onlyAdultTags", Label: l.T("admin.tags.onlyAdultTags"), Checked: searchRequest.OnlyAdultTags },
                     })
                 </form>
 
@@ -44,18 +44,18 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                 <table id="slot-tags-table" class="my-4 table">
                     <thead>
                         <tr>
-                            <th>{ _t(l, "admin.tags.name") }</th>
-                            <th>{ _t(l, "admin.tags.synonym") }</th>
-                            <th>{ _t(l, "admin.tags.adult") }</th>
-                            <th>{ _t(l, "admin.tags.spoiler") }</th>
-                            <th>{ _t(l, "admin.tags.createdAt") }</th>
+                            <th>{ l.T("admin.tags.name") }</th>
+                            <th>{ l.T("admin.tags.synonym") }</th>
+                            <th>{ l.T("admin.tags.adult") }</th>
+                            <th>{ l.T("admin.tags.spoiler") }</th>
+                            <th>{ l.T("admin.tags.createdAt") }</th>
                         </tr>
                     </thead>
                     <tbody>
                         if len(result.Tags) == 0 {
                             <tr>
                                 <td colspan="6">
-                                    { _t(l, "admin.tags.noTags") }
+                                    { l.T("admin.tags.noTags") }
                                 </td>
                             </tr>
                         }
@@ -65,14 +65,14 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                                 <td>
                                     <a class="link link--primary" href={ templ.SafeURL(fmt.Sprintf("/admin/tags/tag-details/%d", tag.ID)) }>{ tag.Name }</a>
                                     if tag.IsDefault {
-                                        <i>({ _t(l, "admin.tags.default") })</i>
+                                        <i>({ l.T("admin.tags.default") })</i>
                                     }
                                     <br />
                                     
                                     <span class="text-xs">
-                                        <a class="link" href={ fmt.Sprintf("/tag/%d", tag.ID) }>{ _t(l, "common.view") }</a> |
+                                        <a class="link" href={ fmt.Sprintf("/tag/%d", tag.ID) }>{ l.T("common.view") }</a> |
                                         <a target="_blank" class="link" href={ fmt.Sprintf("/search?it=%d", tag.ID) }>
-                                            { _t(l, "admin.tags.books") }
+                                            { l.T("admin.tags.books") }
                                             <i class="fa-solid fa-up-right-from-square"></i>
                                         </a>
                                     </span>
@@ -170,7 +170,7 @@ templ Tag(tag app.TagDetailsItemDto) {
                 <article class="admin-card p-4">
                     if tag.Description == "" {
                         <p class="text-muted-foreground">
-                            { _t(l, "admin.tags.noDescription") }
+                            { l.T("admin.tags.noDescription") }
                         </p>
                     } else {
                         <p>{ tag.Description }</p>
@@ -180,18 +180,18 @@ templ Tag(tag app.TagDetailsItemDto) {
 
             <div class="admin-card p-4">
                 <div class="space-y-2">
-                    @tagParam(_t(l, "admin.tags.adult"), tableBoolValue(tag.IsAdult))
-                    @tagParam(_t(l, "admin.tags.spoiler"), tableBoolValue(tag.IsSpoiler))
+                    @tagParam(l.T("admin.tags.adult"), tableBoolValue(tag.IsAdult))
+                    @tagParam(l.T("admin.tags.spoiler"), tableBoolValue(tag.IsSpoiler))
                 </div>
             </div>
 
             <div class="flex gap-2 mt-10">
                 <a href={templ.URL(fmt.Sprintf("/admin/tags/tag-details/%d/edit", tag.ID))} class="btn btn--lg btn--outline" x-init>
-                    { _t(l, "common.edit") }
+                    { l.T("common.edit") }
                 </a>
 
                 <button class="btn btn--lg btn--destructive" x-init @click="alert('not implemented')">
-                    { _t(l, "common.delete") }
+                    { l.T("common.delete") }
                 </button>
             </div>
         </div>
@@ -210,14 +210,14 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                     <input autocomplete="off" name="name" required value={tag.Name} class="input-transparent border-b-2 border-current my-6 text-5xl bg-transparent">
 
                     <article class="admin-card">
-                        <textarea maxlength="500" rows="10" name="description" class="textarea p-4 w-full" placeholder={_t(l, "admin.tags.noDescription")}>{tag.Description}</textarea>
+                        <textarea maxlength="500" rows="10" name="description" class="textarea p-4 w-full" placeholder={l.T("admin.tags.noDescription")}>{tag.Description}</textarea>
                     </article>
                 </header>
 
                 <div class="admin-card p-4 space-y-4">
                     <div class="admin-form-field">
                         <div class="admin-form-field__label">
-                            <label for="type">{_t(l, "admin.tags.synonymOf")}</label>
+                            <label for="type">{l.T("admin.tags.synonymOf")}</label>
                         </div>
                         {{
                             var synonymOfTagJson string
@@ -242,13 +242,13 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                                     if tag.SynonymOf.Valid {
                                         x-cloak
                                     }
-                                    x-show="!tag">{_t(l, "common.none")}</span>
+                                    x-show="!tag">{l.T("common.none")}</span>
                                 <span x-text="tag?tag.name:''">
                                     {tag.SynonymOf.Value.Name}
                                 </span>
                             </span><br />
                             <button type="button" class="btn btn--sm btn--secondary" @click="open=true">
-                                {_t(l, "common.change")}
+                                {l.T("common.change")}
                             </button>
                             <ol-island 
                                 @selected="tag=$event.detail;open=false"
@@ -261,7 +261,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                     </div>
                     <div class="admin-form-field">
                         <div class="admin-form-field__label">
-                            <label for="type">{_t(l, "admin.tags.type")}</label>
+                            <label for="type">{l.T("admin.tags.type")}</label>
                         </div>
                         <div class="admin-form-field__value">
                             <select id="type" name="type" class="input">
@@ -270,16 +270,16 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                                         if tag.Category == cat {
                                             selected
                                         }
-                                        value={ cat.String() }>{_t(l, fmt.Sprintf("tagType.%s", cat.String()))}</option>
+                                        value={ cat.String() }>{l.T(fmt.Sprintf("tagType.%s", cat.String()))}</option>
                                 }
                             </select>
                         </div>
                     </div>
                     <div class="admin-form-field">
                         <div class="admin-form-field__label">
-                            <label for="adult">{_t(l, "admin.tags.adult")}</label>
+                            <label for="adult">{l.T("admin.tags.adult")}</label>
                             <p class="text-muted-foreground">
-                                {_t(l, "admin.tags.adultDescription")}
+                                {l.T("admin.tags.adultDescription")}
                             </p>
                         </div>
                         <div class="admin-form-field__value">
@@ -291,9 +291,9 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                     </div>
                     <div class="admin-form-field">
                         <div class="admin-form-field__label">
-                            <label for="spoiler">{_t(l, "admin.tags.spoiler")}</label>
+                            <label for="spoiler">{l.T("admin.tags.spoiler")}</label>
                             <p class="text-muted-foreground">
-                                {_t(l, "admin.tags.spoilerDescription")}
+                                {l.T("admin.tags.spoilerDescription")}
                             </p>
                         </div>
                         <div class="admin-form-field__value">
@@ -307,7 +307,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
 
                 <div class="flex gap-2 mt-10">
                     <button class="btn btn--lg btn--primary" type="submit">
-                        { _t(l, "common.save") }
+                        { l.T("common.save") }
                     </button>
                 </div>
             </form>

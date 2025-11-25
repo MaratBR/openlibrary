@@ -6,6 +6,7 @@ import { HTMLAttributes } from 'preact/compat'
 export type PopperProps = {
   anchorEl?: HTMLElement | RefObject<HTMLElement | null> | null
   children?: ComponentChild
+  open?: boolean
 } & HTMLAttributes<HTMLDivElement> &
   Partial<Options>
 
@@ -16,6 +17,8 @@ export default function Popper({
   placement = 'auto',
   modifiers = [],
   strategy = 'fixed',
+  open = true,
+  style,
   ...props
 }: PopperProps) {
   const ref = useRef<HTMLDivElement | null>(null)
@@ -55,11 +58,20 @@ export default function Popper({
     }
 
     const instance = createPopper(el, ref.current, optionsRef.current)
+    instanceRef.current = instance
 
     return () => {
+      instanceRef.current = null
       instance.destroy()
     }
   }, [anchorEl])
+
+  useLayoutEffect(() => {
+    const { current } = instanceRef
+    if (current) {
+      current.update()
+    }
+  }, [open])
 
   const firstRender = useRef(true)
 
@@ -71,13 +83,15 @@ export default function Popper({
 
     const { current } = instanceRef
     if (current) {
-      // current.setOptions({ modifiers, onFirstUpdate, strategy, placement })
+      current.setOptions({ modifiers, onFirstUpdate, strategy, placement })
     }
   }, [modifiers, onFirstUpdate, strategy, placement])
 
   return (
-    <div ref={ref} {...props}>
-      {children}
+    <div style={{ display: open ? 'contents' : 'none' }}>
+      <div ref={ref} {...props} data-open={open}>
+        {children}
+      </div>
     </div>
   )
 }

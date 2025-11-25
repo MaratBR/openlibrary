@@ -174,6 +174,7 @@ const ENTRIES = [
   'islands/admin-password-reset',
 
   'islands/bookmanager',
+  'islands/block-editor',
 
   'islands/admin',
 
@@ -237,6 +238,7 @@ export default defineConfig((env) => ({
         chunkFileNames: 'chunks/[hash].js',
         // Put chunk styles at <output>/assets
         assetFileNames: (assetInfo) => {
+          console.log(assetInfo.names)
           if (
             assetInfo.names.length === 1 &&
             assetInfo.names[0].endsWith('.css') &&
@@ -244,7 +246,7 @@ export default defineConfig((env) => ({
           ) {
             return '[name][extname]'
           }
-
+          console.log('with HASH')
           return '[name]-[hash][extname]'
         },
         entryFileNames: '[name].js',

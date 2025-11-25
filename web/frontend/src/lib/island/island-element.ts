@@ -150,6 +150,10 @@ class OLIslandElement extends HTMLElement {
       return undefined
     }
 
+    if (OLIslandElement._globalData[dataStr]) {
+      return OLIslandElement._globalData[dataStr]
+    }
+
     return JSON.parse(dataStr)
   }
 
@@ -196,11 +200,24 @@ class OLIslandElement extends HTMLElement {
       import(src)
     }
   }
+
+  private static _globalData: Record<string, unknown> = {}
+
+  public static registerGlobalData(key: string, data: string) {
+    // TODO error handling
+    this._globalData[key] = JSON.parse(data)
+  }
 }
 
+window.OLIslandElement = OLIslandElement
 customElements.define('ol-island', OLIslandElement)
+document.dispatchEvent(new CustomEvent('ol-island:ready'))
 
 declare global {
+  interface Window {
+    OLIslandElement: typeof OLIslandElement
+  }
+
   interface HTMLElementTagNameMap {
     'ol-island': OLIslandElement
   }

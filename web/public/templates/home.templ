@@ -2,7 +2,11 @@ package templates
 
 
 templ Home() {
-    @baseLayout("Home") {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: "Home",
+        },
+    }) {
         <div>
             This is going to be a testing area for stuff until I actually make something here
 

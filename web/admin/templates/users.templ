@@ -10,13 +10,13 @@ import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     {{ 
         l := i18n.GetLocalizer(ctx)
-        pageTitle := _t(l, "admin.users.title")
+        pageTitle := l.T("admin.users.title")
     }}
 
     @dashboardLayout(pageTitle) {
         <div class="admin-page-content relative">
             <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
-                <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ _t(l, "common.search") } />
+                <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ l.T("common.search") } />
                 <button type="submit" :disabled="q.trim()===''" class="btn btn--secondary">
                     <i class="fa-solid fa-search"></i>
                 </button>
@@ -24,32 +24,25 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
 
 
             <header class="page-header-container">
-                <h1 class="text-3xl">{ pageTitle }</h1>
+                <h1 class="page-header">{ pageTitle }</h1>
             </header>
-
-            // <div class="flex gap-3">
-            //     <a href= class="link link--primary">{  }</a>|
-            //     <a href="?usersFilter.role=system" class="link link--primary">{ _t(l, "role.system") }</a>|
-            //     <a href="?usersFilter.role=moderator" class="link link--primary">{ _t(l, "role.moderator") }</a>|
-            //     <a href="?" class="link link--primary">{ _t(l, "user.allUsers") }</a>
-            // </div>
 
             @webcomponents.InlineCategoriesSelection(webcomponents.InlineCategoriesSelectionProps{
                 Categories: []webcomponents.Category{
                     {
-                        Label: _t(l, "role.admin"),
+                        Label: l.T("role.admin"),
                         Href: "/admin/users?usersFilter.role=admin",
                     },
                     {
-                        Label: _t(l, "role.system"),
+                        Label: l.T("role.system"),
                         Href: "/admin/users?usersFilter.role=system",
                     },
                     {
-                        Label: _t(l, "role.moderator"),
+                        Label: l.T("role.moderator"),
                         Href: "/admin/users?usersFilter.role=moderator",
                     },
                     {
-                        Label: _t(l, "user.allUsers"),
+                        Label: l.T("user.allUsers"),
                         Href: "/admin/users",
                     },
                 },
@@ -67,9 +60,9 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                 <table class="table my-2" style="width: calc(100% + 32px);">
                     <thead>
                         <tr>
-                            <th>{ _t(l, "admin.users.name") }</th>
-                            <th>{ _t(l, "admin.users.role") }</th>
-                            <th>{ _t(l, "admin.users.actions") }</th>
+                            <th>{ l.T("admin.users.name") }</th>
+                            <th>{ l.T("admin.users.role") }</th>
+                            <th>{ l.T("admin.users.actions") }</th>
                         </tr>
                     </thead>
 
@@ -77,7 +70,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                         if len(resp.Users) == 0 {
                             <tr>
                                 <td colspan="4">
-                                    { _t(l, "admin.users.noUsers") }
+                                    { l.T("admin.users.noUsers") }
                                 </td>
                             </tr>
                         }
@@ -88,21 +81,21 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                     { user.Name }
                                     <div class="flex gap-3">
                                         <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) }>
-                                            { _t(l, "admin.users.profile") }
+                                            { l.T("admin.users.profile") }
                                         </a>
                                         |
                                         <a class="link" href={ templ.SafeURL(fmt.Sprintf("/mod/user/%s", user.ID)) }>
-                                            { _t(l, "admin.users.moderation") }
+                                            { l.T("admin.users.moderation") }
                                         </a>
                                         |
                                         <a class="link" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s", user.ID)) }>
-                                            { _t(l, "common.edit") }
+                                            { l.T("common.edit") }
                                         </a>
                                     </div>
                                     if user.IsBanned {
                                         <div class="text-muted-foreground flex items-center">
                                             <i class="fa-solid fa-flag mr-1"></i>
-                                            { _t(l, "admin.users.userIsBanned") }
+                                            { l.T("admin.users.userIsBanned") }
                                         </div>
                                     }
                                 </td>
@@ -110,7 +103,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                     if user.Role == app.RoleUser {
                                         &ndash;
                                     } else {
-                                        { _t(l, fmt.Sprintf("role.%s", user.Role)) }
+                                        { l.T(fmt.Sprintf("role.%s", user.Role)) }
                                     }
                                 </td>
                                 <td>
@@ -135,8 +128,8 @@ templ User(user *app.UserDetailsDto) {
     @dashboardLayout(user.Name) {
         <div class="admin-page-content">
             <header class="page-header-container">
-                <h1 class="text-3xl flex items-center gap-1">
-                    <a href="/admin/users" class="link">{ _t(l, "admin.users.title") }</a>
+                <h1 class="page-header">
+                    <a href="/admin/users" class="link">{ l.T("admin.users.title") }</a>
                     <span class="mx-2 text-muted-foreground text-[0.8em]">/</span>
                     {user.Name}
                 </h1>
@@ -146,10 +139,10 @@ templ User(user *app.UserDetailsDto) {
                 <form method="post">
                     @csrf.CSRFInputTempl(ctx)
 
-                    @userFormSection("user-general-information", _t(l, "admin.users.generalInformation")) {
+                    @userFormSection("user-general-information", l.T("admin.users.generalInformation")) {
                         <div class="admin-form-field">
                             <div class="admin-form-field__label">
-                                <label>{ _t(l, "admin.users.name") }</label>
+                                <label>{ l.T("admin.users.name") }</label>
                             </div>
                             <div class="admin-form-field__value">
                                 <input  disabled name="name" class="input" value={ user.Name } />
@@ -158,7 +151,7 @@ templ User(user *app.UserDetailsDto) {
 
                         <div class="admin-form-field">
                             <div class="admin-form-field__label">
-                                <label>{ _t(l, "admin.users.gender") }</label>
+                                <label>{ l.T("admin.users.gender") }</label>
                             </div>
                             {{
                                 var genderType string
@@ -177,22 +170,22 @@ templ User(user *app.UserDetailsDto) {
                                         if genderType == "" {
                                             selected
                                         }
-                                        >{ _t(l, "gender.ratherNotSay") }</option>
+                                        >{ l.T("gender.ratherNotSay") }</option>
                                     <option
                                         if genderType == "male" {
                                             selected
                                         }
-                                        value="male">{ _t(l, "gender.m") }</option>
+                                        value="male">{ l.T("gender.m") }</option>
                                     <option 
                                         if genderType == "female" {
                                             selected
                                         }
-                                        value="female">{ _t(l, "gender.f") }</option>
+                                        value="female">{ l.T("gender.f") }</option>
                                     <option 
                                         if genderType == "other" {
                                             selected
                                         }
-                                        value="other">{ _t(l, "gender.o") }</option>
+                                        value="other">{ l.T("gender.o") }</option>
                                 </select>
 
                                 <input name="genderOther" x-cloak x-show="genderType==='other'" class="input mt-2" />
@@ -201,7 +194,7 @@ templ User(user *app.UserDetailsDto) {
 
                         <div class="admin-form-field">
                             <div class="admin-form-field__label">
-                                <label>{ _t(l, "admin.users.about") }</label>
+                                <label>{ l.T("admin.users.about") }</label>
                             </div>
                             <div class="admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
                                 <textarea rows="8" name="about" class="input">{user.About.Bio}</textarea>
@@ -215,10 +208,10 @@ templ User(user *app.UserDetailsDto) {
                             </p>
                         </div>
                     }
-                    @userFormSection("user-permissions", _t(l, "admin.users.rolesAndPermissions")) {
+                    @userFormSection("user-permissions", l.T("admin.users.rolesAndPermissions")) {
                         <div class="admin-form-field">
                             <div class="admin-form-field__label">
-                                <label>{ _t(l, "admin.users.role") }</label>
+                                <label>{ l.T("admin.users.role") }</label>
                             </div>
                             <div class="admin-form-field__value">
                                 <select name="role" class="input">
@@ -228,7 +221,7 @@ templ User(user *app.UserDetailsDto) {
                                                 selected
                                             }
                                             value={ string(role) }>
-                                            { _t(l, fmt.Sprintf("role.%s", string(role))) }
+                                            { l.T(fmt.Sprintf("role.%s", string(role))) }
                                         </option>
                                     }
                                 </select>
@@ -238,10 +231,10 @@ templ User(user *app.UserDetailsDto) {
                         </div>
                     }
 
-                    @userFormSection("user-account-management", _t(l, "admin.users.accountManagement")) {
+                    @userFormSection("user-account-management", l.T("admin.users.accountManagement")) {
                         <div x-data="{open:false,pwd:''}">
                             <div role="button" @click="open=true;$refs.pwdInput.dispatchEvent(new CustomEvent('island:custom:generate-password'))" class="btn btn--outline select-none">
-                                { _t(l, "admin.users.resetPassword") }
+                                { l.T("admin.users.resetPassword") }
                             </div>
 
                             @i18nExtractKeys(l, []string{
@@ -258,7 +251,7 @@ templ User(user *app.UserDetailsDto) {
                     }
 
                     <button type="submit" class="btn btn--lg btn--primary  mt-6">
-                        { _t(l, "common.save") }
+                        { l.T("common.save") }
                     </button>
                 </form>
             </section>

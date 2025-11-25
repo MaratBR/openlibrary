@@ -10,11 +10,14 @@ templ NotFoundPage() {
         l := i18n.GetLocalizer(ctx)
         catID := rand.Int() % 200 + 1
     }}
-    @baseLayoutNoFooter("404") {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{Title: "404"},
+        DisableFooter: true,
+    }) {
         <main class="ol-container py-12">
             <h1 class="text-8xl mb-2 font-title text-center md:text-left">404</h1>
             <div class="ml-4">
-                <h1 class="text-2xl font-title text-center md:text-left">{_t(l, "pageNotFound.text")}</h1>
+                <h1 class="text-2xl font-title text-center md:text-left">{l.T("pageNotFound.text")}</h1>
                 <p class="my-8">Meanwhile here is an image of a cat</p>
                 <picture>
                     <!-- yes, we are doing fallback for cats, but not for book covers, cats are important -->
@@ -32,12 +35,15 @@ templ MethodNotAllowedPage() {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @baseLayoutNoFooter("405") {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{Title: "405"},
+        DisableFooter: true,
+    }) {
         <main class="ol-container py-12">
             <h1 class="text-8xl mb-2 font-title text-center md:text-left">405</h1>
             <div class="ml-4">
-                <h1 class="text-4xl font-title text-center md:text-left">{_t(l, "methodNotAllowed.title")}</h1>
-                <p class="mt-2">{_t(l, "methodNotAllowed.text")}</p>
+                <h1 class="text-4xl font-title text-center md:text-left">{l.T("methodNotAllowed.title")}</h1>
+                <p class="mt-2">{l.T("methodNotAllowed.text")}</p>
             </div>
         </main>
     }

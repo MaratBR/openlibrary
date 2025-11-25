@@ -1,6 +1,5 @@
-import Book from './book'
-import Chapter from './chapter'
+export * from './book'
 import NewBook from './new-book'
 import BookCollectionsPopup from './BookCollectionsPopup'
 
-export { Book, Chapter, NewBook, BookCollectionsPopup }
+export { NewBook, BookCollectionsPopup }

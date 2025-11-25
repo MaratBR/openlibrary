@@ -10,7 +10,7 @@ templ SignUp(siteConfig *app.SiteConfig, requireEmail bool) {
         l := i18n.GetLocalizer(ctx)
     }}
 
-    @htmlLayout(htmlLayoutProps{Title: _t(l, "login.login")}) {
+    @htmlLayout(htmlLayoutProps{Title: l.T("login.login")}) {
         <div class="p-8 w-screen h-screen flex items-center justify-center bg-secondary">
             <main class="w-[400px] min-h-[450px] bg-card p-4 shadow-lg rounded-sm">
                 <div class="flex justify-center select-none">
@@ -44,7 +44,7 @@ templ SignUpEmailVerification(email string, status app.EmailVerificationStatus) 
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @htmlLayout(htmlLayoutProps{Title: _t(l, "login.login")}) {
+    @htmlLayout(htmlLayoutProps{Title: l.T("login.login")}) {
         <div class="p-8 w-screen h-screen flex items-center justify-center bg-secondary">
             <main class="w-[400px] min-h-[450px] bg-card p-4 shadow-lg rounded-sm">
                 <form method="post" x-data="{
@@ -52,7 +52,7 @@ templ SignUpEmailVerification(email string, status app.EmailVerificationStatus) 
                 }" x-cloak>
                     @csrf.CSRFInputTempl(ctx)
                     <h1 class="text-2xl font-medium">
-                        { _t(l, "signup.emailVerification.title") }
+                        { l.T("signup.emailVerification.title") }
                     </h1>
                     <p>
                         { _tt(l, "signup.emailVerification.description", map[string]string{
@@ -134,14 +134,14 @@ templ SignUpEmailVerification(email string, status app.EmailVerificationStatus) 
                             :disabled="resending"
                             @click.prevent="resend()"
                             class="link">
-                            { _t(l, "signup.emailVerification.resend") }
+                            { l.T("signup.emailVerification.resend") }
                         </button>
                         <p x-show="!canResend" x-text="window._('signup.emailVerification.canResendIn', { text: text })" />
                         <span class="loader mt-4" x-show="resending"></span>
                         <p class="error mt-2" x-text="error" x-show="!resending && error"></p>
                     </div>
                     <button disabled :disabled="code.length !== 6" class="mt-4 btn btn--lg">
-                        { _t(l, "signup.emailVerification.verify") }
+                        { l.T("signup.emailVerification.verify") }
                     </button>
                 </form>
             </main>

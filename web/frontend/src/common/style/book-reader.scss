@@ -15,9 +15,9 @@
     &__header {
         @apply my-4;
     }
+}
 
-    &__content {
-        @apply font-book;
-        font-size: var(--book-font-size);
-    }
+.chapter-content {
+    @apply font-book;
+    font-size: var(--book-font-size, inherit);
 }

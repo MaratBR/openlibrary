@@ -7,7 +7,7 @@ templ BookPreviewPartial(book app.BookDetailsDto) {
 
         <h1 class="font-title text-lg">{ book.Name }</h1>
 
-        <div x-ignore class="mt-4 text-sm __user-content">
+        <div x-ignore class="mt-4 text-sm user-content">
             {{
                 const maxLength = 400
                 summary := book.Summary

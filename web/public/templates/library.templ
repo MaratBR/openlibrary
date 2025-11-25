@@ -11,12 +11,16 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
         l := i18n.GetLocalizer(ctx)
     }}
 
-    @baseLayout(_t(l, "library.title")) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: l.T("library.title"),
+        },
+    }) {
         <header class="hero hero--header library-header">
             <div class="ol-container flex gap-4">
-                @libraryTab(_t(l, "library.title"), "/library", true)
-                @libraryTab(_t(l, "library.archive"), "/library/archive", false)
-                @libraryTab(_t(l, "library.collections"), "/library/collections", false)
+                @libraryTab(l.T("library.title"), "/library", true)
+                @libraryTab(l.T("library.archive"), "/library/archive", false)
+                @libraryTab(l.T("library.collections"), "/library/collections", false)
             </div>
         </header>
         <main class="ol-container">
@@ -28,18 +32,18 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
             <div class="library-body">
                 if len(reading) + len(paused) + len(wantToRead) == 0 {
                     @alertInfo() {
-                        {_t(l, "library.libraryDescription")}
+                        {l.T("library.libraryDescription")}
                     }
                 }
 
                 if len(reading) != 0 {
-                    @librarySection(_t(l, "readingList.reading"), reading)
+                    @librarySection(l.T("readingList.reading"), reading)
                 }
                 if len(paused) != 0 {
-                    @librarySection(_t(l, "readingList.paused"), paused)
+                    @librarySection(l.T("readingList.paused"), paused)
                 }
                 if len(wantToRead) != 0 {
-                    @librarySection(_t(l, "readingList.want_to_read"), wantToRead)
+                    @librarySection(l.T("readingList.want_to_read"), wantToRead)
                 }
             </div>
         </main>
@@ -89,12 +93,16 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
         l := i18n.GetLocalizer(ctx)
     }}
 
-    @baseLayout(_t(l, "library.title")) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: l.T("library.title"),
+        },
+    }) {
         <header class="hero hero--header library-header">
             <div class="ol-container flex gap-4">
-                @libraryTab(_t(l, "library.title"), "/library", false)
-                @libraryTab(_t(l, "library.archive"), "/library/archive", true)
-                @libraryTab(_t(l, "library.collections"), "/library/collections", false)
+                @libraryTab(l.T("library.title"), "/library", false)
+                @libraryTab(l.T("library.archive"), "/library/archive", true)
+                @libraryTab(l.T("library.collections"), "/library/collections", false)
             </div>
         </header>
 
@@ -108,15 +116,15 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
             <div class="library-body">
                 if len(read) + len(dnf) == 0 {
                     @alertInfo() {
-                        {_t(l, "library.archiveDescription")}
+                        {l.T("library.archiveDescription")}
                     }
                 }
 
                 if len(read) != 0 {
-                    @librarySection(_t(l, "readingList.read"), read)
+                    @librarySection(l.T("readingList.read"), read)
                 }
                 if len(dnf) != 0 {
-                    @librarySection(_t(l, "readingList.dnf"), dnf)
+                    @librarySection(l.T("readingList.dnf"), dnf)
                 }
             </div>
         </main>
@@ -127,12 +135,16 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-        @baseLayout(_t(l, "library.title")) {
+        @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: l.T("library.title"),
+        },
+    }) {
         <header class="hero hero--header library-header">
             <div class="ol-container flex gap-4">
-                @libraryTab(_t(l, "library.title"), "/library", false)
-                @libraryTab(_t(l, "library.archive"), "/library/archive", false)
-                @libraryTab(_t(l, "library.collections"), "/library/collections", true)
+                @libraryTab(l.T("library.title"), "/library", false)
+                @libraryTab(l.T("library.archive"), "/library/archive", false)
+                @libraryTab(l.T("library.collections"), "/library/collections", true)
             </div>
         </header>
 
@@ -153,17 +165,17 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
                     </div>
 
                     <span class="font-medium text-lg">
-                        {_t(l, "collection.createCollection")}
+                        {l.T("collection.createCollection")}
                     </span>
                 </button>
 
                 <section class="card border-none relative mb-11" x-cloak x-show="open">
                     <form method="post" x-data="{name:''}" class="m-2">
                         @csrf.CSRFInputTempl(ctx)
-                        <input @blur="if (!$event.target.value) open=false" name="name" required maxlength="255" x-model="name" class="w-full block text-3xl font-medium !outline-none bg-transparent" placeholder={_t(l, "collection.namePlaceholder")} />
+                        <input @blur="if (!$event.target.value) open=false" name="name" required maxlength="255" x-model="name" class="w-full block text-3xl font-medium !outline-none bg-transparent" placeholder={l.T("collection.namePlaceholder")} />
                         <div x-collapse x-cloak x-show="name.trim().length>0">
                             <button type="submit" class="mt-4 btn btn--outline btn--lg">
-                                {_t(l, "collection.createCollection")}
+                                {l.T("collection.createCollection")}
                             </button>
                         </div>
                     </form>

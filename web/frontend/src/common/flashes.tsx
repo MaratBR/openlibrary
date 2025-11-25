@@ -49,7 +49,7 @@ function FlashesHost() {
   )
 }
 
-export function initFlashMessages() {
+export function initflashes() {
   const element = document.getElementById('client-flashes')
 
   if (!element) {

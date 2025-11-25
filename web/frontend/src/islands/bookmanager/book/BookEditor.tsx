@@ -1,8 +1,5 @@
 import { useMemo } from 'preact/hooks'
-import GeneralInformation from './GeneralInformation'
 import { managerBookDetailsSchema } from './api'
-import BookCover from './BookCover'
-import Chapters from './Chapters'
 import { useHashQueryValue } from '@/lib/url-hooks'
 import { PreactIslandProps } from '@/islands/common/preact-island'
 import Tabs from '@/components/Tabs'
@@ -33,21 +30,7 @@ export default function BookEditor({ data: dataUnknown, rootElement: _ }: Preact
           <Tabs.Tab value="cover">{window._('bookManager.edit.cover')}</Tabs.Tab>
           <Tabs.Tab value="chapters">{window._('bookManager.edit.chapters')}</Tabs.Tab>
         </Tabs.List>
-        <Tabs.Body class="card">
-          <div style={{ display: tab === 'general' ? 'block' : 'none' }}>
-            <GeneralInformation data={data} />
-          </div>
-
-          <div style={{ display: tab === 'cover' ? 'block' : 'none' }}>
-            <BookCover book={data} />
-          </div>
-
-          {tab === 'chapters' && (
-            <div>
-              <Chapters book={data} />
-            </div>
-          )}
-        </Tabs.Body>
+        <Tabs.Body class="card" />
       </Tabs.Root>
     </>
   )

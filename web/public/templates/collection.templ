@@ -13,7 +13,11 @@ templ Collection(
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @baseLayout(_t(l, "collection.collection") + " - " + result.Collection.Name) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: l.T("collection.collection") + " - " + result.Collection.Name,
+        },
+    }) {
         <header class="hero hero--header">
             <div class="ol-container">
                 <h1 class="font-semibold text-4xl">{ result.Collection.Name }</h1>
@@ -22,11 +26,11 @@ templ Collection(
                         <div class="btn-group">
                             <a class="btn btn--ghost btn--sm" href="/library/collections">
                                 <i class="fa-solid fa-arrow-left"></i>&nbsp;
-                                { _t(l, "collection.backToLibrary") }
+                                { l.T("collection.backToLibrary") }
                             </a>
                             <a class="btn btn--ghost btn--sm" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", result.Collection.ID)) }>
                                 <i class="fa-solid fa-table-list"></i>&nbsp;
-                                { _t(l, "collection.manage") }
+                                { l.T("collection.manage") }
                             </a>
                         </div>
                     } else {
@@ -73,9 +77,9 @@ templ Collection(
                 } else {
                     <p class="mt-4">
                         if canEdit {
-                            { _t(l, "collection.emptyCollectionYours") }
+                            { l.T("collection.emptyCollectionYours") }
                         } else {
-                            { _t(l, "collection.emptyCollection") }
+                            { l.T("collection.emptyCollection") }
                         }
                     </p>
                 }
@@ -90,7 +94,11 @@ templ CollectionManage(
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @baseLayout(_t(l, "collection.collection") + " - " + collection.Name) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: l.T("collection.collection") + " - " + collection.Name,
+        },
+    }) {
         <header class="hero hero--header">
             <div class="ol-container">
                 <h1 class="font-semibold text-4xl">
@@ -105,18 +113,18 @@ templ CollectionManage(
                 <div class="form-control">
                     <div class="form-control__label">
                         <label for="CollectionManage-name" class="label">
-                            { _t(l, "collection.edit.nameLabel") }
+                            { l.T("collection.edit.nameLabel") }
                         </label>
                     </div>
                     <div class="form-control__value">
-                        <input required value={ collection.Name } id="CollectionManage-name" name="name" class="input" placeholder={ _t(l, "collection.edit.nameLabel") } />
+                        <input required value={ collection.Name } id="CollectionManage-name" name="name" class="input" placeholder={ l.T("collection.edit.nameLabel") } />
                     </div>
                 </div>
 
                 <div class="form-control">
                     <div class="form-control__label">
                         <label for="CollectionManage-public" class="label">
-                            { _t(l, "collection.edit.isPublicLabel") }
+                            { l.T("collection.edit.isPublicLabel") }
                         </label>
                     </div>
                     <div class="form-control__value">
@@ -135,23 +143,23 @@ templ CollectionManage(
 
                 <div class="flex gap-1">
                     <button type="submit" class="btn">
-                        { _t(l, "common.save") }
+                        { l.T("common.save") }
                     </button>
 
                     <button @click.prevent="deleting=true" class="btn btn--destructive">
-                        { _t(l, "common.delete") }
+                        { l.T("common.delete") }
                     </button>
                 </div>
             </form>
 
             <form method="post" action="?act=delete" x-show="deleting" x-cloak class="card card--elevated mt-4">
-                <label for="CollectionManage-deleteConfirmation" class="label mb-2">{ _t(l, "collection.edit.enterNameToDelete") }</label>
+                <label for="CollectionManage-deleteConfirmation" class="label mb-2">{ l.T("collection.edit.enterNameToDelete") }</label>
                 <input x-model="confirmationPhrase" id="CollectionManage-deleteConfirmation" class="input" placeholder={ collection.Name } />
                 <button type="submit"
                     disabled 
                     :disabled={ fmt.Sprintf("confirmationPhrase!==%q", collection.Name) } 
                     class="btn btn--destructive mt-2">
-                    { _t(l, "common.delete") }
+                    { l.T("common.delete") }
                 </button>
                 @csrf.CSRFInputTempl(ctx)
             </form>

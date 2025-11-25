@@ -42,19 +42,19 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
                     if book.IsBanned {
                         <div class="bg-red-700 text-white px-3 rounded-full leading-8 font-medium flex items-center">
                             <span class="material-symbols-outlined mr-1">gavel</span>
-                            { _t(l, "mod.book.banned") }
+                            { l.T("mod.book.banned") }
                         </div>
                     }
                     if book.IsShadowBanned {
                         <div class="bg-fuchsia-950 text-white px-3 rounded-full leading-8 font-medium flex items-center">
                             <span class="material-symbols-outlined mr-1">shadow</span>
-                            { _t(l, "mod.book.shadowBanned") }
+                            { l.T("mod.book.shadowBanned") }
                         </div>
                     }
                     if book.IsPermDeleted {
                         <div class="bg-slate-700 text-white px-3 rounded-full leading-8 font-medium flex items-center">
                             <span class="material-symbols-outlined mr-1">skull</span>
-                            { _t(l, "mod.book.permRemoved") }
+                            { l.T("mod.book.permRemoved") }
                         </div>
                     }
 
@@ -69,26 +69,26 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
                 >
 
                 if book.IsPermDeleted {
-                    <p id="mod_bookActionForm_PermRemovedNotice" class="mt-4">{ _t(l, "mod.permRemovedNotice") }</p>
+                    <p id="mod_bookActionForm_PermRemovedNotice" class="mt-4">{ l.T("mod.permRemovedNotice") }</p>
                 }
                 <ul class="mod-actions-container my-4">
                     if book.IsBanned {
-                        @modBookAction("unban", _t(l, "mod.unban"), _t(l, "mod.unbanDescription"), actionDisabled) {}
+                        @modBookAction("unban", l.T("mod.unban"), l.T("mod.unbanDescription"), actionDisabled) {}
                     } else {
-                        @modBookAction("ban", _t(l, "mod.ban"), _t(l, "mod.banDescription"), actionDisabled) {}
+                        @modBookAction("ban", l.T("mod.ban"), l.T("mod.banDescription"), actionDisabled) {}
                     }
 
                     if book.IsShadowBanned {
-                        @modBookAction("shadow_unban", _t(l, "mod.shadowUnban"), _t(l, "mod.shadowUnbanDescription"), actionDisabled) {}
+                        @modBookAction("shadow_unban", l.T("mod.shadowUnban"), l.T("mod.shadowUnbanDescription"), actionDisabled) {}
                     } else {
-                        @modBookAction("shadow_ban", _t(l, "mod.shadowBan"), _t(l, "mod.shadowBanDescription"), actionDisabled) {}
+                        @modBookAction("shadow_ban", l.T("mod.shadowBan"), l.T("mod.shadowBanDescription"), actionDisabled) {}
                     }
 
-                    @modBookAction("perm_delete", _t(l, "mod.permDelete"), _t(l, "mod.permDeleteDescription"), actionDisabled) {}
+                    @modBookAction("perm_delete", l.T("mod.permDelete"), l.T("mod.permDeleteDescription"), actionDisabled) {}
                 </ul>
 
                 <input name="act" type="hidden" :value="action" />
-                <textarea required name="reason" x-model="reason" disabled :disabled="!action" class="input min-h-24" placeholder={_t(l, "mod.youMustSpecifyReasonForAction")} />
+                <textarea required name="reason" x-model="reason" disabled :disabled="!action" class="input min-h-24" placeholder={l.T("mod.youMustSpecifyReasonForAction")} />
                 @csrf.CSRFInputTempl(ctx)
 
                 <div 
@@ -105,14 +105,14 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
                 <button 
                     disabled 
                     :disabled="!action || !reason || (action === 'permDelete' && challenge !== challengeInput)" 
-                    class="btn btn--secondary btn--lg " type="submit">{_t(l, "mod.performAction")}</button>
+                    class="btn btn--secondary btn--lg " type="submit">{l.T("mod.performAction")}</button>
             </form>
 
             <hr class="my-8" />
 
             <section class="overflow-hidden border card p-0 shadow-md">
                 <header class="p-2">
-                    <h2 class="text-xl">{ _t(l, "mod.book.log.recentActions") }</h2>
+                    <h2 class="text-xl">{ l.T("mod.book.log.recentActions") }</h2>
                     <p>
                         @templ.Raw(_tt(l, "mod.book.log.recentActionsOfBook", map[string]string{
                             "book": book.Name,
@@ -156,10 +156,10 @@ templ modLogTable(logs []app.BookModerationLog) {
     <table class="table">
         <thead>
             <tr>
-                <th>{ _t(l, "mod.book.log.action") }</th>
-                <th>{ _t(l, "mod.book.log.reason") }</th>
-                <th>{ _t(l, "mod.book.log.time") }</th>
-                <th>{ _t(l, "mod.book.log.actor") }</th>
+                <th>{ l.T("mod.book.log.action") }</th>
+                <th>{ l.T("mod.book.log.reason") }</th>
+                <th>{ l.T("mod.book.log.time") }</th>
+                <th>{ l.T("mod.book.log.actor") }</th>
             </tr>
         </thead>
         <tbody class="[&>tr:last-child>td]:border-b-0">
@@ -191,7 +191,7 @@ templ modLogTable(logs []app.BookModerationLog) {
                 <tr>
                     <td colspan="4">
                         <div class="text-center py-4">
-                            { _t(l, "mod.book.log.empty") }
+                            { l.T("mod.book.log.empty") }
                         </div>
                     </td>
                 </tr>
@@ -216,7 +216,7 @@ templ ModBookLog(book app.BookModerationInfo, logs app.BookLogResult) {
                         { book.Name }
                     </a>
                     <i class="fa-solid fa-chevron-right"></i>
-                    { _t(l, "mod.bookLog.title") }
+                    { l.T("mod.bookLog.title") }
                 </h1>
             </header>
 

@@ -6,6 +6,7 @@ saveChanges = "Save changes"
 apply = "Apply"
 delete = "Delete"
 trash = "Trash"
+untrash = "Un-Trash"
 edit = "Edit"
 update = "Update"
 report = "Report"
@@ -18,6 +19,8 @@ none = "None"
 change = "Change"
 open = "Open"
 view = "View"
+name = "Name"
+info = "Info"
 
 [uiTheme]
 dark = "Dark"
@@ -328,6 +331,11 @@ title = "Delete the book?"
 description = "Are you sure you want to delete this book?"
 trashedBookNotif = "Book was send to trash, it will no longer be visible to all users"
 
+[bookManager.books.restoreBook]
+title = "Restore the book?"
+description = "The book will be restored. However it will remain un-published. You will need to re-publish the book. It can be done by editing the book and making it public to all users."
+trashedBookNotif = "Book was restored. It will remain invisible to users until it was re-published"
+
 [bookManager.newBook]
 title = "New book"
 namePlaceholder = "Book name"
@@ -373,7 +381,6 @@ changesPending = "You have changed the order of {count} chapters"
 adult = "Adult"
 chapterHidden = "Hidden"
 pendingChanges = "Pending changes"
-editDraft = "Edit draft"
 
 #####################
 #                   #

@@ -69,7 +69,7 @@ const TextEditor = ({ value }: TextEditorProps) => {
       </div>
       <div
         ref={rootRef}
-        className={`__user-content [&>.tiptap]:min-h-32 [&>.tiptap]:p-4 [&>.tiptap]:!outline-none`}
+        className={`user-content [&>.tiptap]:min-h-32 [&>.tiptap]:p-4 [&>.tiptap]:!outline-none`}
       />
     </div>
   )

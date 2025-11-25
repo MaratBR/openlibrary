@@ -11,7 +11,7 @@ import (
 func i18nExtractKeys(l *i18n.Localizer, keys []string) templ.ComponentScript {
 	m := make(map[string]string, len(keys))
 	for i := 0; i < len(keys); i++ {
-		m[keys[i]] = _t(l, keys[i])
+		m[keys[i]] = l.T(keys[i])
 	}
 
 	return i18nKeys(m)
@@ -33,7 +33,7 @@ func relativeTime(l *i18n.Localizer, t time.Time) string {
 	dur := time.Now().Sub(t)
 	s := dur.Seconds()
 	if s < 60 {
-		return _t(l, "time.justNow")
+		return l.T("time.justNow")
 	}
 
 	if s > 24*3600.0 {

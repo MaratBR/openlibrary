@@ -2,21 +2,64 @@ package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ BookManagerBook(book *app.ManagerBookDetailsDto) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @bmLayout(_t(l, "bookManager.title") + " - " + book.Name) {
-        {{
-            data, _ := templ.JSONString(book)
-        }}
+    @bmLayout(l.T("bookManager.title") + " - " + book.Name) {
         @i18nExtractKeysByPrefix(l, "bookManager.edit")
 
-        <ol-island x-show="tab==='general'" active="true" src="/_/assets/islands/bookmanager.js" name="Book" data={data}>
-            <template data-type="loader">
-                <span class="loader mt-2"></span>
-            </template>
-        </ol-island>
+        <header class="page-header-container">
+            <h1 class="page-header">
+                { book.Name }
+            </h1>
+        </header>
+
+        @webcomponents.TabsWrap(webcomponents.TabsWrapProps{
+            DefaultTab: "general",
+        }) {
+            @webcomponents.TabsList(webcomponents.TabsListProps{
+                DefaultTab: "general",
+                Tabs: []webcomponents.Tab{
+                    {ID: "general", Label: l.T("bookManager.edit.generalInformation")},
+                    {ID: "cover", Label: l.T("bookManager.edit.cover")},
+                    {ID: "chapters", Label: l.T("bookManager.edit.chapters")},
+                },
+            })
+            {{
+                islandDataKey := "book"
+            }}
+            @webcomponents.IslandData(islandDataKey, book)
+            @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
+                ID: "general",
+            }) {
+                @webcomponents.Island(webcomponents.IslandProps{
+                    Src: "bookmanager",
+                    Name: "BookGeneralInformation",
+                    Data: islandDataKey,
+                    ShowLoader: true,
+                })
+            }
+            @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
+                ID: "cover",
+            }) {
+                @webcomponents.Island(webcomponents.IslandProps{
+                    Src: "bookmanager",
+                    Name: "BookCover",
+                    Data: islandDataKey,
+                })
+            }
+            @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
+                ID: "chapters",
+            }) {
+                @webcomponents.Island(webcomponents.IslandProps{
+                    Src: "bookmanager",
+                    Name: "BookChapters",
+                    Data: islandDataKey,
+                })
+            }
+        }        
     }
 }

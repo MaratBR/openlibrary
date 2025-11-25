@@ -1,0 +1,46 @@
+package webcomponents
+
+type IslandProps struct {
+    Name string
+    InactiveByDefault bool
+    ShowLoader bool
+    Data string
+    Src string
+}
+
+templ Island(props IslandProps) {
+    <ol-island active="true" src={ props.Src } name={ props.Name } data={props.Data}>
+        if props.ShowLoader {
+            <template data-type="loader">
+                <span class="loader mt-2"></span>
+            </template>
+        }
+    </ol-island>
+}
+
+script injectIslandData(key, dataStr string) {
+    const cb = () => {
+        window.OLIslandElement.registerGlobalData(key, dataStr);
+    };
+
+    if (window.OLIslandElement) {
+        cb();   
+    } else {
+        const cb2 = () => {
+            document.removeEventListener('ol-island:ready', cb2);
+            cb();
+        };
+        document.addEventListener('ol-island:ready', cb2);
+    }
+
+}
+
+templ IslandData(key string, data any) {
+    {{
+        json, err := templ.JSONString(data)
+        if err != nil {
+            return err
+        }
+    }}
+    @injectIslandData(key, json)
+}

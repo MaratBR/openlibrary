@@ -112,7 +112,7 @@ func Search(
 		{
 			Term: map[string]types.TermQuery{
 				"isTrashed": {
-					Value: true,
+					Value: false,
 				},
 			},
 		},

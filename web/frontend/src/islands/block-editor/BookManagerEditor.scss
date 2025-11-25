@@ -1,3 +1,20 @@
+.chapter-editor-layout {
+    @apply flex flex-col h-full w-full;
+
+    &__header {
+        @apply h-16;
+    }
+
+    &__body {
+        @apply grow-1;
+    }
+}
+
+.chapter-editor-header {
+    @apply bg-card border-b h-full;
+    display: grid;
+}
+
 .book-editor {
     &__chapter {
         @apply mx-auto max-w-[70ch] px-2;

@@ -119,10 +119,10 @@ templ BookMyReview(
                             })
                             <button @click="requestEditing()" class="btn btn--lg btn--outline ">
                                 <i class="fa-solid fa-pencil"></i>
-                                { _t(l, "reviews.editReview") }
+                                { l.T("reviews.editReview") }
                             </button>
                         </div>
-                        <article class="__user-content mt-4 text-sm">
+                        <article class="user-content mt-4 text-sm">
                             @collapsibleRawHtml("current-review-content", review.Content)
                         </article>
                     </div>
@@ -221,7 +221,7 @@ templ collapsibleRawHtml(id, html string) {
     }}
 
    @collapsible(250, canBeCollapsed) {
-        <div id={id} class="contents __user-content" x-ignore>
+        <div id={id} class="contents user-content" x-ignore>
             @templ.Raw(html)
         </div>
    }
@@ -260,7 +260,7 @@ templ collapsible(height int, canBeCollapsed bool) {
                 x-cloak
             }
             class="absolute flex items-center left-0 right-0 bottom-0 p-1 z-10 text-lg font-[500] hover:text-primary focus:outline focus:outline-2 outline-offset-[-2px]">
-            <span x-bind="buttonLabel">{ _t(l, "common.more") }</span>
+            <span x-bind="buttonLabel">{ l.T("common.more") }</span>
             <i x-bind="buttonIcon" class="fa-solid fa-chevron-down"></i>
         </button>
     </div>

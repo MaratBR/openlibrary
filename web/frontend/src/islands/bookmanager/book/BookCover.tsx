@@ -1,8 +1,10 @@
 import { ImageResizer, ImageUpload } from '@/components/image-upload'
-import { httpUploadCover, ManagerBookDetailsDto } from './api'
-import { useState } from 'preact/hooks'
+import { httpUploadCover, managerBookDetailsSchema } from './api'
+import { useMemo, useState } from 'preact/hooks'
+import { PreactIslandProps } from '@/lib/island'
 
-export default function BookCover({ book }: { book: ManagerBookDetailsDto }) {
+export default function BookCover({ data }: PreactIslandProps) {
+  const book = useMemo(() => managerBookDetailsSchema.parse(data), [data])
   const [file, setFile] = useState<File | null>(null)
   const [displayedFile, setDisplayedFile] = useState(book.cover)
 

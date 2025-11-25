@@ -8,12 +8,13 @@
 
 .btn {
     @apply 
-        inline-block v-middle whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors rounded-full cursor-pointer
+        inline-block v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition-colors rounded-full cursor-pointer
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
         disabled:pointer-events-none disabled:opacity-50 leading-[2.4];
     height: var(--btn-height);
     line-height: var(--btn-height) !important;
     padding: 0 calc(var(--btn-height) / 3);
+    text-align: center;
     --btn-height: calc(var(--spacing) * 9);
     --btn-tint-frac: 13%;
     --btn-bg-opacity: 0%;

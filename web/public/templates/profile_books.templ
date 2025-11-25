@@ -4,6 +4,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/eduardolat/goeasyi18n"
 
 
 templ ProfileBooks(
@@ -13,18 +14,26 @@ templ ProfileBooks(
 ) {
     {{
         l := i18n.GetLocalizer(ctx)
-        title := _t(l, "profile.booksOf", "user", user.Name)
+        title := l.T("profile.booksOf", goeasyi18n.Options{
+            Data: map[string]string{
+                "user": user.Name,
+            },
+        })
     }}
 
-    @baseLayout(title) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: title,
+        },
+    }) {
         <div class="sticky top-[calc(var(--header-height)+10px)] z-20">
             <nav class="ol-container shadow-md bg-card rounded-full">
                 <ul class="tabs tabs--primary-b px-6">
                     <li role="button" class="tab tab--active">
-                        <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ _t(l, "profile.books") }</a>
+                        <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ l.T("profile.books") }</a>
                     </li>
                     <li role="button" class="tab">
-                        <a href={ templ.URL(fmt.Sprintf("/users/%s/collections", user.ID)) }>{ _t(l, "profile.collections") }</a>
+                        <a href={ templ.URL(fmt.Sprintf("/users/%s/collections", user.ID)) }>{ l.T("profile.collections") }</a>
                     </li>
                 </ul>
             </nav>
@@ -45,18 +54,26 @@ templ ProfileCollections(
 ) {
     {{
         l := i18n.GetLocalizer(ctx)
-        title := _t(l, "profile.collectionsOf", "user", user.Name)
+        title := l.T("profile.collectionsOf", goeasyi18n.Options{
+            Data: map[string]string{
+                "user": user.Name,
+            },
+        })
     }}
 
-    @baseLayout(title) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: title,
+        },
+    }) {
         <div class="sticky top-[calc(var(--header-height)+10px)] z-20">
             <nav class="ol-container shadow-md bg-card rounded-full">
                 <ul class="tabs tabs--primary-b px-6">
                     <li role="button" class="tab">
-                        <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ _t(l, "profile.books") }</a>
+                        <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ l.T("profile.books") }</a>
                     </li>
                     <li role="button" class="tab tab--active">
-                        <a href={ templ.URL(fmt.Sprintf("/users/%s/collections", user.ID)) }>{ _t(l, "profile.collections") }</a>
+                        <a href={ templ.URL(fmt.Sprintf("/users/%s/collections", user.ID)) }>{ l.T("profile.collections") }</a>
                     </li>
                 </ul>
             </nav>
@@ -67,7 +84,7 @@ templ ProfileCollections(
         <div class="ol-container my-12 px-2">
             if result.TotalPages == 0 {
                 @alertInfo() {
-                    { _t(l, "profile.userHasNoCollection") }
+                    { l.T("profile.userHasNoCollection") }
                 }
             } else {
                 {{

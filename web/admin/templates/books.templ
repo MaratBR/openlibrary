@@ -11,17 +11,17 @@ templ BooksPage() {
         <div class="admin-page-content">
             <header class="page-header-container">
                 <h1 class="page-header">
-                    {_t(l, "admin.books.title")}
+                    {l.T("admin.books.title")}
                 </h1>
             </header>
 
             <div class="admin-card p-4 mb-4">
-                { _t(l, "admin.books.searchNotImplemented") }
+                { l.T("admin.books.searchNotImplemented") }
             </div>
 
             <div x-data="{id:''}" class="admin-card p-4">
                 <input :value="id" @input="id=$event.target.value.replaceAll(/[^0-9]/g, '');$event.target.value=id" class="input w-64" />
-                <button @click="id && (location.href = `/book/${id}`)" class="btn btn--primary">{ _t(l, "common.open") }</button>
+                <button @click="id && (location.href = `/book/${id}`)" class="btn btn--primary">{ l.T("common.open") }</button>
             </div>
         </div>
     }

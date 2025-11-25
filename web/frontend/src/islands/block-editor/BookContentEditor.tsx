@@ -1,24 +1,13 @@
-import { Editor, EditorOptions } from '@tiptap/core'
-import HorizontalRule from '@tiptap/extension-horizontal-rule'
-import TextStyle from '@tiptap/extension-text-style'
-import Typography from '@tiptap/extension-typography'
-import TextAlign from '@tiptap/extension-text-align'
-import Image from '@tiptap/extension-image'
-
-import StarterKit from '@tiptap/starter-kit'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
-import './BookManagerEditor.scss'
-import Heading from '@tiptap/extension-heading'
+
 import { createEvent } from '@/lib/event'
 import BookContentEditorHeader from './BookContentEditorHeader'
-import Underline from '@tiptap/extension-underline'
-import Placeholder from '@tiptap/extension-placeholder'
 import { debounce } from '@/common/util/fn'
 import { RefObject } from 'preact'
 import { MouseEventHandler } from 'preact/compat'
 import { useMutation } from '@tanstack/react-query'
 import { httpUpdateDraftChapterName } from './api'
-import { DraftDto } from '../contracts'
+import { DraftDto } from '../bookmanager/contracts'
 
 export type BookContentEditorProps = {
   bookId: string
@@ -120,7 +109,7 @@ export default function BookContentEditor({
             onBlur={handleChapterNameBlur}
           />
         </div>
-        <div class="__user-content book-editor__content" ref={root} />
+        <div class="user-content book-editor__content" ref={root} />
       </article>
     </div>
   )

@@ -12,34 +12,34 @@ templ sidebar() {
             </div>
             <a href="/?ol.from=admin" class="sitebar-ghost-btn inline-block text-sm w-full">
                 <i class="fa-solid fa-arrow-left"></i>
-                { _t(l, "admin.goBackToSite") }
+                { l.T("admin.goBackToSite") }
             </a>
             <hr class="sitebar-hr my-3" />
 			<ul class="sitebar-list">
                 @sidebarItem("/admin", "fa-solid fa-house") {
-                    <span>{ _t(l, "admin.sidebar.home") }</span>
+                    <span>{ l.T("admin.sidebar.home") }</span>
                 }
                 @sidebarItem("/admin/users", "fa-regular fa-user") {
-                    <span>{ _t(l, "admin.sidebar.users") }</span>
+                    <span>{ l.T("admin.sidebar.users") }</span>
                 }
                 @sidebarItem("/admin/books", "fa-solid fa-book") {
-                    <span>{ _t(l, "admin.sidebar.books") }</span>
+                    <span>{ l.T("admin.sidebar.books") }</span>
                 }
                 @sidebarItem("/admin/tags", "fa-solid fa-tags") {
-                    <span>{ _t(l, "admin.sidebar.tags") }</span>
+                    <span>{ l.T("admin.sidebar.tags") }</span>
                 }
                 @sidebarItem("/admin/site-settings", "fa-solid fa-gears") {
-                    <span>{ _t(l, "admin.sidebar.siteSettings") }</span>
+                    <span>{ l.T("admin.sidebar.siteSettings") }</span>
                 }
                 @sidebarItem("/admin/debug", "fa-solid fa-bug") {
-                    <span>{ _t(l, "admin.sidebar.debugActions") }</span>
+                    <span>{ l.T("admin.sidebar.debugActions") }</span>
                 }
             </ul>
 
             <div class="absolute bottom-0 left-0 right-0">
                 <a href="/logout" class="transition-colors flex gap-1 items-center hover:bg-white/10 hover:text-cyan-300 p-4">
                     <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>{ _t(l, "admin.sidebar.logout") }</span>
+                    <span>{ l.T("admin.sidebar.logout") }</span>
                 </a>
             </div>
         </aside>

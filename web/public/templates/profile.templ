@@ -10,8 +10,12 @@ templ UserNotFound() {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    @baseLayout("404 - " + _t(l, "user.notFound")) {
-        @olhttp.ErrorPage("404", _t(l, "user.notFound"), _t(l, "user.notFoundDescription"))
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: "404 - " + l.T("user.notFound"),
+        },
+    }) {
+        @olhttp.ErrorPage("404", l.T("user.notFound"), l.T("user.notFoundDescription"))
     }
 }
 
@@ -20,7 +24,11 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetPinnedUserBooksResult) {
         l := i18n.GetLocalizer(ctx)
     }}
 
-    @baseLayout(user.Name) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: user.Name,
+        },
+    }) {
         <div class="ol-container ol-container--big py-10">
             <section class="border bg-card shadow-sm rounded-lg overflow-hidden relative">
                 <div class="h-64 overflow-hidden">

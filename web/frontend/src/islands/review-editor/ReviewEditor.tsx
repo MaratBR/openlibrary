@@ -78,7 +78,7 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
         </button>
       </div>
 
-      <div ref={rootEl} class="review-editor__content __user-content __user-content--editor" />
+      <div ref={rootEl} class="review-editor__content user-content user-content--editor" />
 
       <button
         class="btn btn--lg btn--primary  mt-3"

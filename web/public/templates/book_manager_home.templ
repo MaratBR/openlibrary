@@ -10,7 +10,7 @@ import "net/url"
 import "strings"
 
 templ bmLayoutBase(title string, sitebar bool) {
-	@olhttp.Doc(ctx, olhttp.DocSettings{
+	@olhttp.Doc(ctx, olhttp.DocProps{
 		Title:        title,
 		Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js", "/_/assets/bookmanager-common.js"},
 		CSS:          []string{"/_/assets/common.css", "/_/assets/bookmanager-common.css"},
@@ -19,26 +19,29 @@ templ bmLayoutBase(title string, sitebar bool) {
 			frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
 		),
 	}) {
-		<style>body{min-width: 1000px;}</style>
 		{{
 			l := i18n.GetLocalizer(ctx)
 		}}
 		@i18nExtractKeysByPrefix(l, "common")
-		@renderUISettings()
+		@settings()
 
-		<aside class="sitebar">
-			<ul class="sitebar-list">
-				@bmSidebarItem("fa-solid fa-house", "/books-manager", _t(l, "bookManager.home"))
-				@bmSidebarItem("fa-solid fa-book", "/books-manager/books", _t(l, "bookManager.books.title"))
-				@bmSidebarItem("fa-solid fa-rectangle-list", "/books-manager/collections", _t(l, "bookManager.collections"))
-			</ul>
-		</aside>
-		<div class="sitebar-body">
-			<div class="sitebar-body__content">
-				@flashMessages()
-				{ children... }
+		if sitebar {
+			<aside class="sitebar">
+				<ul class="sitebar-list">
+					@bmSidebarItem("fa-solid fa-house", "/books-manager", l.T("bookManager.home"))
+					@bmSidebarItem("fa-solid fa-book", "/books-manager/books", l.T("bookManager.books.title"))
+					@bmSidebarItem("fa-solid fa-rectangle-list", "/books-manager/collections", l.T("bookManager.collections"))
+				</ul>
+			</aside>
+			<div class="sitebar-body">
+				<div class="sitebar-body__content">
+					@flashes()
+					{ children... }
+				</div>
 			</div>
-		</div>
+		} else {
+			{ children... }
+		}
 	}
 }
 
@@ -91,12 +94,12 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 		<section>
 			<header class="page-header-container">
 				<h1 class="page-header inline-block">
-					{ _t(l, "bookManager.books.title") }
+					{ l.T("bookManager.books.title") }
 				</h1>
 				<div class="page-header__after">
 					<a class="btn btn--sm btn--outline btn--primary2 rounded-md" href="/books-manager/new?ol.from=books-manager">
 						<i class="fa-solid fa-pencil"></i>
-						{ _t(l, "bookManager.createNewBook") }
+						{ l.T("bookManager.createNewBook") }
 					</a>
 				</div>
 			</header>
@@ -110,11 +113,19 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 
 				<section class="my-4 space-y-2" id="books-manager-books" x-data="{
 					deleteBookId: '',
+					restoreBookId: '',
 					submitted: false,
 					openDelete($event, bookId) {
 						this.deleteBookId = bookId;
-						if (this.$refs.popup) {
-							const $popup = this.$refs.popup;
+						this._updatePopupPosition($event, 'deletePopup');
+					},
+					openRestore($event, bookId) {
+						this.restoreBookId = bookId;
+						this._updatePopupPosition($event, 'restorePopup');
+					},
+					_updatePopupPosition($event, popupRef) {
+						const $popup = this.$refs[popupRef];
+						if ($popup) {
 							console.log($event);
 							const rec = $event.target.getBoundingClientRect();
 							$popup.style.left = rec.left+'px';
@@ -123,22 +134,46 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 					},
 					closeDelete() {
 						this.deleteBookId = '';
+					},
+					closeRestore() {
+						this.restoreBookId = '';
 					}
 				}">
-					<div class="card fixed" x-ref="popup" x-cloak x-show="!!deleteBookId" @click.outside="closeDelete()">
+					{{
+						r := olhttp.GetRequest(ctx)
+					}}
+					<div class="card fixed max-w-128" x-ref="deletePopup" x-cloak x-show="!!deleteBookId" aria-hidden="true" :aria-hidden="!deleteBookId" @click.outside="closeDelete()">
 						<strong>
-							{ _t(l, "bookManager.books.trashBook.title") }
+							{ l.T("bookManager.books.trashBook.title") }
 						</strong>
-						{{
-							r := olhttp.GetRequest(ctx)
-						}}
+						<p>
+							{ l.T("bookManager.books.trashBook.description") }
+						</p>
 						<form @submit="submitted=true" method="post" action={fmt.Sprintf("/books-manager/books?act=trash&next=%s", url.QueryEscape(r.URL.String()))}>
 							<input aria-hidden="true" class="hidden" name="id" required x-model="deleteBookId" />
 							@csrf.CSRFInputTempl(ctx)
 							<button type="submit" class="btn btn--sm btn--destructive mt-2">
 								<span x-show="submitted" class="loader" />
 								<span x-show="!submitted">
-									{ _t(l, "common.trash") }
+									{ l.T("common.trash") }
+								</span>
+							</button>
+						</form>
+					</div>
+					<div class="card fixed max-w-128" x-ref="restorePopup" x-cloak x-show="!!restoreBookId" aria-hidden="true" :aria-hidden="!restoreBookId" @click.outside="closeRestore()">
+						<strong>
+							{ l.T("bookManager.books.restoreBook.title") }
+						</strong>
+						<p>
+							{ l.T("bookManager.books.restoreBook.description") }
+						</p>
+						<form @submit="submitted=true" method="post" action={fmt.Sprintf("/books-manager/books?act=untrash&next=%s", url.QueryEscape(r.URL.String()))}>
+							<input aria-hidden="true" class="hidden" name="id" required x-model="restoreBookId" />
+							@csrf.CSRFInputTempl(ctx)
+							<button type="submit" class="btn btn--sm mt-2">
+								<span x-show="submitted" class="loader" />
+								<span x-show="!submitted">
+									{ l.T("common.untrash") }
 								</span>
 							</button>
 						</form>
@@ -148,10 +183,10 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 							<tr>
 								<th width="80" />
 								<th>
-									{ _t(l, "bookManager.books.name") }
+									{ l.T("bookManager.books.name") }
 								</th>
 								<th>
-									{ _t(l, "bookManager.books.stats") }
+									{ l.T("bookManager.books.stats") }
 								</th>
 							</tr>
 						</thead>
@@ -166,13 +201,13 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 										{{
 											var additionalText []string
 											if book.IsBanned {
-												additionalText = append(additionalText, _t(l, "bookManager.books.banned"))
+												additionalText = append(additionalText, l.T("bookManager.books.banned"))
 											} 
 											if !book.IsPubliclyVisible {
-												additionalText = append(additionalText, _t(l, "bookManager.books.notPublic"))
+												additionalText = append(additionalText, l.T("bookManager.books.notPublic"))
 											} 
 											if book.IsTrashed {
-												additionalText = append(additionalText, _t(l, "bookManager.books.trashed"))
+												additionalText = append(additionalText, l.T("bookManager.books.trashed"))
 											} 
 										}}
 										if len(additionalText) > 0 {
@@ -181,13 +216,17 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 											</span>
 										}
 										<div>
-											<a class="link" href={ fmt.Sprintf("/books-manager/book/%d", book.ID) }>{ _t(l, "common.edit") }</a> | 
-											if !book.IsTrashed {
+											<a class="link" href={ fmt.Sprintf("/books-manager/book/%d", book.ID) }>{ l.T("common.edit") }</a> | 
+											if book.IsTrashed {
+												<button 
+													@click={fmt.Sprintf("openRestore($event,'%d')", book.ID)}
+													class="link">{ l.T("common.untrash") }</button> |
+											} else {
 												<button 
 													@click={fmt.Sprintf("openDelete($event,'%d')", book.ID)}
-													class="link">{ _t(l, "common.trash") }</button> |
-											} 
-											<a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>{ _t(l, "common.view") }</a>
+													class="link">{ l.T("common.trash") }</button> |
+											}
+											<a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>{ l.T("common.view") }</a>
 										</div>
 									</td>
 									<td>
@@ -200,7 +239,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 									<td />
 									<td colspan="2">
 										<p class="max-w-128">
-											{ _t(l, "bookManager.noBooks") }
+											{ l.T("bookManager.noBooks") }
 										</p>
 									</td>
 								</tr>
@@ -231,7 +270,7 @@ templ bookManagerYourBooksBookCard(bookID int64, name, cover, summary string) {
 			</a>
 			<div class="profile-book-card__summary">
 				if summary == "" {
-					<p class="text-muted-foreground"><em>{ _t(l, "bookManager.emptyBookSummary") }</em></p>
+					<p class="text-muted-foreground"><em>{ l.T("bookManager.emptyBookSummary") }</em></p>
 				} else {
 					@collapsible(140, true) {
 						@templ.Raw(summary)
@@ -254,7 +293,7 @@ templ bmMainPage(tab string) {
 	{{
 		l := i18n.GetLocalizer(ctx)
 	}}
-	@bmLayout(_t(l, tab)) {
+	@bmLayout(l.T(tab)) {
 		{ children... }
 	}
 }

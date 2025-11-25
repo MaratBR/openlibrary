@@ -37,6 +37,7 @@ func (c *bookManagerController) Register(r chi.Router) {
 		r.Get("/new", c.newBook)
 		r.Get("/book/{bookID}", c.book)
 		r.Get("/book/{bookID}/chapter/{chapterID}", c.chapter)
+		r.Get("/__fragment/chapter-content-iframe", c.chapterLayoutIframe)
 		r.With(httpin.NewInput(&createBookRequest{})).Post("/new", c.createBook)
 	})
 }
@@ -73,6 +74,8 @@ func (c *bookManagerController) booksPost(w http.ResponseWriter, r *http.Request
 	switch act {
 	case "trash":
 		c.handleTrashAction(w, r)
+	case "untrash":
+		c.handleUntrashAction(w, r)
 	default:
 		writeBadRequest(w, r, errors.New("unknown act value"))
 	}
@@ -86,7 +89,8 @@ func (c *bookManagerController) handleTrashAction(w http.ResponseWriter, r *http
 		return
 	}
 	err = c.service.TrashBook(r.Context(), app.TrashBookCommand{
-		BookID: id,
+		BookID:      id,
+		ActorUserID: auth.RequireSession(r.Context()).UserID,
 	})
 	if err != nil {
 		writeApplicationError(w, r, err)
@@ -94,6 +98,26 @@ func (c *bookManagerController) handleTrashAction(w http.ResponseWriter, r *http
 	}
 	l := i18n.GetLocalizer(r.Context())
 	flash.Add(r, flash.Text(l.T("bookManager.books.trashBook.trashedBookNotif")))
+	redirectToNext(w, r)
+}
+
+func (c *bookManagerController) handleUntrashAction(w http.ResponseWriter, r *http.Request) {
+	idStr := r.FormValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		writeBadRequest(w, r, err)
+		return
+	}
+	err = c.service.UntrashBook(r.Context(), app.UntrashBookCommand{
+		BookID:      id,
+		ActorUserID: auth.RequireSession(r.Context()).UserID,
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+	l := i18n.GetLocalizer(r.Context())
+	flash.Add(r, flash.Text(l.T("bookManager.books.restoreBook.trashedBookNotif")))
 	redirectToNext(w, r)
 }
 
@@ -224,6 +248,10 @@ func (c *bookManagerController) chapter(w http.ResponseWriter, r *http.Request) 
 	}
 
 	c.sendChapterEditorPage(bookID, chapterID, draftID, w, r)
+}
+
+func (c *bookManagerController) chapterLayoutIframe(w http.ResponseWriter, r *http.Request) {
+	olhttp.WriteTemplate(w, r.Context(), templates.ChapterContentIframe())
 }
 
 func (c *bookManagerController) sendChapterEditorPage(bookID, chapterID, draftID int64, w http.ResponseWriter, r *http.Request) {

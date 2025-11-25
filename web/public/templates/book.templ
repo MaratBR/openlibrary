@@ -10,10 +10,14 @@ import "github.com/MaratBR/openlibrary/internal/auth"
 templ BookNotFoundPage() {
     {{
         l := i18n.GetLocalizer(ctx)
-        title := _t(l, "book.notFound")
-        text := _t(l, "book.notFoundText")
+        title := l.T("book.notFound")
+        text := l.T("book.notFoundText")
     }}
-    @baseLayout(title) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: title,
+        },
+    }) {
         <main class="ol-container py-12">
             <h1 class="text-8xl mb-2 font-title text-center md:text-left">404</h1>
             <h1 class="ml-4 text-4xl font-title text-center md:text-left">{title}</h1>
@@ -41,14 +45,18 @@ templ BookPage(
         user, isAuthenticated := auth.GetUser(ctx)
     }}
 
-    @baseLayout(book.Name) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: book.Name,
+        },
+    }) {
         if replaceURLWithSlug {
             @replaceURLWith(fmt.Sprintf("/book/%s-%d", book.Slug, book.ID))
         }
 
         if !book.IsPubliclyAvailable && isAuthenticated && user.ID == book.Author.ID {
             <div class="ol-container ol-container--big p-4 bg-yellow-300 text-black border-yellow-600 border-2">
-                {_t(l, "book.notPubliclyAvailableNotice")} <br /> <a class="link" href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))}>{_t(l, "book.goToBookManager")}</a>
+                {l.T("book.notPubliclyAvailableNotice")} <br /> <a class="link" href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))}>{l.T("book.goToBookManager")}</a>
             </div>
         }
 
@@ -89,7 +97,7 @@ templ BookPage(
                 </header>
 
                 <main class="contents" id="slot-book-page">
-                    <div x-ignore class="mt-4 __user-content">
+                    <div x-ignore class="mt-4 user-content">
                         @templ.Raw(book.Summary)
                     </div>
                     <div class="mt-4 text-muted-foreground font-medium">
@@ -235,7 +243,7 @@ templ bookTags(tags []app.DefinedTagDto) {
             }
             class="nojs-hidden" role="button" x-show="len>10" @click="open=!open">
             <span class="tag font-semibold nojs-hidden" x-text="window._(open?'common.less':'common.more')">
-                {_t(l, "common.more")}
+                {l.T("common.more")}
             </span>
         </li>
     </ul>

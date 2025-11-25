@@ -6,6 +6,7 @@ import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "fmt"
 import "strconv"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 type ChapterProgressTrackerOptions struct {
     JumpedBackward bool
@@ -91,6 +92,15 @@ templ Chapter(
     }
 }
 
+templ ChapterContentIframe() {
+    @htmlLayout(htmlLayoutProps{}) {
+        {{
+            settings := getUIBookSettings(olhttp.GetRequest(ctx))
+        }}
+        @ChapterContent("", settings)
+    }
+}
+
 templ readerSettingsUI(settings uiSettings) {
     <div class="p-3 space-y-4">
         <section>
@@ -151,9 +161,9 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings, opti
                 class="card card--elevated mb-8 grid grid-cols-[auto_1fr] gap-2">
                 <p>
                     if options.JumpedBackward {
-                        { _t(l, "book.readingListYouJumpedBack") }
+                        { l.T("book.readingListYouJumpedBack") }
                     } else if options.JumpedForward {
-                        { _t(l, "book.readingListYouJumpedForward") }
+                        { l.T("book.readingListYouJumpedForward") }
                     }
                 </p>
                 <div>
@@ -163,7 +173,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings, opti
                         @click="if (status != 0) return; status = 1; window.__markChapterAsRead().then(() => {status=2;})">
                         <div :style="`opacity:${status==1 ? 0 : 1}`">
                             <i class="fa-solid fa-bookmark"></i>
-                            { _t(l, "book.readingListSetProgress") }
+                            { l.T("book.readingListSetProgress") }
                         </div>
                         <div x-cloak x-show="status==1" class="flex items-center justify-center absolute inset-0">
                             <span class="loader" />
@@ -174,21 +184,26 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings, opti
         }
     }
     
-    <article id="ChapterContent" class="__user-content book-reader__content" { templ.Attributes{
-        "style": fmt.Sprintf("--book-font-size:%dpx", uiSettings.FontSize),
-    }... } :style="`--book-font-size:${fontSize}px`">
-        <div class="contents" x-ignore id="book-reader-content">
-            @templ.Raw(chapter.Content)
-        </div>
-    </article>
+    @ChapterContent(chapter.Content, uiSettings)
 
     <div x-data="pageProgress" data-content-element="#ChapterContent" class="fixed w-screen left-0 h-1 bg-primary z-10 origin-left rtl:origin-right" style="top: var(--header-height)" x-cloak />
 
     <script>
         document.addEventListener('ol:book-reader:ready', () => {
-            window.__initBookReader && window.__initBookReader(document.getElementById('book-reader-content'));
+            window.__initBookReader && window.__initBookReader(document.getElementById('BookReaderContent'));
         })
     </script>
 
     <script src="/_/assets/book-reader.js"></script>
+}
+
+templ ChapterContent(content string, uiSettings uiSettings) {
+    <article class="chapter-content" { templ.Attributes{
+        "style": fmt.Sprintf("--book-font-size:%dpx", uiSettings.FontSize),
+    }... } :style="`--book-font-size:${fontSize}px`">
+        @webcomponents.UserContent(webcomponents.UserContentProps{
+            Content: content,
+            ID: "BookReaderContent",
+        })
+    </article>
 }

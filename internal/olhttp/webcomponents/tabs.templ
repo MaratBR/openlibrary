@@ -1,0 +1,68 @@
+package webcomponents
+
+import "fmt"
+
+type Tab struct {
+    ID string
+    Label string
+    LabelComponent templ.Component
+}
+
+type TabsListProps struct {
+    Tabs []Tab
+    DefaultTab string
+}
+
+templ TabsList(props TabsListProps) {
+    <ul role="tablist" class="tabs tabs--primary">
+        for _, tab := range props.Tabs {
+            <li
+                :class={ fmt.Sprintf("{tab:true,'tab--active':tab === %q}", tab.ID) }
+                if tab.ID == props.DefaultTab {
+                    class="tab tab--active"
+                    aria-current="true"
+                } else {
+                    class="tab"
+                }
+                :aria-current={ fmt.Sprintf("tab === %q", tab.ID) }
+                role="tab"
+                @click={ fmt.Sprintf("_changeTab(%q)", tab.ID) }>
+                if tab.LabelComponent != nil {
+                    @tab.LabelComponent
+                } else {
+                    { tab.Label }
+                }
+            </li>
+        }
+    </ul>
+}
+
+type TabsWrapProps struct {
+    DefaultTab string
+}
+
+templ TabsWrap(props TabsWrapProps) {
+    <div class="contents" x-data={ fmt.Sprintf("{tab:%q, _changeTab(t) { this.tab = t; }}", props.DefaultTab) }>
+        { children... }
+    </div>
+}
+
+type TabsPanelProps struct {
+    ID string
+    KeepUnmounted bool
+
+}
+
+templ TabsPanel(props TabsPanelProps) {
+    if props.KeepUnmounted {
+        <template x-if={fmt.Sprintf("tab===%q", props.ID)}>
+            <div class="contents" x-show={fmt.Sprintf("tab===%q", props.ID)}>
+                { children... }
+            </div>
+        </template>
+    } else {
+        <div class="contents" x-show={fmt.Sprintf("tab===%q", props.ID)}>
+            { children... }
+        </div>
+    }
+}

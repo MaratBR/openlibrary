@@ -1,7 +1,9 @@
 package templates
 
 templ modLayout(title string) {
-    @_baseLayout(htmlLayoutProps{Title: title, CSS: []string{"/_/assets/mod.css"}}) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{Title: title, CSS: []string{"/_/assets/mod.css"}},
+    }) {
         { children... }
     }
 }

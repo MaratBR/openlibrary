@@ -1,14 +1,10 @@
-import BookContentEditor from './BookContentEditor'
-import { useMemo, useRef, useState } from 'preact/hooks'
+import { useMemo } from 'preact/hooks'
 import { PreactIslandProps } from '@/islands/common/preact-island'
-import { DraftDtoSchema } from '../contracts'
-import { Editor } from '@tiptap/core'
+import { DraftDtoSchema } from '../bookmanager/contracts'
 import { z } from 'zod'
-import { httpUpdateAndPublishDraft, httpUpdateDraft } from './api'
-import { createPortal } from 'preact/compat'
-import clsx from 'clsx'
-import { useMutation } from '@tanstack/react-query'
-import Switch from '@/components/Switch'
+import { ChapterStateProvider } from './state'
+import './BookManagerEditor.scss'
+import { EditorIframe } from './wysiwyg'
 
 const dataSchema = z.object({
   bookId: z.string(),
@@ -16,73 +12,79 @@ const dataSchema = z.object({
 })
 
 export default function BookManagerEditor({ data }: PreactIslandProps) {
-  const { bookId, draft } = useMemo(() => dataSchema.parse(data), [data])
+  const { draft } = useMemo(() => dataSchema.parse(data), [data])
 
-  const editorRef = useRef<Editor | null>(null)
+  // const [makeChapterVisible, setMakeChapterVisible] = useState(true)
+  // const [beforeSaving, setBeforeSaving] = useState(false)
+  // const [publishPopupOpen, setPublishPopupOpen] = useState(false)
 
-  const [makeChapterVisible, setMakeChapterVisible] = useState(true)
-  const [beforeSaving, setBeforeSaving] = useState(false)
-  const [publishPopupOpen, setPublishPopupOpen] = useState(false)
+  // const savingMutation = useMutation({
+  //   mutationFn: async (content: string) => {
+  //     await httpUpdateDraft(bookId, draft.chapterId, draft.id, content)
+  //     setPublishPopupOpen(false)
+  //   },
+  //   onSettled() {
+  //     setBeforeSaving(false)
+  //   },
+  // })
 
-  const savingMutation = useMutation({
-    mutationFn: async (content: string) => {
-      await httpUpdateDraft(bookId, draft.chapterId, draft.id, content)
-      setPublishPopupOpen(false)
-    },
-    onSettled() {
-      setBeforeSaving(false)
-    },
-  })
+  // const saveAndPublishMutation = useMutation({
+  //   mutationFn: async (content: string) => {
+  //     await httpUpdateAndPublishDraft(
+  //       bookId,
+  //       draft.chapterId,
+  //       draft.id,
+  //       content,
+  //       makeChapterVisible,
+  //     )
+  //     setPublishPopupOpen(false)
+  //   },
+  // })
 
-  const saveAndPublishMutation = useMutation({
-    mutationFn: async (content: string) => {
-      await httpUpdateAndPublishDraft(
-        bookId,
-        draft.chapterId,
-        draft.id,
-        content,
-        makeChapterVisible,
-      )
-      setPublishPopupOpen(false)
-    },
-  })
+  // const refs = useRef({ content: '' })
 
-  const refs = useRef({ content: '' })
+  // async function handleContentChange(editorParam?: Editor) {
+  //   const editor = editorParam ?? editorRef.current
+  //   if (!editor) throw new Error('cannot find editor')
+  //   if (savingMutation.isPending) return
 
-  async function handleContentChange(editorParam?: Editor) {
-    const editor = editorParam ?? editorRef.current
-    if (!editor) throw new Error('cannot find editor')
-    if (savingMutation.isPending) return
+  //   refs.current.content = editor.getHTML()
+  //   savingMutation.mutate(refs.current.content)
+  // }
 
-    refs.current.content = editor.getHTML()
-    savingMutation.mutate(refs.current.content)
-  }
+  // function save() {
+  //   if (!editorRef.current) return
+  //   const content = editorRef.current.getHTML()
+  //   savingMutation.mutate(content)
+  // }
 
-  function save() {
-    if (!editorRef.current) return
-    const content = editorRef.current.getHTML()
-    savingMutation.mutate(content)
-  }
+  // function saveAndPublish() {
+  //   if (!editorRef.current) return
+  //   const content = editorRef.current.getHTML()
+  //   saveAndPublishMutation.mutate(content)
+  // }
 
-  function saveAndPublish() {
-    if (!editorRef.current) return
-    const content = editorRef.current.getHTML()
-    saveAndPublishMutation.mutate(content)
-  }
-
-  const publishButtonRef = useRef<HTMLButtonElement | null>(null)
+  // const publishButtonRef = useRef<HTMLButtonElement | null>(null)
 
   return (
-    <>
-      <BookContentEditor
+    <ChapterStateProvider draft={draft}>
+      <div class="chapter-editor-layout">
+        <div class="chapter-editor-layout__header">
+          <header class="chapter-editor-header">Header</header>
+        </div>
+        <div class="chapter-editor-layout__body">
+          <EditorIframe />
+        </div>
+      </div>
+      {/* <BookContentEditor
         editorRef={editorRef}
         contentChangedDebounce={1000}
         onContentChanged={handleContentChange}
         onBeforeContentChanged={handleBeforeContentChanged}
         draft={draft}
         bookId={bookId}
-      />
-      {createPortal(
+      /> */}
+      {/* {createPortal(
         <>
           <button
             ref={publishButtonRef}
@@ -137,11 +139,7 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
           </button>
         </>,
         document.getElementById('slot:actions')!,
-      )}
-    </>
+      )} */}
+    </ChapterStateProvider>
   )
-
-  function handleBeforeContentChanged() {
-    setBeforeSaving(true)
-  }
 }

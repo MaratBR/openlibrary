@@ -17,8 +17,8 @@ templ BookTOC(
     <div class="contents" id="slot-book-toc" x-cloak x-show="tab==='toc'">
         if len(chapters) == 0 {
             <section id="empty_toc" class="mt-4 p-2 border rounded-lg bg-card shadow-md">
-                <h1 class="font-title text-xl font-semibold mb-2">{_t(l, "book.emptyToc")}</h1>
-                <p>{_t(l, "book.emptyTocContent")}</p>
+                <h1 class="font-title text-xl font-semibold mb-2">{l.T("book.emptyToc")}</h1>
+                <p>{l.T("book.emptyTocContent")}</p>
             </section>
         } else {
             <ol-scroll-blocker />
@@ -56,7 +56,7 @@ templ BookTOC(
                             </a>
 
                             // if chapter.Summary != "" {
-                            //     <article class="ml-4 mt-1 mb-4 text-sm __user-content" x-ignore>
+                            //     <article class="ml-4 mt-1 mb-4 text-sm user-content" x-ignore>
                             //         @templ.Raw( chapter.Summary )
                             //     </article>
                             // }

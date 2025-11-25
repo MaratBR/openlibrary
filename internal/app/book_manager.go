@@ -243,8 +243,13 @@ type GetBookDraftsQuery struct {
 }
 
 type TrashBookCommand struct {
-	BookID int64
-	UserID uuid.UUID
+	BookID      int64
+	ActorUserID uuid.UUID
+}
+
+type UntrashBookCommand struct {
+	BookID      int64
+	ActorUserID uuid.UUID
 }
 
 type BookManagerService interface {
@@ -254,6 +259,7 @@ type BookManagerService interface {
 	UpdateBook(ctx context.Context, input UpdateBookCommand) error
 	UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (UploadBookCoverResult, error)
 	TrashBook(ctx context.Context, input TrashBookCommand) error
+	UntrashBook(ctx context.Context, input UntrashBookCommand) error
 
 	UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error
 	CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterResult, error)

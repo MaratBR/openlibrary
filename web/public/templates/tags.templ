@@ -15,7 +15,11 @@ templ TagPage(tag app.TagDetailsItemDto) {
         l := i18n.GetLocalizer(ctx)
     }}
     
-    @baseLayout(tag.Name) {
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{
+            Title: tag.Name,
+        },
+    }) {
         <main class="ol-container">
             <header class="pt-16 pb-8">
                 <h1 class="font-title font-bold text-6xl">{tag.Name}</h1>
@@ -24,11 +28,11 @@ templ TagPage(tag app.TagDetailsItemDto) {
 
                 <div>
                     <a class="link" href={templ.URL(fmt.Sprintf("/search?it=%d", tag.ID))}>
-                        {_t(l, "common.books")}
+                        {l.T("common.books")}
                     </a>
                     &bull;
                     <a class="link" href={templ.URL(fmt.Sprintf("/collections?it=%d", tag.ID))}>
-                        {_t(l, "common.collections")}
+                        {l.T("common.collections")}
                     </a>
                 </div>
             </header>

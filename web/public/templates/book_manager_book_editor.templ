@@ -9,7 +9,7 @@ templ BookManagerNewBook() {
         l := i18n.GetLocalizer(ctx)
     }}
 
-	@bmLayoutBase(_t(l, "bookManager.newBook.title"), false) {
+	@bmLayoutBase(l.T("bookManager.newBook.title"), false) {
         @i18nExtractKeysByPrefix(l, "bookManager.newBook")
         for _, ageRating := range app.AllRatings {
             @i18nExtractKeys(l, []string{

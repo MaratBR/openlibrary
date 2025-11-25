@@ -1,0 +1,16 @@
+package webcomponents
+
+type UserContentProps struct {
+    Content string
+    ID string
+}
+
+templ UserContent(props UserContentProps) {
+    <div 
+        if props.ID != "" {
+            id={props.ID}
+        }
+        class="user-content contents" x-ignore>
+        @templ.Raw(props.Content)
+    </div>
+}

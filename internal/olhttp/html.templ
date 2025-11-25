@@ -4,10 +4,18 @@ import "context"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/mileusna/useragent"
 
+type DocProps struct {
+    Title string
+    Scripts []string
+    CSS []string
+    InstantClick bool
+    AppendToHead templ.Component
+    BodyClasses string
+}
 
 templ Doc(
     ctx context.Context, 
-    settings DocSettings,
+    settings DocProps,
 ) {
     {{
         var lang string
@@ -74,13 +82,4 @@ templ Doc(
         }
     </body>
     </html>
-}
-
-type DocSettings struct {
-    Title string
-    Scripts []string
-    CSS []string
-    InstantClick bool
-    AppendToHead templ.Component
-    BodyClasses string
 }
