@@ -1,10 +1,10 @@
 import { useMemo } from 'preact/hooks'
 import { PreactIslandProps } from '@/islands/common/preact-island'
-import { DraftDtoSchema } from '../bookmanager/contracts'
 import { z } from 'zod'
-import { ChapterStateProvider } from './state'
 import './BookManagerEditor.scss'
 import { EditorIframe } from './wysiwyg'
+import { DraftDtoSchema } from './contracts'
+import { ChapterStateProvider } from './state'
 
 const dataSchema = z.object({
   bookId: z.string(),

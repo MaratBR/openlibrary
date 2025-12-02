@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks'
-import { ChapterContentEditor } from './state'
 import { useChapterState } from '../state'
+import { ChapterContentEditor } from './editor'
 
 export function EditorIframe() {
   const [loading, setLoading] = useState(true)
@@ -26,11 +26,8 @@ export function EditorIframe() {
     const target = event.target
     if (!(target instanceof HTMLIFrameElement)) return
 
-    const contentRoot = target.contentDocument?.getElementById('BookReaderContent')
-    if (!contentRoot) throw new Error('cannot find #BookReader content within iframe')
-
     new ChapterContentEditor({
-      element: contentRoot,
+      element: target,
       placeholder: 'Placeholder here!',
       state,
     })

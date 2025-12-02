@@ -1,10 +1,20 @@
 import { createContext } from 'preact'
 import { useContext, useRef } from 'preact/hooks'
-import { DraftDto } from '../bookmanager/contracts'
 import { PropsWithChildren } from 'preact/compat'
+import { DraftDto } from '../contracts'
+import { ViewState } from './view'
 
 export class ChapterState {
-  constructor(draft: DraftDto) {}
+  private readonly _draft: DraftDto
+  public view = new ViewState('100%')
+
+  constructor(draft: DraftDto) {
+    this._draft = draft
+  }
+
+  get draft() {
+    return this._draft
+  }
 }
 
 const ChapterStateContext = createContext<ChapterState | null>(null)

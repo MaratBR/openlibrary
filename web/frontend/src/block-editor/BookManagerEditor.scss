@@ -1,0 +1,39 @@
+.chapter-editor-layout {
+    @apply flex flex-col h-full w-full;
+
+    &__header {
+        @apply h-16;
+    }
+
+    &__body {
+        @apply grow-1;
+    }
+}
+
+.chapter-editor-header {
+    @apply bg-card border-b h-full;
+    display: grid;
+}
+
+#BlockEditorWrap {
+    @apply p-4;
+
+    margin: 0 auto;
+    max-width: 65ch;
+
+    .ProseMirror {
+        @apply focus-visible:outline-none focus:outline-none;
+
+        &::selection {
+            @apply bg-primary/20;
+        }
+    }
+
+    p.is-editor-empty:first-child::before {
+        @apply text-muted-2-foreground;
+        content: attr(data-placeholder);
+        float: left;
+        height: 0;
+        pointer-events: none;
+    }
+}

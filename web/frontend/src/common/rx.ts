@@ -128,3 +128,12 @@ export class Derived<
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+export class State<TObject extends object> extends Subject<TObject> {
+  updateState(update: Partial<TObject>) {
+    this.set({
+      ...this.get(),
+      ...update,
+    })
+  }
+}

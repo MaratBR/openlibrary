@@ -3,8 +3,8 @@ import { httpUpdateChaptersOrder, managerBookDetailsSchema } from './api'
 import { ErrorDisplay } from '@/components/error'
 import Popper from '@/components/Popper'
 import { useMutation } from '@tanstack/react-query'
-import { httpCreateChapter } from '../../block-editor/api'
 import { PreactIslandProps } from '@/lib/island'
+import { httpCreateChapter } from '@/api/bm'
 
 // type Chapter = ManagerBookDetailsDto['chapters'][number]
 

@@ -148,6 +148,7 @@ const ENTRIES = [
   'common',
   'alpinejs',
   'http-client',
+  'block-editor',
 
   // admin stuff
   'admin-common',
@@ -174,7 +175,6 @@ const ENTRIES = [
   'islands/admin-password-reset',
 
   'islands/bookmanager',
-  'islands/block-editor',
 
   'islands/admin',
 

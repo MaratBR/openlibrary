@@ -93,11 +93,17 @@ templ Chapter(
 }
 
 templ ChapterContentIframe() {
-    @htmlLayout(htmlLayoutProps{}) {
+    @htmlLayout(htmlLayoutProps{
+        CSS: []string{
+            "/_/assets/block-editor.css",
+        },
+    }) {
         {{
             settings := getUIBookSettings(olhttp.GetRequest(ctx))
         }}
-        @ChapterContent("", settings)
+        <div id="BlockEditorWrap">
+            @ChapterContent("", settings)
+        </div>
     }
 }
 
@@ -198,7 +204,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings, opti
 }
 
 templ ChapterContent(content string, uiSettings uiSettings) {
-    <article class="chapter-content" { templ.Attributes{
+    <article class="chapter-content" id="ChapterContent" { templ.Attributes{
         "style": fmt.Sprintf("--book-font-size:%dpx", uiSettings.FontSize),
     }... } :style="`--book-font-size:${fontSize}px`">
         @webcomponents.UserContent(webcomponents.UserContentProps{

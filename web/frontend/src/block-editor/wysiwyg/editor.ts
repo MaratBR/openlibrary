@@ -9,18 +9,31 @@ import Heading from '@tiptap/extension-heading'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
 import { ChapterState } from '../state'
+import { Dispose } from '@/common/rx'
 
 export type ChapterContentEditorOptions = {
-  element: HTMLElement
+  element: HTMLIFrameElement
   placeholder: string
   state: ChapterState
 }
 
 export class ChapterContentEditor extends Editor {
-  constructor({ element, placeholder }: ChapterContentEditorOptions) {
+  private readonly chapterState: ChapterState
+  private _disposeFn: Dispose[] = []
+  private readonly $chapterContent: HTMLElement
+
+  constructor({ element, placeholder, state }: ChapterContentEditorOptions) {
+    if (!element.contentDocument)
+      throw new Error('iframe element does not have contentDocument yet')
+    const chapterContentWrap = element.contentDocument.getElementById('ChapterContent')
+    if (!chapterContentWrap) throw new Error('cannot find #ChapterContent content within iframe')
+    const userContentContainer = element.contentDocument.getElementById('BookReaderContent')
+    if (!userContentContainer)
+      throw new Error('cannot find #BookReaderContent content within iframe')
+
     super({
-      element,
-      content: '',
+      element: userContentContainer,
+      content: state.draft.content,
       extensions: [
         StarterKit.configure({
           horizontalRule: false,
@@ -44,7 +57,17 @@ export class ChapterContentEditor extends Editor {
           placeholder,
         }),
       ],
-      // ...options,
     })
+    this.chapterState = state
+    this.$chapterContent = chapterContentWrap
+    this._initViewState()
+  }
+
+  private _initViewState() {
+    this._disposeFn.push(
+      this.chapterState.view.subscribe(({ editorWidth }) => {
+        this.$chapterContent.style.maxWidth = editorWidth
+      }),
+    )
   }
 }
