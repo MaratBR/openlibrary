@@ -49,15 +49,17 @@ func (c *bookManagerController) index(w http.ResponseWriter, r *http.Request) {
 func (c *bookManagerController) yourBooks(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 	page, _ := olhttp.URLQueryParamInt64(r, "p")
+	search := r.URL.Query().Get("q")
 	if page < 1 {
 		page = 1
 	} else if page > 10000 {
 		page = 10000
 	}
 	books, err := c.service.GetUserBooks(r.Context(), app.GetUserBooksQuery{
-		UserID:   session.UserID,
-		PageSize: 20,
-		Page:     uint32(page),
+		UserID:      session.UserID,
+		PageSize:    20,
+		Page:        uint32(page),
+		SearchQuery: search,
 	})
 	if err != nil {
 		writeApplicationError(w, r, err)

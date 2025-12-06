@@ -90,7 +90,7 @@ templ SearchResultFragment(
             @searchNoResultsCard()
         } else {
             @pagination
-            <ul role="listbox" id="results" class="book-search-results">
+            <ul role="listbox" id="results" class="book-search-results mt-2">
                 {{
                     tags := make(map[int64]app.DefinedTagDto, len(result.Tags))
                     for _, tag := range result.Tags {

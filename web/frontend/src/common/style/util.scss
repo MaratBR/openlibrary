@@ -36,7 +36,18 @@
 }
 
 .page-header-container {
-    @apply my-4;
+    @apply my-4 relative;
+
+    --page-header-container-right-width: 300px;
+
+    &:has(&__right) {
+        padding-right: var(--page-header-container-right-width);
+    }
+
+    &__right {
+       @apply absolute top-0 right-0;
+       width: var(--page-header-container-right-width); 
+    }
 }
 
 .dl {

@@ -35,11 +35,3 @@ go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 ```
 
-# protobuf
-
-Install protoc.
-
-
-```
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-```

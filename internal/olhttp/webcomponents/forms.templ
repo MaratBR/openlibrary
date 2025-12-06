@@ -1,0 +1,45 @@
+package webcomponents
+
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
+type SimpleSearchFormProps struct {
+    ParamName string
+    Placeholder string
+    IncludeParams []string
+}
+
+templ SimpleSearchForm(props SimpleSearchFormProps) {
+    {{
+        paramName := props.ParamName
+        if paramName == "" {
+            paramName = "q"
+        }
+        r := olhttp.GetRequest(ctx)
+        urlQuery := r.URL.Query()
+        search := urlQuery.Get(paramName)
+        placeholder := props.Placeholder
+
+        if placeholder == "" {
+            l := i18n.GetLocalizer(ctx)
+            placeholder = l.T("common.search")
+        }
+    }}
+
+    <form method="get">
+        <input placeholder={ placeholder } class="input" type="text" value={ search } name={ paramName } />
+        <button type="submit">
+            {  }
+        </button>
+        if len(props.IncludeParams) > 0 {
+            for _, param := range props.IncludeParams {
+                {{
+                    value := urlQuery.Get(param)
+                }}
+                if value != "" {
+                    <input aria-hidden="true" type="hidden" name={ param } value={ value } />
+                }
+            }
+        }
+    </form>
+}

@@ -30,11 +30,16 @@ func (q *Queries) BookSetHasCover(ctx context.Context, arg BookSetHasCoverParams
 const book_Book_ManagerGetUserBooksCount = `-- name: Book_Book_ManagerGetUserBooksCount :one
 select count(1)
 from books
-where author_user_id = $1
+where author_user_id = $1 and ($2::text = '' or position(lower($2::text) in lower(books.name)) > 0)
 `
 
-func (q *Queries) Book_Book_ManagerGetUserBooksCount(ctx context.Context, authorUserID pgtype.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, book_Book_ManagerGetUserBooksCount, authorUserID)
+type Book_Book_ManagerGetUserBooksCountParams struct {
+	AuthorUserID pgtype.UUID
+	Search       string
+}
+
+func (q *Queries) Book_Book_ManagerGetUserBooksCount(ctx context.Context, arg Book_Book_ManagerGetUserBooksCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, book_Book_ManagerGetUserBooksCount, arg.AuthorUserID, arg.Search)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -170,15 +175,16 @@ select
 from books
 left join collection_books on books.id = collection_books.book_id
 left join collections on collection_books.collection_id = collections.id
-where author_user_id = $1
+where author_user_id = $3 and ($4::text = '' or position(lower($4::text) in lower(books.name)) > 0)
 order by books.created_at desc
-limit $2 offset $3
+limit $1 offset $2
 `
 
 type Book_ManagerGetUserBooksParams struct {
-	AuthorUserID pgtype.UUID
 	Limit        int32
 	Offset       int32
+	AuthorUserID pgtype.UUID
+	Search       string
 }
 
 type Book_ManagerGetUserBooksRow struct {
@@ -211,7 +217,12 @@ type Book_ManagerGetUserBooksRow struct {
 }
 
 func (q *Queries) Book_ManagerGetUserBooks(ctx context.Context, arg Book_ManagerGetUserBooksParams) ([]Book_ManagerGetUserBooksRow, error) {
-	rows, err := q.db.Query(ctx, book_ManagerGetUserBooks, arg.AuthorUserID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, book_ManagerGetUserBooks,
+		arg.Limit,
+		arg.Offset,
+		arg.AuthorUserID,
+		arg.Search,
+	)
 	if err != nil {
 		return nil, err
 	}

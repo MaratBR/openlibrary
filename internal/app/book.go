@@ -79,6 +79,7 @@ type GetUserBooksQuery struct {
 	ActorUserID Nullable[uuid.UUID]
 	Page        uint32
 	PageSize    uint32
+	SearchQuery string
 }
 
 type SearchUserBooksQuery struct {

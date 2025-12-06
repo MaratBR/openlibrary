@@ -14,17 +14,22 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     }}
 
     @dashboardLayout(pageTitle) {
-        <div class="admin-page-content relative">
-            <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
-                <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ l.T("common.search") } />
-                <button type="submit" :disabled="q.trim()===''" class="btn btn--secondary">
-                    <i class="fa-solid fa-search"></i>
-                </button>
-            </form>
-
+        <div class="admin-page-content">
+            // <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
+            //     <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ l.T("common.search") } />
+            //     <button type="submit" :disabled="q.trim()===''" class="btn btn--secondary">
+            //         <i class="fa-solid fa-search"></i>
+            //     </button>
+            // </form>
 
             <header class="page-header-container">
                 <h1 class="page-header">{ pageTitle }</h1>
+
+                <div class="page-header-container__right">
+                    @webcomponents.SimpleSearchForm(webcomponents.SimpleSearchFormProps{
+                        ParamName: "q",
+                    })
+                </div>
             </header>
 
             @webcomponents.InlineCategoriesSelection(webcomponents.InlineCategoriesSelectionProps{

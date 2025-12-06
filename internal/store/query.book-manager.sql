@@ -46,14 +46,14 @@ select
 from books
 left join collection_books on books.id = collection_books.book_id
 left join collections on collection_books.collection_id = collections.id
-where author_user_id = $1
+where author_user_id = $3 and (sqlc.arg('search')::text = '' or position(lower(sqlc.arg('search')::text) in lower(books.name)) > 0)
 order by books.created_at desc
-limit $2 offset $3;
+limit $1 offset $2;
 
 -- name: Book_Book_ManagerGetUserBooksCount :one
 select count(1)
 from books
-where author_user_id = $1;
+where author_user_id = $1 and (sqlc.arg('search')::text = '' or position(lower(sqlc.arg('search')::text) in lower(books.name)) > 0);
 
 -- name: Book_SetChapterOrder :exec
 update book_chapters

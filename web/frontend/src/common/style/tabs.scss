@@ -1,5 +1,5 @@
 .tabs {
-    --tab-height: 36px;
+    --tab-height: 48px;
     --tab-border-color-active: var(--colors-primary-DEFAULT);
     @apply flex gap-1;
 
@@ -43,7 +43,8 @@
             }
 
             & > a {
-                @apply p-2 inline-block;
+                @apply px-2 inline-block h-full v-middle;
+                line-height: var(--tab-height);
             }
         }
     }

@@ -16,6 +16,7 @@ require (
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-faker/faker/v4 v4.5.0
 	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/gosimple/slug v1.15.0
 	github.com/h2non/bimg v1.1.9
 	github.com/hjson/hjson-go/v4 v4.4.0
 	github.com/jackc/pgx/v5 v5.7.1
@@ -25,6 +26,8 @@ require (
 	github.com/knadh/koanf/providers/file v1.1.2
 	github.com/knadh/koanf/v2 v2.1.2
 	github.com/koding/websocketproxy v0.0.0-20181220232114-7ed82d81a28c
+	github.com/mailgun/errors v0.4.0
+	github.com/mailgun/mailgun-go/v4 v4.23.0
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/mileusna/useragent v1.3.5
 	github.com/minio/minio-go/v7 v7.0.80
@@ -54,7 +57,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/gosimple/slug v1.15.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -64,8 +66,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
-	github.com/mailgun/errors v0.4.0 // indirect
-	github.com/mailgun/mailgun-go/v4 v4.23.0 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect

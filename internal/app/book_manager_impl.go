@@ -46,6 +46,7 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 		AuthorUserID: uuidDomainToDb(input.UserID),
 		Limit:        limit,
 		Offset:       offset,
+		Search:       input.SearchQuery,
 	})
 	if err != nil {
 		return GetUserBooksResult{}, wrapUnexpectedDBError(err)
@@ -56,7 +57,10 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 		return GetUserBooksResult{}, err
 	}
 
-	count, err := s.queries.Book_Book_ManagerGetUserBooksCount(ctx, uuidDomainToDb(input.UserID))
+	count, err := s.queries.Book_Book_ManagerGetUserBooksCount(ctx, store.Book_Book_ManagerGetUserBooksCountParams{
+		AuthorUserID: uuidDomainToDb(input.UserID),
+		Search:       input.SearchQuery,
+	})
 
 	totalPages := uint32(math.Ceil(float64(count) / float64(input.PageSize)))
 
