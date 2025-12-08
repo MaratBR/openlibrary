@@ -8,12 +8,13 @@ import ajax from '@imacrayon/alpine-ajax'
 import collapse from '@alpinejs/collapse'
 
 // alpinejs components
-import './book-reader'
+import './BookReader'
 import './rating-input'
-import './collapse'
+import './Collapse'
 import './page-progress'
 import './passwordInput'
 import './navbar'
+import './SimpleEditor'
 ;(window as unknown as { Alpine: typeof Alpine }).Alpine = Alpine
 
 Alpine.plugin(ajax)

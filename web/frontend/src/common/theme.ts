@@ -2,7 +2,6 @@ import { getCookie, setCookie } from './cookies'
 import { executeAfterDOMIsReady } from './dom'
 import { PREFERS_DARK_MODE } from './media'
 import { Derived, Subject } from './rx'
-import './theme.css'
 
 const SYSTEM_THEME = 'system'
 const LIGHT_THEME = 'light'

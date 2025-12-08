@@ -3,7 +3,7 @@ import Alpine from 'alpinejs'
 const FONT_SIZES = [10, 12, 14, 16, 18, 22, 30, 36, 48, 60, 70, 80, 90, 99]
 const FONT_SIZES_REVERSED = FONT_SIZES.slice().reverse()
 
-Alpine.data('bookReader', () => ({
+Alpine.data('BookReader', () => ({
   settingsOpen: false,
   fontSize: 18,
 

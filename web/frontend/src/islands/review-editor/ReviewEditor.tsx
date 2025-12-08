@@ -1,5 +1,5 @@
 import StarterKit from '@tiptap/starter-kit'
-import TextStyle from '@tiptap/extension-text-style'
+import { TextStyle } from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import { Editor, EditorOptions } from '@tiptap/core'

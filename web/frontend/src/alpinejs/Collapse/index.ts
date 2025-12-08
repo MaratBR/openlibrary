@@ -1,6 +1,6 @@
 import Alpine from 'alpinejs'
 
-Alpine.data('collapseContent', () => ({
+Alpine.data('Collapse', () => ({
   can: false,
   expand: false,
   resizeObserver: null as ResizeObserver | null,

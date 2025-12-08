@@ -13,9 +13,7 @@ import './theme'
 import './util'
 import '@/http-client'
 
-import './components.css'
-import 'virtual:uno.css'
-import './common.css'
+import './style'
 
 import { initAfterDOMReady } from './links'
 import { initFirstActivityEvent } from '@/lib/user-activity-detector'

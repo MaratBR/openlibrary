@@ -1,4 +1,4 @@
-@import "./style/theme.css";
+@import "./theme.css";
 
 button, [role=button] {
     cursor: pointer;

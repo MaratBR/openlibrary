@@ -233,7 +233,7 @@ templ collapsible(height int, canBeCollapsed bool) {
     }}
 
     <div 
-        x-data="collapseContent"
+        x-data="Collapse"
         data-collapsible-height={ fmt.Sprintf("%d", height) }
         :data-expanded="expand"
         if canBeCollapsed {

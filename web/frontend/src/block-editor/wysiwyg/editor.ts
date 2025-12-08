@@ -1,6 +1,6 @@
 import { Editor } from '@tiptap/core'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
-import TextStyle from '@tiptap/extension-text-style'
+import { TextStyle } from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
 import TextAlign from '@tiptap/extension-text-align'
 import Image from '@tiptap/extension-image'

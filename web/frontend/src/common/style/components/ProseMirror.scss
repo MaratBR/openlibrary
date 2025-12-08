@@ -1,0 +1,13 @@
+.ProseMirrorInside {
+    .ProseMirror {
+        @apply outline-none p-2 min-h-40;
+
+        p.is-editor-empty:first-child::before {
+            @apply text-muted-2-foreground;
+            content: attr(data-placeholder);
+            float: left;
+            height: 0;
+            pointer-events: none;
+        }
+    }
+}

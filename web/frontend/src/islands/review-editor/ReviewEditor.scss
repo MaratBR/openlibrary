@@ -20,13 +20,5 @@
 
     &__content {
         @apply text-sm mt-2 border-border border rounded-md;
-    
-        & > .ProseMirror {
-            @apply outline-none p-2 min-h-40;
-        }
-
-        &:has(.ProseMirror-focused) {
-            @apply border-primary outline outline-2 outline-offset-[-1px] outline-primary;
-        }
     }
 }

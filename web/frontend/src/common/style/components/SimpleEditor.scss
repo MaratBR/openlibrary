@@ -1,0 +1,28 @@
+.SimpleEditor {
+    @apply bg-card rounded-xl border;
+
+    &__toolbar {
+
+        @apply bg-card rounded-lg m-2 p-2 shadow-sm flex gap-1;
+
+    }
+
+    &__toolbarWrapper {
+        @apply contents;
+    }
+
+    &__btn {
+        @apply 
+            size-8 bg-card rounded-md flex items-center justify-center
+            hover:bg-primary hover:text-primary-foreground;
+        
+
+        &--active {
+            @apply bg-primary text-primary-foreground hover:opacity-80;
+        }
+    }
+
+    &__content {
+        @apply contents;
+    }
+}
