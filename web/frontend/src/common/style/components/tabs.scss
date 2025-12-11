@@ -1,6 +1,6 @@
 .tabs {
     --tab-height: 48px;
-    --tab-border-color-active: var(--colors-primary-DEFAULT);
+    --tab-border-color-active: var(--primary);
     @apply flex gap-1;
 
     .tab {

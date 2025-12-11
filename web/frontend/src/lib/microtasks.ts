@@ -32,7 +32,6 @@ function _queueMicrotasksWithBursts(
         )
         return
       }
-      console.log('rescheduling microtask')
       // reschedule for next frame
       requestAnimationFrame(() => {
         _queueMicrotasksWithBursts(

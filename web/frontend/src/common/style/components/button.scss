@@ -34,8 +34,8 @@
         color: var(--btn-colors-main);
         background-color: transparent;
 
-        --btn-colors-main: var(--colors-foreground);
-        --btn-colors-text: var(--colors-foreground);
+        --btn-colors-main: var(--foreground);
+        --btn-colors-text: var(--foreground);
 
         &:hover {
             background-color: color-mix(in srgb, var(--btn-colors-main) 13%, transparent);
@@ -43,8 +43,8 @@
     }
 
     &--outline {
-        --btn-colors-main: var(--colors-foreground);
-        --btn-colors-text: var(--colors-foreground);
+        --btn-colors-main: var(--foreground);
+        --btn-colors-text: var(--foreground);
 
         border: 2px solid var(--btn-colors-main);
         line-height: calc(var(--btn-height) - 2px) !important;
@@ -69,23 +69,23 @@
 
     // COLORS
     &, &--primary {
-        --btn-colors-main: var(--colors-primary-DEFAULT);
-        --btn-colors-text: var(--colors-primary-foreground);
+        --btn-colors-main: var(--primary);
+        --btn-colors-text: var(--primary-foreground);
     }
 
     &--fg {
-        --btn-colors-main: var(--colors-foreground);
-        --btn-colors-text: var(--colors-card-DEFAULT);
+        --btn-colors-main: var(--foreground);
+        --btn-colors-text: var(--card);
     }
 
     &--secondary {
-        --btn-colors-main: var(--colors-secondary-DEFAULT);
-        --btn-colors-text: var(--colors-secondary-foreground);
+        --btn-colors-main: var(--secondary);
+        --btn-colors-text: var(--secondary-foreground);
     }
 
     &--destructive {
-        --btn-colors-main: var(--colors-destructive-DEFAULT);
-        --btn-colors-text: var(--colors-destructive-foreground);
+        --btn-colors-main: var(--destructive);
+        --btn-colors-text: var(--destructive-foreground);
     }
 }
 

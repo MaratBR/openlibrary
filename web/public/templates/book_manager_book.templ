@@ -35,9 +35,7 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
             @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
                 ID: "general",
             }) {
-                <div x-data="SimpleEditor" class="SimpleEditor ProseMirrorInside user-content">
-                    @templ.Raw(book.Summary)
-                </div>
+                @webcomponents.SimpleEditor(book.Summary)
                 
                 @webcomponents.Island(webcomponents.IslandProps{
                     Src: "bookmanager",

@@ -1,9 +1,15 @@
-import { Editor, EditorEvents } from '@tiptap/core'
+import { Editor } from '@tiptap/core'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import { TextStyle, FontSize, FontFamily } from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
 import Color from '@tiptap/extension-color'
-import StarterKit from '@tiptap/starter-kit'
+import Paragraph from '@tiptap/extension-paragraph'
+import Document from '@tiptap/extension-document'
+import Bold from '@tiptap/extension-bold'
+import Italic from '@tiptap/extension-italic'
+import Strike from '@tiptap/extension-strike'
+import Underline from '@tiptap/extension-underline'
+import Text from '@tiptap/extension-text'
 
 import TextAlign from '@tiptap/extension-text-align'
 import { ComponentChildren, render } from 'preact'
@@ -29,11 +35,13 @@ const DEFAULT_STATE: State = {
   header: null,
   font: null,
   fontSize: null,
-  textAlign: null,
+  textAlign: 'left',
 }
 
 export class SimpleEditor extends Editor {
   tiptapState = new Subject<State>(DEFAULT_STATE)
+
+  private readonly _toolbarWrapper: HTMLElement
 
   constructor(element: HTMLElement) {
     const html = element.innerHTML
@@ -47,33 +55,43 @@ export class SimpleEditor extends Editor {
       element: contentElement,
       content: html,
       extensions: [
-        StarterKit.configure({
-          horizontalRule: false,
-          codeBlock: false,
-          heading: false,
-          code: { HTMLAttributes: { class: 'inline', spellcheck: 'false' } },
-          dropcursor: { width: 2, class: 'ProseMirror-dropcursor border' },
-        }),
+        Document,
+        Paragraph,
+        Bold,
+        Italic,
+        Strike,
+        Underline,
+        Text,
         TextStyle,
         FontSize,
         FontFamily,
         Typography,
         HorizontalRule,
         Color,
-        TextAlign,
+        TextAlign.configure({
+          types: ['heading', 'paragraph'],
+        }),
       ],
     })
 
-    const toolbarWrapper = document.createElement('div')
+    this._toolbarWrapper = document.createElement('div')
 
     window.requestAnimationFrame(() => {
       element.innerHTML = ''
-      element.appendChild(toolbarWrapper)
+      element.appendChild(this._toolbarWrapper)
       element.appendChild(contentElement)
-      render(<Toolbar editor={this} />, toolbarWrapper)
+      render(<Toolbar editor={this} />, this._toolbarWrapper)
     })
 
-    this.on('update', this._onUpdate.bind(this))
+    const onUpdate = this._onUpdate.bind(this)
+
+    this.on('update', onUpdate)
+    this.on('transaction', onUpdate)
+
+    this.on('destroy', () => {
+      this.off('update', onUpdate)
+      this.off('transaction', onUpdate)
+    })
   }
 
   private _getCurrentState(): State {
@@ -101,24 +119,57 @@ export class SimpleEditor extends Editor {
     }
   }
 
-  private _onUpdate(_props: EditorEvents['update']) {
+  private _onUpdate() {
     this.tiptapState.set(this._getCurrentState())
+  }
+
+  destroy(): void {
+    super.destroy()
+    render(null, this._toolbarWrapper)
   }
 }
 
 function Toolbar({ editor }: { editor: SimpleEditor }) {
-  const { bold, italic, strikethrough } = useSubject(editor.tiptapState)
+  const { bold, italic, strikethrough, textAlign } = useSubject(editor.tiptapState)
 
   return (
     <ul class="SimpleEditor__toolbar">
-      <ToolbarButton active={bold} onClick={() => editor.chain().setBold().focus().run()}>
+      <ToolbarButton active={bold} onClick={() => editor.chain().toggleBold().focus().run()}>
         <i class="fa-solid fa-bold" />
       </ToolbarButton>
-      <ToolbarButton active={bold} onClick={() => editor.chain().setItalic().focus().run()}>
+      <ToolbarButton active={italic} onClick={() => editor.chain().toggleItalic().focus().run()}>
         <i class="fa-solid fa-italic" />
       </ToolbarButton>
-      <ToolbarButton active={bold} onClick={() => editor.chain().setStrike().focus().run()}>
+      <ToolbarButton
+        active={strikethrough}
+        onClick={() => editor.chain().toggleStrike().focus().run()}
+      >
         <i class="fa-solid fa-strikethrough" />
+      </ToolbarButton>
+      <li class="SimpleEditor__delimiter" aria-hidden="true" />
+      <ToolbarButton
+        active={textAlign === 'left'}
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+      >
+        <i class="fa-solid fa-align-left" />
+      </ToolbarButton>
+      <ToolbarButton
+        active={textAlign === 'center'}
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+      >
+        <i class="fa-solid fa-align-center" />
+      </ToolbarButton>
+      <ToolbarButton
+        active={textAlign === 'right'}
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+      >
+        <i class="fa-solid fa-align-right" />
+      </ToolbarButton>
+      <ToolbarButton
+        active={textAlign === 'justify'}
+        onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+      >
+        <i class="fa-solid fa-align-justify" />
       </ToolbarButton>
     </ul>
   )
@@ -136,7 +187,7 @@ function ToolbarButton({
   return (
     <li
       role="button"
-      class={`SimpleEditor__btn ${active ? 'SimpleEditor__btn--actuive' : ''}`}
+      class={`SimpleEditor__btn ${active ? 'SimpleEditor__btn--active' : ''}`}
       onClick={onClick}
     >
       {children}

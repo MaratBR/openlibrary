@@ -1,9 +1,9 @@
 import clsx from 'clsx'
+import { HTMLAttributes } from 'preact'
 import {
   createContext,
   ForwardedRef,
   forwardRef,
-  HTMLAttributes,
   PropsWithChildren,
   useContext,
   useRef,
@@ -66,8 +66,8 @@ const TabsBody = forwardRef(
 
 const TabsMenu = forwardRef(
   (
-    { class: class_, className, children, ...props }: HTMLAttributes<HTMLDivElement>,
-    ref: ForwardedRef<HTMLDivElement>,
+    { class: class_, className, children, ...props }: HTMLAttributes<HTMLUListElement>,
+    ref: ForwardedRef<HTMLUListElement>,
   ) => {
     return (
       <ul

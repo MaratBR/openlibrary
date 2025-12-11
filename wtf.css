@@ -1,0 +1,432 @@
+@supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))){*, ::before, ::after, ::backdrop{--un-bg-opacity:100%;--un-text-opacity:100%;--un-border-opacity:100%;--un-space-y-reverse:initial;--un-ring-opacity:100%;}}@property --un-text-opacity{syntax:"<percentage>";inherits:false;initial-value:100%;}@property --un-border-opacity{syntax:"<percentage>";inherits:false;initial-value:100%;}@property --un-bg-opacity{syntax:"<percentage>";inherits:false;initial-value:100%;}@property --un-ring-opacity{syntax:"<percentage>";inherits:false;initial-value:100%;}@property --un-inset-ring-color{syntax:"*";inherits:false;}@property --un-inset-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}@property --un-inset-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}@property --un-inset-shadow-color{syntax:"*";inherits:false;}@property --un-ring-color{syntax:"*";inherits:false;}@property --un-ring-inset{syntax:"*";inherits:false;}@property --un-ring-offset-color{syntax:"*";inherits:false;}@property --un-ring-offset-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}@property --un-ring-offset-width{syntax:"<length>";inherits:false;initial-value:0px;}@property --un-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}@property --un-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}@property --un-shadow-color{syntax:"*";inherits:false;}@property --un-space-y-reverse{syntax:"*";inherits:false;initial-value:0;}:root, :host {
+--spacing: 0.25rem;
+--radius-lg: var(--radius);
+--radius-sm: calc(var(--radius) - 4px);
+--default-transition-timingFunction: cubic-bezier(0.4, 0, 0.2, 1);
+--default-transition-duration: 150ms;
+--radius-md: calc(var(--radius) - 2px);
+--text-sm-fontSize: 0.875rem;
+--text-sm-lineHeight: 1.25rem;
+--fontWeight-medium: 500;
+--colors-slate-400: oklch(70.4% 0.04 256.788);
+--text-lg-fontSize: 1.125rem;
+--text-lg-lineHeight: 1.75rem;
+--colors-orange-600: oklch(64.6% 0.222 41.116);
+--fontWeight-semibold: 600;
+--radius-2xl: 1rem;
+--radius-xl: 0.75rem;
+--radius-none: 0;
+--radius-DEFAULT: 0.25rem;
+--colors-red-800: oklch(44.4% 0.177 26.899);
+--colors-red-200: oklch(88.5% 0.062 18.334);
+--colors-red-600: oklch(57.7% 0.245 27.325);
+--colors-green-800: oklch(44.8% 0.119 151.328);
+--colors-green-200: oklch(92.5% 0.084 155.995);
+--colors-green-600: oklch(62.7% 0.194 149.214);
+--colors-yellow-800: oklch(47.6% 0.114 61.907);
+--colors-yellow-200: oklch(94.5% 0.129 101.54);
+--colors-yellow-600: oklch(68.1% 0.162 75.834);
+--colors-gray-500: oklch(55.1% 0.027 264.364);
+--colors-gray-400: oklch(70.7% 0.022 261.325);
+--colors-white: #fff;
+--text-xl-fontSize: 1.25rem;
+--text-xl-lineHeight: 1.75rem;
+--colors-rose-600: oklch(58.6% 0.253 17.585);
+--colors-gray-600: oklch(44.6% 0.03 256.802);
+--font-sans: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+--font-mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+--default-font-family: var(--font-sans);
+--default-monoFont-family: var(--font-mono);
+}/*
+  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
+  2. Remove default margins and padding
+  3. Reset all borders.
+*/
+
+*,
+::after,
+::before,
+::backdrop,
+::file-selector-button {
+  box-sizing: border-box; /* 1 */
+  margin: 0; /* 2 */
+  padding: 0; /* 2 */
+  border: 0 solid; /* 3 */
+}
+
+/*
+  1. Use a consistent sensible line-height in all browsers.
+  2. Prevent adjustments of font size after orientation changes in iOS.
+  3. Use a more readable tab size.
+  4. Use the user's configured `sans` font-family by default.
+  5. Use the user's configured `sans` font-feature-settings by default.
+  6. Use the user's configured `sans` font-variation-settings by default.
+  7. Disable tap highlights on iOS.
+*/
+
+html,
+:host {
+  line-height: 1.5; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+  tab-size: 4; /* 3 */
+  font-family: var(
+    --default-font-family,
+    ui-sans-serif,
+    system-ui,
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji'
+  ); /* 4 */
+  font-feature-settings: var(--default-font-featureSettings, normal); /* 5 */
+  font-variation-settings: var(--default-font-variationSettings, normal); /* 6 */
+  -webkit-tap-highlight-color: transparent; /* 7 */
+}
+
+/*
+  1. Add the correct height in Firefox.
+  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
+  3. Reset the default border style to a 1px solid border.
+*/
+
+hr {
+  height: 0; /* 1 */
+  color: inherit; /* 2 */
+  border-top-width: 1px; /* 3 */
+}
+
+/*
+  Add the correct text decoration in Chrome, Edge, and Safari.
+*/
+
+abbr:where([title]) {
+  -webkit-text-decoration: underline dotted;
+  text-decoration: underline dotted;
+}
+
+/*
+  Remove the default font size and weight for headings.
+*/
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/*
+  Reset links to optimize for opt-in styling instead of opt-out.
+*/
+
+a {
+  color: inherit;
+  -webkit-text-decoration: inherit;
+  text-decoration: inherit;
+}
+
+/*
+  Add the correct font weight in Edge and Safari.
+*/
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+/*
+  1. Use the user's configured `mono` font-family by default.
+  2. Use the user's configured `mono` font-feature-settings by default.
+  3. Use the user's configured `mono` font-variation-settings by default.
+  4. Correct the odd `em` font sizing in all browsers.
+*/
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(
+    --default-monoFont-family,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    'Liberation Mono',
+    'Courier New',
+    monospace
+  ); /* 1 */
+  font-feature-settings: var(--default-monoFont-featureSettings, normal); /* 2 */
+  font-variation-settings: var(--default-monoFont-variationSettings, normal); /* 3 */
+  font-size: 1em; /* 4 */
+}
+
+/*
+  Add the correct font size in all browsers.
+*/
+
+small {
+  font-size: 80%;
+}
+
+/*
+  Prevent `sub` and `sup` elements from affecting the line height in all browsers.
+*/
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+/*
+  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
+  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
+  3. Remove gaps between table borders by default.
+*/
+
+table {
+  text-indent: 0; /* 1 */
+  border-color: inherit; /* 2 */
+  border-collapse: collapse; /* 3 */
+}
+
+/*
+  Use the modern Firefox focus style for all focusable elements.
+*/
+
+:-moz-focusring {
+  outline: auto;
+}
+
+/*
+  Add the correct vertical alignment in Chrome and Firefox.
+*/
+
+progress {
+  vertical-align: baseline;
+}
+
+/*
+  Add the correct display in Chrome and Safari.
+*/
+
+summary {
+  display: list-item;
+}
+
+/*
+  Make lists unstyled by default.
+*/
+
+ol,
+ul,
+menu {
+  list-style: none;
+}
+
+/*
+  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
+  2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
+      This can trigger a poorly considered lint error in some tools but is included by design.
+*/
+
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block; /* 1 */
+  vertical-align: middle; /* 2 */
+}
+
+/*
+  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
+*/
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/*
+  1. Inherit font styles in all browsers.
+  2. Remove border radius in all browsers.
+  3. Remove background color in all browsers.
+  4. Ensure consistent opacity for disabled states in all browsers.
+*/
+
+button,
+input,
+select,
+optgroup,
+textarea,
+::file-selector-button {
+  font: inherit; /* 1 */
+  font-feature-settings: inherit; /* 1 */
+  font-variation-settings: inherit; /* 1 */
+  letter-spacing: inherit; /* 1 */
+  color: inherit; /* 1 */
+  border-radius: 0; /* 2 */
+  background-color: transparent; /* 3 */
+  opacity: 1; /* 4 */
+}
+
+/*
+  Restore default font weight.
+*/
+
+:where(select:is([multiple], [size])) optgroup {
+  font-weight: bolder;
+}
+
+/*
+  Restore indentation.
+*/
+
+:where(select:is([multiple], [size])) optgroup option {
+  padding-inline-start: 20px;
+}
+
+/*
+  Restore space after button.
+*/
+
+::file-selector-button {
+  margin-inline-end: 4px;
+}
+
+/*
+  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
+*/
+
+::placeholder {
+  opacity: 1;
+}
+
+/*
+  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not
+  crash when using `color-mix(…)` with `currentcolor`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)
+*/
+
+@supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or
+  (contain-intrinsic-size: 1px) /* Safari 17+ */ {
+  ::placeholder {
+    color: color-mix(in oklab, currentcolor 50%, transparent);
+  }
+}
+
+/*
+  Prevent resizing textareas horizontally by default.
+*/
+
+textarea {
+  resize: vertical;
+}
+
+/*
+  Remove the inner padding in Chrome and Safari on macOS.
+*/
+
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/*
+  1. Ensure date/time inputs have the same height when empty in iOS Safari.
+  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.
+*/
+
+::-webkit-date-and-time-value {
+  min-height: 1lh; /* 1 */
+  text-align: inherit; /* 2 */
+}
+
+/*
+  Prevent height from changing on date/time inputs in macOS Safari when the input is set to `display: block`.
+*/
+
+::-webkit-datetime-edit {
+  display: inline-flex;
+}
+
+/*
+  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.
+*/
+
+::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+::-webkit-datetime-edit,
+::-webkit-datetime-edit-year-field,
+::-webkit-datetime-edit-month-field,
+::-webkit-datetime-edit-day-field,
+::-webkit-datetime-edit-hour-field,
+::-webkit-datetime-edit-minute-field,
+::-webkit-datetime-edit-second-field,
+::-webkit-datetime-edit-millisecond-field,
+::-webkit-datetime-edit-meridiem-field {
+  padding-block: 0;
+}
+
+/*
+  Center dropdown marker shown on inputs with paired `<datalist>`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)
+*/
+
+::-webkit-calendar-picker-indicator {
+  line-height: 1;
+}
+
+/*
+  Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)
+*/
+
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+
+/*
+  Correct the inability to style the border radius in iOS Safari.
+*/
+
+button,
+input:where([type='button'], [type='reset'], [type='submit']),
+::file-selector-button {
+  appearance: button;
+}
+
+/*
+  Correct the cursor style of increment and decrement buttons in Safari.
+*/
+
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+
+/*
+  Make elements with the HTML hidden attribute stay hidden by default.
+*/
+
+[hidden]:where(:not([hidden~='until-found'])) {
+  display: none !important;
+}.\!text-\[20px\]{font-size:20px !important;}.text-sm{font-size:var(--text-sm-fontSize);line-height:var(--un-leading, var(--text-sm-lineHeight));}.text-xl{font-size:var(--text-xl-fontSize);line-height:var(--un-leading, var(--text-xl-lineHeight));}.\!text-foreground{color:color-mix(in srgb, var(--foreground) var(--un-text-opacity), transparent) /* var(--foreground) */ !important;}.text-gray-500{color:color-mix(in srgb, var(--gray-500) var(--un-text-opacity), transparent) /* oklch(55.1% 0.027 264.364) */;}.text-green-800{color:color-mix(in srgb, var(--green-800) var(--un-text-opacity), transparent) /* oklch(44.8% 0.119 151.328) */;}.text-muted-foreground{color:color-mix(in srgb, var(--muted-foreground) var(--un-text-opacity), transparent) /* var(--muted-foreground) */;}.text-red-800{color:color-mix(in srgb, var(--colors-red-800) var(--un-text-opacity), transparent) /* oklch(44.4% 0.177 26.899) */;}.text-white{color:color-mix(in srgb, var(--colors-white) var(--un-text-opacity), transparent) /* #fff */;}.text-yellow-800{color:color-mix(in srgb, var(--colors-yellow-800) var(--un-text-opacity), transparent) /* oklch(47.6% 0.114 61.907) */;}.hover\:text-primary:hover{color:color-mix(in srgb, var(--primary) var(--un-text-opacity), transparent) /* var(--primary) */;}.hover\:text-rose-600:hover{color:color-mix(in srgb, var(--colors-rose-600) var(--un-text-opacity), transparent) /* oklch(58.6% 0.253 17.585) */;}.font-\[600\]{--un-font-weight:600;font-weight:600;}.font-medium{--un-font-weight:var(--fontWeight-medium);font-weight:var(--fontWeight-medium);}.font-semibold{--un-font-weight:var(--fontWeight-semibold);font-weight:var(--fontWeight-semibold);}.tab{-moz-tab-size:4;-o-tab-size:4;tab-size:4;}.-m-2{margin:calc(calc(var(--spacing) * 2) * -1);}.m-2{margin:calc(var(--spacing) * 2);}.my-4{margin-block:calc(var(--spacing) * 4);}.my-8{margin-block:calc(var(--spacing) * 8);}.-ml-2{margin-left:calc(calc(var(--spacing) * 2) * -1);}.mb-10{margin-bottom:calc(var(--spacing) * 10);}.mb-2{margin-bottom:calc(var(--spacing) * 2);}.mb-4{margin-bottom:calc(var(--spacing) * 4);}.mb-8{margin-bottom:calc(var(--spacing) * 8);}.ml-2{margin-left:calc(var(--spacing) * 2);}.ml-4{margin-left:calc(var(--spacing) * 4);}.mr-2{margin-right:calc(var(--spacing) * 2);}.mt-1{margin-top:calc(var(--spacing) * 1);}.mt-3{margin-top:calc(var(--spacing) * 3);}.mt-4{margin-top:calc(var(--spacing) * 4);}.mt-8{margin-top:calc(var(--spacing) * 8);}.\[\&\>\.tiptap\]\:p-4>.tiptap,.p-4{padding:calc(var(--spacing) * 4);}.p-0{padding:calc(var(--spacing) * 0);}.p-0\.5{padding:calc(var(--spacing) * 0.5);}.p-1{padding:calc(var(--spacing) * 1);}.p-2{padding:calc(var(--spacing) * 2);}.p-3{padding:calc(var(--spacing) * 3);}.px{padding-inline:calc(var(--spacing) * 4);}.py-2{padding-block:calc(var(--spacing) * 2);}.py-8{padding-block:calc(var(--spacing) * 8);}.pt-8{padding-top:calc(var(--spacing) * 8);}.text-center{text-align:center;}.\!outline-none,.\[\&\>\.tiptap\]\:\!outline-none>.tiptap{--un-outline-style:none !important;outline-style:none !important;}.border{border-width:1px;}.border-b{border-bottom-width:1px;}.border-r-0{border-right-width:0px;}.border-gray-400{border-color:color-mix(in srgb, var(--colors-gray-400) var(--un-border-opacity), transparent) /* oklch(70.7% 0.022 261.325) */;}.border-green-600{border-color:color-mix(in srgb, var(--colors-green-600) var(--un-border-opacity), transparent) /* oklch(62.7% 0.194 149.214) */;}.border-red-600{border-color:color-mix(in srgb, var(--colors-red-600) var(--un-border-opacity), transparent) /* oklch(57.7% 0.245 27.325) */;}.border-yellow-600{border-color:color-mix(in srgb, var(--colors-yellow-600) var(--un-border-opacity), transparent) /* oklch(68.1% 0.162 75.834) */;}.dark .dark\:border-gray-600{border-color:color-mix(in srgb, var(--colors-gray-600) var(--un-border-opacity), transparent) /* oklch(44.6% 0.03 256.802) */;}.hover\:border-primary:hover{border-color:color-mix(in srgb, var(--primary) var(--un-border-opacity), transparent) /* var(--primary) */;}.rounded{border-radius:var(--radius);}.rounded-2xl{border-radius:var(--radius-2xl);}.rounded-full{border-radius:calc(infinity * 1px);}.rounded-lg{border-radius:var(--radius-lg);}.rounded-xl{border-radius:var(--radius-xl);}.rounded-l-none{border-top-left-radius:var(--radius-none);border-bottom-left-radius:var(--radius-none);}.rounded-r-2xl{border-top-right-radius:var(--radius-2xl);border-bottom-right-radius:var(--radius-2xl);}.rounded-r-none{border-top-right-radius:var(--radius-none);border-bottom-right-radius:var(--radius-none);}.rounded-t-lg{border-top-left-radius:var(--radius-lg);border-top-right-radius:var(--radius-lg);}.bg-background{background-color:color-mix(in srgb, var(--background) var(--un-bg-opacity), transparent) /* var(--background) */;}.bg-destructive{background-color:color-mix(in srgb, var(--destructive) var(--un-bg-opacity), transparent) /* var(--destructive) */;}.bg-foreground{background-color:color-mix(in srgb, var(--foreground) var(--un-bg-opacity), transparent) /* var(--foreground) */;}.bg-green-200{background-color:color-mix(in srgb, var(--colors-green-200) var(--un-bg-opacity), transparent) /* oklch(92.5% 0.084 155.995) */;}.bg-muted{background-color:color-mix(in srgb, var(--muted) var(--un-bg-opacity), transparent) /* var(--muted) */;}.bg-primary{background-color:color-mix(in srgb, var(--primary) var(--un-bg-opacity), transparent) /* var(--primary) */;}.bg-red-200{background-color:color-mix(in srgb, var(--colors-red-200) var(--un-bg-opacity), transparent) /* oklch(88.5% 0.062 18.334) */;}.bg-secondary{background-color:color-mix(in srgb, var(--secondary) var(--un-bg-opacity), transparent) /* var(--secondary) */;}.bg-yellow-200{background-color:color-mix(in srgb, var(--colors-yellow-200) var(--un-bg-opacity), transparent) /* oklch(94.5% 0.129 101.54) */;}.group:hover .group-hover\:bg-highlight{background-color:color-mix(in srgb, rgba(var(--highlight) var(--un-bg-opacity), transparent) /* rgba(var(--highlight) */;}.hover\:bg-muted:hover{background-color:color-mix(in srgb, var(--muted) var(--un-bg-opacity), transparent) /* var(--muted) */;}.hover\:bg-secondary:hover{background-color:color-mix(in srgb, var(--secondary) var(--un-bg-opacity), transparent) /* var(--secondary) */;}.hover\:bg-white\/20:hover{background-color:color-mix(in srgb, var(--colors-white) 20%, transparent) /* #fff */;}.data-\[open\=false\]\:opacity-0[data-open=false]{opacity:0%;}.data-\[open\=true\]\:opacity-100[data-open=true]{opacity:100%;}.opacity-15{opacity:15%;}.line-through{text-decoration-line:line-through;}.underline{text-decoration-line:underline;}.hover\:underline:hover{text-decoration-line:underline;}.flex{display:flex;}.inline-flex{display:inline-flex;}.flex-col{flex-direction:column;}.flex-wrap{flex-wrap:wrap;}.gap-1{gap:calc(var(--spacing) * 1);}.gap-2{gap:calc(var(--spacing) * 2);}.gap-3{gap:calc(var(--spacing) * 3);}.grid{display:grid;}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr));}.size-10{width:calc(var(--spacing) * 10);height:calc(var(--spacing) * 10);}.size-8{width:calc(var(--spacing) * 8);height:calc(var(--spacing) * 8);}.\[\&\>\.tiptap\]\:min-h-32>.tiptap,.min-h-32{min-height:calc(var(--spacing) * 32);}.h-\[200px\]{height:200px;}.h-12{height:calc(var(--spacing) * 12);}.h-5{height:calc(var(--spacing) * 5);}.h-96{height:calc(var(--spacing) * 96);}.h-full{height:100%;}.max-h-\[300px\]{max-height:300px;}.max-h-96{max-height:calc(var(--spacing) * 96);}.max-h-none{max-height:none;}.max-w-80{max-width:calc(var(--spacing) * 80);}.max-w-none{max-width:none;}.min-w-48{min-width:calc(var(--spacing) * 48);}.w-\[133px\]{width:133px;}.w-\[500px\]{width:500px;}.w-28{width:calc(var(--spacing) * 28);}.w-64{width:calc(var(--spacing) * 64);}.w-96{width:calc(var(--spacing) * 96);}.w-full{width:100%;}.inline{display:inline;}.block{display:block;}.inline-block{display:inline-block;}.contents{display:contents;}.hidden{display:none;}.empty\:hidden:empty{display:none;}.cursor-pointer{cursor:pointer;}.data-\[open\=false\]\:pointer-events-none[data-open=false],.pointer-events-none{pointer-events:none;}.resize{resize:both;}.select-none{-webkit-user-select:none;user-select:none;}.whitespace-nowrap{white-space:nowrap;}.text-wrap{text-wrap:wrap;}.italic{font-style:italic;}.hover\:ring-1:hover{--un-ring-shadow:var(--un-ring-inset,) 0 0 0 calc(1px + var(--un-ring-offset-width)) var(--un-ring-color, currentColor);box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}.hover\:ring-primary:hover{--un-ring-color:color-mix(in srgb, var(--primary) var(--un-ring-opacity), transparent) /* var(--primary) */;}.shadow-2xl{--un-shadow:0 25px 50px -12px var(--un-shadow-color, rgb(0 0 0 / 0.25));box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}.shadow-lg{--un-shadow:0 10px 15px -3px var(--un-shadow-color, rgb(0 0 0 / 0.1)),0 4px 6px -4px var(--un-shadow-color, rgb(0 0 0 / 0.1));box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}.shadow-md{--un-shadow:0 4px 6px -1px var(--un-shadow-color, rgb(0 0 0 / 0.1)),0 2px 4px -2px var(--un-shadow-color, rgb(0 0 0 / 0.1));box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}.shadow-sm{--un-shadow:0 1px 3px 0 var(--un-shadow-color, rgb(0 0 0 / 0.1)),0 1px 2px -1px var(--un-shadow-color, rgb(0 0 0 / 0.1));box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}.transition-all{transition-property:all;transition-timing-function:var(--un-ease, var(--default-transition-timingFunction));transition-duration:var(--un-duration, var(--default-transition-duration));}.transition-opacity{transition-property:opacity;transition-timing-function:var(--un-ease, var(--default-transition-timingFunction));transition-duration:var(--un-duration, var(--default-transition-duration));}.items-start{align-items:flex-start;}.items-center{align-items:center;}.box-content{box-sizing:content-box;}.inset-0{inset:calc(var(--spacing) * 0);}.bottom-4{bottom:calc(var(--spacing) * 4);}.left-0{left:calc(var(--spacing) * 0);}.right-0{right:calc(var(--spacing) * 0);}.right-1{right:calc(var(--spacing) * 1);}.right-4{right:calc(var(--spacing) * 4);}.top-0{top:calc(var(--spacing) * 0);}.top-1{top:calc(var(--spacing) * 1);}.top-full{top:100%;}.justify-center{justify-content:center;}.justify-between{justify-content:space-between;}.absolute{position:absolute;}.fixed{position:fixed;}.relative{position:relative;}.static{position:static;}.z-10{z-index:10;}.z-20{z-index:20;}.overflow-auto{overflow:auto;}.overflow-hidden{overflow:hidden;}.overflow-y-auto{overflow-y:auto;}.table{display:table;}.space-y-1{:where(&>:not(:last-child)){--un-space-y-reverse:0;margin-block-start: calc(calc(var(--spacing) * 1) * var(--un-space-y-reverse));margin-block-end: calc(calc(var(--spacing) * 1) * calc(1 - var(--un-space-y-reverse)));}}.space-y-4{:where(&>:not(:last-child)){--un-space-y-reverse:0;margin-block-start: calc(calc(var(--spacing) * 4) * var(--un-space-y-reverse));margin-block-end: calc(calc(var(--spacing) * 4) * calc(1 - var(--un-space-y-reverse)));}}@supports (color: color-mix(in lab, red, red)){.text-gray-500{color:color-mix(in oklab, var(--colors-gray-500) var(--un-text-opacity), transparent) /* oklch(55.1% 0.027 264.364) */;}.text-green-800{color:color-mix(in oklab, var(--colors-green-800) var(--un-text-opacity), transparent) /* oklch(44.8% 0.119 151.328) */;}.text-red-800{color:color-mix(in oklab, var(--colors-red-800) var(--un-text-opacity), transparent) /* oklch(44.4% 0.177 26.899) */;}.text-white{color:color-mix(in oklab, var(--colors-white) var(--un-text-opacity), transparent) /* #fff */;}.text-yellow-800{color:color-mix(in oklab, var(--colors-yellow-800) var(--un-text-opacity), transparent) /* oklch(47.6% 0.114 61.907) */;}.hover\:text-rose-600:hover{color:color-mix(in oklab, var(--colors-rose-600) var(--un-text-opacity), transparent) /* oklch(58.6% 0.253 17.585) */;}.border-gray-400{border-color:color-mix(in oklab, var(--colors-gray-400) var(--un-border-opacity), transparent) /* oklch(70.7% 0.022 261.325) */;}.border-green-600{border-color:color-mix(in oklab, var(--colors-green-600) var(--un-border-opacity), transparent) /* oklch(62.7% 0.194 149.214) */;}.border-red-600{border-color:color-mix(in oklab, var(--colors-red-600) var(--un-border-opacity), transparent) /* oklch(57.7% 0.245 27.325) */;}.border-yellow-600{border-color:color-mix(in oklab, var(--colors-yellow-600) var(--un-border-opacity), transparent) /* oklch(68.1% 0.162 75.834) */;}.dark .dark\:border-gray-600{border-color:color-mix(in oklab, var(--colors-gray-600) var(--un-border-opacity), transparent) /* oklch(44.6% 0.03 256.802) */;}.bg-green-200{background-color:color-mix(in oklab, var(--colors-green-200) var(--un-bg-opacity), transparent) /* oklch(92.5% 0.084 155.995) */;}.bg-red-200{background-color:color-mix(in oklab, var(--colors-red-200) var(--un-bg-opacity), transparent) /* oklch(88.5% 0.062 18.334) */;}.bg-yellow-200{background-color:color-mix(in oklab, var(--colors-yellow-200) var(--un-bg-opacity), transparent) /* oklch(94.5% 0.129 101.54) */;}.hover\:bg-white\/20:hover{background-color:color-mix(in oklab, var(--colors-white) 20%, transparent) /* #fff */;}}.md\:space-y-0{@media (min-width: 48rem){:where(&>:not(:last-child)){--un-space-y-reverse:0;margin-block-start: calc(calc(var(--spacing) * 0) * var(--un-space-y-reverse));margin-block-end: calc(calc(var(--spacing) * 0) * calc(1 - var(--un-space-y-reverse)));}}}@media (min-width: 48rem){.md\:px-0{padding-inline:calc(var(--spacing) * 0);}.md\:gap-2{gap:calc(var(--spacing) * 2);}.md\:grid{display:grid;}.md\:grid-cols-\[150px_1fr\]{grid-template-columns:150px 1fr;}}

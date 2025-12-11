@@ -2,9 +2,7 @@
     @apply bg-card rounded-xl border;
 
     &__toolbar {
-
-        @apply bg-card rounded-lg m-2 p-2 shadow-sm flex gap-1;
-
+        @apply bg-card rounded-lg m-2 p-2 shadow-sm flex items-center gap-1 h-10;
     }
 
     &__toolbarWrapper {
@@ -22,7 +20,11 @@
         }
     }
 
+    &__delimiter {
+        @apply border h-5 mx-2;
+    }
+
     &__content {
-        @apply contents;
+        @apply px-3;
     }
 }

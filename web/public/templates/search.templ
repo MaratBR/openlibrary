@@ -177,11 +177,7 @@ templ searchNoResultsCard() {
     {{ l := i18n.GetLocalizer(ctx) }}
 
     <div class="relative">
-        <div class="font-title text-muted-foreground rotate-12 text-center mt-10" style="font-size: 320px;">
-            ??
-        </div>
-
-        <p class="text-center absolute bottom-10 left-[50%] -translate-x-1/2 z-10 px-2 rounded-md text-black inline-block leading-8">{ l.T("search.noResults") }</p>
+        <p class="text-center px-2 rounded-md inline-block leading-8">{ l.T("search.noResults") }</p>
     </div>
 }
 

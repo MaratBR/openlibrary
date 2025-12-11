@@ -1,0 +1,11 @@
+package webcomponents
+
+templ SimpleEditor(content string) {
+    <div x-data="SimpleEditor" class="SimpleEditor">
+        <ul class="SimpleEditor__toolbar">
+        </ul>
+        <div class="SimpleEditor__content ProseMirrorInside user-content">
+            @templ.Raw(content)
+        </div>
+    </div>
+}

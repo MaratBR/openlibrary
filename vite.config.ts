@@ -194,7 +194,9 @@ export default defineConfig((env) => ({
         'internal/olhttp/webcomponents/*.templ',
       ],
     }),
+
     UnoCSS(),
+
     preact({
       devToolsEnabled: true,
       prefreshEnabled: true,
@@ -215,12 +217,16 @@ export default defineConfig((env) => ({
     autoInjectCSSAsLinkTagPlugin({
       baseUrl: '/_/assets/',
     }),
+    esbuildMinifyPlugin(),
     // esbuildMinifyPlugin(),
   ],
 
   resolve: {
     alias: {
       '@': resolve(__dirname, './web/frontend/src'),
+      react: 'preact/compat',
+      'react-dom': 'preact/compat',
+      'react/jsx-runtime': 'preact/jsx-runtime',
     },
   },
 
@@ -238,7 +244,6 @@ export default defineConfig((env) => ({
         chunkFileNames: 'chunks/[hash].js',
         // Put chunk styles at <output>/assets
         assetFileNames: (assetInfo) => {
-          console.log(assetInfo.names)
           if (
             assetInfo.names.length === 1 &&
             assetInfo.names[0].endsWith('.css') &&
@@ -246,7 +251,6 @@ export default defineConfig((env) => ({
           ) {
             return '[name][extname]'
           }
-          console.log('with HASH')
           return '[name]-[hash][extname]'
         },
         entryFileNames: '[name].js',
