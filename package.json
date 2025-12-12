@@ -61,6 +61,7 @@
     "@tiptap/extension-document": "^3.13.0",
     "@tiptap/extension-dropcursor": "^3.13.0",
     "@tiptap/extension-heading": "^3.13.0",
+    "@tiptap/extension-history": "^3.13.0",
     "@tiptap/extension-horizontal-rule": "^3.13.0",
     "@tiptap/extension-image": "^3.13.0",
     "@tiptap/extension-italic": "^3.13.0",

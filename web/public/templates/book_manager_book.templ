@@ -3,6 +3,7 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ BookManagerBook(book *app.ManagerBookDetailsDto) {
     {{
@@ -35,14 +36,53 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
             @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
                 ID: "general",
             }) {
-                @webcomponents.SimpleEditor(book.Summary)
                 
-                @webcomponents.Island(webcomponents.IslandProps{
-                    Src: "bookmanager",
-                    Name: "BookGeneralInformation",
-                    Data: islandDataKey,
-                    ShowLoader: true,
-                })
+
+                <div class="card">
+                    <form>
+                        {{
+                            nameFieldID := olhttp.GetID(ctx)
+                        }}
+                        @webcomponents.FormControlHorizontal(webcomponents.FormControlHorizontalProps{
+                            Label: l.T("bookManager.edit.name"),
+                            For: nameFieldID,
+                        }) {
+                            <input id={nameFieldID} class="input" name="name" value={ book.Name } />
+                        }
+                        @webcomponents.FormControlHorizontal(webcomponents.FormControlHorizontalProps{
+                            Label: l.T("bookManager.edit.summary"),
+                        }) {
+                            @webcomponents.SimpleEditor(webcomponents.SimpleEditorProps{
+                                Content: book.Summary,
+                                InputName: "summary",
+                            })
+                        }
+                        @webcomponents.FormControlHorizontal(webcomponents.FormControlHorizontalProps{
+                            Label: l.T("bookManager.edit.ageRating"),
+                        }) {
+                            @webcomponents.AgeRatingRadioInput(webcomponents.AgeRatingRadioInputProps{
+                                Name: "rating",
+                                Value: book.AgeRating,
+                            })
+                        }
+                        @webcomponents.FormControlHorizontal(webcomponents.FormControlHorizontalProps{
+                            Label: l.T("bookManager.edit.isPubliclyVisible"),
+                            Description: l.T("bookManager.edit.isPubliclyVisible_description"),
+                        }) {
+                            @webcomponents.Switch(webcomponents.SwitchProps{
+                                Name: "isPubliclyVisible",
+                                Value: book.IsPubliclyVisible,
+                            })
+                        }
+                    </form>
+                </div>
+                
+                // @webcomponents.Island(webcomponents.IslandProps{
+                //     Src: "bookmanager",
+                //     Name: "BookGeneralInformation",
+                //     Data: islandDataKey,
+                //     ShowLoader: true,
+                // })
             }
             @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
                 ID: "cover",

@@ -1,11 +1,26 @@
 package webcomponents
 
-templ SimpleEditor(content string) {
-    <div x-data="SimpleEditor" class="SimpleEditor">
+type SimpleEditorProps struct {
+    Content string
+    InputName string
+    InputID string
+}
+
+templ SimpleEditor(props SimpleEditorProps) {
+    <div 
+        x-data="SimpleEditor" 
+        class="SimpleEditor"
+        if props.InputName != "" {
+            data-input-name={ props.InputName }
+        }
+        if props.InputID != "" {
+            data-input-id={ props.InputID }
+        }
+        >
         <ul class="SimpleEditor__toolbar">
         </ul>
-        <div class="SimpleEditor__content ProseMirrorInside user-content">
-            @templ.Raw(content)
+        <div class="SimpleEditor__content user-content">
+            @templ.Raw(props.Content)
         </div>
     </div>
 }

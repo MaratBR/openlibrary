@@ -2,6 +2,7 @@ package webcomponents
 
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/MaratBR/openlibrary/internal/app"
 
 type SimpleSearchFormProps struct {
     ParamName string
@@ -42,4 +43,75 @@ templ SimpleSearchForm(props SimpleSearchFormProps) {
             }
         }
     </form>
+}
+
+type FormControlHorizontalProps struct {
+    For string
+    Label string
+    Description string
+}
+
+templ FormControlHorizontal(props FormControlHorizontalProps) {
+    <div class="form-control form-control--horizontal">
+        <div class="form-control__label">
+            <label class="label"
+                if props.For != "" {
+                    for={props.For}
+                }
+                >
+                {props.Label}
+            </label>
+            if props.Description != "" {
+                <p class="form-control__hint">
+                    { props.Description }
+                </p>
+            }
+        </div>
+
+        <div class="form-control__value">
+            { children... }
+        </div>
+    </div>
+}
+
+type SwitchProps struct {
+    Value bool
+    Name string
+    ID string
+}
+
+templ Switch(props SwitchProps) {
+    <label class="switch">
+        <input 
+            if props.ID != "" {
+                id={props.ID}
+            } 
+            if props.Value {
+                checked
+            }
+            name={props.Name} 
+            type="checkbox">
+        <span class="switch__slider" />
+    </label>
+}
+
+type AgeRatingRadioInputProps struct {
+    Value app.AgeRating
+    Name string
+}
+
+templ AgeRatingRadioInput(props AgeRatingRadioInputProps) {
+    <div class="flex gap-2 flex-wrap">
+        for _, rating := range app.AllRatings {
+            {{
+                id := olhttp.GetID(ctx)
+            }}
+            <input 
+                if rating == props.Value {
+                    checked
+                }
+                id={id} name={props.Name} type="radio" class="age-rating-input" value={ rating } />
+            <label for={id} data-rating={rating} class="age-rating">{rating}</label>
+        }
+    </div>
 }

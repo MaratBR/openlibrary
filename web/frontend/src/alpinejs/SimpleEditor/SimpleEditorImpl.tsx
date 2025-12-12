@@ -1,4 +1,4 @@
-import { Editor } from '@tiptap/core'
+import { Editor, EditorEvents } from '@tiptap/core'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import { TextStyle, FontSize, FontFamily } from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
@@ -10,11 +10,13 @@ import Italic from '@tiptap/extension-italic'
 import Strike from '@tiptap/extension-strike'
 import Underline from '@tiptap/extension-underline'
 import Text from '@tiptap/extension-text'
+import History from '@tiptap/extension-history'
 
 import TextAlign from '@tiptap/extension-text-align'
 import { ComponentChildren, render } from 'preact'
 import { Subject, useSubject } from '@/common/rx'
 import { MouseEventHandler } from 'preact/compat'
+import { debounce } from '@/common/util/fn'
 
 export type State = {
   bold: boolean
@@ -41,21 +43,23 @@ const DEFAULT_STATE: State = {
 export class SimpleEditor extends Editor {
   tiptapState = new Subject<State>(DEFAULT_STATE)
 
-  private readonly _toolbarWrapper: HTMLElement
+  private readonly $toolbarWrapper: HTMLElement
+  private readonly $element: HTMLElement
 
   constructor(element: HTMLElement) {
     const html = element.innerHTML
     element.classList.add('SimpleEditor')
-    element.classList.add('user-content')
 
     const contentElement = document.createElement('div')
     contentElement.classList.add('SimpleEditor__content')
+    contentElement.classList.add('user-content')
 
     super({
       element: contentElement,
       content: html,
       extensions: [
         Document,
+        History,
         Paragraph,
         Bold,
         Italic,
@@ -74,24 +78,54 @@ export class SimpleEditor extends Editor {
       ],
     })
 
-    this._toolbarWrapper = document.createElement('div')
+    this.$element = element
+    this.$toolbarWrapper = document.createElement('div')
 
     window.requestAnimationFrame(() => {
       element.innerHTML = ''
-      element.appendChild(this._toolbarWrapper)
+      element.appendChild(this.$toolbarWrapper)
       element.appendChild(contentElement)
-      render(<Toolbar editor={this} />, this._toolbarWrapper)
+      render(<Toolbar editor={this} />, this.$toolbarWrapper)
+      this._initInputElement()
     })
 
     const onUpdate = this._onUpdate.bind(this)
+    this._addOnTransaction(onUpdate)
+  }
 
-    this.on('update', onUpdate)
-    this.on('transaction', onUpdate)
+  private _initInputElement() {
+    const inputName = this.$element.dataset.inputName
+    if (inputName) {
+      const input = document.createElement('input')
+      input.type = 'hidden'
+      input.ariaHidden = 'true'
+      input.name = inputName
 
-    this.on('destroy', () => {
-      this.off('update', onUpdate)
-      this.off('transaction', onUpdate)
-    })
+      const inputId = this.$element.dataset.inputId
+      if (inputId) {
+        input.id = inputId
+      }
+
+      this.$element.appendChild(input)
+
+      const cb = () => {
+        const html = this.getHTML()
+        input.value = html
+      }
+      cb()
+      this._addOnTransaction(debounce(cb, 500))
+    }
+  }
+
+  private _addOnTransaction(cb: (event: EditorEvents['transaction']) => void) {
+    this.on('transaction', cb)
+
+    const onDestroy = () => {
+      this.off('transaction', cb)
+      this.off('destroy', onDestroy)
+    }
+
+    this.on('destroy', onDestroy)
   }
 
   private _getCurrentState(): State {
@@ -125,7 +159,7 @@ export class SimpleEditor extends Editor {
 
   destroy(): void {
     super.destroy()
-    render(null, this._toolbarWrapper)
+    render(null, this.$toolbarWrapper)
   }
 }
 
