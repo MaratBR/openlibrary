@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'preact/hooks'
-import TagsInput from './TagsInput'
+import TagsInput from '../../components/TagsInput'
 
 import RangeInput from './RangeInput'
 import { PreactIslandProps } from '../common/preact-island'

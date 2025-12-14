@@ -24,21 +24,22 @@ export function DropdownCore({ slotProps = {}, slots = {}, ...props }: DropdownP
         if (!rootRef.current) return
 
         if (
-          event.target instanceof Element &&
-          !rootRef.current.contains(event.target) &&
-          // only close if we clicked at element that currently exists in DOM
-          // is this a good idea?
-          document.body.contains(event.target)
+          (event.target instanceof Element &&
+            !rootRef.current.contains(event.target) &&
+            // only close if we clicked at element that currently exists in DOM
+            // is this a good idea?
+            document.body.contains(event.target)) ||
+          event.target === document.documentElement
         ) {
           setOpen(false)
         }
       })
     }
 
-    document.addEventListener('click', callback)
+    window.addEventListener('click', callback)
 
     return () => {
-      document.removeEventListener('click', callback)
+      window.removeEventListener('click', callback)
     }
   }, [open])
 

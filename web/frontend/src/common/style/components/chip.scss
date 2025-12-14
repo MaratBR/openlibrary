@@ -1,9 +1,21 @@
 .chip {
-    @apply leading-6 rounded-full px-1 inline-flex items-center gap-1;
+    @apply leading-6 rounded-md px-1 inline-flex items-center gap-1;
 
     @apply bg-card text-card-foreground;
 
     &--primary {
         @apply bg-primary text-primary-foreground;
+    }
+
+    &--secondary {
+        @apply bg-secondary;
+    }
+
+    &__close {
+        @apply text-xs text-muted-foreground hover:text-foreground;
+
+        & > i {
+            font-size: inherit !important;
+        }
     }
 }

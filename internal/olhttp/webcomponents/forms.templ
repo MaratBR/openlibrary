@@ -3,6 +3,8 @@ package webcomponents
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+import "strings"
 
 type SimpleSearchFormProps struct {
     ParamName string
@@ -114,4 +116,51 @@ templ AgeRatingRadioInput(props AgeRatingRadioInputProps) {
             <label for={id} data-rating={rating} class="age-rating">{rating}</label>
         }
     </div>
+}
+
+type TagsAutocompleteProps struct {
+    TagIds []int64
+    Tags []app.DefinedTagDto
+    Name string
+    ID string
+}
+
+templ TagsAutocomplete(props TagsAutocompleteProps) {
+    {{
+        var (
+            value string
+            inputValue string
+        )
+        {
+            values := make([]any, 0, len(props.TagIds)+len(props.Tags))
+            for _, id := range props.TagIds {
+                values = append(values, id)
+                inputValue += fmt.Sprintf("%d,", id)
+            }
+            for _, tag := range props.Tags {
+                values = append(values, tag)
+                inputValue += fmt.Sprintf("%d,", tag.ID)
+            }
+            value, _ = templ.JSONString(values)
+
+            if inputValue != "" {
+                inputValue, _ = strings.CutSuffix(inputValue, ",")
+            }
+        }
+    }}
+    
+    <div
+        data-value={value}
+        class="dropdown"
+        x-data="TagsAutocomplete">
+        <input   
+            type="text"
+            class="dropdown__input" />
+    </div>
+    <input aria-hidden="true" type="hidden"
+        if props.ID != "" {
+            id={props.ID}
+        }
+        value={inputValue}
+        name={props.Name} />
 }

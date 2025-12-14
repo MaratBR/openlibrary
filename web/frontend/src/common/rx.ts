@@ -72,7 +72,7 @@ export function useSubject<T>(subject: Subscribable<T> & WithValue<T>): T {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class Derived<
-    TList extends Subscribable<any>[], // tuple of Subscribables
+    TList extends (Subscribable<any> & WithValue<any>)[], // tuple of Subscribables
     Result,
   >
   implements Subscribable<Result>, WithValue<Result>
@@ -89,9 +89,9 @@ export class Derived<
     ) => Result,
   ) {
     // initialize values with undefined assertions (we’ll fill them)
-    this.values = [] as any
-
+    this.values = new Array(this.sources.length) as any
     this.sources.forEach((source, index) => {
+      this.values[index] = source.get()
       const unsub = source.subscribe((value: any) => {
         this.values[index] = value
         this.recompute()

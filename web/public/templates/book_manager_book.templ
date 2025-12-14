@@ -74,6 +74,20 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
                                 Value: book.IsPubliclyVisible,
                             })
                         }
+
+                        {{
+                            tagsFieldID := olhttp.GetID(ctx)
+                        }}
+                        @webcomponents.FormControlHorizontal(webcomponents.FormControlHorizontalProps{
+                            Label: l.T("bookManager.edit.tags"),
+                            For: tagsFieldID,
+                        }) {
+                            @webcomponents.TagsAutocomplete(webcomponents.TagsAutocompleteProps{
+                                Name: "tags",
+                                ID: tagsFieldID,
+                                Tags: book.Tags,
+                            })
+                        }
                     </form>
                 </div>
                 

@@ -4,7 +4,7 @@ import TextEditor from './TextEditor'
 import AgeRatingInput from '@/components/AgeRatingInput'
 import Switch from '@/components/Switch'
 import { httpUpdateBook, managerBookDetailsSchema } from './api'
-import TagsInput from '@/islands/search-filters/TagsInput'
+import TagsInput from '@/components/TagsInput'
 import { PreactIslandProps } from '@/lib/island'
 
 export default function GeneralInformation({ data: dataUnknown }: PreactIslandProps) {

@@ -15,6 +15,7 @@ import './page-progress'
 import './passwordInput'
 import './navbar'
 import './SimpleEditor'
+import './TagsAutocomplete'
 ;(window as unknown as { Alpine: typeof Alpine }).Alpine = Alpine
 
 Alpine.plugin(ajax)

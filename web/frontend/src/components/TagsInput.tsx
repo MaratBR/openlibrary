@@ -1,14 +1,13 @@
 import { useState } from 'preact/hooks'
-import { DropdownCore } from './DropdownCore'
+import { DropdownCore } from '../islands/search-filters/DropdownCore'
 import { DefinedTagDto, useTagsSearch } from '@/api/search'
 
 export type TagsInputProps = {
-  tags: DefinedTagDto[]
-
-  onInput: (tags: DefinedTagDto[]) => void
+  tags?: DefinedTagDto[]
+  onInput?: (tags: DefinedTagDto[]) => void
 }
 
-export default function TagsInput({ tags, onInput }: TagsInputProps) {
+export default function TagsInput({ tags = [], onInput }: TagsInputProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
   const query = useTagsSearch({
@@ -21,14 +20,14 @@ export default function TagsInput({ tags, onInput }: TagsInputProps) {
   function add(tag: DefinedTagDto) {
     if (tags.some((x) => x.id === tag.id)) return
     window.requestAnimationFrame(() => {
-      onInput([...tags, tag])
+      onInput?.([...tags, tag])
     })
   }
 
   function remove(tag: DefinedTagDto) {
     if (!tags.some((x) => x.id === tag.id)) return
     window.requestAnimationFrame(() => {
-      onInput(tags.filter((x) => x.id !== tag.id))
+      onInput?.(tags.filter((x) => x.id !== tag.id))
     })
   }
 
@@ -38,10 +37,7 @@ export default function TagsInput({ tags, onInput }: TagsInputProps) {
         beforeInput: (
           <div class="flex flex-wrap items-center gap-1 m-2 empty:hidden">
             {tags.map((tag) => (
-              <span
-                key={tag.id}
-                class="text-sm whitespace-nowrap inline-flex items-center p-0.5 bg-muted"
-              >
+              <span key={tag.id} class="chip chip--secondary">
                 {tag.name}
 
                 <button
@@ -49,7 +45,7 @@ export default function TagsInput({ tags, onInput }: TagsInputProps) {
                     e.preventDefault()
                     remove(tag)
                   }}
-                  class="h-5 hover:text-rose-600"
+                  class="chip__close"
                   aria-label={window._('search.removeTag')}
                 >
                   <i class="fa-solid fa-xmark !text-[20px]" />
