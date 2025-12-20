@@ -14,7 +14,6 @@ export default function BookCover({ data }: PreactIslandProps) {
 
   async function handleFileUpload(file: File, fileCropped: boolean) {
     const newUrl = await httpUploadCover({
-      clientCropped: fileCropped,
       file,
       bookId: book.id,
     })

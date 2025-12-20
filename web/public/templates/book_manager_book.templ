@@ -38,6 +38,14 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
                     @bookEditForm(book)
                 </div>
             }
+
+            @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
+                ID: "cover",
+            }) {
+                <div class="card">
+                    @bookCoverUploadForm(book)
+                </div>
+            }
         }
     }
 }
@@ -100,5 +108,28 @@ templ bookEditForm(book *app.ManagerBookDetailsDto) {
 }
 
 templ bookCoverUploadForm(book *app.ManagerBookDetailsDto) {
-    
+    <div class="my-8 mx-2">
+        @serverData(map[string]any{
+            "bookID": app.Int64String(book.ID),
+        })
+        <script>
+        window.__uploadBookCover = async file => {
+            const body = new FormData()
+            body.append('file', file)
+
+            const response = await fetch(`/_api/books-manager/book/${window.__server__.bookID}/cover`, {
+                body,
+                method: 'POST'
+            }).then(r => r.json())
+            await window.delay(1500)
+            window.location.reload()
+        };
+        </script>
+        @webcomponents.ImageUploader(webcomponents.ImageUploaderProps{
+            CropWidth: 200,
+            CropHeight: 300,
+            SelectedImage: book.Cover,
+            JSCallbackFunction: "window.__uploadBookCover",
+        })
+    </div>
 }

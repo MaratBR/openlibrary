@@ -11,19 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const bookSetHasCover = `-- name: BookSetHasCover :exec
+const bookSetCover = `-- name: BookSetCover :exec
 update books
-set has_cover = $2
+set cover = $2
 where id = $1
 `
 
-type BookSetHasCoverParams struct {
-	ID       int64
-	HasCover bool
+type BookSetCoverParams struct {
+	ID    int64
+	Cover string
 }
 
-func (q *Queries) BookSetHasCover(ctx context.Context, arg BookSetHasCoverParams) error {
-	_, err := q.db.Exec(ctx, bookSetHasCover, arg.ID, arg.HasCover)
+func (q *Queries) BookSetCover(ctx context.Context, arg BookSetCoverParams) error {
+	_, err := q.db.Exec(ctx, bookSetCover, arg.ID, arg.Cover)
 	return err
 }
 
@@ -167,7 +167,7 @@ func (q *Queries) Book_InsertChapter(ctx context.Context, arg Book_InsertChapter
 
 const book_ManagerGetUserBooks = `-- name: Book_ManagerGetUserBooks :many
 select 
-    books.id, books.name, books.slug, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.is_trashed, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.has_cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned,
+    books.id, books.name, books.slug, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.is_trashed, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned,
     collections.id as collection_id,
     collections.name as collection_name,
     collection_books."order" as collection_position,
@@ -202,7 +202,7 @@ type Book_ManagerGetUserBooksRow struct {
 	Chapters           int32
 	TagIds             []int64
 	CachedParentTagIds []int64
-	HasCover           bool
+	Cover              string
 	View               int32
 	Rating             pgtype.Float8
 	TotalReviews       int32
@@ -245,7 +245,7 @@ func (q *Queries) Book_ManagerGetUserBooks(ctx context.Context, arg Book_Manager
 			&i.Chapters,
 			&i.TagIds,
 			&i.CachedParentTagIds,
-			&i.HasCover,
+			&i.Cover,
 			&i.View,
 			&i.Rating,
 			&i.TotalReviews,

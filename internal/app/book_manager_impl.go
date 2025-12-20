@@ -103,7 +103,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		Summary:           book.Summary,
 		IsPubliclyVisible: book.IsPubliclyVisible,
 		IsBanned:          book.IsBanned,
-		Cover:             getBookCoverURL(s.uploadService, book.ID, book.HasCover),
+		Cover:             getBookCoverURL(s.uploadService, book.Cover),
 	}
 
 	{
@@ -246,7 +246,8 @@ func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBo
 		return
 	}
 
-	path := fmt.Sprintf("%s/%d.jpeg", BOOK_COVER_DIRECTORY, input.BookID)
+	cover := fmt.Sprintf("%d_%d", input.BookID, GenID())
+	path := fmt.Sprintf("%s/%s.jpeg", BOOK_COVER_DIRECTORY, cover)
 	_, err = s.uploadService.Client.PutObject(
 		ctx,
 		s.uploadService.PublicBucket,
@@ -259,15 +260,15 @@ func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBo
 		return
 	}
 
-	err = s.queries.BookSetHasCover(ctx, store.BookSetHasCoverParams{
-		ID:       input.BookID,
-		HasCover: true,
+	err = s.queries.BookSetCover(ctx, store.BookSetCoverParams{
+		ID:    input.BookID,
+		Cover: cover,
 	})
 	if err != nil {
 		return
 	}
 
-	result.URL = getBookCoverURL(s.uploadService, input.BookID, true)
+	result.URL = getBookCoverURL(s.uploadService, cover)
 
 	return
 }
@@ -365,7 +366,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 				IsPubliclyVisible: row.IsPubliclyVisible,
 				IsBanned:          row.IsBanned,
 				IsTrashed:         row.IsTrashed,
-				Cover:             getBookCoverURL(s.uploadService, row.ID, row.HasCover),
+				Cover:             getBookCoverURL(s.uploadService, row.Cover),
 			}
 		}
 

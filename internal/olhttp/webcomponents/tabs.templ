@@ -1,6 +1,8 @@
 package webcomponents
 
 import "fmt"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "context"
 
 type Tab struct {
     ID string
@@ -15,10 +17,13 @@ type TabsListProps struct {
 
 templ TabsList(props TabsListProps) {
     <ul role="tablist" class="tabs tabs--primary">
+        {{
+            defaultTab := getSelectedTab(ctx, props.DefaultTab)
+        }}
         for _, tab := range props.Tabs {
             <li
                 :class={ fmt.Sprintf("{tab:true,'tab--active':tab === %q}", tab.ID) }
-                if tab.ID == props.DefaultTab {
+                if tab.ID == defaultTab {
                     class="tab tab--active"
                     aria-current="true"
                 } else {
@@ -26,7 +31,7 @@ templ TabsList(props TabsListProps) {
                 }
                 :aria-current={ fmt.Sprintf("tab === %q", tab.ID) }
                 role="tab"
-                @click={ fmt.Sprintf("_changeTab(%q)", tab.ID) }>
+                @click={ fmt.Sprintf("setTab(%q)", tab.ID) }>
                 if tab.LabelComponent != nil {
                     @tab.LabelComponent
                 } else {
@@ -42,9 +47,18 @@ type TabsWrapProps struct {
 }
 
 templ TabsWrap(props TabsWrapProps) {
-    <div class="contents" x-data={ fmt.Sprintf("{tab:%q, _changeTab(t) { this.tab = t; }}", props.DefaultTab) }>
+    <div class="contents" x-data="Tabs" data-fallback-tab={props.DefaultTab}>
         { children... }
     </div>
+}
+
+func getSelectedTab(ctx context.Context, fallback string) string {
+    r := olhttp.GetRequest(ctx)
+    tab := r.URL.Query().Get("tab")
+    if tab == "" {
+        tab = fallback
+    }
+    return tab
 }
 
 type TabsPanelProps struct {
@@ -54,6 +68,10 @@ type TabsPanelProps struct {
 }
 
 templ TabsPanel(props TabsPanelProps) {
+    {{
+        defaultTab := getSelectedTab(ctx, "")
+        shouldBeVisible := defaultTab == props.ID
+    }}
     if props.KeepUnmounted {
         <template x-if={fmt.Sprintf("tab===%q", props.ID)}>
             <div class="contents" x-show={fmt.Sprintf("tab===%q", props.ID)}>
@@ -61,7 +79,11 @@ templ TabsPanel(props TabsPanelProps) {
             </div>
         </template>
     } else {
-        <div class="contents" x-show={fmt.Sprintf("tab===%q", props.ID)}>
+        <div 
+            if !shouldBeVisible {
+                x-cloak
+            }
+            class="contents" x-show={fmt.Sprintf("tab===%q", props.ID)}>
             { children... }
         </div>
     }

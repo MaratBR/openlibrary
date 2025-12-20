@@ -10,6 +10,17 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+func getBookCoverURL(
+	uploadService *UploadService,
+	cover string,
+) string {
+	if cover == "" {
+		return ""
+	}
+
+	return uploadService.GetPublicURL(fmt.Sprintf("%s/%s.jpeg", BOOK_COVER_DIRECTORY, cover))
+}
+
 type bookService struct {
 	queries            *store.Queries
 	tagsService        TagsService
@@ -114,7 +125,7 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (B
 			Name: book.AuthorName,
 		},
 		Permissions:         BookUserPermissions{CanEdit: query.ActorUserID.Valid && authorID == query.ActorUserID.UUID},
-		Cover:               getBookCoverURL(s.uploadService, book.ID, book.HasCover),
+		Cover:               getBookCoverURL(s.uploadService, book.Cover),
 		Rating:              float64ToNullable(book.Rating),
 		Reviews:             book.TotalReviews,
 		Votes:               book.TotalRatings,
@@ -283,7 +294,7 @@ func (s *bookService) GetPinnedBooks(ctx context.Context, input GetPinnedUserBoo
 				int(rows[i].Words),
 				int(rows[i].Chapters)),
 			Chapters: int(rows[i].Chapters),
-			Cover:    getBookCoverURL(s.uploadService, rows[i].ID, rows[i].HasCover),
+			Cover:    getBookCoverURL(s.uploadService, rows[i].Cover),
 			IsPinned: rows[i].IsPinned,
 		})
 	}

@@ -50,7 +50,7 @@ set
     -- chapters = 0,
     tag_ids = '{}',
     cached_parent_tag_ids = '{}',
-    has_cover = false,
+    cover = '',
     view = 0,
     rating = null,
     total_reviews = 0,

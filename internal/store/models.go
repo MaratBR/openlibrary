@@ -387,7 +387,7 @@ type Book struct {
 	Chapters           int32
 	TagIds             []int64
 	CachedParentTagIds []int64
-	HasCover           bool
+	Cover              string
 	View               int32
 	Rating             pgtype.Float8
 	TotalReviews       int32

@@ -74,7 +74,7 @@ func (q *Queries) GetLastChapterID(ctx context.Context, bookID int64) (int64, er
 
 const getUserLibrary = `-- name: GetUserLibrary :many
 select 
-    books.id, books.name, books.has_cover, books.age_rating, 
+    books.id, books.name, books.cover, books.age_rating, 
     reading_list.last_updated_at,
     last_chapter."order" as chapter_order, last_chapter.name as chapter_name, last_chapter.id as chapter_id
 from reading_list
@@ -94,7 +94,7 @@ type GetUserLibraryParams struct {
 type GetUserLibraryRow struct {
 	ID            int64
 	Name          string
-	HasCover      bool
+	Cover         string
 	AgeRating     AgeRating
 	LastUpdatedAt pgtype.Timestamptz
 	ChapterOrder  pgtype.Int4
@@ -114,7 +114,7 @@ func (q *Queries) GetUserLibrary(ctx context.Context, arg GetUserLibraryParams) 
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.HasCover,
+			&i.Cover,
 			&i.AgeRating,
 			&i.LastUpdatedAt,
 			&i.ChapterOrder,

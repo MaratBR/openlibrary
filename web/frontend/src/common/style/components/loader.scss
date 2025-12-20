@@ -26,8 +26,8 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background-color: hsl(var(--loader-color));
-  box-shadow: 32px 0 hsl(var(--loader-color)), -32px 0 hsl(var(--loader-color));
+  background-color: var(--loader-color);
+  box-shadow: 32px 0 var(--loader-color), -32px 0 var(--loader-color);
   position: relative;
   margin-left: 32px;
   margin-right: 32px;
@@ -35,20 +35,20 @@
 }
 
 .loader--dark {
-  --loader-color: 210 40% 98%;
+  --loader-color: hsl(210 40% 98%);
 }
 
 @keyframes flash {
     0% {
-      background-color: hsla(var(--loader-color) / 0.5);
-      box-shadow: 32px 0 hsla(var(--loader-color) / 0.5), -32px 0 hsl(var(--loader-color));
+      background-color: color-mix(in srgb, var(--loader-color), transparent 50%);
+      box-shadow: 32px 0 color-mix(in srgb, var(--loader-color), transparent 50%), -32px 0 var(--loader-color);
     }
     50% {
       background-color: hsl(var(--loader-color));
-      box-shadow: 32px 0 hsla(var(--loader-color) / 0.5), -32px 0 hsla(var(--loader-color) / 0.5);
+      box-shadow: 32px 0 color-mix(in srgb, var(--loader-color), transparent 50%), -32px 0 color-mix(in srgb, var(--loader-color), transparent 50%);
     }
     100% {
-      background-color: hsla(var(--loader-color) / 0.5);
-      box-shadow: 32px 0 hsl(var(--loader-color)), -32px 0 hsla(var(--loader-color) / 0.5);
+      background-color: color-mix(in srgb, var(--loader-color), transparent 50%);
+      box-shadow: 32px 0 var(--loader-color), -32px 0 color-mix(in srgb, var(--loader-color), transparent 50%);
     }
 }

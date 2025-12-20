@@ -43,6 +43,10 @@ textarea.input {
             rounded-b-sm;
     }
 
+    &__chips {
+        @apply flex flex-wrap items-center gap-1 m-2 empty:hidden;
+    }
+
     &[data-open=true] {
         @apply rounded-b-none;
     }

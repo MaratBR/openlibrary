@@ -1,0 +1,35 @@
+.ImageUploader {
+    min-height: 300px;
+
+    &__inner {
+        @apply flex items-center justify-center flex-col rounded-3xl border-2 border-dashed min-h-36;
+        & > label {
+            @apply cursor-pointer flex items-center justify-center flex-col gap-3 h-full w-full;
+        }
+    }
+
+    &:has(&__img) {
+        @apply grid grid-cols-[auto_1fr] gap-col-2;
+    }
+
+    &__img {
+        @apply rounded-3xl overflow-hidden;
+    }
+
+    &__err {
+        @apply cursor-pointer flex items-center justify-center flex-col gap-3;
+    }
+
+    &__input {
+        @apply hidden;
+    }
+
+    &__text {
+        @apply inline-block text-center text-sm font-500 text-muted-foreground;
+    }
+
+    &__icon {
+        @apply text-4xl text-muted-foreground;
+        display: block !important;
+    }
+}

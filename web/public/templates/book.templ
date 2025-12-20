@@ -221,7 +221,7 @@ templ bookCover(cover, bookName string, height int) {
         }... }>
         <img loading="lazy" src={ cover } />
     </div>
-} 
+}
 
 templ bookTags(tags []app.DefinedTagDto) {
     {{ l := i18n.GetLocalizer(ctx) }}

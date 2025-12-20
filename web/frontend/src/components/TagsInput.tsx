@@ -35,7 +35,7 @@ export default function TagsInput({ tags = [], onInput }: TagsInputProps) {
     <DropdownCore
       slots={{
         beforeInput: (
-          <div class="flex flex-wrap items-center gap-1 m-2 empty:hidden">
+          <div class="dropdown__chips">
             {tags.map((tag) => (
               <span key={tag.id} class="chip chip--secondary">
                 {tag.name}

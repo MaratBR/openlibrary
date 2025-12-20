@@ -30,14 +30,13 @@ func newBookController(service app.BookService, reviewService app.ReviewsService
 
 func (b *bookController) Register(r chi.Router) {
 	// book page and its fragments
-	r.Get("/book/{bookID}", b.GetBook)
-	r.Get("/book/{bookID}/__fragment/preview-card", b.GetBookPreview)
-	r.Get("/book/{bookID}/__fragment/toc", b.GetBookTOC)
-	r.Get("/book/{bookID}/__fragment/review", b.GetBookReview)
-
+	r.Get("/book/{bookID}", b.book)
+	r.Get("/book/{bookID}/__fragment/preview-card", b.bookPreview)
+	r.Get("/book/{bookID}/__fragment/toc", b.bookTOC)
+	r.Get("/book/{bookID}/__fragment/review", b.bookReview)
 }
 
-func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
+func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 	param := chi.URLParam(r, "bookID")
 	bookID, slug := olhttp.ParseInt64Slug(param)
 	if bookID == 0 {
@@ -115,7 +114,7 @@ func (b *bookController) GetBook(w http.ResponseWriter, r *http.Request) {
 	).Render(r.Context(), w)
 }
 
-func (b *bookController) GetBookTOC(w http.ResponseWriter, r *http.Request) {
+func (b *bookController) bookTOC(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		w.WriteHeader(404)
@@ -148,7 +147,7 @@ func (b *bookController) GetBookTOC(w http.ResponseWriter, r *http.Request) {
 	templates.BookTOC(r.Context(), bookID, chapters, activeChapterID).Render(r.Context(), w)
 }
 
-func (b *bookController) GetBookPreview(w http.ResponseWriter, r *http.Request) {
+func (b *bookController) bookPreview(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		w.WriteHeader(404)
@@ -168,7 +167,7 @@ func (b *bookController) GetBookPreview(w http.ResponseWriter, r *http.Request) 
 	templates.BookPreviewPartial(book).Render(r.Context(), w)
 }
 
-func (b *bookController) GetBookReview(w http.ResponseWriter, r *http.Request) {
+func (b *bookController) bookReview(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		w.WriteHeader(404)

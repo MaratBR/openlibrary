@@ -25,9 +25,9 @@ update books
 set is_trashed = false, is_publicly_visible = $2
 where id = $1;
 
--- name: BookSetHasCover :exec
+-- name: BookSetCover :exec
 update books
-set has_cover = $2
+set cover = $2
 where id = $1;
 
 -- name: RecalculateBookStats :exec

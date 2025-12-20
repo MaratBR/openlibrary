@@ -36,7 +36,7 @@ where c.book_id = $1 and "order" = (select max("order") from book_chapters where
 
 -- name: GetUserLibrary :many
 select 
-    books.id, books.name, books.has_cover, books.age_rating, 
+    books.id, books.name, books.cover, books.age_rating, 
     reading_list.last_updated_at,
     last_chapter."order" as chapter_order, last_chapter.name as chapter_name, last_chapter.id as chapter_id
 from reading_list

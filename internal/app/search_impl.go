@@ -153,7 +153,6 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 	}
 
 	// get aggregated data
-
 	var (
 		bookIds     []int64
 		authorNames map[uuid.UUID]string
@@ -222,7 +221,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 			Chapters:        int(book.Chapters),
 			WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 			Summary:         book.Description,
-			Cover:           getBookCoverURL(s.uploadService, book.ID, bookData.HasCover),
+			Cover:           getBookCoverURL(s.uploadService, bookData.Cover),
 			Tags:            arrInt64ToInt64String(book.Tags),
 		}
 	}

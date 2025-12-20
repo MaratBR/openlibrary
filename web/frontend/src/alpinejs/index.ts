@@ -16,6 +16,8 @@ import './passwordInput'
 import './navbar'
 import './SimpleEditor'
 import './TagsAutocomplete'
+import './Tabs'
+import './ImageUploader'
 ;(window as unknown as { Alpine: typeof Alpine }).Alpine = Alpine
 
 Alpine.plugin(ajax)

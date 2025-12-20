@@ -21,6 +21,7 @@ open = "Open"
 view = "View"
 name = "Name"
 info = "Info"
+crop = "Crop"
 
 [uiTheme]
 dark = "Dark"
@@ -272,6 +273,7 @@ chapters = "Chapters count"
 wordsPerChapter = "Words per chapter"
 favorites = "Favorites count"
 noResults = "No results, try to change your search query"
+removeTag = "Remove tag"
 
 [special]
 noJavascript = "Hey there! It looks like you have Javascript disabled. OpenLibrary only offers limited functionality without it. Please enable it in your browser settings."
@@ -364,10 +366,8 @@ tags = "Tags"
 save = "Save"
 ageRating = "Age rating"
 editedSuccessfully = "Book <b>{{.Name}}</b> was updated successfully"
-cropAndUploadCover = "Crop and upload"
 backToBooksManager = "Back to books manager"
 goToPage = "Go to page"
-clickOnImageToChange = "Click on image to change"
 chapters = "Chapters"
 addChapter = "Add chapter"
 noChapters = "No chapters yet"
@@ -381,6 +381,8 @@ changesPending = "You have changed the order of {count} chapters"
 adult = "Adult"
 chapterHidden = "Hidden"
 pendingChanges = "Pending changes"
+
+clickHereToUploadAnImageOrDrop = "Click here or drop file here to upload"
 
 #####################
 #                   #

@@ -100,7 +100,7 @@ func (q *Queries) Collection_Get(ctx context.Context, id int64) (Collection_GetR
 }
 
 const collection_GetBooks = `-- name: Collection_GetBooks :many
-select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.has_cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned, author.name as author_name, cb."order" as order_within_collection
+select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned, author.name as author_name, cb."order" as order_within_collection
 from collection_books cb
 join books b on b.id = cb.book_id
 join users author on author.id = b.author_user_id
@@ -130,7 +130,7 @@ type Collection_GetBooksRow struct {
 	Chapters              int32
 	TagIds                []int64
 	CachedParentTagIds    []int64
-	HasCover              bool
+	Cover                 string
 	View                  int32
 	Rating                pgtype.Float8
 	TotalReviews          int32
@@ -166,7 +166,7 @@ func (q *Queries) Collection_GetBooks(ctx context.Context, arg Collection_GetBoo
 			&i.Chapters,
 			&i.TagIds,
 			&i.CachedParentTagIds,
-			&i.HasCover,
+			&i.Cover,
 			&i.View,
 			&i.Rating,
 			&i.TotalReviews,

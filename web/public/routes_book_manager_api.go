@@ -7,7 +7,6 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
-	"github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/upload"
 	"github.com/ggicci/httpin"
@@ -25,7 +24,6 @@ func newAPIBookManagerController(service app.BookManagerService, fileValidator u
 
 func (c *apiBookManagerController) Register(r chi.Router) {
 	r.Route("/books-manager", func(r chi.Router) {
-		r.With(httpin.NewInput(&updateBookRequest{})).Post("/book/{bookID}", c.updateBook)
 		r.With(httpin.NewInput(&uploadCoverInput{})).Post("/book/{bookID}/cover", c.uploadCover)
 		r.With(httpin.NewInput(&updateBookChaptersOrderRequest{})).Post("/book/{bookID}/chapters-order", c.updateBookChaptersOrder)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}", c.updateDraftContent)
@@ -35,69 +33,8 @@ func (c *apiBookManagerController) Register(r chi.Router) {
 	})
 }
 
-type updateBookRequest struct {
-	Payload struct {
-		Name              string            `json:"name"`
-		Summary           string            `json:"summary"`
-		Tags              []app.Int64String `json:"tags"`
-		Rating            string            `json:"rating"`
-		IsPubliclyVisible bool              `json:"isPubliclyVisible"`
-	} `in:"body=json"`
-}
-
-func (c *apiBookManagerController) updateBook(w http.ResponseWriter, r *http.Request) {
-	session := auth.RequireSession(r.Context())
-	bookID, err := olhttp.URLParamInt64(r, "bookID")
-	if err != nil {
-		writeBadRequest(w, r, err)
-		return
-	}
-
-	input := r.Context().Value(httpin.Input).(*updateBookRequest)
-
-	rating := app.AsRating(input.Payload.Rating)
-	tags := app.ArrInt64StringToInt64(input.Payload.Tags)
-	name := input.Payload.Name
-	summary := input.Payload.Summary
-
-	err = c.service.UpdateBook(r.Context(), app.UpdateBookCommand{
-		BookID:            bookID,
-		UserID:            session.UserID,
-		Tags:              tags,
-		Name:              name,
-		Summary:           summary,
-		AgeRating:         rating,
-		IsPubliclyVisible: input.Payload.IsPubliclyVisible,
-	})
-	if err != nil {
-		writeApplicationError(w, r, err)
-		return
-	}
-
-	l := i18n.GetLocalizer(r.Context())
-
-	bookResult, err := c.service.GetBook(r.Context(), app.ManagerGetBookQuery{
-		ActorUserID: session.UserID,
-		BookID:      bookID,
-	})
-	if err != nil {
-		apiWriteApplicationError(w, err)
-		return
-	}
-
-	response := olhttp.NewAPIResponse(bookResult.Book)
-	response.AddNotification(olhttp.NewNotification(
-		l.TData("bookManager.edit.editedSuccessfully", map[string]string{
-			"Name": name,
-		}),
-		olhttp.NotificationInfo,
-	))
-	response.Write(w)
-}
-
 type uploadCoverInput struct {
-	ClientCropped bool         `in:"form=clientCropped"`
-	File          *httpin.File `in:"form=file"`
+	File *httpin.File `in:"form=file"`
 }
 
 func (c *apiBookManagerController) uploadCover(w http.ResponseWriter, r *http.Request) {

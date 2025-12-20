@@ -1,14 +1,6 @@
 import { definedTagDtoSchema } from '@/api/search'
-import { httpClient, OLAPIResponse } from '@/http-client'
+import { httpClient } from '@/http-client'
 import { z } from 'zod'
-
-export type UpdateBookRequest = {
-  rating: string
-  summary: string
-  tags: string[]
-  name: string
-  isPubliclyVisible: boolean
-}
 
 const bookCollectionDtoSchema = z.object({
   id: z.string(),
@@ -52,17 +44,8 @@ export const managerBookDetailsSchema = z.object({
 
 export type ManagerBookDetailsDto = z.infer<typeof managerBookDetailsSchema>
 
-export function httpUpdateBook(id: string, request: UpdateBookRequest) {
-  return httpClient
-    .post(`/_api/books-manager/book/${id}`, {
-      json: request,
-    })
-    .then((r) => OLAPIResponse.create(r, managerBookDetailsSchema))
-}
-
 export type UploadCoverRequest = {
   file: File
-  clientCropped: boolean
   bookId: string
 }
 
@@ -73,7 +56,6 @@ export type UploadCoverResponse = z.infer<typeof uploadCoverResponseSchema>
 export function httpUploadCover(req: UploadCoverRequest): Promise<UploadCoverResponse> {
   const body = new FormData()
   body.append('file', req.file)
-  body.append('clientCropped', req.clientCropped.toString())
 
   return httpClient
     .post(`/_api/books-manager/book/${req.bookId}/cover`, {

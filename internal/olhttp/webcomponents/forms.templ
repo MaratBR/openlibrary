@@ -147,12 +147,22 @@ templ TagsAutocomplete(props TagsAutocompleteProps) {
                 inputValue, _ = strings.CutSuffix(inputValue, ",")
             }
         }
+
+        l := i18n.GetLocalizer(ctx)
     }}
     
     <div
         data-value={value}
         class="dropdown"
         x-data="TagsAutocomplete">
+        <div class="dropdown__chips">
+            for _, tag := range props.Tags {
+                <span class="chip chip--secondary">
+                    { tag.Name }
+                    <button aria-label={ l.T("search.removeTag") } class="chip__close"><i class="fa-solid fa-xmark !text-[20px]"></i></button>
+                </span>
+            }
+        </div>
         <input   
             type="text"
             class="dropdown__input" />
@@ -163,4 +173,48 @@ templ TagsAutocomplete(props TagsAutocompleteProps) {
         }
         value={inputValue}
         name={props.Name} />
+}
+
+type ImageUploaderProps struct {
+    CropWidth int
+    CropHeight int
+    SelectedImage string
+    JSCallbackFunction string
+}
+
+templ ImageUploader(props ImageUploaderProps) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+        xDataCrop := "null"
+        if props.CropHeight != 0 && props.CropWidth != 0 {
+            xDataCrop = fmt.Sprintf("{width:%d,height:%d}", props.CropWidth, props.CropHeight)
+        }
+        xDataJSFunc := "undefined"
+        if props.JSCallbackFunction != "" {
+            xDataJSFunc = props.JSCallbackFunction
+        }
+        xData := fmt.Sprintf("ImageUploader({crop:%s,callback:%s})", xDataCrop, xDataJSFunc)
+    }}
+    
+    <div class="ImageUploader" x-data={xData}>
+        if props.SelectedImage != "" {
+            <div class="ImageUploader__img">
+                <img alt="" src={props.SelectedImage} />
+            </div>
+        }
+        <div class="ImageUploader__inner">
+            <label>
+                <input accept="image/jpeg, image/png, image/webp" x-ref="input" class="ImageUploader__input" type="file" />
+                <div x-show="!uploading" class="contents">
+                    <i class="fa-solid fa-upload ImageUploader__icon"></i>
+                    <span class="ImageUploader__text">
+                        { l.T("bookManager.edit.clickHereToUploadAnImageOrDrop") }
+                    </span>
+                </div>
+                <span class="loader" x-cloak x-show="uploading"></span>
+                <div class="ImageUploader__err" x-ref="err" x-cloak x-show="hasError">
+                </div>
+            </label>
+        </div>
+    </div>
 }
