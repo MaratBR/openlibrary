@@ -8,10 +8,10 @@ import (
 	"io"
 	"log/slog"
 	"math"
+	"slices"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
-	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/minio/minio-go/v7"
@@ -297,43 +297,89 @@ func (s *bookManagerService) UntrashBook(ctx context.Context, input UntrashBookC
 }
 
 // UpdateBookChaptersOrder updates the order of chapters in a book.
-func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error {
+func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChapterOrdersCommand) (UpdateBookChapterOrdersResult, error) {
+	// no modification is considered correct - just do nothing
+	if len(input.Modifications) == 0 {
+		return UpdateBookChapterOrdersResult{}, nil
+	}
+
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return err
+		return UpdateBookChapterOrdersResult{}, err
 	}
 
 	queries := s.queries.WithTx(tx)
 
-	chapters, err := queries.GetChaptersOrder(ctx, input.BookID)
+	oldOrder, err := queries.GetChaptersOrder(ctx, input.BookID)
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return err
+		return UpdateBookChapterOrdersResult{}, err
+	}
+	oldIndices := make(map[int64]int)
+	newOrder := make([]int64, len(oldOrder))
+	for i := 0; i < len(oldOrder); i++ {
+		oldIndices[oldOrder[i]] = i
+		newOrder[i] = oldOrder[i]
 	}
 
-	isEqualSet := commonutil.ContainsSameAndNoDuplicates(chapters, input.ChapterIDs)
-	if !isEqualSet {
-		rollbackTx(ctx, tx)
-		return ErrTypeChaptersReorder.New("chapters do not match")
+	for _, modification := range input.Modifications {
+		_, ok := MoveItem(newOrder, modification.ChapterID, modification.NewPositionIndex)
+		if !ok {
+			// TODO handle error?
+			continue
+		}
 	}
 
-	for i, chapterID := range input.ChapterIDs {
+	modifiedPositions := make(map[int64]int)
+
+	for i, chapterID := range newOrder {
+		oldPosition, ok := oldIndices[chapterID]
+		if ok && oldPosition == i {
+			// not changed, ignore
+			continue
+		}
+
+		modifiedPositions[chapterID] = i + 1
+
 		err = queries.UpdateChaptersOrder(ctx, store.UpdateChaptersOrderParams{
 			ID:    chapterID,
 			Order: int32(i + 1),
 		})
 		if err != nil {
 			rollbackTx(ctx, tx)
-			return err
+			return UpdateBookChapterOrdersResult{}, err
 		}
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return err
+		return UpdateBookChapterOrdersResult{}, err
 	}
 
-	return nil
+	return UpdateBookChapterOrdersResult{
+		ModifiedPositions: modifiedPositions,
+	}, nil
+}
+
+// MoveItem moves an item in the list, returns new position of item and a boolean representing
+// the successfullness of the operation (true if successful), if operation was unsuccessful then
+// newPosition returned SHOULD be -1
+func MoveItem[T comparable](arr []T, item T, newPositionIndex int) (int, bool) {
+	idx := slices.Index(arr, item)
+	if idx == -1 {
+		return -1, false
+	}
+
+	if newPositionIndex < 0 {
+		return -1, false
+	}
+
+	if newPositionIndex >= len(arr) {
+		newPositionIndex = len(arr) - 1
+	}
+
+	moveArrEl(arr, idx, newPositionIndex)
+	return newPositionIndex, true
 }
 
 func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []store.Book_ManagerGetUserBooksRow) ([]ManagerAuthorBookDto, error) {

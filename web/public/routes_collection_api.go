@@ -13,17 +13,17 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type apiCollectionController struct {
+type apiControllerCollection struct {
 	collectionService app.CollectionService
 }
 
-func newAPICollectionController(collectionService app.CollectionService) *apiCollectionController {
-	return &apiCollectionController{
+func newAPICollectionController(collectionService app.CollectionService) *apiControllerCollection {
+	return &apiControllerCollection{
 		collectionService: collectionService,
 	}
 }
 
-func (c *apiCollectionController) Register(r chi.Router) {
+func (c *apiControllerCollection) Register(r chi.Router) {
 	r.Route("/collections", func(r chi.Router) {
 		r.Use(apiRequiresAuthorizationMiddleware)
 		r.Get("/recent", c.getRecent)
@@ -41,7 +41,7 @@ type createCollectionInput struct {
 	} `in:"body=json"`
 }
 
-func (c *apiCollectionController) createCollection(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerCollection) createCollection(w http.ResponseWriter, r *http.Request) {
 	s := auth.RequireSession(r.Context())
 	input := r.Context().Value(httpin.Input).(*createCollectionInput)
 
@@ -62,7 +62,7 @@ type addToCollectionInput struct {
 	Body []app.Int64String `in:"body=json"`
 }
 
-func (c *apiCollectionController) addToCollection(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerCollection) addToCollection(w http.ResponseWriter, r *http.Request) {
 	s := auth.RequireSession(r.Context())
 	input := r.Context().Value(httpin.Input).(*addToCollectionInput)
 
@@ -88,7 +88,7 @@ func (c *apiCollectionController) addToCollection(w http.ResponseWriter, r *http
 	olhttp.NewAPIResponseOK().Write(w)
 }
 
-func (c *apiCollectionController) removeFromCollection(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerCollection) removeFromCollection(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		apiWriteBadRequest(w, err)
@@ -130,7 +130,7 @@ func collectionDtoToAPI(c app.CollectionDto) recentCollectionDto {
 	}
 }
 
-func (c *apiCollectionController) containingBook(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerCollection) containingBook(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
 	if err != nil {
 		apiWriteBadRequest(w, err)
@@ -152,7 +152,7 @@ func (c *apiCollectionController) containingBook(w http.ResponseWriter, r *http.
 	olhttp.NewAPIResponse(app.MapSlice(collections, collectionDtoToAPI)).Write(w)
 }
 
-func (c *apiCollectionController) getRecent(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerCollection) getRecent(w http.ResponseWriter, r *http.Request) {
 	s := auth.RequireSession(r.Context())
 
 	result, err := c.collectionService.GetRecentUserCollections(r.Context(), app.GetRecentCollectionsQuery{

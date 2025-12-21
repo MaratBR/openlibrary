@@ -10,28 +10,28 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type apiBookController struct {
+type apiControllerBook struct {
 	service            app.BookService
 	reviewService      app.ReviewsService
 	readingListService app.ReadingListService
 }
 
-func newAPIBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService) *apiBookController {
-	return &apiBookController{
+func newAPIBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService) *apiControllerBook {
+	return &apiControllerBook{
 		service:            service,
 		reviewService:      reviewService,
 		readingListService: readingListService,
 	}
 }
 
-func (c *apiBookController) Register(r chi.Router) {
+func (c *apiControllerBook) Register(r chi.Router) {
 	r.Post("/reviews/rating", c.RateBook)
 	r.Get("/reviews/{bookID}", c.GetReview)
 	r.Post("/reviews/{bookID}", c.UpdateOrCreateReview)
 	r.Delete("/reviews/{bookID}", c.DeleteReview)
 }
 
-func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerBook) RateBook(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
@@ -59,7 +59,7 @@ func (c *apiBookController) RateBook(w http.ResponseWriter, r *http.Request) {
 	olhttp.NewAPIResponseOK().Write(w)
 }
 
-func (c *apiBookController) GetReview(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerBook) GetReview(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		apiWriteBadRequest(w, err)
@@ -79,7 +79,7 @@ func (c *apiBookController) GetReview(w http.ResponseWriter, r *http.Request) {
 	olhttp.NewAPIResponse(review).Write(w)
 }
 
-func (c *apiBookController) UpdateReview(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerBook) UpdateReview(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
@@ -112,7 +112,7 @@ type createReviewRequest struct {
 	Rate    app.RatingValue `json:"rating"`
 }
 
-func (c *apiBookController) UpdateOrCreateReview(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerBook) UpdateOrCreateReview(w http.ResponseWriter, r *http.Request) {
 	request := createReviewRequest{}
 	if err := olhttp.ReadJSONBody(r, &request); err != nil {
 		apiWriteUnprocessableEntity(w, err)
@@ -137,7 +137,7 @@ func (c *apiBookController) UpdateOrCreateReview(w http.ResponseWriter, r *http.
 	olhttp.NewAPIResponse(review).Write(w)
 }
 
-func (c *apiBookController) DeleteReview(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerBook) DeleteReview(w http.ResponseWriter, r *http.Request) {
 	bookID, err := commonutil.URLParamInt64(r, "bookID")
 	if err != nil {
 		apiWriteUnprocessableEntity(w, err)

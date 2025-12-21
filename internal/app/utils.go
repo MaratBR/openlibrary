@@ -181,3 +181,35 @@ func float64ToNullable(v pgtype.Float8) Nullable[float64] {
 		return Null[float64]()
 	}
 }
+
+func moveArrEl[T any](arr []T, oldIndex, newIndex int) {
+	if oldIndex < 0 {
+		panic("oldIndex < 0")
+	}
+	if oldIndex >= len(arr) {
+		panic("oldIndex >= len(arr)")
+	}
+	if newIndex < 0 {
+		panic("newIndex < 0")
+	}
+	if newIndex >= len(arr) {
+		panic("newIndex >= len(arr)")
+	}
+
+	if oldIndex == newIndex {
+		return
+	}
+
+	el := arr[oldIndex]
+	if oldIndex > newIndex {
+		// move all elements before by one
+		for i := newIndex; i < oldIndex; i++ {
+			arr[i+1] = arr[i]
+		}
+	} else {
+		for i := oldIndex; i < newIndex; i++ {
+			arr[i] = arr[i+1]
+		}
+	}
+	arr[newIndex] = el
+}

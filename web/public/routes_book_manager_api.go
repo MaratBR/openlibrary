@@ -1,6 +1,7 @@
 package public
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -13,31 +14,33 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type apiBookManagerController struct {
+type apiControllerBookManager struct {
 	service       app.BookManagerService
 	fileValidator upload.FileValidator
 }
 
-func newAPIBookManagerController(service app.BookManagerService, fileValidator upload.FileValidator) *apiBookManagerController {
-	return &apiBookManagerController{service: service, fileValidator: fileValidator}
+func newAPIBookManagerController(service app.BookManagerService, fileValidator upload.FileValidator) *apiControllerBookManager {
+	return &apiControllerBookManager{service: service, fileValidator: fileValidator}
 }
 
-func (c *apiBookManagerController) Register(r chi.Router) {
+func (c *apiControllerBookManager) Register(r chi.Router) {
 	r.Route("/books-manager", func(r chi.Router) {
-		r.With(httpin.NewInput(&uploadCoverInput{})).Post("/book/{bookID}/cover", c.uploadCover)
-		r.With(httpin.NewInput(&updateBookChaptersOrderRequest{})).Post("/book/{bookID}/chapters-order", c.updateBookChaptersOrder)
+		r.With(httpin.NewInput(&requestUploadCover{})).Post("/book/{bookID}/cover", c.uploadCover)
+		r.With(httpin.NewInput(&requestChangeChaptersOrder{})).Post("/book/{bookID}/chapters-order", c.changeChaptersOrder)
+		r.With(httpin.NewInput(&requestCreateChapter{})).Post("/book/{bookID}/create-chapter", c.createChapter)
+		r.Get("/book/{bookID}/chapters", c.getChapters)
+
 		r.Post("/book/{bookID}/{chapterID}/{draftID}", c.updateDraftContent)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/publish", c.updateDraftContentAndPublish)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/chapterName", c.updateDraftChapterName)
-		r.With(httpin.NewInput(&createChapterRequest{})).Post("/book/{bookID}/createChapter", c.createChapter)
 	})
 }
 
-type uploadCoverInput struct {
+type requestUploadCover struct {
 	File *httpin.File `in:"form=file"`
 }
 
-func (c *apiBookManagerController) uploadCover(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerBookManager) uploadCover(w http.ResponseWriter, r *http.Request) {
 
 	session := auth.RequireSession(r.Context())
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
@@ -46,7 +49,7 @@ func (c *apiBookManagerController) uploadCover(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	input := r.Context().Value(httpin.Input).(*uploadCoverInput)
+	input := r.Context().Value(httpin.Input).(*requestUploadCover)
 
 	err = c.fileValidator.Validate(input.File.Size())
 	if err != nil {
@@ -75,31 +78,80 @@ func (c *apiBookManagerController) uploadCover(w http.ResponseWriter, r *http.Re
 	response.Write(w)
 }
 
-type updateBookChaptersOrderRequest struct {
-	Chapters []app.Int64String `in:"body=json"`
+type requestChangeChaptersOrder struct {
+	Data struct {
+		Modifications []struct {
+			ChapterID int64 `json:"chapterId,string"`
+			NewIndex  int   `json:"newIndex"`
+		} `json:"modifications"`
+	} `in:"body=json"`
 }
 
-func (c *apiBookManagerController) updateBookChaptersOrder(w http.ResponseWriter, r *http.Request) {
-	input := r.Context().Value(httpin.Input).(*updateBookChaptersOrderRequest)
+type responseModifiedChapterOrderPositions map[int64]int
+
+func (r responseModifiedChapterOrderPositions) MarshalJSON() ([]byte, error) {
+	m := make(map[app.Int64String]int, len(r))
+	for chapterID, pos := range r {
+		m[app.Int64String(chapterID)] = pos
+	}
+	return json.Marshal(m)
+}
+
+func (c *apiControllerBookManager) changeChaptersOrder(w http.ResponseWriter, r *http.Request) {
+	input := r.Context().Value(httpin.Input).(*requestChangeChaptersOrder)
+
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		apiWriteBadRequest(w, err)
 		return
 	}
 
-	err = c.service.UpdateBookChaptersOrder(r.Context(), app.UpdateBookChaptersOrders{
-		BookID:     bookID,
-		ChapterIDs: app.ArrInt64StringToInt64(input.Chapters),
-	})
+	modifications := make([]app.ChapterOrderModification, 0, len(input.Data.Modifications))
 
+	for _, modification := range input.Data.Modifications {
+		modifications = append(modifications, app.ChapterOrderModification{
+			ChapterID:        modification.ChapterID,
+			NewPositionIndex: modification.NewIndex,
+		})
+	}
+
+	result, err := c.service.UpdateBookChaptersOrder(r.Context(), app.UpdateBookChapterOrdersCommand{
+		BookID:        bookID,
+		Modifications: modifications,
+	})
 	if err != nil {
 		apiWriteApplicationError(w, err)
-	} else {
-		apiWriteOK(w)
+		return
 	}
+
+	olhttp.NewAPIResponse(responseModifiedChapterOrderPositions(result.ModifiedPositions))
 }
 
-func (c *apiBookManagerController) updateDraftContent(w http.ResponseWriter, r *http.Request) {
+// type updateBookChaptersOrderRequest struct {
+// 	Chapters []app.Int64String `in:"body=json"`
+// }
+
+// func (c *apiControllerBookManager) updateBookChaptersOrder(w http.ResponseWriter, r *http.Request) {
+// 	input := r.Context().Value(httpin.Input).(*updateBookChaptersOrderRequest)
+// 	bookID, err := olhttp.URLParamInt64(r, "bookID")
+// 	if err != nil {
+// 		apiWriteBadRequest(w, err)
+// 		return
+// 	}
+
+// 	err = c.service.UpdateBookChaptersOrder(r.Context(), app.UpdateBookChaptersOrders{
+// 		BookID:     bookID,
+// 		ChapterIDs: app.ArrInt64StringToInt64(input.Chapters),
+// 	})
+
+// 	if err != nil {
+// 		apiWriteApplicationError(w, err)
+// 	} else {
+// 		apiWriteOK(w)
+// 	}
+// }
+
+func (c *apiControllerBookManager) updateDraftContent(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		apiWriteBadRequest(w, err)
@@ -145,7 +197,7 @@ func (c *apiBookManagerController) updateDraftContent(w http.ResponseWriter, r *
 	apiWriteOK(w)
 }
 
-func (c *apiBookManagerController) updateDraftChapterName(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerBookManager) updateDraftChapterName(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		apiWriteBadRequest(w, err)
@@ -191,7 +243,7 @@ func (c *apiBookManagerController) updateDraftChapterName(w http.ResponseWriter,
 	apiWriteOK(w)
 }
 
-func (c *apiBookManagerController) updateDraftContentAndPublish(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerBookManager) updateDraftContentAndPublish(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		apiWriteBadRequest(w, err)
@@ -248,7 +300,7 @@ func (c *apiBookManagerController) updateDraftContentAndPublish(w http.ResponseW
 	apiWriteOK(w)
 }
 
-type createChapterRequest struct {
+type requestCreateChapter struct {
 	Body struct {
 		Name            string `json:"name"`
 		Summary         string `json:"summary"`
@@ -257,9 +309,9 @@ type createChapterRequest struct {
 	} `in:"body=json"`
 }
 
-func (c *apiBookManagerController) createChapter(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerBookManager) createChapter(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
-	input := r.Context().Value(httpin.Input).(*createChapterRequest)
+	input := r.Context().Value(httpin.Input).(*requestCreateChapter)
 
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
@@ -285,4 +337,24 @@ func (c *apiBookManagerController) createChapter(w http.ResponseWriter, r *http.
 	}
 
 	olhttp.NewAPIResponse(app.Int64String(result.ID)).Write(w)
+}
+
+func (c *apiControllerBookManager) getChapters(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	s := auth.RequireSession(r.Context())
+
+	result, err := c.service.GetBookChapters(r.Context(), app.ManagerGetBookChaptersQuery{
+		BookID: bookID,
+		UserID: s.UserID,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	olhttp.NewAPIResponse(result.Chapters).Write(w)
 }

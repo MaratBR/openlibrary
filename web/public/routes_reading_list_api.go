@@ -12,20 +12,20 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-type apiReadingListController struct {
+type apiControllerReadingList struct {
 	service app.ReadingListService
 }
 
-func newAPIReadingListController(service app.ReadingListService) *apiReadingListController {
-	return &apiReadingListController{service: service}
+func newAPIReadingListController(service app.ReadingListService) *apiControllerReadingList {
+	return &apiControllerReadingList{service: service}
 }
 
-func (c *apiReadingListController) Register(r chi.Router) {
+func (c *apiControllerReadingList) Register(r chi.Router) {
 	r.Post("/reading-list/status", c.UpdateStatus)
 	r.Post("/reading-list/chapter", c.UpdateCurrentChapter)
 }
 
-func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerReadingList) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
@@ -82,7 +82,7 @@ func (c *apiReadingListController) UpdateStatus(w http.ResponseWriter, r *http.R
 	olhttp.NewAPIResponse(state.Value).Write(w)
 }
 
-func (c *apiReadingListController) UpdateCurrentChapter(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerReadingList) UpdateCurrentChapter(w http.ResponseWriter, r *http.Request) {
 	chapterID, err := olhttp.URLQueryParamInt64(r, "chapterId")
 	if err != nil {
 		apiWriteBadRequest(w, err)

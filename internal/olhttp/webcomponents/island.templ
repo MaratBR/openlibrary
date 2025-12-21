@@ -1,5 +1,7 @@
 package webcomponents
 
+import "fmt"
+
 type IslandProps struct {
     Name string
     InactiveByDefault bool
@@ -43,4 +45,25 @@ templ IslandData(key string, data any) {
         }
     }}
     @injectIslandData(key, json)
+}
+
+type Island2Props struct {
+    Name string
+    Data any
+    ShowLoader bool
+}
+
+templ Island2(props Island2Props) {
+    {{
+        dataJson, _ := templ.JSONString(props.Data)
+        xData := fmt.Sprintf("Island({name:%q,data:%s})", props.Name, dataJson)
+    }}
+    
+    <div x-data={xData}>
+        if props.ShowLoader {
+            <div class="contents" x-ref="loader" x-show="_loading">
+                <span class="loader" />
+            </div>
+        }
+    </div>
 }

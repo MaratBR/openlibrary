@@ -160,9 +160,18 @@ type UploadBookCoverResult struct {
 	URL string
 }
 
-type UpdateBookChaptersOrders struct {
-	BookID     int64
-	ChapterIDs []int64
+type UpdateBookChapterOrdersCommand struct {
+	BookID        int64
+	Modifications []ChapterOrderModification
+}
+
+type ChapterOrderModification struct {
+	ChapterID        int64
+	NewPositionIndex int
+}
+
+type UpdateBookChapterOrdersResult struct {
+	ModifiedPositions map[int64]int
 }
 
 type GetDraftQuery struct {
@@ -261,7 +270,7 @@ type BookManagerService interface {
 	TrashBook(ctx context.Context, input TrashBookCommand) error
 	UntrashBook(ctx context.Context, input UntrashBookCommand) error
 
-	UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChaptersOrders) error
+	UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChapterOrdersCommand) (UpdateBookChapterOrdersResult, error)
 	CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterResult, error)
 	ReorderChapters(ctx context.Context, input ReorderChaptersCommand) error
 	GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChapterResult, error)

@@ -1,8 +1,4 @@
-import { PreactIsland } from '@/islands/common/preact-island'
-import BookEditor from './BookEditor'
-import BookCoverComponent from './BookCover'
-import Chapters from './Chapters'
+import { PreactIsland } from '@/lib/island'
+import { BookChapters } from './BookChapters'
 
-export const Book = new PreactIsland(BookEditor)
-export const BookCover = new PreactIsland(BookCoverComponent)
-export const BookChapters = new PreactIsland(Chapters)
+export const BookChaptersIsland = new PreactIsland(BookChapters)

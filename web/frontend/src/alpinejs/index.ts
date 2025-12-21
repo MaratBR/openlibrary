@@ -18,10 +18,13 @@ import './SimpleEditor'
 import './TagsAutocomplete'
 import './Tabs'
 import './ImageUploader'
-;(window as unknown as { Alpine: typeof Alpine }).Alpine = Alpine
+
+import './island'
+import './islands'
 
 Alpine.plugin(ajax)
 Alpine.plugin(collapse)
 if (!new URLSearchParams(window.location.search).has('debug.disableAlpineJS')) {
   Alpine.start()
 }
+;(window as unknown as { Alpine: typeof Alpine }).Alpine = Alpine

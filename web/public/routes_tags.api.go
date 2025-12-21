@@ -8,19 +8,19 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type apiTagsController struct {
+type apiControllerTags struct {
 	service app.TagsService
 }
 
-func newAPITagsController(service app.TagsService) *apiTagsController {
-	return &apiTagsController{service: service}
+func newAPITagsController(service app.TagsService) *apiControllerTags {
+	return &apiControllerTags{service: service}
 }
 
-func (t *apiTagsController) Register(r chi.Router) {
+func (t *apiControllerTags) Register(r chi.Router) {
 	r.Get("/tags", t.Tags)
 }
 
-func (t *apiTagsController) Tags(w http.ResponseWriter, r *http.Request) {
+func (t *apiControllerTags) Tags(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 	tags, err := t.service.SearchTags(r.Context(), query)
 	if err != nil {

@@ -6,6 +6,7 @@ import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/csrf"
+import "strconv"
 
 templ BookManagerBook(book *app.ManagerBookDetailsDto) {
     {{
@@ -44,6 +45,15 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
             }) {
                 <div class="card">
                     @bookCoverUploadForm(book)
+                </div>
+            }
+
+            @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
+                ID: "chapters",
+                KeepUnmounted: true,
+            }) {
+                <div class="card">
+                    @bookChapterForm(book)
                 </div>
             }
         }
@@ -132,4 +142,14 @@ templ bookCoverUploadForm(book *app.ManagerBookDetailsDto) {
             JSCallbackFunction: "window.__uploadBookCover",
         })
     </div>
+}
+
+templ bookChapterForm(book *app.ManagerBookDetailsDto) {
+    @webcomponents.Island2(webcomponents.Island2Props{
+        Name: "bookmanager/book/BookChaptersIsland",
+        Data: map[string]string{
+            "bookId": strconv.FormatInt(book.ID, 10),
+        },
+        ShowLoader: true,
+    })
 }

@@ -64,7 +64,7 @@ export function httpCreateChapter(
   },
 ) {
   return httpClient
-    .post(`/_api/books-manager/book/${bookId}/createChapter`, {
+    .post(`/_api/books-manager/book/${bookId}/create-chapter`, {
       body: JSON.stringify(request),
     })
     .then((r) => OLAPIResponse.create(r, z.string()))
@@ -135,8 +135,22 @@ export function httpUploadCover(req: UploadCoverRequest): Promise<UploadCoverRes
     .then(uploadCoverResponseSchema.parse)
 }
 
-export function httpUpdateChaptersOrder(bookId: string, order: string[]) {
+export function httpUpdateChaptersOrder(
+  bookId: string,
+  payload: {
+    modifications: {
+      chapterId: string
+      newIndex: number
+    }[]
+  },
+) {
   return httpClient.post(`/_api/books-manager/book/${bookId}/chapters-order`, {
-    json: order,
+    json: payload,
   })
+}
+
+export function httpGetBookChapters(bookId: string) {
+  return httpClient
+    .get(`/_api/books-manager/book/${bookId}/chapters`)
+    .then((r) => OLAPIResponse.create(r, z.array(managerBookChapterDtoSchema)))
 }
