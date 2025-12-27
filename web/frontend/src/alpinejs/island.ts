@@ -39,8 +39,23 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
   },
 
   _mount(island: OLIsland) {
-    this._mounted?.dispose()
-    this._mounted = island.mount(this.$root, data)
+    this._unmount()
+
+    const container = document.createElement('div')
+    container.style.display = 'contents'
+    this._mounted = island.mount(container, data)
+    this.$root.appendChild(container)
+  },
+
+  _unmount() {
+    if (this._mounted) {
+      this._mounted.dispose()
+      this._mounted = null
+    }
+
+    if (this.$refs._container instanceof HTMLElement) {
+      this.$refs._container.remove()
+    }
   },
 
   _error(err: unknown) {
@@ -49,7 +64,6 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
   },
 
   destroy() {
-    this._mounted?.dispose()
-    this._mounted = null
+    this._unmount()
   },
 }))

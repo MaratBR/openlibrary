@@ -8,14 +8,6 @@ button, [role=button] {
     @apply border-border;
 }
 
-.link {
-    @apply text-primary underline-offset-4 hover:text-foreground focus:no-underline focus:outline-2 focus:outline-primary;
-}
-
-.link--primary {
-    @apply text-blue-600 hover:text-blue-900;
-}
-
 .os-theme-dark, .os-theme-light {
     --os-size: 22px;
 }
@@ -29,3 +21,7 @@ button, [role=button] {
 }
 
 .no-transition { transition: none !important; }
+
+strong, b {
+    @apply font-[600];
+}

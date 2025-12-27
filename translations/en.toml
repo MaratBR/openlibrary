@@ -22,6 +22,7 @@ view = "View"
 name = "Name"
 info = "Info"
 crop = "Crop"
+confirm = "Confirm"
 
 [uiTheme]
 dark = "Dark"
@@ -381,8 +382,11 @@ changesPending = "You have changed the order of {count} chapters"
 adult = "Adult"
 chapterHidden = "Hidden"
 pendingChanges = "Pending changes"
-
 clickHereToUploadAnImageOrDrop = "Click here or drop file here to upload"
+
+swapChapterWith = "Swap {{.ChapterName}} with {{.Another}}"
+insertChapterBefore = "Insert {{.ChapterName}} before {{.Another}}"
+insertChapterAfter = "Insert {{.ChapterName}} after {{.Another}}"
 
 #####################
 #                   #

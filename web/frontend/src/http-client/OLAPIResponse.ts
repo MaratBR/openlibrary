@@ -78,7 +78,7 @@ export class OLAPIResponse<T> {
 
     const json = await this.response.json()
 
-    if (this.response.status >= 400 || this.response.status <= 599) {
+    if (this.response.status >= 400 && this.response.status <= 599) {
       this._error = await olErrorSchema.parseAsync(json)
     }
 

@@ -1,97 +1,74 @@
-import { useEffect, useLayoutEffect, useRef } from 'preact/hooks'
-import { createPopper, Options, Instance } from '@popperjs/core'
+import { useEffect, useRef } from 'preact/hooks'
 import { ComponentChild, RefObject } from 'preact'
-import { HTMLAttributes } from 'preact/compat'
+import { createPortal, HTMLAttributes } from 'preact/compat'
+import { useFloating, Placement } from '@floating-ui/react'
 
 export type PopperProps = {
   anchorEl?: HTMLElement | RefObject<HTMLElement | null> | null
   children?: ComponentChild
   open?: boolean
-} & HTMLAttributes<HTMLDivElement> &
-  Partial<Options>
+  onClose?: () => void
+  placement?: Placement
+} & Omit<HTMLAttributes<HTMLDivElement>, 'onClose'>
 
 export default function Popper({
   anchorEl,
   children,
-  onFirstUpdate,
-  placement = 'auto',
-  modifiers = [],
-  strategy = 'fixed',
+  placement,
   open = true,
   style,
+  onClose,
   ...props
 }: PopperProps) {
-  const ref = useRef<HTMLDivElement | null>(null)
-  const instanceRef = useRef<Instance | null>(null)
-  const optionsRef = useRef({
-    modifiers,
-    onFirstUpdate,
+  const { refs, floatingStyles, elements } = useFloating({
+    elements: {
+      reference: anchorEl instanceof HTMLElement ? anchorEl : anchorEl?.current,
+    },
+    strategy: 'fixed',
     placement,
-    strategy,
   })
-  optionsRef.current = {
-    modifiers,
-    onFirstUpdate,
-    placement,
-    strategy,
-  }
 
-  useLayoutEffect(() => {
-    if (!ref.current) {
-      return
-    }
-
-    let el: HTMLElement | null
-
-    if (anchorEl) {
-      if (anchorEl instanceof HTMLElement) {
-        el = anchorEl
-      } else {
-        el = anchorEl.current
-      }
-    } else {
-      el = null
-    }
-
-    if (!el) {
-      return
-    }
-
-    const instance = createPopper(el, ref.current, optionsRef.current)
-    instanceRef.current = instance
-
-    return () => {
-      instanceRef.current = null
-      instance.destroy()
-    }
-  }, [anchorEl])
-
-  useLayoutEffect(() => {
-    const { current } = instanceRef
-    if (current) {
-      current.update()
-    }
-  }, [open])
-
-  const firstRender = useRef(true)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = true
-      return
+    if (!open) return
+
+    const onWindowClick = (event: MouseEvent) => {
+      if (!(event.target instanceof Node)) return
+      if (
+        event.target === elements.floating ||
+        event.target === anchorEl ||
+        (anchorEl instanceof HTMLElement
+          ? anchorEl.contains(event.target)
+          : anchorEl?.current?.contains(event.target)) ||
+        (elements.floating && elements.floating.contains(event.target))
+      ) {
+        return
+      }
+
+      if (onCloseRef.current) {
+        onCloseRef.current()
+      }
     }
 
-    const { current } = instanceRef
-    if (current) {
-      current.setOptions({ modifiers, onFirstUpdate, strategy, placement })
-    }
-  }, [modifiers, onFirstUpdate, strategy, placement])
+    requestAnimationFrame(() => {
+      window.addEventListener('click', onWindowClick)
+    })
 
-  return (
-    <div style={{ display: open ? 'contents' : 'none' }}>
-      <div ref={ref} {...props} data-open={open}>
+    return () => {
+      window.removeEventListener('click', onWindowClick)
+    }
+  }, [elements.floating, anchorEl, open])
+
+  if (!open) return null
+
+  return createPortal(
+    <div class="contents" style={{ visibility: open ? 'visible' : 'hidden' }}>
+      <div ref={refs.setFloating} {...props} style={floatingStyles} data-open={open}>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

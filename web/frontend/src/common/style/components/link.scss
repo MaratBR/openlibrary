@@ -1,0 +1,7 @@
+.link {
+    @apply text-primary underline-offset-4 hover:text-foreground focus:no-underline focus:outline-2 focus:outline-primary;
+
+    &--primary {
+        @apply text-blue-600 hover:text-blue-900;
+    }
+}

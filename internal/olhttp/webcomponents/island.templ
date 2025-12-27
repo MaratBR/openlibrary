@@ -60,10 +60,11 @@ templ Island2(props Island2Props) {
     }}
     
     <div x-data={xData}>
-        if props.ShowLoader {
-            <div class="contents" x-ref="loader" x-show="_loading">
+        <div class="contents" x-ref="loader" x-show="_loading">
+            if props.ShowLoader {
                 <span class="loader" />
-            </div>
-        }
+            }
+            { children... }
+        </div>
     </div>
 }

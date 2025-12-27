@@ -1,0 +1,45 @@
+.ChapterSelector {
+    @apply relative;
+
+    &__inputContainer {
+
+    }
+
+    &__input {
+        @apply outline-none h-12 pl-4 border-b
+            focus:ring focus:ring-2 focus:rounded-lg focus:border-b-transparent focus:ring-primary;
+    }
+
+    &__listContainer {
+        @apply overflow-y-auto -mx-2;
+        height: 500px;
+        scrollbar-width: thin;
+    }
+
+    &__actionDescription {
+        min-height: 8ch;
+        max-width: 36ch;
+        @apply pl-4 pt-2 mb-2 text-muted-foreground text-sm;
+
+        strong, b {
+            @apply text-primary;
+        }
+    }
+
+    &__item {
+        &:disabled {
+            @apply text-muted-foreground;
+        }
+
+        @apply p-2 text-start;
+        line-height: 2;
+
+        &--selected {
+            @apply font-[500] text-primary;
+        }
+    }
+
+    &__confirm {
+        @apply absolute bottom-0 right-0 pb-2 pr-4;
+    }
+}

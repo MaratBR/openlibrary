@@ -93,7 +93,7 @@ function esbuildMinifyPlugin(): Plugin {
             write: true,
             bundle: false,
             minify: true,
-            sourcemap: true,
+            sourcemap: 'inline',
             allowOverwrite: true,
           })
 

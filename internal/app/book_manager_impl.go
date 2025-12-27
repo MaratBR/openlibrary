@@ -325,7 +325,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 	for _, modification := range input.Modifications {
 		_, ok := MoveItem(newOrder, modification.ChapterID, modification.NewPositionIndex)
 		if !ok {
-			// TODO handle error?
+			slog.Error("failed to apply chapter modification", "ChapterID", modification.ChapterID, "NewPositionIndex", modification.NewPositionIndex)
 			continue
 		}
 	}
@@ -341,6 +341,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 
 		modifiedPositions[chapterID] = i + 1
 
+		slog.Debug("updating position of the chapter", "ChapterID", chapterID, "Index", i)
 		err = queries.UpdateChaptersOrder(ctx, store.UpdateChaptersOrderParams{
 			ID:    chapterID,
 			Order: int32(i + 1),

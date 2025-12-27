@@ -150,6 +150,7 @@ templ bookChapterForm(book *app.ManagerBookDetailsDto) {
         Data: map[string]string{
             "bookId": strconv.FormatInt(book.ID, 10),
         },
-        ShowLoader: true,
-    })
+    }) {
+        <div style="height: 120px;" />
+    }
 }

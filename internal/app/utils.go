@@ -202,11 +202,17 @@ func moveArrEl[T any](arr []T, oldIndex, newIndex int) {
 
 	el := arr[oldIndex]
 	if oldIndex > newIndex {
+		// 1 2 3 4 5 6 7 8
+		//           ^ - oldIndex
+		//   ^ - newIndex
 		// move all elements before by one
-		for i := newIndex; i < oldIndex; i++ {
-			arr[i+1] = arr[i]
+		for i := oldIndex; i > newIndex; i-- {
+			arr[i] = arr[i-1]
 		}
 	} else {
+		// 1 2 3 4 5 6 7 8
+		//   ^ - oldIndex
+		//           ^ - newIndex
 		for i := oldIndex; i < newIndex; i++ {
 			arr[i] = arr[i+1]
 		}

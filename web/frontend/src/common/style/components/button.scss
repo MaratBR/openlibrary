@@ -8,7 +8,7 @@
 
 .btn {
     @apply 
-        inline-block v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition-colors rounded-full cursor-pointer
+        inline-block v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition-colors rounded-full cursor-pointer relative
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
         disabled:pointer-events-none disabled:opacity-50 leading-[2.4];
     height: var(--btn-height);
@@ -46,10 +46,10 @@
         --btn-colors-main: var(--foreground);
         --btn-colors-text: var(--foreground);
 
-        border: 2px solid var(--btn-colors-main);
+        border: 1px solid var(--btn-colors-main);
         line-height: calc(var(--btn-height) - 2px) !important;
         color: var(--btn-colors-main);
-        @apply bg-card transition-all hover:bg-card hover:ring;
+        @apply bg-card transition-all hover:bg-card hover:ring hover:ring-inset;
     }
     
     // SIZES
@@ -90,21 +90,41 @@
 }
 
 .btn-group {
-    @apply flex items-stretch;
+    @apply inline-flex items-stretch;
 
-    .btn:not(:first-child):not(:last-child) {
+    & > .btn:not(:first-child):not(:last-child) {
         @apply rounded-none;
     }
 
-    .btn:not(:last-child) {
+    & > .btn:not(:last-child) {
         @apply border-r-0;
     }
 
-    .btn:first-child {
+    & > .btn:first-child {
         @apply rounded-r-none;
     }
 
-    .btn:last-child {
+    & > .btn:last-child {
         @apply rounded-l-none;
+    }
+
+    & > .btn:not(:last-child)::after {
+        content: ' ';
+        @apply block border-r-1 absolute border-border;
+        top: 10%;
+        bottom: 10%;
+        right: 0;
+    }
+
+    &--rounded-md {
+        &, & > .btn {
+            @apply rounded-md;
+        }
+    }
+}
+
+.btn-list {
+    & > li > .btn {
+        @apply block w-full text-start !rounded-none;
     }
 }

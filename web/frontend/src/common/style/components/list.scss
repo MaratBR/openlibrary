@@ -1,7 +1,10 @@
 .listitem {
     @apply p-1;
-
-    @apply hover:bg-highlight;
+    word-wrap: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    @apply hover:bg-highlight cursor-pointer;
 
     &--lg {
         @apply p-2;

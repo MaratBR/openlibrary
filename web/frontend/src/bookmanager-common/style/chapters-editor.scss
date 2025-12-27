@@ -1,0 +1,18 @@
+.bm-chapters-list {
+    @apply pl-2;
+}
+
+.bm-chapters-list-item {
+    margin: 5px 0;
+    @apply border-b relative;
+
+    &__head {
+        @apply text-lg font-medium py-1 px-2 inline-block -ml-2;
+    }
+    
+    &__actions {
+        @apply 
+            absolute 
+            md:right-[1em] md:top-[1em];
+    }
+}
