@@ -6,6 +6,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import Image from '@tiptap/extension-image'
 import StarterKit from '@tiptap/starter-kit'
 import Heading from '@tiptap/extension-heading'
+import { BulletList, OrderedList } from '@tiptap/extension-list'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent } from '@tiptap/react'
@@ -68,6 +69,8 @@ export class ChapterContentEditor extends Editor {
             return ''
           },
         }),
+        BulletList,
+        OrderedList,
       ],
     })
 

@@ -65,4 +65,9 @@
         @apply border-l border-current border-l-4 pl-4 italic;
     }
 
+    ul, ol {
+        list-style: revert;
+        margin-left: 20px;
+    }
+
 }

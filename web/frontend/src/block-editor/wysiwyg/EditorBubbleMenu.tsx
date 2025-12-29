@@ -28,6 +28,8 @@ export default function EditorBubbleMenu({ editor }: { editor: ChapterContentEdi
         </EditorToggleButton>
       </div>
 
+      <div class="be-bubble-menu__delimiter" />
+
       <TextFeatureSelector editor={editor} />
     </BubbleMenu>
   )

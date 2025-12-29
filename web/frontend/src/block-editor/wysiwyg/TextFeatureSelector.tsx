@@ -43,6 +43,22 @@ const FEATURES: FeatureItem[] = [
       editor.chain().focus().setHeading({ level: 3 }).run()
     },
   },
+  {
+    key: 'ol',
+    label: () => window._('editor.ol'),
+    icon: <i class="fa-solid fa-list-ol" />,
+    onEnable(editor) {
+      editor.commands.toggleOrderedList()
+    },
+  },
+  {
+    key: 'ul',
+    label: () => window._('editor.ul'),
+    icon: <i class="fa-solid fa-list-ul" />,
+    onEnable(editor) {
+      editor.commands.toggleBulletList()
+    },
+  },
 ]
 
 export default function TextFeatureSelector({ editor }: { editor: ChapterContentEditor }) {
@@ -101,13 +117,13 @@ export default function TextFeatureSelector({ editor }: { editor: ChapterContent
             <div class="be-listitem__icon">
               <i class="fa-solid fa-list-ul" />
             </div>
-            {window._('editor.bulletList')}
+            {window._('editor.ul')}
           </li>
           <li role="button" class="be-listitem">
             <div class="be-listitem__icon">
               <i class="fa-solid fa-list-ol" />
             </div>
-            {window._('editor.orderedList')}
+            {window._('editor.ol')}
           </li>
         </ul>
       </DropdownMenu.Content>

@@ -1,4 +1,8 @@
 .be-bubble-menu {
     @apply bg-card shadow-sm rounded-2xl font-sans flex items-center;
     padding: 2px;
+
+    &__delimiter {
+        @apply h-5 border mx-1;
+    }
 }
