@@ -13,6 +13,7 @@ import { EditorContent } from '@tiptap/react'
 import EditorFloatingMenu from './EditorFloatingMenu'
 import EditorBubbleMenu from './EditorBubbleMenu'
 import { Subject, useSubject } from '@/common/rx'
+import { createPortal } from 'preact/compat'
 
 export type EditorToolbarState = {
   bold: boolean
@@ -141,15 +142,25 @@ export class ChapterContentEditor extends Editor {
 
   toolbarState = new Subject<EditorToolbarState>(DEFAULT_STATE)
 
-  public getContentElement() {
+  public getContentElement(elements: EditorElements) {
     return (
       <>
-        <EditorFloatingMenu editor={this} />
-        <EditorBubbleMenu editor={this} />
-        <EditorContent editor={this} />
+        {createPortal(
+          <>
+            <EditorFloatingMenu editor={this} />
+          </>,
+          elements.content,
+        )}
+        <EditorBubbleMenu editor={this} appendTo={elements.wrapper} />
+        {createPortal(<EditorContent editor={this} />, elements.content)}
       </>
     )
   }
+}
+
+export type EditorElements = {
+  wrapper: HTMLElement
+  content: HTMLElement
 }
 
 export function useEditorToolbarState(editor: ChapterContentEditor) {

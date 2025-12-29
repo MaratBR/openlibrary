@@ -5,11 +5,17 @@ import { ChapterContentEditor, useEditorToolbarState } from './editor'
 import EditorToggleButton from './EditorToggleButton'
 import TextFeatureSelector from './TextFeatureSelector'
 
-export default function EditorBubbleMenu({ editor }: { editor: ChapterContentEditor }) {
+export default function EditorBubbleMenu({
+  editor,
+  appendTo,
+}: {
+  editor: ChapterContentEditor
+  appendTo: HTMLElement
+}) {
   const { bold, italic, strikethrough } = useEditorToolbarState(editor)
 
   return (
-    <BubbleMenu class="be-bubble-menu" editor={editor}>
+    <BubbleMenu class="be-bubble-menu" editor={editor} appendTo={appendTo}>
       <div class="be-toggle-group">
         <EditorToggleButton active={bold} onClick={() => editor.chain().focus().toggleBold().run()}>
           <i class="fa-solid fa-bold" />

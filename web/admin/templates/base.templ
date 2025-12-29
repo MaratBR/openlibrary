@@ -39,7 +39,7 @@ templ dashboardLayout(title string) {
 }
 
 templ baseLayout(title string) {
-    @olhttp.Doc(ctx, olhttp.DocProps{
+    @olhttp.Doc(olhttp.DocProps{
         Title: "Admin - " + title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/admin-common.js", "/_/assets/admin-alpinejs.js" },
         CSS: []string{ "/_/assets/common.css", "/_/assets/admin-common.css", "/_/embed-assets/fonts.css" },

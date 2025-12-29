@@ -1,11 +1,11 @@
 import { useState } from 'preact/hooks'
-import { createPortal } from 'preact/compat'
 import { useWYSIWYG } from './state'
+import { EditorElements } from './editor'
 
 export function EditorIframe() {
   const [loading, setLoading] = useState(true)
   const state = useWYSIWYG()
-  const [contentElement, setContentElement] = useState<HTMLElement>()
+  const [elements, setElements] = useState<EditorElements>()
 
   return (
     <>
@@ -20,7 +20,7 @@ export function EditorIframe() {
           <span class="loader" />
         </div>
       )}
-      {contentElement && createPortal(state.editor.getContentElement(), contentElement)}
+      {elements && state.editor.getContentElement(elements)}
     </>
   )
 
@@ -29,10 +29,16 @@ export function EditorIframe() {
     if (!(target instanceof HTMLIFrameElement)) return
     if (!target.contentDocument) return
 
-    const contentElement = target.contentDocument.getElementById('BookReaderContent')
+    const editorWrapElement = target.contentDocument.getElementById('BlockEditorWrap')
+    const contentElement = target.contentDocument.getElementById('ChapterContent')
+
     if (!contentElement) return
+    if (!editorWrapElement) return
 
     setLoading(false)
-    setContentElement(contentElement)
+    setElements({
+      content: contentElement,
+      wrapper: editorWrapElement,
+    })
   }
 }

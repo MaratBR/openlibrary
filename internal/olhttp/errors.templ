@@ -3,7 +3,7 @@ package olhttp
 import "github.com/MaratBR/openlibrary/internal/reqid"
 
 templ errorLayout(title string) {
-    @Doc(ctx, DocProps{
+    @Doc(DocProps{
         Title: title,
         CSS: []string{ "/_/assets/common.css" },
     }) {

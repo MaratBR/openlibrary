@@ -1,6 +1,5 @@
 package olhttp
 
-import "context"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/mileusna/useragent"
 
@@ -11,11 +10,11 @@ type DocProps struct {
     InstantClick bool
     AppendToHead templ.Component
     BodyClasses string
+    BodyAttributes templ.Attributes
 }
 
 templ Doc(
-    ctx context.Context, 
-    settings DocProps,
+    props DocProps,
 ) {
     {{
         var lang string
@@ -53,11 +52,11 @@ templ Doc(
         if useragent.Parse(r.UserAgent()).Bot {
             <script>window.IS_BOT=true</script>
         }
-        <title>{ settings.Title }</title>
-        for _, scriptPath := range settings.Scripts {
+        <title>{ props.Title }</title>
+        for _, scriptPath := range props.Scripts {
             <script data-no-instant defer type="module" src={ scriptPath }></script>
         }
-        for _, cssPath := range settings.CSS {
+        for _, cssPath := range props.CSS {
             <link rel="stylesheet" href={ cssPath } />
         }
         <link rel="stylesheet" href="/_/embed-assets/css/fa/all.min.css">
@@ -65,8 +64,8 @@ templ Doc(
         [x-cloak]{ display: none !important; }
         </style>
 
-        if settings.AppendToHead != nil {
-            @settings.AppendToHead
+        if props.AppendToHead != nil {
+            @props.AppendToHead
         }
         <noscript><style>.nojs-hidden{display: none;}</style></noscript>
         @ServerData()
@@ -74,9 +73,13 @@ templ Doc(
     {{
         bodyClasses := "m-0 font-text bg-background text-foreground min-h-screen"
     }}
-    <body class={bodyClasses}>
+    <body 
+        if props.BodyAttributes != nil {
+            { props.BodyAttributes... }
+        }
+        class={bodyClasses}>
         { children... }
-        if settings.InstantClick {
+        if props.InstantClick {
             <script src="/_/embed-assets/instantclick.min.js" data-no-instant></script>
             <script data-no-instant>InstantClick.init('mousedown');</script>
         }

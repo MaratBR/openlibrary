@@ -11,7 +11,7 @@ import "strings"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ bmLayoutBase(title string, sitebar bool) {
-	@olhttp.Doc(ctx, olhttp.DocProps{
+	@olhttp.Doc(olhttp.DocProps{
 		Title:        title,
 		Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js", "/_/assets/bookmanager-common.js"},
 		CSS:          []string{"/_/assets/common.css", "/_/assets/bookmanager-common.css"},
@@ -24,7 +24,6 @@ templ bmLayoutBase(title string, sitebar bool) {
 			l := i18n.GetLocalizer(ctx)
 		}}
 		@i18nExtractKeysByPrefix(l, "common")
-		@settings()
 
 		if sitebar {
 			<aside class="sitebar">

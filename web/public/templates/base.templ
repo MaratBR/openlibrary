@@ -4,8 +4,8 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/flash"
-import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
+import "fmt"
 
 templ flashes() {
     {{
@@ -27,13 +27,6 @@ templ flashes() {
             <div id="client-flashes" class="contents" />
         </div>
     }
-}
-
-templ settings() {
-    {{
-        settings := getUIBookSettings(olhttp.GetRequest(ctx))
-    }}
-    @templ.Raw(fmt.Sprintf("<style>:root{--book-font-size:%dpx}</style>", settings.FontSize))
 }
 
 templ siteFooter() {
@@ -65,9 +58,11 @@ templ htmlLayout(params htmlLayoutProps) {
         } else {
             css = []string{modCss}
         }
+
+        uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
     }}
 
-    @olhttp.Doc(ctx, olhttp.DocProps{
+    @olhttp.Doc(olhttp.DocProps{
         Title: params.Title,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
         CSS: css,
@@ -75,12 +70,14 @@ templ htmlLayout(params htmlLayoutProps) {
         AppendToHead: templ.Join(
             frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
         ),
+        BodyAttributes: templ.Attributes{
+            "style": fmt.Sprintf("--book-font-size:%dpx", uiSettings.FontSize),
+        },
     }) {
         {{
             l := i18n.GetLocalizer(ctx)
         }}
         @i18nExtractKeysByPrefix(l, "common")
-        @settings()
         { children... }
   
     }

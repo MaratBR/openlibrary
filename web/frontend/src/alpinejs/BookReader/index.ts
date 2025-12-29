@@ -27,7 +27,7 @@ Alpine.data('BookReader', () => ({
       } else {
         this.fontSize = 18
       }
-      setFontSizeCookie(this.fontSize)
+      setFontSize(this.fontSize)
     } else {
       if (this.fontSize === FONT_SIZES[0]) return
 
@@ -37,7 +37,7 @@ Alpine.data('BookReader', () => ({
       } else {
         this.fontSize = 18
       }
-      setFontSizeCookie(this.fontSize)
+      setFontSize(this.fontSize)
     }
   },
 
@@ -72,6 +72,7 @@ Alpine.data('BookReader', () => ({
   },
 }))
 
-function setFontSizeCookie(fontSize: number) {
+function setFontSize(fontSize: number) {
   document.cookie = `ifs=${fontSize};path=/;max-age=31536000;`
+  document.body.style.setProperty('--book-font-size', `${fontSize}px`)
 }
