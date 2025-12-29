@@ -1,4 +1,4 @@
-.chapter-editor-layout {
+.be-layout {
     @apply flex flex-col h-full w-full;
 
     &__header {
@@ -10,7 +10,7 @@
     }
 }
 
-.chapter-editor-header {
+.be-header {
     @apply bg-card border-b h-full;
     display: grid;
 }
@@ -35,5 +35,39 @@
         float: left;
         height: 0;
         pointer-events: none;
+    }
+}
+
+@mixin interactable() {
+    line-height: calc(var(--spacing) * 10);
+    @apply 
+        h-10 px-1 rounded-xl transition
+        text-gray-700 dark:text-gray-100
+        hover:bg-black/20 hover:text-black dark:hover:bg-white/20 dark:hover:text-white;
+}
+
+.be-toggle {
+    @include interactable();
+    @apply size-10;
+
+    &[aria-selected=true] {
+        @apply bg-black/10 text-black hover:bg-black/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20;
+    }
+}
+
+.be-toggle-group {
+    @apply flex items-center rounded-xl;
+
+    & > .be-toggle {
+        // @apply rounded-none first:rounded-l-xl last:rounded-r-xl;
+    }
+}
+
+
+.be-listitem {
+    @include interactable();
+
+    &__icon {
+        @apply inline-block mr-1;
     }
 }

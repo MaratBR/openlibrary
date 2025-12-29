@@ -28,6 +28,7 @@ const (
 type BookReadingListDto struct {
 	Status        ReadingListStatus     `json:"status"`
 	ChapterID     Nullable[Int64String] `json:"chapterId"`
+	ChapterName   string                `json:"chapterName"`
 	ChapterOrder  int32                 `json:"chapterOrder"`
 	LastUpdatedAt time.Time             `json:"lastUpdatedAt"`
 }

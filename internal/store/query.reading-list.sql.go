@@ -12,7 +12,7 @@ import (
 )
 
 const getBookReadingListState = `-- name: GetBookReadingListState :one
-SELECT rl.user_id, rl.book_id, rl.status, rl.last_accessed_chapter_id, rl.last_updated_at, bc."order" as chapter_order
+SELECT rl.user_id, rl.book_id, rl.status, rl.last_accessed_chapter_id, rl.last_updated_at, bc."order" as chapter_order, bc.name as chapter_name
 FROM reading_list rl
 LEFT JOIN book_chapters bc ON rl.last_accessed_chapter_id = bc.id
 WHERE rl.book_id = $1 and rl.user_id = $2
@@ -30,6 +30,7 @@ type GetBookReadingListStateRow struct {
 	LastAccessedChapterID pgtype.Int8
 	LastUpdatedAt         pgtype.Timestamptz
 	ChapterOrder          pgtype.Int4
+	ChapterName           pgtype.Text
 }
 
 func (q *Queries) GetBookReadingListState(ctx context.Context, arg GetBookReadingListStateParams) (GetBookReadingListStateRow, error) {
@@ -42,6 +43,7 @@ func (q *Queries) GetBookReadingListState(ctx context.Context, arg GetBookReadin
 		&i.LastAccessedChapterID,
 		&i.LastUpdatedAt,
 		&i.ChapterOrder,
+		&i.ChapterName,
 	)
 	return i, err
 }

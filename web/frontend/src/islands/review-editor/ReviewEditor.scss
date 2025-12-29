@@ -20,5 +20,10 @@
 
     &__content {
         @apply text-sm mt-2 border-border border rounded-md;
+        min-height: 300px;
+
+        .ProseMirror {
+            @apply p-2;
+        }
     }
 }

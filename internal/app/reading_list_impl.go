@@ -64,6 +64,7 @@ func (r *readingListService) GetStatus(ctx context.Context, userID uuid.UUID, bo
 		Status:        ReadingListStatus(status.Status),
 		ChapterID:     int64ToNullable(status.LastAccessedChapterID),
 		ChapterOrder:  status.ChapterOrder.Int32,
+		ChapterName:   status.ChapterName.String,
 		LastUpdatedAt: timeDbToDomain(status.LastUpdatedAt),
 	}), nil
 }

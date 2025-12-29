@@ -1,3 +1,4 @@
+import { useWYSIWYG } from './state'
 import { EditorIframe } from './EditorIframe'
 
-export { EditorIframe }
+export { useWYSIWYG, EditorIframe }

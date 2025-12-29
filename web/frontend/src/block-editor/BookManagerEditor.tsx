@@ -1,10 +1,9 @@
-import { useMemo } from 'preact/hooks'
+import { useLayoutEffect, useMemo } from 'preact/hooks'
 import { PreactIslandProps } from '@/islands/common/preact-island'
 import { z } from 'zod'
 import './BookManagerEditor.scss'
-import { EditorIframe } from './wysiwyg'
 import { DraftDtoSchema } from './contracts'
-import { ChapterStateProvider } from './state'
+import { EditorIframe, useWYSIWYG } from './wysiwyg'
 
 const dataSchema = z.object({
   bookId: z.string(),
@@ -14,132 +13,18 @@ const dataSchema = z.object({
 export default function BookManagerEditor({ data }: PreactIslandProps) {
   const { draft } = useMemo(() => dataSchema.parse(data), [data])
 
-  // const [makeChapterVisible, setMakeChapterVisible] = useState(true)
-  // const [beforeSaving, setBeforeSaving] = useState(false)
-  // const [publishPopupOpen, setPublishPopupOpen] = useState(false)
-
-  // const savingMutation = useMutation({
-  //   mutationFn: async (content: string) => {
-  //     await httpUpdateDraft(bookId, draft.chapterId, draft.id, content)
-  //     setPublishPopupOpen(false)
-  //   },
-  //   onSettled() {
-  //     setBeforeSaving(false)
-  //   },
-  // })
-
-  // const saveAndPublishMutation = useMutation({
-  //   mutationFn: async (content: string) => {
-  //     await httpUpdateAndPublishDraft(
-  //       bookId,
-  //       draft.chapterId,
-  //       draft.id,
-  //       content,
-  //       makeChapterVisible,
-  //     )
-  //     setPublishPopupOpen(false)
-  //   },
-  // })
-
-  // const refs = useRef({ content: '' })
-
-  // async function handleContentChange(editorParam?: Editor) {
-  //   const editor = editorParam ?? editorRef.current
-  //   if (!editor) throw new Error('cannot find editor')
-  //   if (savingMutation.isPending) return
-
-  //   refs.current.content = editor.getHTML()
-  //   savingMutation.mutate(refs.current.content)
-  // }
-
-  // function save() {
-  //   if (!editorRef.current) return
-  //   const content = editorRef.current.getHTML()
-  //   savingMutation.mutate(content)
-  // }
-
-  // function saveAndPublish() {
-  //   if (!editorRef.current) return
-  //   const content = editorRef.current.getHTML()
-  //   saveAndPublishMutation.mutate(content)
-  // }
-
-  // const publishButtonRef = useRef<HTMLButtonElement | null>(null)
+  useLayoutEffect(() => {
+    useWYSIWYG.getState().editor.setContentAndClearHistory(draft.content)
+  }, [draft])
 
   return (
-    <ChapterStateProvider draft={draft}>
-      <div class="chapter-editor-layout">
-        <div class="chapter-editor-layout__header">
-          <header class="chapter-editor-header">Header</header>
-        </div>
-        <div class="chapter-editor-layout__body">
-          <EditorIframe />
-        </div>
+    <div class="be-layout">
+      <div class="be-layout__header">
+        <header class="be-header">TODO: Editor header content</header>
       </div>
-      {/* <BookContentEditor
-        editorRef={editorRef}
-        contentChangedDebounce={1000}
-        onContentChanged={handleContentChange}
-        onBeforeContentChanged={handleBeforeContentChanged}
-        draft={draft}
-        bookId={bookId}
-      /> */}
-      {/* {createPortal(
-        <>
-          <button
-            ref={publishButtonRef}
-            disabled={saveAndPublishMutation.isPending}
-            onClick={() => setPublishPopupOpen(true)}
-            id="actions:saveAndPublish"
-            class="btn btn--secondary "
-          >
-            {window._('editor.publishDraft')}
-          </button>
-          <div class="relative">
-            <div
-              data-open={publishPopupOpen}
-              class="card p-4 shadow-2xl absolute right-0 top-0 rounded-2xl min-w-48 transition-opacity data-[open=true]:opacity-100 data-[open=false]:opacity-0 data-[open=false]:pointer-events-none"
-            >
-              <strong>{window._('editor.publishAreYouSure')}</strong>
-              <p>{window._('editor.publishWarning')}</p>
-              {!draft.isChapterPubliclyAvailable && (
-                <div class="form-control form-control--horizontal bg-muted rounded-xl p-2 -m-2 mt-1">
-                  <div class="form-control__label p-0">{window._('editor.makeChapterVisible')}</div>
-                  <div class="form-control__value">
-                    <Switch value={makeChapterVisible} onChange={setMakeChapterVisible} />
-                  </div>
-                </div>
-              )}
-              <div class="flex -ml-2 gap-1 mt-4">
-                <button class="btn btn--destructive " onClick={() => setPublishPopupOpen(false)}>
-                  {window._('common.cancel')}
-                </button>
-                <button
-                  ref={publishButtonRef}
-                  disabled={saveAndPublishMutation.isPending}
-                  onClick={() => saveAndPublish()}
-                  class={clsx('btn btn--secondary rounded-full', {
-                    'with-loader': saveAndPublishMutation.isPending,
-                  })}
-                >
-                  {window._('editor.publishDraft')}
-                </button>
-              </div>
-            </div>
-          </div>
-          <button
-            disabled={savingMutation.isPending}
-            onClick={() => save()}
-            id="actions:save"
-            class={clsx('w-28 btn btn--primary rounded-full', {
-              'with-loader': savingMutation.isPending || beforeSaving,
-            })}
-          >
-            {window._('editor.saveDraft')}
-          </button>
-        </>,
-        document.getElementById('slot:actions')!,
-      )} */}
-    </ChapterStateProvider>
+      <div class="be-layout__body">
+        <EditorIframe />
+      </div>
+    </div>
   )
 }

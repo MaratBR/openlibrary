@@ -1,0 +1,7 @@
+.be-dropdown {
+    @apply px-2;
+
+    &__menu {
+        @apply bg-card shadow-sm p-1 rounded-xl;
+    }
+}

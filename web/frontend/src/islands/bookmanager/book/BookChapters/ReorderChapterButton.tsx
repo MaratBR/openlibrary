@@ -5,13 +5,7 @@ import { useChapterSelectorPopup } from './ChapterSelectorPopup'
 import { useBookChaptersState } from './state'
 import { ChapterSelectorDescriptionProps } from '../ChapterSelector'
 
-export default function ReorderChapterButton({
-  chapter,
-  bookId,
-}: {
-  bookId: string
-  chapter: ManagerBookChapterDto
-}) {
+export default function ReorderChapterButton({ chapter }: { chapter: ManagerBookChapterDto }) {
   const ref = useRef<HTMLButtonElement | null>(null)
   const [reorderActionsOpen, setReorderActionsOpen] = useState(false)
   const chapterSelectorPopup = useChapterSelectorPopup()

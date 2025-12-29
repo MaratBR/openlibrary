@@ -16,9 +16,15 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
         @i18nExtractKeysByPrefix(l, "bookManager.edit")
 
         <header class="page-header-container">
-            <h1 class="page-header">
+            <h1 class="page-header inline-block">
                 { book.Name }
             </h1>
+            <div class="page-header__after">
+                <a href={fmt.Sprintf("/book/%d", book.ID)} class="link">
+                    { l.T("bookManager.edit.goToPage") }&nbsp;
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
         </header>
 
         @webcomponents.TabsWrap(webcomponents.TabsWrapProps{

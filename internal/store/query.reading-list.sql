@@ -1,5 +1,5 @@
 -- name: GetBookReadingListState :one
-SELECT rl.*, bc."order" as chapter_order
+SELECT rl.*, bc."order" as chapter_order, bc.name as chapter_name
 FROM reading_list rl
 LEFT JOIN book_chapters bc ON rl.last_accessed_chapter_id = bc.id
 WHERE rl.book_id = $1 and rl.user_id = $2;

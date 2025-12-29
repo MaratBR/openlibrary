@@ -83,7 +83,7 @@ function ChapterCard({
           &nbsp;
           {window._('common.delete')}
         </a>
-        <ReorderChapterButton bookId={bookId} chapter={chapter} />
+        <ReorderChapterButton chapter={chapter} />
       </div>
     </div>
   )

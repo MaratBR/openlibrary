@@ -556,7 +556,7 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 }
 
 func (s *bookManagerService) GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChapterResult, error) {
-	rows, err := s.queries.GetPubliclyVisibleBookChapters(ctx, query.BookID)
+	rows, err := s.queries.GetAllBookChapters(ctx, query.BookID)
 	if err != nil {
 		return ManagerGetBookChapterResult{}, err
 	}

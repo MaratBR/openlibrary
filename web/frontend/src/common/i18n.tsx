@@ -1,11 +1,16 @@
+/* eslint-disable no-redeclare */
 import { JSX } from 'preact/jsx-runtime'
 
 const i18nShowKeys = new URLSearchParams(window.location.search).has('i18n.show-keys')
 
-type TranslateArg = string | JSX.Element
-type TranslateArgs = Record<string, TranslateArg>
+export function translate(key: string): string
+export function translate(key: string, args: Record<string, string>): string
+export function translate(key: string, args: Record<string, string | JSX.Element>): JSX.Element
 
-export function translate(key: string, args?: TranslateArgs): string | JSX.Element {
+export function translate(
+  key: string,
+  args?: Record<string, string | JSX.Element>,
+): string | JSX.Element {
   if (i18nShowKeys) return key
   if (!window.i18n) return key
 

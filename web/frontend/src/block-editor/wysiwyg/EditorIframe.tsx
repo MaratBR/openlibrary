@@ -1,10 +1,11 @@
 import { useState } from 'preact/hooks'
-import { useChapterState } from '../state'
-import { ChapterContentEditor } from './editor'
+import { createPortal } from 'preact/compat'
+import { useWYSIWYG } from './state'
 
 export function EditorIframe() {
   const [loading, setLoading] = useState(true)
-  const state = useChapterState()
+  const state = useWYSIWYG()
+  const [contentElement, setContentElement] = useState<HTMLElement>()
 
   return (
     <>
@@ -19,19 +20,19 @@ export function EditorIframe() {
           <span class="loader" />
         </div>
       )}
+      {contentElement && createPortal(state.editor.getContentElement(), contentElement)}
     </>
   )
 
   function handleLoad(event: Event) {
     const target = event.target
     if (!(target instanceof HTMLIFrameElement)) return
+    if (!target.contentDocument) return
 
-    new ChapterContentEditor({
-      element: target,
-      placeholder: 'Placeholder here!',
-      state,
-    })
+    const contentElement = target.contentDocument.getElementById('BookReaderContent')
+    if (!contentElement) return
 
     setLoading(false)
+    setContentElement(contentElement)
   }
 }

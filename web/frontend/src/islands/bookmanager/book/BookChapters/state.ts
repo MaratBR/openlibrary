@@ -17,7 +17,7 @@ export const useBookChaptersState = create<{
   insertAfter(chapterId1: string, chapterId2: string): Promise<void>
 }>((set, get) => ({
   chapters: [],
-  loading: false,
+  loading: true,
   error: undefined,
   bookId: '',
 
@@ -27,7 +27,6 @@ export const useBookChaptersState = create<{
   },
 
   loadChapters(bookId) {
-    if (get().loading) return
     set({ bookId, loading: true })
 
     httpGetBookChapters(bookId)
