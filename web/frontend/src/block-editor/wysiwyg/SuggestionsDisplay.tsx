@@ -74,6 +74,10 @@ function Suggestions({
     }
 
     update()
+
+    // TODO implement a propert recomputation only when necessary
+    const interval = setInterval(update, 250)
+    return () => clearInterval(interval)
   }, [clientRect, elements])
 
   const ulRef = useRef<HTMLUListElement | null>(null)

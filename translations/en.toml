@@ -484,6 +484,7 @@ chapterNamePlaceholder = "Unnamed chapter"
 publishAreYouSure = "Publish the chapter?"
 publishWarning = "This will update the chapter for all users."
 makeChapterVisible = "Make chapter visible for everyone"
+floatingMenu = "Type '/' to insert blocks"
 
 [mod]
 performAction = "Perform action"
