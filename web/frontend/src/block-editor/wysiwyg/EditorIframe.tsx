@@ -1,11 +1,9 @@
 import { useState } from 'preact/hooks'
 import { useWYSIWYG } from './state'
-import { EditorElements } from './editor'
 
 export function EditorIframe() {
   const [loading, setLoading] = useState(true)
   const state = useWYSIWYG()
-  const [elements, setElements] = useState<EditorElements>()
 
   return (
     <>
@@ -20,25 +18,15 @@ export function EditorIframe() {
           <span class="loader" />
         </div>
       )}
-      {elements && state.editor.getContentElement(elements)}
+      {state.renderContent()}
     </>
   )
 
   function handleLoad(event: Event) {
     const target = event.target
     if (!(target instanceof HTMLIFrameElement)) return
-    if (!target.contentDocument) return
 
-    const editorWrapElement = target.contentDocument.getElementById('BlockEditorWrap')
-    const contentElement = target.contentDocument.getElementById('ChapterContent')
-
-    if (!contentElement) return
-    if (!editorWrapElement) return
-
+    state.init(target)
     setLoading(false)
-    setElements({
-      content: contentElement,
-      wrapper: editorWrapElement,
-    })
   }
 }

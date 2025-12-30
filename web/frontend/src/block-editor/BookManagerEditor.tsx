@@ -14,7 +14,7 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
   const { draft } = useMemo(() => dataSchema.parse(data), [data])
 
   useLayoutEffect(() => {
-    useWYSIWYG.getState().editor.setContentAndClearHistory(draft.content)
+    useWYSIWYG.getState().setInitialContent(draft.content)
   }, [draft])
 
   return (

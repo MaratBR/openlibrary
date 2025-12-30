@@ -14,6 +14,10 @@ import EditorFloatingMenu from './EditorFloatingMenu'
 import EditorBubbleMenu from './EditorBubbleMenu'
 import { Subject, useSubject } from '@/common/rx'
 import { createPortal } from 'preact/compat'
+import { SlashCommand } from './Suggestions'
+import { slashCommands } from './slashCommands'
+import { SuggestionsDisplay } from './SuggestionsDisplay'
+import { EditorElements } from './EditorElements'
 
 export type EditorToolbarState = {
   bold: boolean
@@ -39,8 +43,9 @@ const DEFAULT_STATE: EditorToolbarState = {
 
 export class ChapterContentEditor extends Editor {
   private _placeholder = ''
+  private elements: EditorElements
 
-  constructor() {
+  constructor(elements: EditorElements) {
     super({
       content: '',
       extensions: [
@@ -72,8 +77,15 @@ export class ChapterContentEditor extends Editor {
         }),
         BulletList,
         OrderedList,
+        SlashCommand.configure({
+          suggestionClass: 'be-suggestion',
+          commands: slashCommands(),
+          displayAdapter: new SuggestionsDisplay(elements),
+        }),
       ],
     })
+
+    this.elements = elements
 
     const onTransaction = () => {
       this.toolbarState.set(this.getCurrentToolbarState())
@@ -142,25 +154,20 @@ export class ChapterContentEditor extends Editor {
 
   toolbarState = new Subject<EditorToolbarState>(DEFAULT_STATE)
 
-  public getContentElement(elements: EditorElements) {
+  public getContentElement() {
     return (
       <>
         {createPortal(
           <>
             <EditorFloatingMenu editor={this} />
+            <EditorContent editor={this} />
           </>,
-          elements.content,
+          this.elements.content,
         )}
-        <EditorBubbleMenu editor={this} appendTo={elements.wrapper} />
-        {createPortal(<EditorContent editor={this} />, elements.content)}
+        <EditorBubbleMenu editor={this} appendTo={this.elements.contentWrapper} />
       </>
     )
   }
-}
-
-export type EditorElements = {
-  wrapper: HTMLElement
-  content: HTMLElement
 }
 
 export function useEditorToolbarState(editor: ChapterContentEditor) {

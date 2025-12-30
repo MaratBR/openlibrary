@@ -1,0 +1,20 @@
+.be-suggestion {
+    @apply font-sans bg-primary/10 px-2 -mx-2 -my-1 py-1 inline-block rounded-md text-primary;
+    text-decoration: none;
+    font-weight: normal;
+    font-style: normal;
+}
+
+.be-suggestions-modal {
+    @apply bg-card shadow-md rounded-xl fixed left-0 top-0 p-2;
+    min-width: 300px;
+    min-height: 300px;
+
+    &__item {
+        @apply p-4 border-b last:border-none;
+
+        &:focus {
+            @apply bg-primary/10;
+        }
+    }
+}
