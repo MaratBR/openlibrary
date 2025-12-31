@@ -19,10 +19,12 @@ Disallow: /
 User-Agent: Googlebot
 Disallow: /_api
 Disallow: /admin
+Disallow: /books-manager
 Disallow: /*__fragment
 
 User-Agent: *
 Disallow: /_api
 Disallow: /admin
+Disallow: /books-manager
 
 Sitemap: {{sitemap}}
