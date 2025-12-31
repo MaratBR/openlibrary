@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare */
 import { useEffect, useState } from 'preact/hooks'
 
 type Callback<T> = (event: T) => void
@@ -49,10 +50,11 @@ export class Subject<T> extends OLEvent<T> implements WithValue<T> {
   constructor(value: T) {
     super()
     this._value = value
+  }
 
-    this.subscribe((value) => {
-      this._value = value
-    })
+  set(event: T): void {
+    this._value = event
+    super.set(event)
   }
 
   get(): T {
@@ -60,10 +62,17 @@ export class Subject<T> extends OLEvent<T> implements WithValue<T> {
   }
 }
 
-export function useSubject<T>(subject: Subscribable<T> & WithValue<T>): T {
-  const [value, setValue] = useState<T>(subject.get())
+export function useSubject<T>(subject: Subscribable<T> & WithValue<T>): T
+export function useSubject<T>(subject: (Subscribable<T> & WithValue<T>) | undefined): T | undefined
+
+export function useSubject<T>(
+  subject: (Subscribable<T> & WithValue<T>) | undefined,
+): T | undefined {
+  const [value, setValue] = useState<T | undefined>(subject ? subject.get() : undefined)
 
   useEffect(() => {
+    if (!subject) return
+    setValue(subject.get())
     return subject.subscribe(setValue)
   }, [subject])
 

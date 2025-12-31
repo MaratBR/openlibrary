@@ -47,7 +47,7 @@ export class ChapterContentEditor extends Editor {
   private elements: EditorElements
 
   public readonly firstChange = createEvent<void>()
-  private wasChangedFirstTime = false
+  public readonly wasChangedFirstTime = new Subject<boolean | null>(null)
 
   constructor(elements: EditorElements) {
     super({
@@ -98,9 +98,18 @@ export class ChapterContentEditor extends Editor {
 
     this.on('transaction', onTransaction)
 
+    const onUpdate = () => {
+      if (this.wasChangedFirstTime.get() !== false) {
+        return
+      }
+      this.wasChangedFirstTime.set(true)
+    }
+    this.on('update', onUpdate)
+
     const onDestroy = () => {
       this.off('transaction', onTransaction)
       this.off('destroy', onDestroy)
+      this.off('update', onUpdate)
     }
     this.on('destroy', onDestroy)
   }
@@ -110,8 +119,8 @@ export class ChapterContentEditor extends Editor {
   }
 
   public setContentAndClearHistory(content: Content) {
-    this.wasChangedFirstTime = false
     this.chain().setMeta('addToHistory', false).insertContent(content).run()
+    this.wasChangedFirstTime.set(false)
   }
 
   public getCurrentToolbarState(): EditorToolbarState {

@@ -6,7 +6,16 @@
     }
 
     &__body {
-        @apply grow-1;
+        @apply grow-1 grid;
+        grid-template-columns: 100px 1fr 100px
+    }
+
+    &__left {
+        @apply bg-card border-r;
+    }
+
+    &__right {
+        @apply bg-card border-l;
     }
 }
 
@@ -75,4 +84,10 @@
     &__icon {
         @apply inline-block mr-1;
     }
+}
+
+.be-chapter-name-input {
+    @apply
+        focus:outline-primary focus:outline-2 focus:bg-card
+        text-3xl font-title w-full block p-4 -mx-4;
 }

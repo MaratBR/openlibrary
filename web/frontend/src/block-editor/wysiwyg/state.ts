@@ -2,6 +2,7 @@ import { create } from 'zustand/react'
 import { ChapterContentEditor } from './editor'
 import { EditorElements } from './EditorElements'
 import { JSX } from 'preact/jsx-runtime'
+import { useSubject } from '@/common/rx'
 
 export type WYSIWYGState = {
   initData: {
@@ -12,36 +13,39 @@ export type WYSIWYGState = {
   contentModified: boolean
 
   init(iframe: HTMLIFrameElement): void
-  renderContent(): JSX.Element | null
+  getContentJSX(): JSX.Element | null
   setContentModified(modified: boolean): void
-
   setInitialContent(content: string): void
+  getContent(): string
+  markContentAsFresh(): void
 }
 
-export const useWYSIWYG = create<WYSIWYGState>((_get, set) => ({
+export const useWYSIWYG = create<WYSIWYGState>((set, get) => ({
   initData: null,
   contentModified: false,
 
   init(iframe) {
     const elements = new EditorElements(iframe)
 
-    this.initData = {
+    const initData: WYSIWYGState['initData'] = {
       editor: new ChapterContentEditor(elements),
       elements,
     }
-    if (this.initialContent) {
-      this.initData.editor.setContentAndClearHistory(this.initialContent)
+    const { initialContent } = get()
+    if (initialContent) {
+      initData.editor.setContentAndClearHistory(initialContent)
     }
+    set({ initData })
   },
 
-  renderContent() {
+  getContentJSX() {
     if (!this.initData) return null
 
     return this.initData.editor.getContentElement()
   },
 
   setContentModified(modified) {
-    this.contentModified = modified
+    set({ contentModified: modified })
   },
 
   initialContent: '',
@@ -50,6 +54,28 @@ export const useWYSIWYG = create<WYSIWYGState>((_get, set) => ({
     if (this.initData) {
       this.initData.editor.setContentAndClearHistory(content)
     }
-    this.initialContent = content
+    set({ initialContent: content })
+  },
+
+  getContent() {
+    if (!this.initData) {
+      return ''
+    }
+
+    const html = this.initData.editor.getHTML()
+
+    return html
+  },
+
+  markContentAsFresh() {
+    if (!this.initData) throw new Error('WYSIWYG is not initialized')
+
+    // mark current content as "unchanged"
+    this.initData.editor.wasChangedFirstTime.set(false)
   },
 }))
+
+export function useWYSIWYGHasChanges() {
+  const sub = useWYSIWYG((s) => s.initData?.editor.wasChangedFirstTime)
+  return useSubject(sub) ?? false
+}

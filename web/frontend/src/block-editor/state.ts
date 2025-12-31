@@ -1,0 +1,83 @@
+import { create } from 'zustand/react'
+import { useWYSIWYG } from './wysiwyg'
+import { httpUpdateDraft, httpUpdateDraftChapterName } from '@/api/bm'
+import { DraftDto } from './contracts'
+
+export type BEState = {
+  saving: boolean
+  autoSave: boolean
+  draft: DraftDto | null
+  chapterName: string
+  error: unknown | null
+
+  chapterNameWasChanged(): boolean
+
+  init(draft: DraftDto): void
+  setChapterName(name: string): void
+  saveDraft(): Promise<void>
+}
+
+export const useBEState = create<BEState>((set, get) => ({
+  saving: false,
+  autoSave: true,
+  draft: null,
+  chapterName: '',
+  error: null,
+
+  chapterNameWasChanged() {
+    const { chapterName, draft } = get()
+    if (!draft) return false
+    return chapterName !== draft.chapterName
+  },
+
+  init(draft) {
+    set({
+      draft,
+      chapterName: draft.chapterName,
+    })
+
+    const wysiwyg = useWYSIWYG.getState()
+    wysiwyg.setInitialContent(draft.content)
+  },
+
+  setChapterName(name) {
+    set({
+      chapterName: name,
+    })
+  },
+
+  async saveDraft() {
+    set({
+      saving: true,
+    })
+    try {
+      debugger
+      const { draft, chapterName, chapterNameWasChanged } = get()
+      if (!draft) throw new Error('cannot save draft - no draft information is available')
+
+      // first update chapter name if necessary
+      if (chapterNameWasChanged) {
+        const response = await httpUpdateDraftChapterName(
+          draft.book.id,
+          draft.chapterId,
+          draft.id,
+          chapterName,
+        )
+        response.throwIfError()
+      }
+
+      const wysiwyg = useWYSIWYG.getState()
+      const content = wysiwyg.getContent()
+      const response = await httpUpdateDraft(draft.book.id, draft.chapterId, draft.id, content)
+      response.throwIfError()
+      wysiwyg.markContentAsFresh()
+
+      set({ saving: false })
+    } catch (error: unknown) {
+      set({
+        error,
+        saving: false,
+      })
+    }
+  },
+}))

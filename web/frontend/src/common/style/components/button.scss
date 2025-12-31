@@ -87,7 +87,12 @@
         --btn-colors-main: var(--destructive);
         --btn-colors-text: var(--destructive-foreground);
     }
+
+    &--sq {
+        @apply rounded-sm;
+    }
 }
+
 
 .btn-group {
     @apply inline-flex items-stretch;

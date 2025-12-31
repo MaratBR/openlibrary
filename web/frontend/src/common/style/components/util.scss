@@ -65,34 +65,3 @@
         }
     }
 }
-
-.loading-stripe {
-    position: relative;
-    overflow: hidden;
-}
-
-.loading-stripe::after {
-    display: block;
-    content: ' ';
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    background: repeating-linear-gradient(
-        90deg,
-        #dcdcde55 0px,
-        #dcdcde55 16px,
-        transparent 16px,
-        transparent 32px
-    );
-    background-size: 32px 100%;
-    animation: loading-stripe 1s linear infinite;
-}
-
-@keyframes loading-stripe {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 32px 0;
-  }
-}

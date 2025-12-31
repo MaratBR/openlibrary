@@ -18,7 +18,7 @@ export function EditorIframe() {
           <span class="loader" />
         </div>
       )}
-      {state.renderContent()}
+      {state.getContentJSX()}
     </>
   )
 

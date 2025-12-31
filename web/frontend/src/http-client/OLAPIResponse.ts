@@ -73,6 +73,12 @@ export class OLAPIResponse<T> {
     return this._data
   }
 
+  throwIfError() {
+    if (this._error) {
+      throw new OLAPIError(this)
+    }
+  }
+
   private async _loadData() {
     if (this._data !== undefined) return
 
@@ -112,5 +118,19 @@ export class OLAPIResponse<T> {
       console.warn('failed to parse x-flash header contents', e)
       return []
     }
+  }
+}
+
+export class OLAPIError extends Error {
+  private readonly _response: OLAPIResponse<unknown>
+
+  get error() {
+    return this._response.error
+  }
+
+  constructor(response: OLAPIResponse<unknown>) {
+    const responseErrorMessage = response.error ? response.error.message : 'no error'
+    super(`OLAPI error: ${responseErrorMessage}`)
+    this._response = response
   }
 }
