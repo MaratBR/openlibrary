@@ -6,16 +6,30 @@
 }
 
 .be-suggestions-modal {
-    @apply bg-card shadow-md rounded-xl fixed left-0 top-0 p-2;
+    @apply bg-card shadow-md fixed left-0 top-0 p-2;
     min-width: 300px;
     min-height: 300px;
+    scrollbar-width: thin;
+    overflow-y: auto;
+}
 
-    &__item {
-        @apply p-4 border-b last:border-none;
+.be-suggestion-item {
+    @apply p-4 border-b last:border-none;
 
-        &:focus {
-            @apply bg-primary/10;
-        }
+    &:focus {
+        @apply outline-primary outline-2;
+    }
+
+    &:hover {
+        @apply text-primary;
+    }
+
+    &__name {
+        @apply font-[500] text-lg;
+    }
+
+    &__icon {
+        @apply mr-1 inline-block;
     }
 }
 

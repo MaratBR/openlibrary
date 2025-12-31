@@ -7,17 +7,20 @@ import { useEffect, useLayoutEffect, useRef } from 'preact/hooks'
 import { wrapVirtualElement } from '@/lib/iframe'
 import { EditorElements } from './EditorElements'
 import { getNextElement, getPrevElement } from '@/lib/html-elements'
+import { Editor } from '@tiptap/core'
 
 export class SuggestionsDisplay implements SlashCommandDisplayAdapter {
-  private root: HTMLElement
-  private elements: EditorElements
-  private props = new Subject<SuggestionProps<SlashCommandItem, SlashCommandItem> | undefined>(
-    undefined,
-  )
-  private focusCallbackRef: RefObject<(arrowUp: boolean) => void> = { current: null }
+  private readonly root: HTMLElement
+  private readonly elements: EditorElements
+  private readonly props = new Subject<
+    SuggestionProps<SlashCommandItem, SlashCommandItem> | undefined
+  >(undefined)
+  private readonly getEditor: () => Editor
+  private readonly focusCallbackRef: RefObject<(arrowUp: boolean) => void> = { current: null }
 
-  constructor(elements: EditorElements) {
+  constructor(elements: EditorElements, getEditor: () => Editor) {
     this.elements = elements
+    this.getEditor = getEditor
     this.root = document.createElement('div')
     document.body.appendChild(this.root)
   }
@@ -29,6 +32,7 @@ export class SuggestionsDisplay implements SlashCommandDisplayAdapter {
         focusCallbackRef={this.focusCallbackRef}
         props={this.props}
         elements={this.elements}
+        getEditor={this.getEditor}
       />,
       this.root,
     )
@@ -48,10 +52,12 @@ function Suggestions({
   props,
   elements,
   focusCallbackRef,
+  getEditor,
 }: {
   props: Subject<SuggestionProps<SlashCommandItem, SlashCommandItem> | undefined>
   elements: EditorElements
   focusCallbackRef: RefObject<(arrowUp: boolean) => void>
+  getEditor: () => Editor
 }) {
   const propsValue = useSubject(props)
   const { items = [], command = () => {}, clientRect } = propsValue ?? {}
@@ -122,6 +128,27 @@ function Suggestions({
       if (item) {
         command(item)
       }
+    } else {
+      const editor = getEditor()
+      if (event.key.length === 1) {
+        editor.chain().focus().insertContent(event.key).run()
+      } else if (event.key === 'Backspace') {
+        const { from, to } = editor.view.state.selection
+        if (from === to) {
+          editor
+            .chain()
+            .focus()
+            .deleteRange({ from: from - 1, to: from })
+            .run()
+        } else {
+          editor.chain().focus().deleteSelection().run()
+        }
+      }
+
+      const li = event.target
+      window.requestAnimationFrame(() => {
+        li.focus()
+      })
     }
   }
 
@@ -139,9 +166,16 @@ function Suggestions({
             }}
             onKeyDown={handleKeyDown}
             data-command={item.name}
-            className="be-suggestions-modal__item"
+            className="be-suggestion-item"
           >
-            {item.name}
+            <div class="be-suggestion-item__name">
+              {item.icon && <div class="be-suggestion-item__icon">{item.icon}</div>}
+              {item.name}
+            </div>
+
+            {item.description && (
+              <div class="be-suggestion-item__description">{item.description}</div>
+            )}
           </li>
         ))}
       </ul>

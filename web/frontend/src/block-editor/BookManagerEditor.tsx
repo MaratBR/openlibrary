@@ -20,11 +20,23 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
   return (
     <div class="be-layout">
       <div class="be-layout__header">
-        <header class="be-header">TODO: Editor header content</header>
+        <header class="be-header">
+          <div />
+          <div class="be-header__left">Left</div>
+          <div class="be-header__center">Center</div>
+          <div class="be-header__right">
+            <SaveButton />
+          </div>
+          <div />
+        </header>
       </div>
       <div class="be-layout__body">
         <EditorIframe />
       </div>
     </div>
   )
+}
+
+function SaveButton() {
+  return <button class="btn btn--lg loading-stripe">{window._('common.save')}</button>
 }

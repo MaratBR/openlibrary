@@ -3,10 +3,13 @@ import { SlashCommandItem } from './Suggestions'
 export const slashCommands: () => SlashCommandItem[] = () => [
   {
     name: window._('editor.h2'),
+    icon: <i class="fa-solid fa-heading" />,
+
     command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
   },
   {
     name: window._('editor.h3'),
+    icon: <i class="fa-solid fa-heading" />,
     command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
   },
   {

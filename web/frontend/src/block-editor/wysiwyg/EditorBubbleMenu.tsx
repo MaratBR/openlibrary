@@ -3,10 +3,6 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import './EditorBubbleMenu.scss'
 import { ChapterContentEditor, useEditorToolbarState } from './editor'
 import EditorToggleButton from './EditorToggleButton'
-import TextFeatureSelector from './TextFeatureSelector'
-import { Editor } from '@tiptap/core'
-import { Node as PMNode } from 'prosemirror-model'
-import { VirtualElement } from '@floating-ui/react'
 
 export default function EditorBubbleMenu({
   editor,
@@ -47,43 +43,6 @@ export default function EditorBubbleMenu({
           <i class="fa-solid fa-strikethrough" />
         </EditorToggleButton>
       </div>
-
-      <div class="be-bubble-menu__delimiter" />
-
-      <TextFeatureSelector editor={editor} />
     </BubbleMenu>
   )
-}
-
-function isValidTextNode(node: PMNode): boolean {
-  return node.isTextblock && !node.isAtom
-}
-
-export function getSelectedTextElement(editor: Editor): VirtualElement | null {
-  const { state, view } = editor
-  const { selection, doc } = state
-  const { from, to, empty } = selection
-
-  let result: VirtualElement | null = null
-
-  doc.nodesBetween(from, to, (node, pos) => {
-    if (result) return false
-    if (!isValidTextNode(node)) return
-
-    // cursor only
-    if (empty && node.content.size === 0) return
-
-    const dom = view.nodeDOM(pos) as HTMLElement | null
-    if (!dom) return
-
-    result = {
-      contextElement: dom,
-      getBoundingClientRect: () => dom.getBoundingClientRect(),
-      getClientRects: () => dom.getClientRects(),
-    }
-
-    return false
-  })
-
-  return result
 }

@@ -11,8 +11,13 @@
 }
 
 .be-header {
-    @apply bg-card border-b h-full;
-    display: grid;
+    @apply bg-card border-b h-full grid;
+    // I just borrowed it from WP
+    grid-template-columns: 64px minmax(min-content,2fr) 2.5fr minmax(min-content,2fr) 64px;
+
+    &__right {
+        @apply flex items-center justify-end;
+    }
 }
 
 #BlockEditorWrap {

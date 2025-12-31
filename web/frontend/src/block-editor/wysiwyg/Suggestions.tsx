@@ -1,10 +1,12 @@
 import { Editor, Extension } from '@tiptap/core'
 import Suggestion, { SuggestionProps, Trigger } from '@tiptap/suggestion'
 import { keymap } from '@tiptap/pm/keymap'
+import { JSX } from 'preact/jsx-runtime'
 // import { slashCommands } from './slashCommands'
 
 export type SlashCommandItem = {
   name: string
+  icon?: JSX.Element
   description?: string
   command(editor: Editor): void
 }

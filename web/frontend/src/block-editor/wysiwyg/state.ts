@@ -9,15 +9,18 @@ export type WYSIWYGState = {
     elements: EditorElements
   } | null
   initialContent: string
+  contentModified: boolean
 
   init(iframe: HTMLIFrameElement): void
   renderContent(): JSX.Element | null
+  setContentModified(modified: boolean): void
 
   setInitialContent(content: string): void
 }
 
-export const useWYSIWYG = create<WYSIWYGState>(() => ({
+export const useWYSIWYG = create<WYSIWYGState>((_get, set) => ({
   initData: null,
+  contentModified: false,
 
   init(iframe) {
     const elements = new EditorElements(iframe)
@@ -35,6 +38,10 @@ export const useWYSIWYG = create<WYSIWYGState>(() => ({
     if (!this.initData) return null
 
     return this.initData.editor.getContentElement()
+  },
+
+  setContentModified(modified) {
+    this.contentModified = modified
   },
 
   initialContent: '',

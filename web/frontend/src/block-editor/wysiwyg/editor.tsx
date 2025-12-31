@@ -18,6 +18,7 @@ import { SlashCommand } from './Suggestions'
 import { slashCommands } from './slashCommands'
 import { SuggestionsDisplay } from './SuggestionsDisplay'
 import { EditorElements } from './EditorElements'
+import { createEvent } from '@/lib/event'
 
 export type EditorToolbarState = {
   bold: boolean
@@ -44,6 +45,9 @@ const DEFAULT_STATE: EditorToolbarState = {
 export class ChapterContentEditor extends Editor {
   private _placeholder = ''
   private elements: EditorElements
+
+  public readonly firstChange = createEvent<void>()
+  private wasChangedFirstTime = false
 
   constructor(elements: EditorElements) {
     super({
@@ -80,7 +84,7 @@ export class ChapterContentEditor extends Editor {
         SlashCommand.configure({
           suggestionClass: 'be-suggestion',
           commands: slashCommands(),
-          displayAdapter: new SuggestionsDisplay(elements),
+          displayAdapter: new SuggestionsDisplay(elements, () => this),
         }),
       ],
     })
@@ -106,6 +110,7 @@ export class ChapterContentEditor extends Editor {
   }
 
   public setContentAndClearHistory(content: Content) {
+    this.wasChangedFirstTime = false
     this.chain().setMeta('addToHistory', false).insertContent(content).run()
   }
 
