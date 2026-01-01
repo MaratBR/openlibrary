@@ -32,9 +32,7 @@ export const useWYSIWYG = create<WYSIWYGState>((set, get) => ({
       elements,
     }
     const { initialContent } = get()
-    if (initialContent) {
-      initData.editor.setContentAndClearHistory(initialContent)
-    }
+    initData.editor.setContentAndClearHistory(initialContent)
     set({ initData })
   },
 

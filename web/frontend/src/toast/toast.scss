@@ -1,7 +1,54 @@
 .toasts {
-    @apply flex flex-col gap-2 fixed bottom-2 left-2 z-50;
+    @apply fixed right-0 bottom-0 z-10;
 }
 
 .toast {
-    @apply p-5 bg-slate-900 text-white shadow-md rounded-sm min-w-[200px];
+    @apply p-2 bg-card rounded-2xl shadow-lg mr-3 my-2;
+}
+
+.toast-layout {
+    @apply grid grid-cols-[40px_auto] gap-2;
+
+    &__icon {
+        @apply w-full flex items-center justify-center;
+
+        &[data-color=warn] {
+            @apply text-yellow;
+        }
+
+        &[data-color=error] {
+            @apply text-red;
+        }
+
+        &[data-color=success] {
+            @apply text-green;
+        }
+
+        &[data-color=info] {
+            @apply text-primary;
+        }
+
+        & > i {
+            color: inherit !important;
+            @apply text-2xl;
+        }
+    }
+
+    &__content {    
+        @apply pr-9;
+    }
+
+    &__title {
+        @apply text-lg font-semibold;
+    }
+
+    &__text {
+    }
+
+    &__close {
+        @apply 
+            absolute top-1 right-1 opacity-60 size-8 flex items-center justify-center transition cursor-pointer rounded-3xl
+            hover:bg-highlight hover:opacity-100
+            active:scale-80;
+    }
 }

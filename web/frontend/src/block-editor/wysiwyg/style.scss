@@ -34,5 +34,5 @@
 }
 
 .be-floating-menu {
-    @apply text-muted-foreground italic;
+    @apply text-muted-foreground italic pointer-events-none select-none;
 }

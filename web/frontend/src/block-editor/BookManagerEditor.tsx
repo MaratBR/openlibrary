@@ -7,6 +7,8 @@ import { EditorIframe } from './wysiwyg'
 import { useWYSIWYG, useWYSIWYGHasChanges } from './wysiwyg/state'
 import { useBEState } from './state'
 import { createPortal } from 'preact/compat'
+import Switch from '@/components/Switch'
+import { AnimationWrapper, ModalAnimation } from '@/lib/animate'
 
 const dataSchema = z.object({
   bookId: z.string(),
@@ -48,40 +50,91 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
 function SaveButton() {
   const wasChangedFirstTime = useWYSIWYGHasChanges()
   const saving = useBEState((s) => s.saving)
+  const [openPublishPopup, setOpenPublishPopup] = useState(false)
 
-  function handleClick() {
+  function handleSaveDraft() {
     useBEState.getState().saveDraft()
   }
 
+  function handlePublishDraft(makePublic: boolean) {}
+
   return (
-    <button
-      onClick={handleClick}
-      disabled={!wasChangedFirstTime || saving}
-      class="btn btn--lg btn--sq w-30 flex justify-center items-center"
-    >
-      {saving ? <span class="loader loader--dark" /> : window._('common.save')}
-    </button>
+    <div class="flex gap-4">
+      <button
+        onClick={() => setOpenPublishPopup(true)}
+        disabled={!wasChangedFirstTime || saving}
+        class="btn btn--ghost btn--lg btn--sq flex justify-center items-center"
+      >
+        {saving ? <span class="loader loader--dark" /> : window._('editor.publishDraft')}
+      </button>
+      <button
+        onClick={handleSaveDraft}
+        disabled={!wasChangedFirstTime || saving}
+        class="btn btn--lg btn--sq w-30 flex justify-center items-center"
+      >
+        {saving ? <span class="loader loader--dark" /> : window._('common.save')}
+      </button>
+
+      <PublishChapterPopup
+        open={openPublishPopup}
+        onClose={() => setOpenPublishPopup(false)}
+        onPublish={handlePublishDraft}
+      />
+    </div>
+  )
+}
+
+function PublishChapterPopup({
+  onPublish,
+  onClose,
+  open,
+}: {
+  onPublish: (makePublic: boolean) => void
+  onClose: () => void
+  open: boolean
+}) {
+  const isHidden = useBEState((s) => s.draft?.isChapterPubliclyAvailable === false)
+  const [makePublic, setMakePublic] = useState(true)
+
+  return (
+    <AnimationWrapper show={open} animation={ModalAnimation.factory(150)}>
+      <div class="be-publish-popup">
+        <header class="text-xl font-semibold">{window._('editor.publishAreYouSure')}</header>
+
+        <p>{window._('editor.publishWarning')}</p>
+
+        {!isHidden && (
+          <div class="mt-4 flex gap-2">
+            <Switch
+              name="makePublic"
+              id="editor-makePublic"
+              value={makePublic}
+              onChange={setMakePublic}
+            />
+            <label class="label" for="editor-makePublic">
+              {window._('editor.makeChapterVisible')}
+            </label>
+          </div>
+        )}
+
+        <div class="mt-4 flex gap-1">
+          <button class="btn btn--outline" onClick={() => onPublish(makePublic)}>
+            {window._('editor.publishDraft')}
+          </button>
+          <button class="btn btn--ghost" onClick={() => onClose()}>
+            {window._('common.cancel')}
+          </button>
+        </div>
+      </div>
+    </AnimationWrapper>
   )
 }
 
 function ChapterNameInput() {
   const chapterName = useBEState((s) => s.chapterName)
   const elements = useWYSIWYG((s) => s.initData?.elements)
-  const [container, setContainer] = useState<HTMLElement | null>(null)
 
-  useLayoutEffect(() => {
-    if (!elements) return
-    const container = document.createElement('div')
-    container.classList.add('contents')
-
-    elements.contentWrapper.prepend(container)
-    setContainer(container)
-    return () => {
-      setContainer(null)
-    }
-  }, [elements])
-
-  if (!elements || !container) return null
+  if (!elements) return null
 
   return createPortal(
     <div class="my-4">
@@ -95,6 +148,6 @@ function ChapterNameInput() {
         }}
       />
     </div>,
-    container,
+    elements.contentWrapperHeader,
   )
 }

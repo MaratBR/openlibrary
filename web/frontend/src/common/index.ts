@@ -1,6 +1,6 @@
 import '../lib/island'
 import '../lib/ScrollBlocker'
-import '../toast/toast'
+import '../toast'
 import './__server__'
 import './cookies'
 import './delay'
