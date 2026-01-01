@@ -1,6 +1,7 @@
 package public
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -27,14 +28,31 @@ func (c *collectionController) Register(r chi.Router) {
 }
 
 func (c *collectionController) books(w http.ResponseWriter, r *http.Request) {
-	collectionID, err := olhttp.URLParamInt64(r, "collectionID")
-	if err != nil {
-		writeBadRequest(w, r, err)
-		return
+	collectionIDRaw := chi.URLParam(r, "collectionID")
+	collectionID, slug := olhttp.ParseInt64Slug(collectionIDRaw)
+	if collectionID == 0 {
+		writeBadRequest(w, r, nil)
 	}
-
 	page := olhttp.GetPage(r.URL.Query(), "p")
 	pageSize := olhttp.GetPageSize(r.URL.Query(), "pageSize", 1, 100, 20)
+
+	collectionOpt, err := c.collectionService.GetCollection(r.Context(), collectionID)
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+	if !collectionOpt.Valid {
+		// no such collection
+		// TODO!
+		notFoundHandler(w, r)
+		return
+	}
+	collection := collectionOpt.Value
+
+	if slug != collection.Slug {
+		http.Redirect(w, r, fmt.Sprintf("/col/%s-%d", collection.Slug, collection.ID), http.StatusFound)
+		return
+	}
 
 	result, err := c.collectionService.GetCollectionBooks(r.Context(), app.GetCollectionBooksQuery{
 		CollectionID: collectionID,
@@ -47,7 +65,7 @@ func (c *collectionController) books(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session, isAuthorized := auth.GetSession(r.Context())
-	canEdit := isAuthorized && result.Collection.UserID == session.UserID
+	canEdit := isAuthorized && collection.UserID == session.UserID
 
-	olhttp.WriteTemplate(w, r.Context(), templates.Collection(result, canEdit))
+	olhttp.WriteTemplate(w, r.Context(), templates.Collection(result, collection, canEdit))
 }

@@ -1,10 +1,14 @@
-.input {
+.input, .textarea {
     @apply 
         border-gray-400 dark:border-gray-600 border 
         rounded-sm px-3 w-full bg-card
         hover:border-black dark:hover:border-white
         focus:outline focus:outline-primary !focus:border-primary text-foreground
         disabled:opacity-80 disabled:pointer-events-none;
+}
+
+.textarea {
+    @apply block p-3;
 }
 
 input.input, select.input {
@@ -96,8 +100,4 @@ textarea.input {
 
 .input-transparent {
     @apply focus:bg-highlight focus:outline-none;
-}
-
-.textarea {
-    @apply focus:outline-none block;
 }

@@ -304,7 +304,11 @@ bookRemovedFromCollection = "Book was removed from collection"
 enterNameToDelete = "Enter name of the collection to delete collection"
 nameLabel = "Collection name"
 isPublicLabel = "Public collection"
+summaryLabel = "Collection summary"
+summaryPlaceholder = "Description of you book collection (optional)"
+
 deleted = "Collection was deleted"
+updated = "Collection was updated"
 
 #####################
 #                   #

@@ -172,7 +172,14 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
                 <section class="card border-none relative mb-11" x-cloak x-show="open">
                     <form method="post" x-data="{name:''}" class="m-2">
                         @csrf.CSRFInputTempl(ctx)
-                        <input @blur="if (!$event.target.value) open=false" name="name" required maxlength="255" x-model="name" class="w-full block text-3xl font-medium !outline-none bg-transparent" placeholder={l.T("collection.namePlaceholder")} />
+                        <input 
+                            @blur="if (!$event.target.value) open=false" 
+                            name="name" 
+                            required 
+                            maxlength="255" 
+                            x-model="name" 
+                            class="w-full block text-3xl font-medium !outline-none bg-transparent" 
+                            placeholder={l.T("collection.namePlaceholder")} />
                         <div x-collapse x-cloak x-show="name.trim().length>0">
                             <button type="submit" class="mt-4 btn btn--outline btn--lg">
                                 {l.T("collection.createCollection")}

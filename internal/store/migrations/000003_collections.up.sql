@@ -2,6 +2,7 @@ create table collections (
     id int8 primary key,
     name varchar(255) not null,
     slug varchar(80) not null,
+    summary text not null default '',
     user_id uuid not null references users(id),
     created_at timestamptz not null default now(),
     books_count int4 not null default 0,

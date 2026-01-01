@@ -1,6 +1,8 @@
 .flash-container {
+    @apply mx-4;
+
     .flash {
-        @apply mb-1;
+        @apply my-2;
     }
 }
 

@@ -45,6 +45,7 @@ create table book_chapters (
     content text not null,
     "order" int4 not null,
     created_at timestamptz not null default now(),
+    updated_at timestamptz,
     words int4 not null default 0,
     is_adult_override bool not null default false,
     summary text not null default '',

@@ -8,6 +8,7 @@ import "github.com/MaratBR/openlibrary/internal/csrf"
 
 templ Collection(
     result app.GetCollectionBooksResult,
+    collection app.CollectionDto,
     canEdit bool,
 ) {
     {{
@@ -15,12 +16,20 @@ templ Collection(
     }}
     @standardPageLayout(standardPageLayoutProps{
         htmlLayoutProps: htmlLayoutProps{
-            Title: l.T("collection.collection") + " - " + result.Collection.Name,
+            Title: l.T("collection.collection") + " - " + collection.Name,
         },
     }) {
         <header class="hero hero--header">
             <div class="ol-container">
-                <h1 class="font-semibold text-4xl">{ result.Collection.Name }</h1>
+                <h1 class="font-semibold text-4xl">{ collection.Name }</h1>
+                if len(collection.Summary) > 0 {
+                    <div class="bg-secondary rounded-3xl p-4 mt-4 mb-2">
+                        <p>
+                            { collection.Summary }
+                        </p>
+                    </div>
+                }
+
                 <div class="mt-2">
                     if canEdit {
                         <div class="btn-group">
@@ -28,14 +37,14 @@ templ Collection(
                                 <i class="fa-solid fa-arrow-left"></i>&nbsp;
                                 { l.T("collection.backToLibrary") }
                             </a>
-                            <a class="btn btn--ghost btn--sm" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", result.Collection.ID)) }>
+                            <a class="btn btn--ghost btn--sm" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", collection.ID)) }>
                                 <i class="fa-solid fa-table-list"></i>&nbsp;
                                 { l.T("collection.manage") }
                             </a>
                         </div>
                     } else {
-                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", result.Collection.UserID.String())) }>
-                            { result.Collection.UserName }
+                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", collection.UserID.String())) }>
+                            { collection.UserName }
                         </a>
                     }
                 </div>
@@ -60,7 +69,7 @@ templ Collection(
                             @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.AuthorName, book.AuthorID, book.Tags) {
                                 if canEdit {
                                     <div class="absolute top-1 right-1">
-                                        <form action={ templ.URL(fmt.Sprintf("/_api/collections/removeBook/%d/%d", result.Collection.ID, book.ID)) } method="post">
+                                        <form action={ templ.URL(fmt.Sprintf("/_api/collections/removeBook/%d/%d", collection.ID, book.ID)) } method="post">
                                             @csrf.CSRFInputTempl(ctx)
                                             <button type="submit" class="btn btn--ghost btn--destructive">
                                                 <i class="fa-solid fa-trash"></i>
@@ -108,7 +117,7 @@ templ CollectionManage(
         </header>
 
         <div class="ol-container pt-4" x-data="{deleting:false,confirmationPhrase:''}">
-            <form method="post">
+            <form method="post" action="?act=update">
                 @csrf.CSRFInputTempl(ctx)
                 <div class="form-control">
                     <div class="form-control__label">
@@ -117,7 +126,22 @@ templ CollectionManage(
                         </label>
                     </div>
                     <div class="form-control__value">
-                        <input required value={ collection.Name } id="CollectionManage-name" name="name" class="input" placeholder={ l.T("collection.edit.nameLabel") } />
+                        <input maxlength="255" required value={ collection.Name } id="CollectionManage-name" name="name" class="input" />
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <div class="form-control__label">
+                        <label for="CollectionManage-summary" class="label">
+                            { l.T("collection.edit.summaryLabel") }
+                        </label>
+                    </div>
+                    <div class="form-control__value">
+                        <textarea 
+                            id="CollectionManage-summary" 
+                            name="summary" 
+                            class="textarea" 
+                            placeholder={ l.T("collection.edit.summaryPlaceholder") }>{collection.Summary}</textarea>
                     </div>
                 </div>
 

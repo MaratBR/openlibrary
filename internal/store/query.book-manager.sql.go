@@ -270,7 +270,7 @@ func (q *Queries) Book_ManagerGetUserBooks(ctx context.Context, arg Book_Manager
 
 const book_SetChapterOrder = `-- name: Book_SetChapterOrder :exec
 update book_chapters
-set "order" = $2
+set "order" = $2, updated_at = now()
 where id = $1
 `
 
@@ -381,7 +381,7 @@ func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
 
 const updateBookChapter = `-- name: UpdateBookChapter :one
 update book_chapters
-set name = $2, content = $3, words = $4, summary = $5, is_publicly_visible = $6
+set name = $2, content = $3, words = $4, summary = $5, is_publicly_visible = $6, updated_at = now()
 where id = $1
 returning book_chapters.book_id
 `
@@ -407,20 +407,4 @@ func (q *Queries) UpdateBookChapter(ctx context.Context, arg UpdateBookChapterPa
 	var book_id int64
 	err := row.Scan(&book_id)
 	return book_id, err
-}
-
-const updateChaptersOrder = `-- name: UpdateChaptersOrder :exec
-update book_chapters
-set "order" = $2
-where id = $1
-`
-
-type UpdateChaptersOrderParams struct {
-	ID    int64
-	Order int32
-}
-
-func (q *Queries) UpdateChaptersOrder(ctx context.Context, arg UpdateChaptersOrderParams) error {
-	_, err := q.db.Exec(ctx, updateChaptersOrder, arg.ID, arg.Order)
-	return err
 }

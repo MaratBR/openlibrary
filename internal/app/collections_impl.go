@@ -47,10 +47,10 @@ func (c *collectionService) GetUserCollections(ctx context.Context, query GetUse
 	}
 
 	collections := MapSlice(rows, func(row store.Collection_GetByUserRow) CollectionDto {
-		return newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic)
+		return newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic, row.Summary, row.Slug)
 	})
 
-	count, err := c.queries.Collections_CountByUser(ctx, uuidDomainToDb(query.UserID))
+	count, err := c.queries.Collection_CountByUser(ctx, uuidDomainToDb(query.UserID))
 	if err != nil {
 		return GetUserCollectionsResult{}, wrapUnexpectedDBError(err)
 	}
@@ -211,6 +211,25 @@ func (c *collectionService) CreateCollection(ctx context.Context, cmd CreateColl
 	}
 }
 
+func (c *collectionService) UpdateCollection(ctx context.Context, cmd UpdateCollectionCommand) error {
+	err := c.authorizeCollectionModification(ctx, cmd.ActorUserID, cmd.ID)
+	if err != nil {
+		return err
+	}
+
+	err = c.queries.Collection_Update(ctx, store.Collection_UpdateParams{
+		ID:      cmd.ID,
+		Name:    cmd.Name,
+		Summary: cmd.Summary,
+		Slug:    makeSlug(cmd.Name),
+	})
+	if err != nil {
+		return wrapUnexpectedDBError(err)
+	}
+
+	return nil
+}
+
 func (c *collectionService) GetBookCollections(ctx context.Context, query GetBookCollectionsQuery) ([]CollectionDto, error) {
 	rows, err := c.queries.Collection_GetByBook(ctx, store.Collection_GetByBookParams{
 		UserID: uuidDomainToDb(query.ActorUserID),
@@ -221,20 +240,12 @@ func (c *collectionService) GetBookCollections(ctx context.Context, query GetBoo
 	}
 
 	return MapSlice(rows, func(row store.Collection_GetByBookRow) CollectionDto {
-		return newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic)
+		return newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic, row.Summary, row.Slug)
 	}), nil
 
 }
 
 func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCollectionBooksQuery) (GetCollectionBooksResult, error) {
-	collection, err := c.queries.Collection_Get(ctx, query.CollectionID)
-	if err != nil {
-		if err == store.ErrNoRows {
-			return GetCollectionBooksResult{}, ErrCollectionNotExists
-		}
-		return GetCollectionBooksResult{}, wrapUnexpectedDBError(err)
-	}
-
 	rows, err := c.queries.Collection_GetBooks(ctx, store.Collection_GetBooksParams{
 		Limit:        query.PageSize,
 		Offset:       (query.Page - 1) * query.PageSize,
@@ -280,19 +291,16 @@ func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCol
 		books[i].Tags = tagsList
 	}
 
+	booksCount, err := c.queries.Collection_CountBooks(ctx, query.CollectionID)
+	if err != nil {
+		return GetCollectionBooksResult{}, wrapUnexpectedDBError(err)
+	}
+
 	return GetCollectionBooksResult{
-		Books: books,
-		Collection: CollectionDto{
-			ID:            collection.ID,
-			Name:          collection.Name,
-			BooksCount:    int(collection.BooksCount),
-			LastUpdatedAt: timeNullableDbToDomain(collection.LastUpdatedAt),
-			UserID:        uuidDbToDomain(collection.UserID),
-			UserName:      collection.UserName,
-		},
+		Books:      books,
 		Page:       query.Page,
 		PageSize:   query.PageSize,
-		TotalPages: int32(math.Ceil(float64(collection.BooksCount) / float64(query.PageSize))),
+		TotalPages: int32(math.Ceil(float64(booksCount) / float64(query.PageSize))),
 	}, nil
 }
 
@@ -338,7 +346,7 @@ func (c *collectionService) GetCollection(ctx context.Context, id int64) (Nullab
 		return Nullable[CollectionDto]{}, wrapUnexpectedDBError(err)
 	}
 
-	return Value(newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic)), nil
+	return Value(newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic, row.Summary, row.Slug)), nil
 }
 
 func (c *collectionService) DeleteCollection(ctx context.Context, cmd DeleteCollectionCommand) error {

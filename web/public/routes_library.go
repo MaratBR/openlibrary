@@ -79,15 +79,42 @@ func (c *libraryController) manageCollectionAct(w http.ResponseWriter, r *http.R
 	}
 	act := r.URL.Query().Get("act")
 
+	// TODO separate into multiple endpoints
 	if act == "delete" {
-		c.collectionService.DeleteCollection(r.Context(), app.DeleteCollectionCommand{
+		// collection is being deleted
+		err = c.collectionService.DeleteCollection(r.Context(), app.DeleteCollectionCommand{
 			ActorUserID:  session.UserID,
 			CollectionID: collectionID,
 		})
+		if err != nil {
+			writeApplicationError(w, r, err)
+			return
+		}
 		l := i18n.GetLocalizer(r.Context())
 		flash.Add(r, flash.Text(l.T("collection.edit.deleted")))
 		http.Redirect(w, r, "/library/collections", http.StatusFound)
+	} else if act == "update" {
+		// collection is being updated
+		name := r.FormValue("name")
+		summary := r.FormValue("summary")
+		public := olhttp.FormBool(r.Form, "public")
+
+		err = c.collectionService.UpdateCollection(r.Context(), app.UpdateCollectionCommand{
+			ActorUserID: session.UserID,
+			ID:          collectionID,
+			Name:        name,
+			Public:      public,
+			Summary:     summary,
+		})
+		if err != nil {
+			writeApplicationError(w, r, err)
+			return
+		}
+		l := i18n.GetLocalizer(r.Context())
+		flash.Add(r, flash.Text(l.T("collection.edit.updated")))
+		http.Redirect(w, r, fmt.Sprintf("/col/%d", collectionID), http.StatusFound)
 	} else {
+		// unknown act type
 		http.Redirect(w, r, fmt.Sprintf("/library/collections/%d/manage", collectionID), http.StatusFound)
 	}
 }

@@ -10,7 +10,7 @@ where collections.user_id = $3
 order by collections.created_at desc
 limit $1 offset $2;
 
--- name: Collections_CountByUser :one
+-- name: Collection_CountByUser :one
 select count(*)
 from collections 
 where user_id = $1;
@@ -23,6 +23,11 @@ join users author on author.id = b.author_user_id
 where cb.collection_id = $3
 order by cb."order"
 limit $1 offset $2;
+
+-- name: Collection_CountBooks :one
+select count(*)
+from collection_books
+where collection_id = $1;
 
 -- name: Collection_GetRecentByUser :many
 select *
@@ -79,3 +84,8 @@ where collection_id = $1;
 
 -- name: Collection_Delete :exec
 delete from collections where id = $1;
+
+-- name: Collection_Update :exec
+update collections 
+set name = $2, summary = $3, slug = $4
+where id = $1;

@@ -404,6 +404,7 @@ type BookChapter struct {
 	Content           string
 	Order             int32
 	CreatedAt         pgtype.Timestamptz
+	UpdatedAt         pgtype.Timestamptz
 	Words             int32
 	IsAdultOverride   bool
 	Summary           string
@@ -424,6 +425,7 @@ type Collection struct {
 	ID            int64
 	Name          string
 	Slug          string
+	Summary       string
 	UserID        pgtype.UUID
 	CreatedAt     pgtype.Timestamptz
 	BooksCount    int32

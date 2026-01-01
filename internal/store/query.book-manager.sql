@@ -57,7 +57,7 @@ where author_user_id = $1 and (sqlc.arg('search')::text = '' or position(lower(s
 
 -- name: Book_SetChapterOrder :exec
 update book_chapters
-set "order" = $2
+set "order" = $2, updated_at = now()
 where id = $1;
 
 -- name: Book_GetChapterOrder :many
@@ -78,7 +78,7 @@ values ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 
 -- name: UpdateBookChapter :one
 update book_chapters
-set name = $2, content = $3, words = $4, summary = $5, is_publicly_visible = $6
+set name = $2, content = $3, words = $4, summary = $5, is_publicly_visible = $6, updated_at = now()
 where id = $1
 returning book_chapters.book_id;
 
@@ -87,8 +87,3 @@ select id
 from book_chapters
 where book_id = $1
 order by "order";
-
--- name: UpdateChaptersOrder :exec
-update book_chapters
-set "order" = $2
-where id = $1;

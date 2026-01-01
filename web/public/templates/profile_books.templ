@@ -89,15 +89,19 @@ templ ProfileCollections(
             } else {
                 {{
                     var pagination templ.Component
-                    if result.TotalPages > 0 {
+                    if result.TotalPages > 1 {
                         pagination = olhttp.Pagination(uint32(result.Page), uint32(result.TotalPages), 9)
                     } else {
                         pagination = templ.NopComponent
                     }
                 }}
-                @pagination
+                <div class="mb-2">
+                    @pagination
+                </div>
                 @collectionsList(result.Collections, booksMap)
-                @pagination
+                <div class="mt-2">
+                    @pagination
+                </div>
             }
         </div>
     }

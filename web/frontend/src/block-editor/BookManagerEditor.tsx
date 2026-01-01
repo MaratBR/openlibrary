@@ -4,11 +4,12 @@ import { z } from 'zod'
 import './BookManagerEditor.scss'
 import { DraftDtoSchema } from './contracts'
 import { EditorIframe } from './wysiwyg'
-import { useWYSIWYG, useWYSIWYGHasChanges } from './wysiwyg/state'
-import { useBEState } from './state'
+import { useWYSIWYG } from './wysiwyg/state'
+import { useBEState, useDraftHasChanges, useDraftHasNewerRevision } from './state'
 import { createPortal } from 'preact/compat'
 import Switch from '@/components/Switch'
 import { AnimationWrapper, ModalAnimation } from '@/lib/animate'
+import { useMutation } from '@tanstack/react-query'
 
 const dataSchema = z.object({
   bookId: z.string(),
@@ -48,7 +49,8 @@ export default function BookManagerEditor({ data }: PreactIslandProps) {
 }
 
 function SaveButton() {
-  const wasChangedFirstTime = useWYSIWYGHasChanges()
+  const draftHasPendingChanges = useDraftHasChanges()
+  const hasNewerRevision = useDraftHasNewerRevision()
   const saving = useBEState((s) => s.saving)
   const [openPublishPopup, setOpenPublishPopup] = useState(false)
 
@@ -56,45 +58,38 @@ function SaveButton() {
     useBEState.getState().saveDraft()
   }
 
-  function handlePublishDraft(makePublic: boolean) {}
-
   return (
     <div class="flex gap-4">
       <button
         onClick={() => setOpenPublishPopup(true)}
-        disabled={!wasChangedFirstTime || saving}
+        disabled={(!draftHasPendingChanges && !hasNewerRevision) || saving}
         class="btn btn--ghost btn--lg btn--sq flex justify-center items-center"
       >
         {saving ? <span class="loader loader--dark" /> : window._('editor.publishDraft')}
       </button>
       <button
         onClick={handleSaveDraft}
-        disabled={!wasChangedFirstTime || saving}
+        disabled={!draftHasPendingChanges || saving}
         class="btn btn--lg btn--sq w-30 flex justify-center items-center"
       >
         {saving ? <span class="loader loader--dark" /> : window._('common.save')}
       </button>
 
-      <PublishChapterPopup
-        open={openPublishPopup}
-        onClose={() => setOpenPublishPopup(false)}
-        onPublish={handlePublishDraft}
-      />
+      <PublishChapterPopup open={openPublishPopup} onClose={() => setOpenPublishPopup(false)} />
     </div>
   )
 }
 
-function PublishChapterPopup({
-  onPublish,
-  onClose,
-  open,
-}: {
-  onPublish: (makePublic: boolean) => void
-  onClose: () => void
-  open: boolean
-}) {
+function PublishChapterPopup({ onClose, open }: { onClose: () => void; open: boolean }) {
   const isHidden = useBEState((s) => s.draft?.isChapterPubliclyAvailable === false)
   const [makePublic, setMakePublic] = useState(true)
+
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      await useBEState.getState().saveAndPublishDraft(makePublic)
+      onClose()
+    },
+  })
 
   return (
     <AnimationWrapper show={open} animation={ModalAnimation.factory(150)}>
@@ -103,7 +98,7 @@ function PublishChapterPopup({
 
         <p>{window._('editor.publishWarning')}</p>
 
-        {!isHidden && (
+        {isHidden && (
           <div class="mt-4 flex gap-2">
             <Switch
               name="makePublic"
@@ -118,10 +113,18 @@ function PublishChapterPopup({
         )}
 
         <div class="mt-4 flex gap-1">
-          <button class="btn btn--outline" onClick={() => onPublish(makePublic)}>
-            {window._('editor.publishDraft')}
+          <button
+            disabled={publishMutation.isPending}
+            class="btn btn--outline w-32"
+            onClick={() => publishMutation.mutate()}
+          >
+            {publishMutation.isPending ? <span class="loader" /> : window._('editor.publishDraft')}
           </button>
-          <button class="btn btn--ghost" onClick={() => onClose()}>
+          <button
+            disabled={publishMutation.isPending}
+            class="btn btn--ghost"
+            onClick={() => onClose()}
+          >
             {window._('common.cancel')}
           </button>
         </div>

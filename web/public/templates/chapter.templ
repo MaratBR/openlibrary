@@ -46,7 +46,7 @@ templ Chapter(
             <div class="relative pb-10">
                 <aside class="z-10 absolute top-0 bottom-0 right-0">
                     <div class="flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2">
-                        <button x-bind="toggleButton" class="btn btn--icon btn--secondary z-20">
+                        <button x-bind="toggleButton" class="btn btn--icon btn--secondary z-20 flex justify-center items-center">
                             <i class="fa-solid fa-gear"></i>
                         </button>
                     </div>
@@ -191,12 +191,6 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings, opti
     @ChapterContent(chapter.Content)
 
     <div x-data="pageProgress" data-content-element="#ChapterContent" class="fixed w-screen left-0 h-1 bg-primary z-10 origin-left rtl:origin-right" style="top: var(--header-height)" x-cloak />
-
-    <script>
-        document.addEventListener('ol:book-reader:ready', () => {
-            window.__initBookReader && window.__initBookReader(document.getElementById('ChapterContent'));
-        })
-    </script>
     <script src="/_/assets/book-reader.js"></script>
 }
 

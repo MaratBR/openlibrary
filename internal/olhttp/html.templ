@@ -23,26 +23,28 @@ templ Doc(
             lang = l.Lang().String()
         }
         r := GetRequest(ctx)
-        theme, err := r.Cookie("_theme")
-        var isDark bool
-
-        if err == nil {
-            if theme.Value == "dark" {
-                isDark = true
+        var theme string
+        {
+            themeCookie, err := r.Cookie("_theme")
+            if err == nil {
+                theme = themeCookie.Value
             }
         }
     }}
 
     <!doctype html>
     <html 
-        lang={lang} 
-        if isDark {
+        lang={lang}
+        if theme == "dark" {
             class="theme-default dark"
         } else {
             class="theme-default"
         }
         >
     <head>
+        if theme == "" {
+            <script>window.matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.classList.toggle('dark', true)</script>
+        }
         <meta charset="UTF-8" />
         // <link rel="icon" type="image/svg+xml" href="/vite.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

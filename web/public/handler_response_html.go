@@ -11,7 +11,12 @@ func write500(w http.ResponseWriter, r *http.Request, err error) {
 
 func writeBadRequest(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(400)
-	w.Write([]byte(err.Error()))
+	if err == nil {
+		w.Write([]byte("Something went wrong")) // aka "I am lazy"
+	} else {
+		w.Write([]byte(err.Error()))
+
+	}
 }
 
 func writeApplicationError(w http.ResponseWriter, r *http.Request, err error) {

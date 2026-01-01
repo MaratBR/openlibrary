@@ -106,6 +106,10 @@ func GetBoolDefault(value url.Values, key string, defaultValue bool) bool {
 	}
 }
 
+func FormBool(value url.Values, key string) bool {
+	return GetBoolDefault(value, key, false)
+}
+
 func SplitByWithEscape(s string, c byte) []string {
 	result := []string{}
 	buf := []byte{}

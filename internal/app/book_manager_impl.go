@@ -342,7 +342,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 		modifiedPositions[chapterID] = i + 1
 
 		slog.Debug("updating position of the chapter", "ChapterID", chapterID, "Index", i)
-		err = queries.UpdateChaptersOrder(ctx, store.UpdateChaptersOrderParams{
+		err = queries.Book_SetChapterOrder(ctx, store.Book_SetChapterOrderParams{
 			ID:    chapterID,
 			Order: int32(i + 1),
 		})

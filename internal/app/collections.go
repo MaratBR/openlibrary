@@ -33,11 +33,13 @@ type GetRecentCollectionsQuery struct {
 type CollectionDto struct {
 	ID            int64
 	Name          string
+	Slug          string
 	BooksCount    int
 	LastUpdatedAt Nullable[time.Time]
 	UserID        uuid.UUID
 	UserName      string
 	IsPublic      bool
+	Summary       string
 }
 
 func newCollectionDto(
@@ -48,6 +50,8 @@ func newCollectionDto(
 	userID pgtype.UUID,
 	userName string,
 	isPublic bool,
+	summary string,
+	slug string,
 ) CollectionDto {
 	return CollectionDto{
 		ID:            id,
@@ -57,12 +61,23 @@ func newCollectionDto(
 		UserID:        uuidDbToDomain(userID),
 		UserName:      userName,
 		IsPublic:      isPublic,
+		Summary:       summary,
+		Slug:          slug,
 	}
 }
 
 type CreateCollectionCommand struct {
-	Name   string
-	UserID uuid.UUID
+	Name        string
+	Description string
+	UserID      uuid.UUID
+}
+
+type UpdateCollectionCommand struct {
+	ID          int64
+	Name        string
+	Public      bool
+	Summary     string
+	ActorUserID uuid.UUID
 }
 
 type AddToCollectionsCommand struct {
@@ -101,7 +116,6 @@ type GetCollectionBooksQuery struct {
 
 type GetCollectionBooksResult struct {
 	Books      []CollectionBook2Dto
-	Collection CollectionDto
 	Page       int32
 	TotalPages int32
 	PageSize   int32
@@ -122,6 +136,7 @@ type CollectionService interface {
 	GetUserCollections(ctx context.Context, query GetUserCollectionsQuery) (GetUserCollectionsResult, error)
 	GetRecentUserCollections(ctx context.Context, query GetRecentCollectionsQuery) ([]CollectionDto, error)
 	CreateCollection(ctx context.Context, cmd CreateCollectionCommand) (int64, error)
+	UpdateCollection(ctx context.Context, cmd UpdateCollectionCommand) error
 	AddToCollections(ctx context.Context, cmd AddToCollectionsCommand) error
 	RemoveFromCollection(ctx context.Context, cmd RemoveFromCollectionCommand) error
 	GetBookCollections(ctx context.Context, query GetBookCollectionsQuery) ([]CollectionDto, error)
