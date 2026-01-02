@@ -299,6 +299,8 @@ namePlaceholder = "Put new collection name here to create it"
 backToLibrary = "Back to library"
 manage = "Manage"
 bookRemovedFromCollection = "Book was removed from collection"
+confirmBookDelete = "Delete this book?"
+confirmBookDeleteText = "Are you sure you want to delete this book from collection?"
 
 [collection.edit]
 enterNameToDelete = "Enter name of the collection to delete collection"

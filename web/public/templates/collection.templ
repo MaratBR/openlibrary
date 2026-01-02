@@ -50,7 +50,7 @@ templ Collection(
                 </div>
             </div>
         </header>
-        <div class="ol-container px-2" >
+        <div class="ol-container px-2" x-data="{bookId:''}">
             {{
                 pagination := olhttp.PaginationImpl(olhttp.PaginationImplProps{
                     Size: 9,
@@ -64,17 +64,37 @@ templ Collection(
                     if !(result.TotalPages == 1 && result.Page == 1) {
                         @pagination
                     }
+                    <div x-data="Popover({options:{}})" id="DeleteBookPopover" x-cloak class="card shadow-2xl rounded-xl z-20 p-4 w-64">
+                        <span class="text-lg font-semibold">
+                            { l.T("collection.confirmBookDelete") }
+
+                        </span>
+                        <p>
+                            { l.T("collection.confirmBookDeleteText") }
+                        </p>
+                        
+                        <form :action={fmt.Sprintf("`/_api/collections/removeBook/%d/${bookId}`", collection.ID)} method="post">
+                            @csrf.CSRFInputTempl(ctx)
+                            <button 
+                                class="btn btn--destructive btn--outline text-lg mt-2"
+                                type="submit">
+                                //              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                //              Dispatch this event to the button and corresponding form.
+                                { l.T("common.delete") }
+                            </button>
+                        </form>
+
+                    </div>
                     <ul class="my-2">
                         for _, book := range result.Books {
                             @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.AuthorName, book.AuthorID, book.Tags) {
                                 if canEdit {
                                     <div class="absolute top-1 right-1">
-                                        <form action={ templ.URL(fmt.Sprintf("/_api/collections/removeBook/%d/%d", collection.ID, book.ID)) } method="post">
-                                            @csrf.CSRFInputTempl(ctx)
-                                            <button type="submit" class="btn btn--ghost btn--destructive">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        <button l
+                                            @click.prevent={fmt.Sprintf("bookId='%d';Alpine.$data(document.getElementById('DeleteBookPopover')).open($el)", book.ID)}
+                                            class="btn btn--ghost btn--destructive">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
                                     </div>
                                 }
                             }

@@ -18,6 +18,7 @@ import './SimpleEditor'
 import './TagsAutocomplete'
 import './Tabs'
 import './ImageUploader'
+import './Popover'
 
 import './island'
 import './islands'
