@@ -490,6 +490,10 @@ publishWarning = "This will update the chapter for all users."
 makeChapterVisible = "Make chapter visible for everyone"
 floatingMenu = "Type '/' to insert blocks"
 
+draftSaved = "Draft was saved"
+chapterPublished = "Chapter was published"
+viewChapter = "View chapter"
+
 [mod]
 performAction = "Perform action"
 ban = "Ban"

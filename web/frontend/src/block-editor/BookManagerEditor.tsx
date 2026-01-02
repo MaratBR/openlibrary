@@ -10,6 +10,7 @@ import { createPortal } from 'preact/compat'
 import Switch from '@/components/Switch'
 import { AnimationWrapper, ModalAnimation } from '@/lib/animate'
 import { useMutation } from '@tanstack/react-query'
+import { render } from 'preact'
 
 const dataSchema = z.object({
   bookId: z.string(),
@@ -88,6 +89,28 @@ function PublishChapterPopup({ onClose, open }: { onClose: () => void; open: boo
     mutationFn: async () => {
       await useBEState.getState().saveAndPublishDraft(makePublic)
       onClose()
+
+      window.toast({
+        title: window._('editor.chapterPublished'),
+        duration: 15000,
+        customContent(element) {
+          const { draft } = useBEState.getState()
+
+          if (!draft) {
+            element.innerText = 'ERROR: no draft in state, cannot display toast message'
+          } else {
+            render(
+              <a class="link" href={`/book/${draft.book.id}/chapters/${draft.chapterId}`}>
+                {window._('editor.viewChapter')}
+                &nbsp;
+                <i class="fa-solid fa-arrow-up-right-from-square" />
+              </a>,
+              element,
+            )
+            return () => render(null, element)
+          }
+        },
+      })
     },
   })
 

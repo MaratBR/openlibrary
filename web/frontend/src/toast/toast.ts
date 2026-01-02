@@ -7,6 +7,7 @@ export type ToastOptions = {
 
 export type ToastController = {
   close: () => void
+  addCleanup: (cb: () => void) => void
 }
 
 export type ToastImplementation = (toast: ToastOptions) => void
@@ -18,6 +19,7 @@ export type ToastFunction = {
     type?: string
     duration?: number
     close?: boolean
+    customContent?: (element: HTMLElement) => undefined | (() => void)
   }): void
   impl: ToastImplementation
 }
@@ -32,12 +34,12 @@ declare global {
 
 const toasts: ToastOptions[] = []
 
-let toast: ToastFunction = function (
+window.toast = function (
   this: ToastFunction,
-  { text, title, type = 'info', duration = 500000, close = true },
+  { text, title, type = 'info', duration = 5000, close = true, customContent },
 ) {
-  this.impl({
-    render(element, { close }) {
+  window.toast.impl({
+    render(element, { close: closeCb, addCleanup }) {
       const d = (cls: string) => {
         const div = document.createElement('div')
         div.className = cls
@@ -77,6 +79,13 @@ let toast: ToastFunction = function (
       }
       $icon.setAttribute('data-color', type)
 
+      if (customContent) {
+        const $customContent = d('toast-layout__customContent')
+        $content.appendChild($customContent)
+        const customContentCleanup = customContent($customContent)
+        if (customContentCleanup) addCleanup(customContentCleanup)
+      }
+
       $layout.append($icon, $content)
 
       if (close) {
@@ -90,7 +99,7 @@ let toast: ToastFunction = function (
             return
           }
           closed = true
-          close()
+          closeCb()
         })
       }
 
@@ -101,13 +110,10 @@ let toast: ToastFunction = function (
   })
 } as ToastFunction
 
-toast.impl = (options) => {
+window.toast.impl = (options) => {
   toasts.push(options)
 }
-
-toast = toast.bind(toast)
-
-window.toast = toast
+window.toast = window.toast.bind(window.toast)
 
 import('./toastImplementation').then((m) => {
   window.toast.impl = m.toastImplementation

@@ -4,9 +4,13 @@ import { animate } from 'popmotion'
 async function toaster(options: ToastOptions, parent: HTMLElement) {
   const element = document.createElement('div')
   element.classList.add('toast')
+  const cleanup: (() => void)[] = []
   const renderCleanup = options.render(element, {
     close() {
       close()
+    },
+    addCleanup(cb) {
+      cleanup.push(cb)
     },
   })
   parent.appendChild(element)
@@ -59,6 +63,7 @@ async function toaster(options: ToastOptions, parent: HTMLElement) {
       duration: animationDuration,
       onUpdate,
       onComplete() {
+        cleanup.reverse().forEach((cb) => cb())
         renderCleanup()
         element.remove()
       },

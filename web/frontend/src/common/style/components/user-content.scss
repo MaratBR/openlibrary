@@ -12,7 +12,7 @@
     --uc-h5-font-size: 1.1em;
     --uc-h6-font-size: 1em;
     white-space: break-spaces;
-    word-break: break-all;
+    word-break: auto-phrase;
 
     h1 { font-size: var(--uc-h1-font-size); }
     h2 { font-size: var(--uc-h2-font-size); }

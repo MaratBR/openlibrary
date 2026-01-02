@@ -73,14 +73,14 @@ templ BookPage(
                 @bookCover(book.Cover, book.Name, 300)
                 @bookReadingList(&book, readingListStatus)
 
-                <div class="flex gap-1 mt-4">
-                    <ol-island src="bookmanager" name="BookCollectionsPopup" active="true" data={ fmt.Sprintf("{\"bookId\": \"%d\"}", book.ID) } />
-                    <button class="btn btn--ghost relative" id="BookCollectionsPopup:target">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                </div>
-
                 if isAuthenticated {
+                    <div class="flex gap-1 mt-4">
+                        <ol-island src="bookmanager" name="BookCollectionsPopup" active="true" data={ fmt.Sprintf("{\"bookId\": \"%d\"}", book.ID) } />
+                        <button class="btn btn--ghost relative" id="BookCollectionsPopup:target">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+
                     if user.ID == book.Author.ID {
                         <a href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] ">
                             Book manager
