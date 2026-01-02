@@ -6,6 +6,10 @@
     margin: 5px 0;
     @apply border-b relative;
 
+    &--last {
+        @apply border-b-none;
+    }
+
     &__head {
         @apply text-lg font-medium py-1 px-2 inline-block -ml-2;
     }

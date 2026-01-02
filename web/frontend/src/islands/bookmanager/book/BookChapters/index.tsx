@@ -8,6 +8,7 @@ import { useShallow } from 'zustand/shallow'
 import { ChapterSelectorPopupProvider } from './ChapterSelectorPopup'
 import { httpCreateChapter } from '@/api/bm'
 import { useMutation } from '@tanstack/react-query'
+import AddChapterButton from './AddChapterButton'
 
 const schema = z.object({
   bookId: z.string(),
@@ -38,6 +39,7 @@ export function BookChapters({ data: dataUnknown }: PreactIslandProps) {
         <NoChaptersYet />
       ) : (
         <ChapterSelectorPopupProvider>
+          <AddChapterButton bookId={data.bookId} />
           <ChaptersList />
         </ChapterSelectorPopupProvider>
       )}

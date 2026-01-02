@@ -4,6 +4,7 @@ import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { useRef } from 'preact/hooks'
 import ReorderChapterButton from './ReorderChapterButton'
 import { useBookChaptersState } from './state'
+import clsx from 'clsx'
 
 export default function ChaptersList() {
   const listRef = useRef<HTMLDivElement | null>(null)
@@ -38,7 +39,12 @@ export default function ChaptersList() {
               transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,
             }}
           >
-            <ChapterCard chapter={chapters[item.index]} bookId={bookId} height={120} />
+            <ChapterCard
+              isLast={item.index === chapters.length - 1}
+              chapter={chapters[item.index]}
+              bookId={bookId}
+              height={120}
+            />
           </div>
         ))}
       </div>
@@ -50,13 +56,20 @@ function ChapterCard({
   chapter,
   bookId,
   height,
+  isLast,
 }: {
   chapter: ManagerBookChapterDto
   bookId: string
   height: number
+  isLast: boolean
 }) {
   return (
-    <div class="bm-chapters-list-item" style={{ height }}>
+    <div
+      class={clsx('bm-chapters-list-item', {
+        'bm-chapters-list-item--last': isLast,
+      })}
+      style={{ height }}
+    >
       <div class="bm-chapters-list-item__head">
         <span>{chapter.name}</span>
       </div>
