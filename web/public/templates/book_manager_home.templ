@@ -275,7 +275,7 @@ templ bookManagerYourBooksBookCard(bookID int64, name, cover, summary string) {
 				if summary == "" {
 					<p class="text-muted-foreground"><em>{ l.T("bookManager.emptyBookSummary") }</em></p>
 				} else {
-					@collapsible(140, true) {
+					@webcomponents.Collapsible(140, true) {
 						@templ.Raw(summary)
 					}
 				}

@@ -1,0 +1,74 @@
+package webcomponents
+
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+
+script initCollapsible(id string, height int) {
+    const $el = document.getElementById(id);
+    const $btn = $el.querySelector(':scope > button');
+    const $content = $el.querySelector('[data-collapsible=content]');
+    const $inner = $el.querySelector('[data-collapsible=inner]');
+
+    let collapsed = true
+
+    const apply = () => {
+        $el.setAttribute('data-collapsed', `${collapsed}`);
+        if (collapsed) {
+            $content.style.maxHeight = height + 'px';
+            $content.style['overflow-y'] = 'hidden';
+            $content.style.marginBottom = '0px';
+            $btn.style.transform = 'translateY(0%)';
+        } else {
+            $content.style.removeProperty('max-height');
+            $content.style.removeProperty('overflow-y');
+            $content.style.marginBottom = $btn.getBoundingClientRect().height + 'px';
+            $btn.style.transform = 'translateY(100%)';
+        }
+    }
+
+    if ($inner.getBoundingClientRect().height < height) {
+        $btn.remove()
+        return
+    }
+
+
+    $btn.onclick=()=>{
+        collapsed = !collapsed;
+        apply()
+    };
+}
+
+var collapsibleStyleOnceHandle = templ.NewOnceHandle()
+
+templ Collapsible(height int, canBeCollapsed bool) {
+    {{ 
+        l := i18n.GetLocalizer(ctx)
+        id := olhttp.GetID(ctx)
+    }}
+
+    @collapsibleStyleOnceHandle.Once() {
+        <style>
+            [data-collapsed=true] > button > [data-less],
+            [data-collapsed=false] > button > [data-more] {
+                display: none;
+            }
+        </style>
+    }
+    <div class="relative" id={id} data-collapsed="true">
+        <div data-collapsible="content" class="transition-margin" { templ.Attributes{
+            "style": fmt.Sprintf("max-height:%dpx;overflow-y:hidden", height),
+        }... }>
+            <div data-collapsible="inner">
+                { children... }
+            </div>
+        </div>
+
+        <button
+            class="absolute left-0 bottom-0 bg-card p-1 rounded-xl shadow-sm px-2 transition hover:shadow-lg">
+            <span data-more>{ l.T("common.more") }<i class="fa-solid fa-chevron-down"></i></span>
+            <span data-less>{ l.T("common.less") }<i class="fa-solid fa-chevron-up"></i></span>
+        </button>
+    </div>
+    @initCollapsible(id, height)
+}

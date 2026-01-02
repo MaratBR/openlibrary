@@ -5,6 +5,7 @@ import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/gofrs/uuid"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 
 templ SearchPage(
@@ -139,7 +140,7 @@ templ bookSearchCard(id int64, name, slug, summary, cover, authorName string, au
                 { authorName }
             </a>
 
-            @collapsible(160, true) {
+            @webcomponents.Collapsible(150, true) {
                 <ul class="book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
                     data-expand="false"
                     :data-expand="expand"
