@@ -11,7 +11,7 @@ export default function EditorBubbleMenu({
   editor: ChapterContentEditor
   appendTo: HTMLElement
 }) {
-  const { bold, italic, strikethrough } = useEditorToolbarState(editor)
+  const { bold, italic, strikethrough, textAlign } = useEditorToolbarState(editor)
 
   return (
     <BubbleMenu
@@ -41,6 +41,33 @@ export default function EditorBubbleMenu({
           onClick={() => editor.chain().focus().toggleStrike().run()}
         >
           <i class="fa-solid fa-strikethrough" />
+        </EditorToggleButton>
+      </div>
+      <div class="be-bubble-menu__delimiter" />
+      <div class="be-toggle-group">
+        <EditorToggleButton
+          active={textAlign === 'left'}
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        >
+          <i class="fa-solid fa-align-left" />
+        </EditorToggleButton>
+        <EditorToggleButton
+          active={textAlign === 'center'}
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        >
+          <i class="fa-solid fa-align-center" />
+        </EditorToggleButton>
+        <EditorToggleButton
+          active={textAlign === 'right'}
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+        >
+          <i class="fa-solid fa-align-right" />
+        </EditorToggleButton>
+        <EditorToggleButton
+          active={textAlign === 'justify'}
+          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+        >
+          <i class="fa-solid fa-align-justify" />
         </EditorToggleButton>
       </div>
     </BubbleMenu>
