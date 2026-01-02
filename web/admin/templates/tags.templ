@@ -284,7 +284,11 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                         </div>
                         <div class="admin-form-field__value">
                             <label class="switch">
-                                <input id="adult" name="adult" type="checkbox">
+                                <input
+                                    if tag.IsAdult {
+                                        checked
+                                    }
+                                    id="adult" name="adult" type="checkbox">
                                 <span class="switch__slider" />
                             </label>
                         </div>
@@ -298,7 +302,11 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                         </div>
                         <div class="admin-form-field__value">
                             <label class="switch">
-                                <input id="spoiler" name="spoiler" type="checkbox">
+                                <input
+                                    if tag.IsSpoiler {
+                                        checked
+                                    } 
+                                    id="spoiler" name="spoiler" type="checkbox">
                                 <span class="switch__slider" />
                             </label>
                         </div>

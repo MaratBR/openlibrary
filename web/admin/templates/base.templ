@@ -14,7 +14,7 @@ templ flashes() {
     }}
 
     if len(arr) > 0 {
-        <div class="fixed top-0 left-[300px] right-0 p-1">
+        <div style="left: var(--sitebar-width);" class="fixed top-0 right-0 p-1 z-20">
             for _, f := range arr {
                 <div x-data="{}" class="bg-emerald-400 border-emerald-800 border p-2 relative min-h-10">
                     @f
