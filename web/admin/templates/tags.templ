@@ -270,7 +270,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                                         if tag.Category == cat {
                                             selected
                                         }
-                                        value={ cat.String() }>{l.T(fmt.Sprintf("tagType.%s", cat.String()))}</option>
+                                        value={ cat.String() }>{l.T(fmt.Sprintf("tag.%s", cat.String()))}</option>
                                 }
                             </select>
                         </div>

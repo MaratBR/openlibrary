@@ -1,6 +1,7 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ BookPreviewPartial(book app.BookDetailsDto) {
     <div class="relative h-full overflow-hidden">
@@ -26,7 +27,9 @@ templ BookPreviewPartial(book app.BookDetailsDto) {
         </div>
 
         <div class="tabs--xs absolute bottom-0 pt-2 bg-background">
-            @bookTags(book.Tags)
+            @webcomponents.Tags(webcomponents.TagsProps{
+                Tags: book.Tags,
+            })
         </div>
     
     </div>

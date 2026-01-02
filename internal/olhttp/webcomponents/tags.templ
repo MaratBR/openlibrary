@@ -1,0 +1,49 @@
+package webcomponents
+
+import "github.com/MaratBR/openlibrary/internal/app"
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
+templ Tag(t app.DefinedTagDto) {
+    <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", t.ID)) } class="tag">
+        { t.Name }
+
+        if t.IsAdult {
+            <span class="tag__adult">18+</span>
+        }
+    </a>
+}
+
+type TagsProps struct {
+    Tags []app.DefinedTagDto
+    MaxTags int
+}
+
+templ Tags(props TagsProps) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+        if props.MaxTags == 0 {
+            props.MaxTags = 10
+        } else if props.MaxTags < 0 {
+            props.MaxTags = 10000000
+        }
+    }}
+    <ul x-data="{open:false}" class="tags">
+        for i, t := range props.Tags {
+            <li
+                if i >= props.MaxTags {
+                    x-cloak x-show="open"
+                }
+                >
+                @Tag(t)
+            </li>
+        }
+
+        if len(props.Tags) > props.MaxTags {
+            <li role="button" class="tag font-semibold nojs-hidden" @click="open=!open" x-text="window._(open?'common.less':'common.more')">
+                {l.T("common.more")}
+            </li>
+        }
+
+    </ul>
+}

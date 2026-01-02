@@ -23,6 +23,8 @@ name = "Name"
 info = "Info"
 crop = "Crop"
 confirm = "Confirm"
+adult = "Adult"
+spoiler = "Spoiler"
 
 [uiTheme]
 dark = "Dark"
@@ -155,16 +157,19 @@ search = "Search"
 logIn = "Sign in"
 signUp = "Sign up"
 
-############
-# TAG TYPE #
-############
+#############
+# TAG STUFF #
+#############
 
-[tagType]
+[tag]
 rel = "Relationship"
 reltype = "Relationship type"
 fandom = "Fandom"
 other = "Other (default)"
 warning = "Warning"
+
+adultDescription = "This tag is considered an \"adult\" tag. Books tagged with it may contain elements not suitable for underage readers."
+spoilerDescription = "This tag is considered a spoiler. Seeing it may spoil something about the book."
 
 ##############
 # AGE RATING #

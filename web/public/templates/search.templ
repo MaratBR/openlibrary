@@ -122,9 +122,6 @@ templ SearchResultFragment(
 }
 
 templ bookSearchCard(id int64, name, slug, summary, cover, authorName string, authorID uuid.UUID, tags []app.DefinedTagDto) {
-    {{
-        l := i18n.GetLocalizer(ctx)
-    }}
     <li role="listitem" id={ fmt.Sprintf("book-%d", id) } class="book-search-card">
         <div class="book-search-card__left">
             <a class="book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", id)) }>
@@ -141,26 +138,9 @@ templ bookSearchCard(id int64, name, slug, summary, cover, authorName string, au
             </a>
 
             @webcomponents.Collapsible(150, true) {
-                <ul class="book-search-card__tags [&:not([data-expand=true])>li:nth-child(n+7):not(:last-child)]:hidden" 
-                    data-expand="false"
-                    :data-expand="expand"
-                    x-data="{expand:false}">
-                    for _, tag := range tags {
-                        <li class="tag">
-                            <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", tag.ID)) }>
-                                { tag.Name }
-                            </a>
-                        </li>
-                    }
-
-                    <li 
-                        if len(tags) <= 6 {
-                            x-show="false" x-cloak
-                        }
-                        @click="expand=!expand" class="book-search-card__tags__more">
-                        <span x-text="i18n[expand?'common.less':'common.more']">{ l.T("common.more") }</span>
-                    </li>
-                </ul>
+                @webcomponents.Tags(webcomponents.TagsProps{
+                    Tags: tags,
+                })
 
                 if summary != "" {
                     <div class="book-search-card__summary user-content" x-ignore>

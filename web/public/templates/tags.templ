@@ -23,6 +23,18 @@ templ TagPage(tag app.TagDetailsItemDto) {
         <main class="ol-container">
             <header class="pt-16 pb-8">
                 <h1 class="font-title font-bold text-6xl">{tag.Name}</h1>
+                <div class="flex gap-2 empty:hidden">
+                    if tag.IsAdult {
+                        <span class="chip chip--destructive mt-4 cursor-help" title={ l.T("tag.adultDescription") }>
+                            { l.T("common.adult") }
+                        </span>
+                    }
+                    if tag.IsSpoiler {
+                        <span class="chip mt-4 border cursor-help" title={ l.T("tag.spoilerDescription") }>
+                            { l.T("common.spoiler") }
+                        </span>
+                    }
+                </div>
 
                 <p class="my-8 text-xl">{tag.Description}</p>
 

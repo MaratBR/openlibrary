@@ -1,15 +1,13 @@
 .tag {
     @apply 
-        inline-block overflow-hidden rounded-lg p-1 !shadow-none bg-secondary border border-secondary transition-colors
-        hover:border-slate-300
+        inline-block overflow-hidden rounded-lg px-1 !shadow-none bg-secondary border border-secondary transition-colors
+        hover:border-slate-300 
         active:bg-slate-200 active:ring-2 ring-offset-2 dark:active:bg-slate-900;
+    height: 1.7em;
+    line-height: 1.7em;
 
-
-    &--adult {
-        @apply before:inline before:text-red-800 before:dark:text-red-400 font-[500];
-        &::before {
-            content: '18+';
-        }
+    &__adult {
+        @apply text-red-600 font-semibold text-sm;
     }
 }
 
@@ -24,5 +22,11 @@
         .tag {
             @apply text-xs p-0.5;
         }
+    }
+}
+
+ul.tags {
+    & > li {
+        @apply inline-block me-1;
     }
 }

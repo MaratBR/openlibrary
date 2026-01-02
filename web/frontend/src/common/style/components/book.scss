@@ -92,14 +92,6 @@
     &__summary {
         @apply text-sm mt-4;
     }
-
-    &__tags {
-        @apply flex items-center gap-1 flex-wrap text-sm mt-2;
-
-        &__more {
-            @apply cursor-pointer p-2 active:bg-slate-800 active:text-primary-foreground
-        }
-    }
 }
 
 

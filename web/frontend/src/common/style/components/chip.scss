@@ -11,6 +11,10 @@
         @apply bg-secondary;
     }
 
+    &--destructive {
+        @apply bg-red text-white;
+    }
+
     &__close {
         @apply text-xs text-muted-foreground hover:text-foreground;
 

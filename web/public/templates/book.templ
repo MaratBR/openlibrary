@@ -6,6 +6,7 @@ import "encoding/json"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "crypto/md5"
 import "github.com/MaratBR/openlibrary/internal/auth"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ BookNotFoundPage() {
     {{
@@ -104,7 +105,9 @@ templ BookPage(
                         @bookRatingBadge(book.AgeRating)
                     </div>
                     <div class="mt-6">
-                        @bookTags(book.Tags)
+                        @webcomponents.Tags(webcomponents.TagsProps{
+                            Tags: book.Tags,
+                        })
                     </div>
                     @bookRating(&book, views)
 
@@ -221,31 +224,5 @@ templ bookCover(cover, bookName string, height int) {
         }... }>
         <img loading="lazy" src={ cover } />
     </div>
-}
-
-templ bookTags(tags []app.DefinedTagDto) {
-    {{ l := i18n.GetLocalizer(ctx) }}
-    <ul 
-        if len(tags) > 10 {
-            data-hidden
-        }
-        :data-hidden="!open" 
-        x-data={ fmt.Sprintf("{len:%d,open:false}", len(tags)) } 
-        class="[&>li]:inline [&>li]:me-2 [&[data-hidden]>li:not(:last-child):nth-child(n+11)]:hidden">
-        for _, t := range tags {
-            <li>
-                @tag(t)
-            </li>
-        }
-        <li 
-            if len(tags) <= 10 {
-                x-cloak
-            }
-            class="nojs-hidden" role="button" x-show="len>10" @click="open=!open">
-            <span class="tag font-semibold nojs-hidden" x-text="window._(open?'common.less':'common.more')">
-                {l.T("common.more")}
-            </span>
-        </li>
-    </ul>
 }
 
