@@ -25,13 +25,17 @@ export class ShowAnimation implements AnimationController {
     this.duration = duration
   }
 
-  setShow(show: boolean, duration?: number) {
+  setShow(show: boolean, duration?: number, onComplete?: (cancelled: boolean) => void) {
+    if (this.progress === (show ? 1 : 0)) {
+      return
+    }
+
     duration ??= this.duration
 
     if (duration <= 0) {
       // instantly transition to desired state
       this.callbacks.onBeforeAnimationm(this.element, show)
-      this.callbacks.onUpdate(this.element, show ? 100 : 0)
+      this.callbacks.onUpdate(this.element, show ? 1 : 0)
       this.callbacks.onAfterAnimation(this.element, show)
 
       return
@@ -42,16 +46,29 @@ export class ShowAnimation implements AnimationController {
       this._stop = undefined
     }
 
+    let callbackFired = false
+
     this._stop = animate({
-      duration: this.duration,
+      duration: duration * (show ? 1 - this.progress : this.progress),
       from: this.progress,
-      to: show ? 100 : 0,
+      to: show ? 1 : 0,
+      onStop() {
+        if (onComplete && !callbackFired) {
+          callbackFired = true
+          onComplete(true)
+        }
+      },
       onPlay: () => {
         this.callbacks.onBeforeAnimationm(this.element, show)
       },
       onComplete: () => {
         this._stop = undefined
         this.callbacks.onAfterAnimation(this.element, show)
+
+        if (onComplete && !callbackFired) {
+          callbackFired = true
+          onComplete(false)
+        }
       },
       onUpdate: (latest) => {
         this.progress = latest
@@ -76,8 +93,8 @@ export class ModalAnimation extends ShowAnimation {
   constructor(element: HTMLElement, duration: number) {
     super(element, duration, {
       onUpdate(element, latest) {
-        element.style.opacity = `${latest / 100}`
-        element.style.transform = `scale(${0.95 + (0.05 * latest) / 100})`
+        element.style.opacity = `${latest}`
+        element.style.transform = `scale(${0.95 + 0.05 * latest})`
       },
       onAfterAnimation(element, show) {
         if (!show) {

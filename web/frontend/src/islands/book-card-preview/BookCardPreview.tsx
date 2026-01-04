@@ -3,6 +3,7 @@ import { PreactIslandProps } from '../common/preact-island'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { createPortal, CSSProperties } from 'preact/compat'
 import BookCardPreviewContent from './BookCardPreviewContent'
+import { AllCSSProperties } from 'preact'
 
 const WIDTH = 400
 
@@ -14,7 +15,7 @@ export default function BookCardPreview({ data }: PreactIslandProps) {
   const [target, setTarget] = useState<
     | (BookCardPreviewTarget & {
         targetBounds: DOMRect
-        style: CSSProperties
+        style: AllCSSProperties
       })
     | null
   >(null)

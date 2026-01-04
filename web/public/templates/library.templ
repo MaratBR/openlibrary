@@ -5,6 +5,7 @@ import "github.com/MaratBR/openlibrary/internal/i18n"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/csrf"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
     {{
@@ -24,10 +25,10 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
             </div>
         </header>
         <main class="ol-container">
-            <ol-island 
-                data={ "{\"selector\": \".library-body\"}" }
-                src="/_/assets/islands/book-card-preview.js" 
-                active="true" />
+            @webcomponents.Island2(webcomponents.Island2Props{
+				Name: "book-card-preview",
+				Data: map[string]string{"selector": ".library-body"},
+			})
         
             <div class="library-body">
                 if len(reading) + len(paused) + len(wantToRead) == 0 {
@@ -108,10 +109,10 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
 
 
         <main class="ol-container">
-            <ol-island 
-                data={ "{\"selector\": \".library-body\"}" }
-                src="/_/assets/islands/book-card-preview.js" 
-                active="true" />
+            @webcomponents.Island2(webcomponents.Island2Props{
+				Name: "book-card-preview",
+				Data: map[string]string{"selector": ".library-body"},
+			})
         
             <div class="library-body">
                 if len(read) + len(dnf) == 0 {
@@ -149,10 +150,10 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
         </header>
 
         <main class="ol-container">
-            <ol-island 
-                data={ "{\"selector\": \".library-body\"}" }
-                src="/_/assets/islands/book-card-preview.js" 
-                active="true" />
+            @webcomponents.Island2(webcomponents.Island2Props{
+				Name: "book-card-preview",
+				Data: map[string]string{"selector": ".library-body"},
+			})
 
             {{
                 pagination := olhttp.Pagination(uint32(result.Page), uint32(result.TotalPages), 6)

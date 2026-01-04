@@ -110,10 +110,10 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 				</div>
 			</header>
 			@olhttp.Pagination(books.Page, books.TotalPages, 10)
-			<ol-island 
-				data={ fmt.Sprintf("{\"selector\": \"#%s\"}", "books-manager-books") }
-				src="/_/assets/islands/book-card-preview.js" 
-				active="true" />
+			@webcomponents.Island2(webcomponents.Island2Props{
+				Name: "book-card-preview",
+				Data: map[string]string{"selector": "#books-manager-books"},
+			})
 
 			<section class="my-4 space-y-2" id="books-manager-books" x-data="{
 				deleteBookId: '',

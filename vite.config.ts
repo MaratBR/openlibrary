@@ -168,7 +168,6 @@ const ENTRIES = [
 
   // islands
   'islands/public', // all islands available in public pages
-  'islands/book-card-preview',
   'islands/signup',
   'islands/review-editor',
   'islands/admin-password-reset',
