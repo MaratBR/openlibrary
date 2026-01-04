@@ -18,16 +18,12 @@
  * Main page header
  */ 
 .page-header {
-    @apply font-medium text-xl mb-1 mt-1 mr-2;
+    @apply font-medium mb-1 mt-1 mr-2;
     line-height: 1.3;
     vertical-align: bottom;
 
-    &--big {
-        @apply text-4xl;
-    }
-
     &-text {
-        @apply font-title mb-4;
+        @apply mb-4 text-2xl font-semibold;
     }
 
     &__after {

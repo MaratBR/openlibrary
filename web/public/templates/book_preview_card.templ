@@ -4,9 +4,8 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ BookPreviewPartial(book app.BookDetailsDto) {
-    <div class="relative h-full overflow-hidden">
-
-        <h1 class="font-title text-lg">{ book.Name }</h1>
+    <div class="relative h-full p-4 overflow-hidden">
+        <h1 class="font-semibold text-2xl">{ book.Name }</h1>
 
         <div x-ignore class="mt-4 text-sm user-content">
             {{
@@ -26,9 +25,10 @@ templ BookPreviewPartial(book app.BookDetailsDto) {
             @templ.Raw(summary)
         </div>
 
-        <div class="tabs--xs absolute bottom-0 pt-2 bg-background">
+        <div class="tabs--xs absolute bottom-0 pt-2 bg-card">
             @webcomponents.Tags(webcomponents.TagsProps{
                 Tags: book.Tags,
+                MaxTags: 5,
             })
         </div>
     

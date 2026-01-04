@@ -67,7 +67,7 @@ class BookCardPreviewIsland implements OLIsland {
 
 function createPopover() {
   const div = document.createElement('div')
-  div.className = 'card absolute z-10 shadow-2xl rounded-2xl'
+  div.className = 'bg-card absolute z-10 shadow-2xl rounded-2xl overflow-hidden'
   div.style.display = 'none'
   div.style.maxWidth = '400px'
   document.body.appendChild(div)

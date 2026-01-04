@@ -96,8 +96,8 @@ templ BookPage(
                 }
             </div>
             <div class="book-page__right">
-                <header>
-                    <h1 class="page-header">{book.Name}</h1>
+                <header class="page-header">
+                    <h1 class="page-header-text">{book.Name}</h1>
                     <p>
                         <a class="link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
                     </p>
