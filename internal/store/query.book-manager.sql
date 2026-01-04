@@ -87,3 +87,5 @@ select id
 from book_chapters
 where book_id = $1
 order by "order";
+
+-- name: Book_GetPopular

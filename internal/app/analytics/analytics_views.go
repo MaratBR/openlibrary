@@ -114,6 +114,7 @@ func (s *AnalyticsBackgroundService) process() {
 		}
 	}()
 
+	slog.Debug("AnalyticsBackgroundService.process")
 	s.analytics.ApplyPendingViews(s.parentCtx)
 }
 

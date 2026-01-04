@@ -9,6 +9,8 @@ import UnoCSS from 'unocss/vite'
 import chokidar, { FSWatcher } from 'chokidar'
 import preact from '@preact/preset-vite'
 
+const SOURCEMAP = true
+
 type AutoInjectCSSAsLinkOptions = {
   baseUrl: string
 }
@@ -93,7 +95,7 @@ function esbuildMinifyPlugin(): Plugin {
             write: true,
             bundle: false,
             minify: true,
-            sourcemap: true,
+            sourcemap: SOURCEMAP,
             allowOverwrite: true,
           })
 
@@ -215,7 +217,6 @@ export default defineConfig((env) => ({
     autoInjectCSSAsLinkTagPlugin({
       baseUrl: '/_/assets/',
     }),
-    esbuildMinifyPlugin(),
     // esbuildMinifyPlugin(),
   ],
 
@@ -262,5 +263,6 @@ export default defineConfig((env) => ({
         ENTRIES.map((entry) => [entry, resolve(__dirname, 'web/frontend/src', entry, 'index.ts')]),
       ),
     },
+    sourcemap: SOURCEMAP,
   },
 }))
