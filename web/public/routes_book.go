@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
@@ -16,15 +17,15 @@ type bookController struct {
 	service            app.BookService
 	reviewService      app.ReviewsService
 	readingListService app.ReadingListService
-	analytics          app.AnalyticsViewsService
+	viewsService       analytics.ViewsService
 }
 
-func newBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService, analytics app.AnalyticsViewsService) *bookController {
+func newBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService, analytics analytics.ViewsService) *bookController {
 	return &bookController{
 		service:            service,
 		reviewService:      reviewService,
 		readingListService: readingListService,
-		analytics:          analytics,
+		viewsService:       analytics,
 	}
 }
 
@@ -100,9 +101,15 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ip := olhttp.GetIP(r)
-	b.analytics.IncrBookView(r.Context(), bookID, userID, ip)
+	b.viewsService.IncrBookView(r.Context(), bookID, userID, ip)
 
-	views, err := b.analytics.GetBookViews(r.Context(), bookID)
+	views, err := b.viewsService.GetBookViews(r.Context(), bookID)
+
+	showAdultWarning := false
+
+	if book.GetAdultWarning().ShouldShowWarning() {
+		showAdultWarning = !canViewAdultContent(r)
+	}
 
 	templates.BookPage(
 		book,
@@ -111,6 +118,7 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 		readingListStatus,
 		reviews,
 		replaceURLWithSlug,
+		showAdultWarning,
 	).Render(r.Context(), w)
 }
 

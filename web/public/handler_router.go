@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/upload"
@@ -33,9 +34,11 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 	searchService := app.NewCachedSearchService(app.NewSearchService(db, tagsService, h.uploadService, userService, h.esClient), h.cache)
 	collectionService := app.NewCollectionsService(db, tagsService, h.uploadService)
 	bookManagerService := app.NewBookManagerService(db, tagsService, h.uploadService, userService, bgServices.BookReindex)
+	commentsService := app.NewCommentsService(db)
 
-	counters := app.NewAnalyticsCounters(h.redisClient)
-	analyticsService := app.NewAnalyticsViewsService(db, counters)
+	// analytics stuff here
+	analyticsCounters := analytics.NewAnalyticsCounters(h.redisClient)
+	analyticsService := analytics.NewAnalyticsViewsService(db, analyticsCounters)
 
 	h.r.Group(func(r chi.Router) {
 		r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
@@ -53,7 +56,7 @@ func (h *Handler) setupRouter(bgServices *app.BackgroundServices) {
 
 		newAuthController(authService, signUpService, h.csrfHandler, h.siteConfig, h.cfg).Register(r)
 		newBookController(bookService, reviewsService, readingListService, analyticsService).Register(r)
-		newChaptersController(bookService, readingListService, analyticsService).Register(r)
+		newChaptersController(bookService, readingListService, analyticsService, commentsService).Register(r)
 		newSearchController(searchService, bookService).Register(r)
 		newTagsController(tagsService).Register(r)
 		newProfileController(userService, bookService, searchService, collectionService).Register(r)
@@ -92,7 +95,6 @@ func redirectWithNextParameter(w http.ResponseWriter, r *http.Request, path stri
 	if r.URL.RawQuery != "" {
 		next += "?" + r.URL.RawQuery
 	}
-	println(next)
 
 	u, err := url.Parse(path)
 	if err != nil {

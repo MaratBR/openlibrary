@@ -1,4 +1,4 @@
-package app
+package analytics
 
 import (
 	"context"
@@ -8,13 +8,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 )
 
 type analyticsViewsService struct {
-	counter AnalyticsCounters
-	db      DB
+	counter CountersNamespace
+	db      app.DB
 }
 
 // GetBookViews implements AnalyticsViewsService.
@@ -117,9 +118,9 @@ func updateCounter(queries *store.Queries, ctx context.Context, period Analytics
 	}
 }
 
-func NewAnalyticsViewsService(db DB, counters AnalyticsCounters) AnalyticsViewsService {
+func NewAnalyticsViewsService(db app.DB, counters Counters) ViewsService {
 	return &analyticsViewsService{
-		counter: counters,
+		counter: counters.Namespace("views"),
 		db:      db,
 	}
 }

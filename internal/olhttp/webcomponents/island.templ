@@ -51,6 +51,7 @@ type Island2Props struct {
     Name string
     Data any
     ShowLoader bool
+    Attributes templ.Attributes
 }
 
 templ Island2(props Island2Props) {
@@ -59,7 +60,7 @@ templ Island2(props Island2Props) {
         xData := fmt.Sprintf("Island({name:%q,data:%s})", props.Name, dataJson)
     }}
     
-    <div x-data={xData}>
+    <div x-data={xData} { props.Attributes... }>
         <div class="contents" x-ref="loader" x-show="_loading">
             if props.ShowLoader {
                 <span class="loader" />

@@ -35,6 +35,28 @@ type BookDetailsDto struct {
 	FirstChapterID      Nullable[int64]       `json:"firstChapterId"`
 }
 
+type BookAdultWarning struct {
+	IsBookAdult bool
+	HasAdultTag bool
+}
+
+func (w BookAdultWarning) ShouldShowWarning() bool {
+	return w.IsBookAdult || w.HasAdultTag
+}
+
+func (d BookDetailsDto) GetAdultWarning() (warnData BookAdultWarning) {
+	warnData.IsBookAdult = d.IsAdult
+
+	for _, t := range d.Tags {
+		if t.IsAdult {
+			warnData.HasAdultTag = true
+			break
+		}
+	}
+
+	return
+}
+
 type GetBookQuery struct {
 	ID          int64
 	ActorUserID uuid.NullUUID
@@ -101,6 +123,44 @@ type GetPinnedUserBooksQuery struct {
 type GetPinnedUserBooksResult struct {
 	Books   []PinnedBookDto `json:"books"`
 	HasMore bool            `json:"hasMore"`
+}
+
+type ChapterDto struct {
+	ID              int64                        `json:"id,string"`
+	Name            string                       `json:"name"`
+	Words           int32                        `json:"words"`
+	Content         string                       `json:"content"`
+	IsAdultOverride bool                         `json:"isAdultOverride"`
+	CreatedAt       time.Time                    `json:"createdAt"`
+	Order           int32                        `json:"order"`
+	Summary         string                       `json:"summary"`
+	NextChapter     Nullable[ChapterNextPrevDto] `json:"nextChapter"`
+	PrevChapter     Nullable[ChapterNextPrevDto] `json:"prevChapter"`
+	BookID          int64                        `json:"bookId"`
+	CommentsCount   int64                        `json:"commentsCount"`
+}
+
+type ChapterNextPrevDto struct {
+	ID    int64  `json:"id,string"`
+	Name  string `json:"name"`
+	Order int32  `json:"order"`
+}
+
+type BookCollectionDto struct {
+	ID       int64  `json:"id,string"`
+	Name     string `json:"name"`
+	Position int    `json:"pos"`
+	Size     int    `json:"size"`
+}
+
+type GetBookChapterQuery struct {
+	BookID      int64
+	ChapterID   int64
+	ActorUserID uuid.NullUUID
+}
+
+type GetBookChapterResult struct {
+	Chapter ChapterDto
 }
 
 type BookService interface {

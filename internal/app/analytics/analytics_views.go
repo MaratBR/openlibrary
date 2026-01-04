@@ -1,4 +1,4 @@
-package app
+package analytics
 
 import (
 	"context"
@@ -54,7 +54,7 @@ func CurrentAnalyticsPeriods(now time.Time) AnalyticsPeriods {
 	}
 }
 
-type AnalyticsViewsService interface {
+type ViewsService interface {
 	IncrBookView(ctx context.Context, bookID int64, userID uuid.NullUUID, ip net.IP) error
 	GetBookViews(ctx context.Context, bookID int64) (Views, error)
 
@@ -64,14 +64,14 @@ type AnalyticsViewsService interface {
 type AnalyticsBackgroundService struct {
 	started        bool
 	mx             sync.Mutex
-	analytics      AnalyticsViewsService
+	analytics      ViewsService
 	stopWg         sync.WaitGroup
 	stopRequested  bool
 	nextLaunchTime time.Time
 	parentCtx      context.Context
 }
 
-func NewAnalyticsBackgroundService(analytics AnalyticsViewsService) *AnalyticsBackgroundService {
+func NewAnalyticsBackgroundService(analytics ViewsService) *AnalyticsBackgroundService {
 	srv := &AnalyticsBackgroundService{analytics: analytics}
 	return srv
 }

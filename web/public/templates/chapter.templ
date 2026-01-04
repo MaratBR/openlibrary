@@ -6,6 +6,7 @@ import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "fmt"
 import "strconv"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 type ChapterProgressTrackerOptions struct {
     JumpedBackward bool
@@ -14,17 +15,16 @@ type ChapterProgressTrackerOptions struct {
 }
 
 templ Chapter(
-    chapterWithDetails app.ChapterWithDetails,
+    chapter app.ChapterDto,
     book app.BookDetailsDto,
     options ChapterProgressTrackerOptions,
 ) {
     {{
-        chapter := chapterWithDetails.Chapter
         uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
     }}
 
     @htmlLayout(htmlLayoutProps{Title: chapter.Name}) {
-        @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapterWithDetails.Chapter.ID))
+        @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapter.ID))
 
         @siteHeaderLayout() {
             <div class="h-full flex-nowrap overflow-x-auto whitespace-nowrap items-center flex gap-2">
@@ -76,6 +76,12 @@ templ Chapter(
                         }
                     </section>
 
+                    <div class="mt-8">
+                        <a class="btn btn--ghost btn--lg" href={ fmt.Sprintf("/book/%d/chapters/%d/comments", chapter.BookID, chapter.ID) }>
+                            <i class="fa-solid fa-comments"></i>
+                            { chapter.CommentsCount } comments
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -200,4 +206,46 @@ templ ChapterContent(content string) {
     <article class="chapter-content user-content" id="ChapterContent">
         @templ.Raw(content)
     </article>
+}
+
+templ ChapterComments(
+    comments []app.CommentDto,
+) {
+    @standardPageLayout(standardPageLayoutProps{
+        DisableFooter: true,
+    }) {
+        <div class="ol-container">
+            { len(comments) }
+
+            @ChapterCommentsFragment(comments)
+        </div>
+    }
+}
+
+templ ChapterCommentsFragment(comments []app.CommentDto) {
+    <div id="ChapterCommentsFragment" class="space-y-4">
+    
+        for _, comment := range comments {
+            <div class="chapter-comment">
+                <div class="chapter-comment__left">
+                    <img class="avatar border" src={ comment.User.Avatar } />
+                </div>
+
+                <div class="chapter-comment__right">
+                    <div class="chapter-comment__content">
+                        @webcomponents.UserContent(webcomponents.UserContentProps{
+                            Content: comment.Content,
+                        })
+                    </div>
+
+                    <div class="chapter-comment__actions">
+                        <button>
+                            <i class="fa-solid fa-thumbs-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    
+    </div>
 }

@@ -100,7 +100,6 @@ func (c *modController) bookPerformAction(w http.ResponseWriter, r *http.Request
 		sentResponse := c.handleBookAction(w, r, book)
 		if !sentResponse {
 			http.Redirect(w, r, r.URL.Path, http.StatusFound)
-			println("redirect")
 			return
 		}
 	} else {
@@ -138,19 +137,15 @@ func (c *modController) handleBookAction(w http.ResponseWriter, r *http.Request,
 		BookID:      book.ID,
 	}
 
-	println("action: " + action)
-
 	switch action {
 	case "ban":
 		err = c.modBookService.BanBook(r.Context(), cmd)
 	case "unban":
 		err = c.modBookService.UnBanBook(r.Context(), cmd)
-		break
 	case "shadow_ban":
 		err = c.modBookService.ShadowBanBook(r.Context(), cmd)
 	case "shadow_unban":
 		err = c.modBookService.UnShadowBanBook(r.Context(), cmd)
-		break
 	case "perm_delete":
 		err = c.modBookService.PermanentlyRemoveBook(r.Context(), cmd)
 	default:

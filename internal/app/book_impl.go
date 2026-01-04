@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 )
 
 func getBookCoverURL(
@@ -55,13 +53,6 @@ func NewBookService(
 		readingListService: readingListService,
 		reviewService:      reviewService,
 	}
-}
-
-type BookCollectionDto struct {
-	ID       int64  `json:"id,string"`
-	Name     string `json:"name"`
-	Position int    `json:"pos"`
-	Size     int    `json:"size"`
 }
 
 func getWordsPerChapter(words, chapters int) int {
@@ -187,40 +178,6 @@ func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChapters
 	return chapterDtos, nil
 }
 
-type ChapterNextPrevDto struct {
-	ID    int64  `json:"id,string"`
-	Name  string `json:"name"`
-	Order int32  `json:"order"`
-}
-
-type ChapterDto struct {
-	ID              int64                        `json:"id,string"`
-	Name            string                       `json:"name"`
-	Words           int32                        `json:"words"`
-	Content         string                       `json:"content"`
-	IsAdultOverride bool                         `json:"isAdultOverride"`
-	CreatedAt       time.Time                    `json:"createdAt"`
-	Order           int32                        `json:"order"`
-	Summary         string                       `json:"summary"`
-	NextChapter     Nullable[ChapterNextPrevDto] `json:"nextChapter"`
-	PrevChapter     Nullable[ChapterNextPrevDto] `json:"prevChapter"`
-}
-
-type ChapterWithDetails struct {
-	BookID  int64
-	Chapter ChapterDto
-}
-
-type GetBookChapterQuery struct {
-	BookID      int64
-	ChapterID   int64
-	ActorUserID uuid.NullUUID
-}
-
-type GetBookChapterResult struct {
-	ChapterWithDetails ChapterWithDetails
-}
-
 func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error) {
 	chapter, err := s.queries.GetBookChapterWithDetails(ctx, store.GetBookChapterWithDetailsParams{
 		ID:     query.ChapterID,
@@ -252,20 +209,19 @@ func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQu
 	}
 
 	return GetBookChapterResult{
-		ChapterWithDetails: ChapterWithDetails{
-			BookID: chapter.BookID,
-			Chapter: ChapterDto{
-				ID:              chapter.ID,
-				Name:            chapter.Name,
-				Words:           chapter.Words,
-				Content:         chapter.Content,
-				IsAdultOverride: chapter.IsAdultOverride,
-				CreatedAt:       chapter.CreatedAt.Time,
-				Order:           chapter.Order,
-				Summary:         chapter.Summary,
-				PrevChapter:     prev,
-				NextChapter:     next,
-			},
+		Chapter: ChapterDto{
+			ID:              chapter.ID,
+			Name:            chapter.Name,
+			Words:           chapter.Words,
+			Content:         chapter.Content,
+			IsAdultOverride: chapter.IsAdultOverride,
+			CreatedAt:       chapter.CreatedAt.Time,
+			Order:           chapter.Order,
+			Summary:         chapter.Summary,
+			PrevChapter:     prev,
+			NextChapter:     next,
+			BookID:          chapter.BookID,
+			CommentsCount:   42, // TODO
 		},
 	}, nil
 }

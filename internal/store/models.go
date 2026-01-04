@@ -441,16 +441,15 @@ type CollectionBook struct {
 }
 
 type Comment struct {
-	ID            int64
-	ChapterID     int64
-	UserID        pgtype.UUID
-	Content       string
-	Ts            pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	DeletedAt     pgtype.Timestamptz
-	ParentID      pgtype.Int8
-	QuoteContent  pgtype.Text
-	QuoteStartPos pgtype.Int4
+	ID          int64
+	ChapterID   int64
+	UserID      pgtype.UUID
+	Content     string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	DeletedAt   pgtype.Timestamptz
+	ParentID    pgtype.Int8
+	Subcomments int32
 }
 
 type DefinedTag struct {

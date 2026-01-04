@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
@@ -14,18 +15,20 @@ import (
 type chaptersController struct {
 	service            app.BookService
 	readingListService app.ReadingListService
-	analytics          app.AnalyticsViewsService
+	commentsService    app.CommentsService
+	viewsService       analytics.ViewsService
 }
 
-func newChaptersController(service app.BookService, readingListService app.ReadingListService, analytics app.AnalyticsViewsService) *chaptersController {
-	return &chaptersController{service: service, readingListService: readingListService, analytics: analytics}
+func newChaptersController(service app.BookService, readingListService app.ReadingListService, viewsService analytics.ViewsService, commentsService app.CommentsService) *chaptersController {
+	return &chaptersController{service: service, readingListService: readingListService, viewsService: viewsService, commentsService: commentsService}
 }
 
 func (c *chaptersController) Register(r chi.Router) {
-	r.Get("/book/{bookID}/chapters/{chapterID}", c.GetChapter)
+	r.Get("/book/{bookID}/chapters/{chapterID}", c.chapter)
+	r.Get("/book/{bookID}/chapters/{chapterID}/comments", c.chapterComments)
 }
 
-func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) {
+func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 	rl := r.URL.Query().Get("rl")
 
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
@@ -67,7 +70,7 @@ func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) 
 		status, err := c.readingListService.GetStatus(r.Context(), session.UserID, bookID)
 		if err == nil && status.Valid && status.Value.ChapterID.Valid {
 			statusChapterOrder := status.Value.ChapterOrder
-			chapterOrder := result.ChapterWithDetails.Chapter.Order
+			chapterOrder := result.Chapter.Order
 			if statusChapterOrder == chapterOrder {
 				// if it's same chapter - no need to do anything, disable chapter auto-marking
 				options.Enable = false
@@ -82,7 +85,7 @@ func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) 
 
 		// if rl is 1 then update status
 		if rl == "1" {
-			readingListStatus, err := c.readingListService.GetStatus(r.Context(), session.UserID, result.ChapterWithDetails.BookID)
+			readingListStatus, err := c.readingListService.GetStatus(r.Context(), session.UserID, result.Chapter.BookID)
 			if err != nil {
 				slog.Warn("readingListService.GetStatus error", "err", err)
 			} else {
@@ -101,5 +104,24 @@ func (c *chaptersController) GetChapter(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	templates.Chapter(result.ChapterWithDetails, book, options).Render(r.Context(), w)
+	templates.Chapter(result.Chapter, book, options).Render(r.Context(), w)
+}
+
+func (c *chaptersController) chapterComments(w http.ResponseWriter, r *http.Request) {
+	chapterID, err := olhttp.URLParamInt64(r, "chapterID")
+	if err != nil {
+		writeBadRequest(w, r, err)
+		return
+	}
+
+	cursor, _ := olhttp.URLQueryParamInt64(r, "cursor")
+
+	result, err := c.commentsService.GetList(r.Context(), app.GetCommentsQuery{
+		ChapterID:   chapterID,
+		ActorUserID: auth.GetNullableUserID(r.Context()),
+		Limit:       30,
+		Cursor:      uint32(cursor),
+	})
+
+	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(result.Comments))
 }

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type commentsService struct {
@@ -18,15 +17,11 @@ func (c *commentsService) AddComment(ctx context.Context, command AddCommentComm
 	queries := store.New(c.db)
 	id := GenID()
 	err := queries.InsertComment(ctx, store.InsertCommentParams{
-		ID:            id,
-		ChapterID:     command.ChapterID,
-		ParentID:      int64NullableDomainToDb(command.ParentCommentID),
-		UserID:        uuidDomainToDb(command.UserID),
-		Content:       command.Content,
-		Ts:            timeToTimestamptz(time.Now()),
-		UpdatedAt:     pgtype.Timestamptz{Valid: false},
-		QuoteContent:  pgtype.Text{},
-		QuoteStartPos: pgtype.Int4{},
+		ID:        id,
+		ChapterID: command.ChapterID,
+		ParentID:  int64NullableDomainToDb(command.ParentCommentID),
+		UserID:    uuidDomainToDb(command.UserID),
+		Content:   command.Content,
 	})
 	if err != nil {
 		return AddCommentResult{}, wrapUnexpectedDBError(err)
@@ -60,8 +55,8 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 			return CommentDto{
 				ID:        r.ID,
 				Content:   r.Content,
-				User:      CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName},
-				CreatedAt: timeDbToDomain(r.Ts),
+				User:      CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName, Avatar: getUserAvatar(r.UserName, 84)},
+				CreatedAt: timeDbToDomain(r.CreatedAt),
 				UpdatedAt: timeNullableDbToDomain(r.UpdatedAt),
 			}
 		})
@@ -72,7 +67,7 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 		rows, err = queries.GetChapterCommentsAfter(ctx, store.GetChapterCommentsAfterParams{
 			ChapterID: query.ChapterID,
 			Limit:     query.Limit,
-			Ts:        timeToTimestamptz(ts),
+			CreatedAt: timeToTimestamptz(ts),
 		})
 		if err != nil {
 			err = wrapUnexpectedDBError(err)
@@ -82,8 +77,8 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 			return CommentDto{
 				ID:        r.ID,
 				Content:   r.Content,
-				User:      CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName},
-				CreatedAt: timeDbToDomain(r.Ts),
+				User:      CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName, Avatar: getUserAvatar(r.UserName, 84)},
+				CreatedAt: timeDbToDomain(r.CreatedAt),
 				UpdatedAt: timeNullableDbToDomain(r.UpdatedAt),
 			}
 		})
@@ -105,9 +100,8 @@ func (c *commentsService) UpdateComment(ctx context.Context, command UpdateComme
 	queries := store.New(c.db)
 
 	result, err := queries.UpdateComment(ctx, store.UpdateCommentParams{
-		ID:        command.ID,
-		Content:   command.Content,
-		UpdatedAt: timeToTimestamptz(time.Now()),
+		ID:      command.ID,
+		Content: command.Content,
 	})
 	if err != nil {
 		return UpdateCommentResult{}, wrapUnexpectedDBError(err)
@@ -138,7 +132,7 @@ func (c *commentsService) getByID(ctx context.Context, id int64) (CommentDto, er
 		ID:        row.ID,
 		Content:   row.Content,
 		User:      CommentUserDto{ID: uuidDbToDomain(row.UserID), Name: row.UserName, Avatar: getUserAvatar(row.UserName, 84)},
-		CreatedAt: timeDbToDomain(row.Ts),
+		CreatedAt: timeDbToDomain(row.CreatedAt),
 		UpdatedAt: timeNullableDbToDomain(row.UpdatedAt),
 	}, nil
 }

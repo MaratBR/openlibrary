@@ -41,6 +41,7 @@ func (c *bookManagerController) Register(r chi.Router) {
 		r.With(httpin.NewInput(&createBookRequest{})).Post("/new", c.bookCreate)
 
 		r.Get("/book/{bookID}/chapter/{chapterID}", c.chapter)
+
 		r.Get("/__fragment/chapter-content-iframe", c.chapterLayoutIframe)
 
 	})

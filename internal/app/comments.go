@@ -25,11 +25,12 @@ type GetCommentsQuery struct {
 }
 
 type CommentDto struct {
-	ID        int64               `json:"id,string"`
-	Content   string              `json:"content"`
-	User      CommentUserDto      `json:"user"`
-	CreatedAt time.Time           `json:"createdAt"`
-	UpdatedAt Nullable[time.Time] `json:"updatedAt"`
+	ID          int64               `json:"id,string"`
+	Content     string              `json:"content"`
+	User        CommentUserDto      `json:"user"`
+	CreatedAt   time.Time           `json:"createdAt"`
+	UpdatedAt   Nullable[time.Time] `json:"updatedAt"`
+	Subcomments int                 `json:"subcomments"`
 }
 
 type CommentUserDto struct {

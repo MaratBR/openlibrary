@@ -83,7 +83,13 @@ templ SearchResultFragment(
 
         <section class="search-filters mb-2" x-cloak x-show="openFilters && filtersReady" x-collapse>
             <div class="p-4">
-                <ol-island @island:mount="filtersReady=true" data={ "{\"searchInputId\": \"search-input\"}" } active="true" src="/_/assets/islands/search-filters.js" />
+                @webcomponents.Island2(webcomponents.Island2Props{
+                    Name: "search/filters",
+                    Data: map[string]string{"searchInputId": "search-input"},
+                    Attributes: templ.Attributes{
+                        "@island:mount": "filtersReady=true",
+                    },
+                })
             </div>
         </section>
 

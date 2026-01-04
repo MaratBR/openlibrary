@@ -13,11 +13,11 @@ import (
 )
 
 const getChapterComments = `-- name: GetChapterComments :many
-select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.quote_content, comments.quote_start_pos, users.name as user_name
+select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at, comments.parent_id, comments.subcomments, users.name as user_name
 from comments
 join users on comments.user_id = users.id
 where chapter_id = $1 and parent_id is null
-order by ts desc
+order by created_at desc
 limit $2
 `
 
@@ -27,17 +27,16 @@ type GetChapterCommentsParams struct {
 }
 
 type GetChapterCommentsRow struct {
-	ID            int64
-	ChapterID     int64
-	UserID        pgtype.UUID
-	Content       string
-	Ts            pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	DeletedAt     pgtype.Timestamptz
-	ParentID      pgtype.Int8
-	QuoteContent  pgtype.Text
-	QuoteStartPos pgtype.Int4
-	UserName      string
+	ID          int64
+	ChapterID   int64
+	UserID      pgtype.UUID
+	Content     string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	DeletedAt   pgtype.Timestamptz
+	ParentID    pgtype.Int8
+	Subcomments int32
+	UserName    string
 }
 
 func (q *Queries) GetChapterComments(ctx context.Context, arg GetChapterCommentsParams) ([]GetChapterCommentsRow, error) {
@@ -54,12 +53,11 @@ func (q *Queries) GetChapterComments(ctx context.Context, arg GetChapterComments
 			&i.ChapterID,
 			&i.UserID,
 			&i.Content,
-			&i.Ts,
+			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ParentID,
-			&i.QuoteContent,
-			&i.QuoteStartPos,
+			&i.Subcomments,
 			&i.UserName,
 		); err != nil {
 			return nil, err
@@ -73,36 +71,35 @@ func (q *Queries) GetChapterComments(ctx context.Context, arg GetChapterComments
 }
 
 const getChapterCommentsAfter = `-- name: GetChapterCommentsAfter :many
-select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.quote_content, comments.quote_start_pos, users.name as user_name
+select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at, comments.parent_id, comments.subcomments, users.name as user_name
 from comments
 join users on comments.user_id = users.id
-where chapter_id = $1 and parent_id is null and ts < $3
-order by ts desc
+where chapter_id = $1 and parent_id is null and created_at < $3
+order by created_at desc
 limit $2
 `
 
 type GetChapterCommentsAfterParams struct {
 	ChapterID int64
 	Limit     int32
-	Ts        pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
 }
 
 type GetChapterCommentsAfterRow struct {
-	ID            int64
-	ChapterID     int64
-	UserID        pgtype.UUID
-	Content       string
-	Ts            pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	DeletedAt     pgtype.Timestamptz
-	ParentID      pgtype.Int8
-	QuoteContent  pgtype.Text
-	QuoteStartPos pgtype.Int4
-	UserName      string
+	ID          int64
+	ChapterID   int64
+	UserID      pgtype.UUID
+	Content     string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	DeletedAt   pgtype.Timestamptz
+	ParentID    pgtype.Int8
+	Subcomments int32
+	UserName    string
 }
 
 func (q *Queries) GetChapterCommentsAfter(ctx context.Context, arg GetChapterCommentsAfterParams) ([]GetChapterCommentsAfterRow, error) {
-	rows, err := q.db.Query(ctx, getChapterCommentsAfter, arg.ChapterID, arg.Limit, arg.Ts)
+	rows, err := q.db.Query(ctx, getChapterCommentsAfter, arg.ChapterID, arg.Limit, arg.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -115,12 +112,11 @@ func (q *Queries) GetChapterCommentsAfter(ctx context.Context, arg GetChapterCom
 			&i.ChapterID,
 			&i.UserID,
 			&i.Content,
-			&i.Ts,
+			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ParentID,
-			&i.QuoteContent,
-			&i.QuoteStartPos,
+			&i.Subcomments,
 			&i.UserName,
 		); err != nil {
 			return nil, err
@@ -134,11 +130,11 @@ func (q *Queries) GetChapterCommentsAfter(ctx context.Context, arg GetChapterCom
 }
 
 const getChildComments = `-- name: GetChildComments :many
-select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.quote_content, comments.quote_start_pos, users.name as user_name
+select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at, comments.parent_id, comments.subcomments, users.name as user_name
 from comments
 join users on comments.user_id = users.id
 where parent_id = $1
-order by ts desc
+order by created_at desc
 limit $2
 `
 
@@ -148,17 +144,16 @@ type GetChildCommentsParams struct {
 }
 
 type GetChildCommentsRow struct {
-	ID            int64
-	ChapterID     int64
-	UserID        pgtype.UUID
-	Content       string
-	Ts            pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	DeletedAt     pgtype.Timestamptz
-	ParentID      pgtype.Int8
-	QuoteContent  pgtype.Text
-	QuoteStartPos pgtype.Int4
-	UserName      string
+	ID          int64
+	ChapterID   int64
+	UserID      pgtype.UUID
+	Content     string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	DeletedAt   pgtype.Timestamptz
+	ParentID    pgtype.Int8
+	Subcomments int32
+	UserName    string
 }
 
 func (q *Queries) GetChildComments(ctx context.Context, arg GetChildCommentsParams) ([]GetChildCommentsRow, error) {
@@ -175,12 +170,11 @@ func (q *Queries) GetChildComments(ctx context.Context, arg GetChildCommentsPara
 			&i.ChapterID,
 			&i.UserID,
 			&i.Content,
-			&i.Ts,
+			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ParentID,
-			&i.QuoteContent,
-			&i.QuoteStartPos,
+			&i.Subcomments,
 			&i.UserName,
 		); err != nil {
 			return nil, err
@@ -194,36 +188,35 @@ func (q *Queries) GetChildComments(ctx context.Context, arg GetChildCommentsPara
 }
 
 const getChildCommentsAfter = `-- name: GetChildCommentsAfter :many
-select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.ts, comments.updated_at, comments.deleted_at, comments.parent_id, comments.quote_content, comments.quote_start_pos, users.name as user_name
+select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at, comments.parent_id, comments.subcomments, users.name as user_name
 from comments
 join users on comments.user_id = users.id
-where parent_id = $1 and ts < $3
-order by ts desc
+where parent_id = $1 and created_at < $3
+order by created_at desc
 limit $2
 `
 
 type GetChildCommentsAfterParams struct {
-	ParentID pgtype.Int8
-	Limit    int32
-	Ts       pgtype.Timestamptz
+	ParentID  pgtype.Int8
+	Limit     int32
+	CreatedAt pgtype.Timestamptz
 }
 
 type GetChildCommentsAfterRow struct {
-	ID            int64
-	ChapterID     int64
-	UserID        pgtype.UUID
-	Content       string
-	Ts            pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	DeletedAt     pgtype.Timestamptz
-	ParentID      pgtype.Int8
-	QuoteContent  pgtype.Text
-	QuoteStartPos pgtype.Int4
-	UserName      string
+	ID          int64
+	ChapterID   int64
+	UserID      pgtype.UUID
+	Content     string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	DeletedAt   pgtype.Timestamptz
+	ParentID    pgtype.Int8
+	Subcomments int32
+	UserName    string
 }
 
 func (q *Queries) GetChildCommentsAfter(ctx context.Context, arg GetChildCommentsAfterParams) ([]GetChildCommentsAfterRow, error) {
-	rows, err := q.db.Query(ctx, getChildCommentsAfter, arg.ParentID, arg.Limit, arg.Ts)
+	rows, err := q.db.Query(ctx, getChildCommentsAfter, arg.ParentID, arg.Limit, arg.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -236,12 +229,11 @@ func (q *Queries) GetChildCommentsAfter(ctx context.Context, arg GetChildComment
 			&i.ChapterID,
 			&i.UserID,
 			&i.Content,
-			&i.Ts,
+			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ParentID,
-			&i.QuoteContent,
-			&i.QuoteStartPos,
+			&i.Subcomments,
 			&i.UserName,
 		); err != nil {
 			return nil, err
@@ -255,7 +247,7 @@ func (q *Queries) GetChildCommentsAfter(ctx context.Context, arg GetChildComment
 }
 
 const getCommentByID = `-- name: GetCommentByID :one
-select id, chapter_id, user_id, content, ts, updated_at, deleted_at, parent_id, quote_content, quote_start_pos from comments where id = $1
+select id, chapter_id, user_id, content, created_at, updated_at, deleted_at, parent_id, subcomments from comments where id = $1
 `
 
 func (q *Queries) GetCommentByID(ctx context.Context, id int64) (Comment, error) {
@@ -266,35 +258,33 @@ func (q *Queries) GetCommentByID(ctx context.Context, id int64) (Comment, error)
 		&i.ChapterID,
 		&i.UserID,
 		&i.Content,
-		&i.Ts,
+		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.ParentID,
-		&i.QuoteContent,
-		&i.QuoteStartPos,
+		&i.Subcomments,
 	)
 	return i, err
 }
 
 const getCommentWithUserByID = `-- name: GetCommentWithUserByID :one
-select c.id, c.chapter_id, c.user_id, c.content, c.ts, c.updated_at, c.deleted_at, c.parent_id, c.quote_content, c.quote_start_pos, u.name as user_name
+select c.id, c.chapter_id, c.user_id, c.content, c.created_at, c.updated_at, c.deleted_at, c.parent_id, c.subcomments, u.name as user_name
 from comments c
 join users u on c.user_id = u.id
 where c.id = $1
 `
 
 type GetCommentWithUserByIDRow struct {
-	ID            int64
-	ChapterID     int64
-	UserID        pgtype.UUID
-	Content       string
-	Ts            pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	DeletedAt     pgtype.Timestamptz
-	ParentID      pgtype.Int8
-	QuoteContent  pgtype.Text
-	QuoteStartPos pgtype.Int4
-	UserName      string
+	ID          int64
+	ChapterID   int64
+	UserID      pgtype.UUID
+	Content     string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	DeletedAt   pgtype.Timestamptz
+	ParentID    pgtype.Int8
+	Subcomments int32
+	UserName    string
 }
 
 func (q *Queries) GetCommentWithUserByID(ctx context.Context, id int64) (GetCommentWithUserByIDRow, error) {
@@ -305,32 +295,27 @@ func (q *Queries) GetCommentWithUserByID(ctx context.Context, id int64) (GetComm
 		&i.ChapterID,
 		&i.UserID,
 		&i.Content,
-		&i.Ts,
+		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.ParentID,
-		&i.QuoteContent,
-		&i.QuoteStartPos,
+		&i.Subcomments,
 		&i.UserName,
 	)
 	return i, err
 }
 
 const insertComment = `-- name: InsertComment :exec
-insert into comments (id, chapter_id, parent_id, user_id, content, ts, updated_at, quote_content, quote_start_pos) 
-values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+insert into comments (id, chapter_id, parent_id, user_id, content, created_at, updated_at) 
+values ($1, $2, $3, $4, $5, now(), now())
 `
 
 type InsertCommentParams struct {
-	ID            int64
-	ChapterID     int64
-	ParentID      pgtype.Int8
-	UserID        pgtype.UUID
-	Content       string
-	Ts            pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	QuoteContent  pgtype.Text
-	QuoteStartPos pgtype.Int4
+	ID        int64
+	ChapterID int64
+	ParentID  pgtype.Int8
+	UserID    pgtype.UUID
+	Content   string
 }
 
 func (q *Queries) InsertComment(ctx context.Context, arg InsertCommentParams) error {
@@ -340,32 +325,30 @@ func (q *Queries) InsertComment(ctx context.Context, arg InsertCommentParams) er
 		arg.ParentID,
 		arg.UserID,
 		arg.Content,
-		arg.Ts,
-		arg.UpdatedAt,
-		arg.QuoteContent,
-		arg.QuoteStartPos,
 	)
 	return err
 }
 
+const recalculateCommentSubcomments = `-- name: RecalculateCommentSubcomments :exec
+update comments 
+set subcomments = (select count(*) from comments c where c.parent_id = $1)
+where id = $1
+`
+
+func (q *Queries) RecalculateCommentSubcomments(ctx context.Context, id pgtype.Int8) error {
+	_, err := q.db.Exec(ctx, recalculateCommentSubcomments, id)
+	return err
+}
+
 const updateComment = `-- name: UpdateComment :execresult
-update comments set content = $2, updated_at = $3, quote_content = $4, quote_start_pos = $5 where id = $1
+update comments set content = $2, updated_at = now() where id = $1
 `
 
 type UpdateCommentParams struct {
-	ID            int64
-	Content       string
-	UpdatedAt     pgtype.Timestamptz
-	QuoteContent  pgtype.Text
-	QuoteStartPos pgtype.Int4
+	ID      int64
+	Content string
 }
 
 func (q *Queries) UpdateComment(ctx context.Context, arg UpdateCommentParams) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, updateComment,
-		arg.ID,
-		arg.Content,
-		arg.UpdatedAt,
-		arg.QuoteContent,
-		arg.QuoteStartPos,
-	)
+	return q.db.Exec(ctx, updateComment, arg.ID, arg.Content)
 }

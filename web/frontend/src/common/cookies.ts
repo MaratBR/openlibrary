@@ -35,7 +35,9 @@ export function setCookie(
 declare global {
   interface Window {
     getCookie: typeof getCookie
+    setCookie: typeof setCookie
   }
 }
 
+window.setCookie = setCookie
 window.getCookie = getCookie

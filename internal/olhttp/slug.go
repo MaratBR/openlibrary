@@ -19,7 +19,6 @@ func ParseInt64Slug(slug string) (int64, string) {
 		}
 	} else {
 		lastPart := slug[idx+1:]
-		println(lastPart)
 		id, err := strconv.ParseInt(lastPart, 10, 64)
 		if err == nil {
 			return id, slug[:idx]

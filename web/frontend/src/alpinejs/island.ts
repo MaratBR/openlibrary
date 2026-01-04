@@ -45,6 +45,8 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
     container.style.display = 'contents'
     this._mounted = island.mount(container, data)
     this.$root.appendChild(container)
+
+    this.$el.dispatchEvent(new CustomEvent('island:mount'))
   },
 
   _unmount() {

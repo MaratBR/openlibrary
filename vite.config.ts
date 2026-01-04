@@ -171,7 +171,6 @@ const ENTRIES = [
   'islands/book-card-preview',
   'islands/signup',
   'islands/review-editor',
-  'islands/search-filters',
   'islands/admin-password-reset',
 
   'islands/bookmanager',

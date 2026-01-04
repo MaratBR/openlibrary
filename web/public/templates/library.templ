@@ -190,11 +190,15 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
 
                 if result.TotalPages > 0 {
                     if result.TotalPages > 1 {
-                        @pagination
+                        <div class="mb-2">
+                            @pagination
+                        </div>
                     }
                     @collectionsList(result.Collections, booksMap)
                     if result.TotalPages > 1 {
-                        @pagination
+                        <div class="mt-2">
+                            @pagination
+                        </div>
                     }
                 }
             </div>
