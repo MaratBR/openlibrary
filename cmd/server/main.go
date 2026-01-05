@@ -37,12 +37,11 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, c *cli.Command) error {
-					cfg := loadConfigOrPanic()
 					var cliParam cliParams
 					cliParam.BypassTLSCheck = c.Bool("bypass-tls-check")
 					cliParam.Dev = c.Bool("dev")
 					cliParam.StaticDir = c.String("static-dir")
-					mainServer(cliParam, cfg)
+					mainServer(cliParam)
 					return nil
 				},
 			},

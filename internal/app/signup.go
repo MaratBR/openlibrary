@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 )
 
 var (
-	SignUpErrors                       = AppErrors.NewSubNamespace("signup")
+	SignUpErrors                       = apperror.AppErrors.NewSubNamespace("signup")
 	SignUpInvalidInput                 = SignUpErrors.NewType("invalid")
 	SignUpEmailVerificationErrors      = SignUpErrors.NewSubNamespace("email_verification")
 	SignUpEmailVerificationNA          = SignUpEmailVerificationErrors.NewType("na")

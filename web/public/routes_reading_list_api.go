@@ -21,11 +21,11 @@ func newAPIReadingListController(service app.ReadingListService) *apiControllerR
 }
 
 func (c *apiControllerReadingList) Register(r chi.Router) {
-	r.Post("/reading-list/status", c.UpdateStatus)
-	r.Post("/reading-list/chapter", c.UpdateCurrentChapter)
+	r.Post("/reading-list/status", c.updateStatus)
+	r.Post("/reading-list/chapter", c.updateCurrentChapter)
 }
 
-func (c *apiControllerReadingList) UpdateStatus(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerReadingList) updateStatus(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
 
 	bookID, err := olhttp.URLQueryParamInt64(r, "bookId")
@@ -82,7 +82,7 @@ func (c *apiControllerReadingList) UpdateStatus(w http.ResponseWriter, r *http.R
 	olhttp.NewAPIResponse(state.Value).Write(w)
 }
 
-func (c *apiControllerReadingList) UpdateCurrentChapter(w http.ResponseWriter, r *http.Request) {
+func (c *apiControllerReadingList) updateCurrentChapter(w http.ResponseWriter, r *http.Request) {
 	chapterID, err := olhttp.URLQueryParamInt64(r, "chapterId")
 	if err != nil {
 		apiWriteBadRequest(w, err)

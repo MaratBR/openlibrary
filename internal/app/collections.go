@@ -4,13 +4,14 @@ import (
 	"context"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 var (
-	CollectionErrors       = AppErrors.NewSubNamespace("collection")
-	ErrCollectionNotExists = CollectionErrors.NewType("404", ErrTraitEntityNotFound).New("collection not found")
+	CollectionErrors       = apperror.AppErrors.NewSubNamespace("collection")
+	ErrCollectionNotExists = CollectionErrors.NewType("404", apperror.ErrTraitEntityNotFound).New("collection not found")
 )
 
 type GetUserCollectionsQuery struct {

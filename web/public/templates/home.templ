@@ -1,5 +1,11 @@
 package templates
 
+import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "strconv"
+import "fmt"
+
 
 templ Home() {
     @standardPageLayout(standardPageLayoutProps{
@@ -7,11 +13,39 @@ templ Home() {
             Title: "Home",
         },
     }) {
-        <div>
+        <div class="ol-container">
             This is going to be a testing area for stuff until I actually make something here
 
-            <div id="virtual" x-data="test" style="height: 2000px;">
-            </div>
+            @webcomponents.Fragment(webcomponents.FragmentProps{
+                Path: "/__fragment/most-viewed-books",
+            }) {
+                <div style="height: 200px;" />
+            }
+        
         </div>
     }
+}
+
+
+templ HomeBooksListFragment(
+    books []app.BookListDto,
+    views map[int64]int64,
+) {
+    {{
+        id := olhttp.GetID(ctx)
+    }}
+
+    <ul id={id} class="books-recommendation-list">
+        for _, book := range books {
+            <li data-book-card-preview={strconv.FormatInt(book.ID, 10)}>
+                <a href={ fmt.Sprintf("/book/%d", book.ID) }>
+                    @bookCover(book.Cover, book.Name, 200)
+                </a>
+            </li>
+        }
+    </ul>
+    @webcomponents.Island2(webcomponents.Island2Props{
+        Name: "book-card-preview",
+        Data: map[string]string{"selector": "#" + id},
+    })
 }

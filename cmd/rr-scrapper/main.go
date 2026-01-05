@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	royalroadapi "github.com/MaratBR/openlibrary/internal/royal-road-api"
+	royalroadapi "github.com/MaratBR/openlibrary/internal/royalroadapi"
 )
 
 func main() {

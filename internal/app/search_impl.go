@@ -5,6 +5,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -178,7 +179,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 			authorIds := authorIdsSet.Arr()
 			authorNamesRows, err := queries.User_GetNames(ctx, arrUuidDomainToDb(authorIds))
 			if err != nil {
-				return nil, wrapUnexpectedDBError(err)
+				return nil, apperror.WrapUnexpectedDBError(err)
 			}
 			authorNames = make(map[uuid.UUID]string, len(authorNamesRows))
 			for _, row := range authorNamesRows {
@@ -189,7 +190,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 		{
 			rows, err := queries.GetBookSearchRelatedData(ctx, bookIds)
 			if err != nil {
-				return nil, wrapUnexpectedDBError(err)
+				return nil, apperror.WrapUnexpectedDBError(err)
 			}
 			for _, row := range rows {
 				booksDbData[row.ID] = row

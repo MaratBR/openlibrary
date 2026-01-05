@@ -3,14 +3,15 @@ package app
 import (
 	"context"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 )
 
 var (
-	ErrTypeSignUp    = AppErrors.NewType("signup")
+	ErrTypeSignUp    = apperror.AppErrors.NewType("signup")
 	ErrUsernameTaken = ErrTypeSignUp.New("username is already taken")
 
-	ErrTypeAuthenticationError = AppErrors.NewType("authentication", ErrTraitAuthorizationIssue)
+	ErrTypeAuthenticationError = apperror.AppErrors.NewType("authentication", apperror.ErrTraitAuthorizationIssue)
 	ErrInvalidCredentials      = ErrTypeAuthenticationError.New("invalid credentials")
 )
 

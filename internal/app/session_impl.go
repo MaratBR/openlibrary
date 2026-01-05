@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
@@ -21,7 +22,7 @@ func (s *sessionService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]S
 		if err == store.ErrNoRows {
 			return nil, ErrSessionNotFound
 		}
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	return MapSlice(sessions, func(s store.Session_GetUserSessionsRow) SessionInfo {
 		return SessionInfo{
@@ -55,7 +56,7 @@ func (s *sessionService) Create(ctx context.Context, command CreateSessionComman
 		CreatedAt: timeToTimestamptz(time.Now()),
 	})
 	if err != nil {
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 
 	session, err := s.get(ctx, sessionID)
@@ -78,7 +79,7 @@ func (s *sessionService) get(ctx context.Context, sessionID string) (SessionInfo
 		if err == store.ErrNoRows {
 			return SessionInfo{}, ErrSessionNotFound
 		}
-		return SessionInfo{}, wrapUnexpectedDBError(err)
+		return SessionInfo{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return SessionInfo{
@@ -110,12 +111,12 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 		if err == store.ErrNoRows {
 			return nil, ErrSessionNotFound
 		}
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	err = queries.Session_Terminate(ctx, command.SessionID)
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = queries.Session_Insert(ctx, store.Session_InsertParams{
@@ -129,7 +130,7 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = tx.Commit(ctx)
@@ -149,7 +150,7 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 func (s *sessionService) TerminateAllByUserID(ctx context.Context, userID uuid.UUID) error {
 	err := s.queries.Session_TerminateAllByUserID(ctx, uuidDomainToDb(userID))
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }
@@ -158,7 +159,7 @@ func (s *sessionService) TerminateAllByUserID(ctx context.Context, userID uuid.U
 func (s *sessionService) TerminateBySID(ctx context.Context, sessionID string) error {
 	err := s.queries.Session_Terminate(ctx, sessionID)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }

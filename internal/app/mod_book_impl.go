@@ -6,6 +6,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -26,7 +27,7 @@ func (m *moderationBookService) GetBookInfo(ctx context.Context, query GetBookIn
 		if err == store.ErrNoRows {
 			return BookModerationInfo{}, ModerationBookNotFoundError.New(fmt.Sprintf("book with ID %d could not be found", query.BookID))
 		} else {
-			return BookModerationInfo{}, wrapUnexpectedDBError(err)
+			return BookModerationInfo{}, apperror.WrapUnexpectedDBError(err)
 		}
 	}
 
@@ -71,7 +72,7 @@ func (m *moderationBookService) GetBookLog(ctx context.Context, query GetBookLog
 		Offset:      (page - 1) * pageSize,
 	})
 	if err != nil {
-		return BookLogResult{}, wrapUnexpectedDBError(err)
+		return BookLogResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	count, err := queries.ModCountBookLogFiltered(ctx, store.ModCountBookLogFilteredParams{
@@ -79,7 +80,7 @@ func (m *moderationBookService) GetBookLog(ctx context.Context, query GetBookLog
 		ActionTypes: query.OfTypes,
 	})
 	if err != nil {
-		return BookLogResult{}, wrapUnexpectedDBError(err)
+		return BookLogResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	var hasNextPage bool
@@ -121,7 +122,7 @@ func (m *moderationBookService) BanBook(ctx context.Context, cmd ModerationPerfo
 
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	queries := store.New(m.db).WithTx(tx)
 
@@ -131,7 +132,7 @@ func (m *moderationBookService) BanBook(ctx context.Context, cmd ModerationPerfo
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeBan, cmd.Reason, cmd.ActorUserID)
@@ -142,7 +143,7 @@ func (m *moderationBookService) BanBook(ctx context.Context, cmd ModerationPerfo
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -159,7 +160,7 @@ func (m *moderationBookService) addBookLog(ctx context.Context, queries *store.Q
 		ActorUserID: uuidDomainToDb(actorUserID),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -172,7 +173,7 @@ func (m *moderationBookService) PermanentlyRemoveBook(ctx context.Context, cmd M
 	}
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	queries := store.New(m.db).WithTx(tx)
 
@@ -182,7 +183,7 @@ func (m *moderationBookService) PermanentlyRemoveBook(ctx context.Context, cmd M
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeBan, cmd.Reason, cmd.ActorUserID)
@@ -193,7 +194,7 @@ func (m *moderationBookService) PermanentlyRemoveBook(ctx context.Context, cmd M
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -208,7 +209,7 @@ func (m *moderationBookService) ShadowBanBook(ctx context.Context, cmd Moderatio
 
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	queries := store.New(m.db).WithTx(tx)
 
@@ -218,7 +219,7 @@ func (m *moderationBookService) ShadowBanBook(ctx context.Context, cmd Moderatio
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeShadowBan, cmd.Reason, cmd.ActorUserID)
@@ -229,7 +230,7 @@ func (m *moderationBookService) ShadowBanBook(ctx context.Context, cmd Moderatio
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -244,7 +245,7 @@ func (m *moderationBookService) UnBanBook(ctx context.Context, cmd ModerationPer
 
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	queries := store.New(m.db).WithTx(tx)
 
@@ -254,7 +255,7 @@ func (m *moderationBookService) UnBanBook(ctx context.Context, cmd ModerationPer
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeUnBan, cmd.Reason, cmd.ActorUserID)
@@ -265,7 +266,7 @@ func (m *moderationBookService) UnBanBook(ctx context.Context, cmd ModerationPer
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -279,7 +280,7 @@ func (m *moderationBookService) UnShadowBanBook(ctx context.Context, cmd Moderat
 
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	queries := store.New(m.db).WithTx(tx)
 
@@ -289,7 +290,7 @@ func (m *moderationBookService) UnShadowBanBook(ctx context.Context, cmd Moderat
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeUnShadowBan, cmd.Reason, cmd.ActorUserID)
@@ -300,7 +301,7 @@ func (m *moderationBookService) UnShadowBanBook(ctx context.Context, cmd Moderat
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil

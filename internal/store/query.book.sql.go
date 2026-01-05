@@ -11,6 +11,112 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const book_GetByIds = `-- name: Book_GetByIds :many
+select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned
+from books b
+where b.id = ANY($1::int8[])
+`
+
+func (q *Queries) Book_GetByIds(ctx context.Context, ids []int64) ([]Book, error) {
+	rows, err := q.db.Query(ctx, book_GetByIds, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Book
+	for rows.Next() {
+		var i Book
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Summary,
+			&i.AuthorUserID,
+			&i.CreatedAt,
+			&i.AgeRating,
+			&i.IsPubliclyVisible,
+			&i.IsBanned,
+			&i.IsTrashed,
+			&i.Words,
+			&i.Chapters,
+			&i.TagIds,
+			&i.CachedParentTagIds,
+			&i.Cover,
+			&i.View,
+			&i.Rating,
+			&i.TotalReviews,
+			&i.TotalRatings,
+			&i.IsPinned,
+			&i.IsPermRemoved,
+			&i.IsShadowBanned,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const book_GetByUser = `-- name: Book_GetByUser :many
+select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned
+from books b
+where b.author_user_id = $1 and chapters > 0
+order by b.is_pinned desc, b.created_at asc
+limit $2 offset $3
+`
+
+type Book_GetByUserParams struct {
+	AuthorUserID pgtype.UUID
+	Limit        int32
+	Offset       int32
+}
+
+func (q *Queries) Book_GetByUser(ctx context.Context, arg Book_GetByUserParams) ([]Book, error) {
+	rows, err := q.db.Query(ctx, book_GetByUser, arg.AuthorUserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Book
+	for rows.Next() {
+		var i Book
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Summary,
+			&i.AuthorUserID,
+			&i.CreatedAt,
+			&i.AgeRating,
+			&i.IsPubliclyVisible,
+			&i.IsBanned,
+			&i.IsTrashed,
+			&i.Words,
+			&i.Chapters,
+			&i.TagIds,
+			&i.CachedParentTagIds,
+			&i.Cover,
+			&i.View,
+			&i.Rating,
+			&i.TotalReviews,
+			&i.TotalRatings,
+			&i.IsPinned,
+			&i.IsPermRemoved,
+			&i.IsShadowBanned,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const book_GetFirstChapterID = `-- name: Book_GetFirstChapterID :one
 select id
 from book_chapters
@@ -24,6 +130,51 @@ func (q *Queries) Book_GetFirstChapterID(ctx context.Context, bookID int64) (int
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const book_GetPubliclyVisibleChapters = `-- name: Book_GetPubliclyVisibleChapters :many
+select c.id, c.name, c.words, c."order", c.created_at, c.summary, c.is_adult_override
+from book_chapters c
+where book_id = $1 and is_publicly_visible = true
+order by "order"
+`
+
+type Book_GetPubliclyVisibleChaptersRow struct {
+	ID              int64
+	Name            string
+	Words           int32
+	Order           int32
+	CreatedAt       pgtype.Timestamptz
+	Summary         string
+	IsAdultOverride bool
+}
+
+func (q *Queries) Book_GetPubliclyVisibleChapters(ctx context.Context, bookID int64) ([]Book_GetPubliclyVisibleChaptersRow, error) {
+	rows, err := q.db.Query(ctx, book_GetPubliclyVisibleChapters, bookID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Book_GetPubliclyVisibleChaptersRow
+	for rows.Next() {
+		var i Book_GetPubliclyVisibleChaptersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Words,
+			&i.Order,
+			&i.CreatedAt,
+			&i.Summary,
+			&i.IsAdultOverride,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAllBookChapters = `-- name: GetAllBookChapters :many
@@ -425,51 +576,6 @@ func (q *Queries) GetChapterBookID(ctx context.Context, id int64) (int64, error)
 	return book_id, err
 }
 
-const getPubliclyVisibleBookChapters = `-- name: GetPubliclyVisibleBookChapters :many
-select c.id, c.name, c.words, c."order", c.created_at, c.summary, c.is_adult_override
-from book_chapters c
-where book_id = $1 and is_publicly_visible = true
-order by "order"
-`
-
-type GetPubliclyVisibleBookChaptersRow struct {
-	ID              int64
-	Name            string
-	Words           int32
-	Order           int32
-	CreatedAt       pgtype.Timestamptz
-	Summary         string
-	IsAdultOverride bool
-}
-
-func (q *Queries) GetPubliclyVisibleBookChapters(ctx context.Context, bookID int64) ([]GetPubliclyVisibleBookChaptersRow, error) {
-	rows, err := q.db.Query(ctx, getPubliclyVisibleBookChapters, bookID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetPubliclyVisibleBookChaptersRow
-	for rows.Next() {
-		var i GetPubliclyVisibleBookChaptersRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Words,
-			&i.Order,
-			&i.CreatedAt,
-			&i.Summary,
-			&i.IsAdultOverride,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getRandomPublicBookIDs = `-- name: GetRandomPublicBookIDs :many
 select id
 from books
@@ -512,63 +618,6 @@ type GetTopUserBooksParams struct {
 
 func (q *Queries) GetTopUserBooks(ctx context.Context, arg GetTopUserBooksParams) ([]Book, error) {
 	rows, err := q.db.Query(ctx, getTopUserBooks, arg.AuthorUserID, arg.Limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Book
-	for rows.Next() {
-		var i Book
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Slug,
-			&i.Summary,
-			&i.AuthorUserID,
-			&i.CreatedAt,
-			&i.AgeRating,
-			&i.IsPubliclyVisible,
-			&i.IsBanned,
-			&i.IsTrashed,
-			&i.Words,
-			&i.Chapters,
-			&i.TagIds,
-			&i.CachedParentTagIds,
-			&i.Cover,
-			&i.View,
-			&i.Rating,
-			&i.TotalReviews,
-			&i.TotalRatings,
-			&i.IsPinned,
-			&i.IsPermRemoved,
-			&i.IsShadowBanned,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getUserBooks = `-- name: GetUserBooks :many
-select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned
-from books b
-where b.author_user_id = $1 and chapters > 0
-order by b.is_pinned desc, b.created_at asc
-limit $2 offset $3
-`
-
-type GetUserBooksParams struct {
-	AuthorUserID pgtype.UUID
-	Limit        int32
-	Offset       int32
-}
-
-func (q *Queries) GetUserBooks(ctx context.Context, arg GetUserBooksParams) ([]Book, error) {
-	rows, err := q.db.Query(ctx, getUserBooks, arg.AuthorUserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

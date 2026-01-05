@@ -9,6 +9,44 @@ import (
 	"context"
 )
 
+const analytics_GetMostViewedBooks = `-- name: Analytics_GetMostViewedBooks :many
+select book_id, count
+from ol_analytics.view_bucket
+where "period" = $1
+order by count desc
+limit $2
+`
+
+type Analytics_GetMostViewedBooksParams struct {
+	Period int32
+	Limit  int32
+}
+
+type Analytics_GetMostViewedBooksRow struct {
+	BookID int64
+	Count  int64
+}
+
+func (q *Queries) Analytics_GetMostViewedBooks(ctx context.Context, arg Analytics_GetMostViewedBooksParams) ([]Analytics_GetMostViewedBooksRow, error) {
+	rows, err := q.db.Query(ctx, analytics_GetMostViewedBooks, arg.Period, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Analytics_GetMostViewedBooksRow
+	for rows.Next() {
+		var i Analytics_GetMostViewedBooksRow
+		if err := rows.Scan(&i.BookID, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const analytics_GetTotalViews = `-- name: Analytics_GetTotalViews :one
 select count
 from ol_analytics.view_bucket

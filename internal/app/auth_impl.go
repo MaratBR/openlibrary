@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -37,7 +38,7 @@ func createUser(ctx context.Context, queries *store.Queries, username, email, pa
 	if err == nil {
 		id = userID
 	} else {
-		err = wrapUnexpectedDBError(err)
+		err = apperror.WrapUnexpectedDBError(err)
 	}
 
 	if role != RoleUser {
@@ -46,7 +47,7 @@ func createUser(ctx context.Context, queries *store.Queries, username, email, pa
 			ID:   uuidDomainToDb(userID),
 		})
 		if err != nil {
-			err = wrapUnexpectedDBError(err)
+			err = apperror.WrapUnexpectedDBError(err)
 		}
 	}
 

@@ -11,6 +11,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
@@ -49,7 +50,7 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 		Search:       input.SearchQuery,
 	})
 	if err != nil {
-		return GetUserBooksResult{}, wrapUnexpectedDBError(err)
+		return GetUserBooksResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	userBooks, err := s.aggregateUserBooks(ctx, books)
@@ -65,7 +66,7 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 	totalPages := uint32(math.Ceil(float64(count) / float64(input.PageSize)))
 
 	if err != nil {
-		return GetUserBooksResult{}, wrapUnexpectedDBError(err)
+		return GetUserBooksResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return GetUserBooksResult{Books: userBooks, PageSize: input.PageSize, TotalPages: totalPages, Page: input.Page}, nil
@@ -182,7 +183,7 @@ func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 		IsPubliclyVisible:  input.IsPubliclyVisible,
 	})
 	if err != nil {
-		return 0, wrapUnexpectedDBError(err)
+		return 0, apperror.WrapUnexpectedDBError(err)
 	}
 
 	s.bookReindexService.ScheduleReindex(ctx, id)
@@ -221,7 +222,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		IsPubliclyVisible:  input.IsPubliclyVisible,
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	s.bookReindexService.ScheduleReindex(ctx, input.BookID)
@@ -277,7 +278,7 @@ func (s *bookManagerService) TrashBook(ctx context.Context, input TrashBookComma
 	// TODO auth
 	err := s.queries.Book_Trash(ctx, input.BookID)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -290,7 +291,7 @@ func (s *bookManagerService) UntrashBook(ctx context.Context, input UntrashBookC
 		IsPubliclyVisible: false,
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -613,12 +614,12 @@ func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) 
 		if err == store.ErrNoRows {
 			return DraftDto{}, ErrDraftNotFound
 		}
-		return DraftDto{}, wrapUnexpectedDBError(err)
+		return DraftDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	user, err := s.usersService.GetUserSelfData(ctx, uuidDbToDomain(draft.CreatedBy))
 	if err != nil {
-		return DraftDto{}, wrapUnexpectedAppError(err)
+		return DraftDto{}, apperror.WrapUnexpectedAppError(err)
 	}
 
 	return DraftDto{
@@ -664,7 +665,7 @@ func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCom
 		Words:           content.Words,
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }
@@ -696,7 +697,7 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 		if err == store.ErrNoRows {
 			return ErrDraftNotFound
 		}
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = s.authorizeDraftPublish(cmd.UserID, draft.ChapterID, cmd.DraftID)
@@ -706,7 +707,7 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	// update the chapter and mark draft as published
@@ -728,19 +729,19 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = queries.MarkDraftAsPublished(ctx, cmd.DraftID)
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = tx.Commit(ctx)
 
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	s.recalculateBookStats(ctx, bookID)
@@ -762,7 +763,7 @@ func (s *bookManagerService) GetLatestDraft(ctx context.Context, cmd GetLatestDr
 		if err == store.ErrNoRows {
 			return Null[int64](), nil
 		}
-		return Nullable[int64]{}, wrapUnexpectedDBError(err)
+		return Nullable[int64]{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return Value(draftID), nil
@@ -785,7 +786,7 @@ func (s *bookManagerService) CreateDraft(ctx context.Context, cmd CreateDraftCom
 			return 0, ErrTypeChapterDoesNotExist.New("chapter not found")
 		}
 
-		return 0, wrapUnexpectedDBError(err)
+		return 0, apperror.WrapUnexpectedDBError(err)
 	}
 
 	id := GenID()
@@ -801,7 +802,7 @@ func (s *bookManagerService) CreateDraft(ctx context.Context, cmd CreateDraftCom
 	})
 
 	if err != nil {
-		return 0, wrapUnexpectedDBError(err)
+		return 0, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return id, nil
@@ -820,7 +821,7 @@ func (s *bookManagerService) UpdateDraftChapterName(ctx context.Context, cmd Upd
 	})
 
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -847,7 +848,7 @@ func (s *bookManagerService) UpdateDraftContent(ctx context.Context, cmd UpdateD
 	})
 
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil

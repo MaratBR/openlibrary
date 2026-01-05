@@ -2,86 +2,106 @@ package admin
 
 import (
 	"net/http"
-	"sync"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
+	"github.com/MaratBR/openlibrary/internal/auth"
+	"github.com/MaratBR/openlibrary/internal/flash"
+	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
+	"github.com/MaratBR/openlibrary/web/webfx"
 	"github.com/elastic/go-elasticsearch/v9"
+	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
+	"go.uber.org/fx"
 )
 
-type Handler struct {
-	_mutex   sync.Mutex
-	_started bool
+var FXModule = fx.Module("http_admin", fx.Provide(
+	newTagsController,
+	newBooksController,
+	newDebugController,
+	newLoginController,
+	newUsersController,
+	webfx.AsMountableHandler(newHandler),
+))
 
-	backgroundServices []interface {
-		Start() error
-		Stop()
-	}
-	db    app.DB
-	cfg   *koanf.Koanf
-	r     chi.Router
-	cache *cache.Cache
+type Handler struct {
+	r chi.Router
 }
 
-func NewHandler(
+func newHandler(
 	db app.DB,
 	cfg *koanf.Koanf,
 	cache *cache.Cache,
-	bgServices *app.BackgroundServices,
+	sessionService app.SessionService,
+	userService app.UserService,
 	esClient *elasticsearch.TypedClient,
+	loginController *loginController,
+	tagsController *tagsController,
+	usersController *usersController,
+	debugController *debugController,
+	booksController *booksController,
+
+	flashMiddleware flash.Middleware,
 ) *Handler {
-	h := &Handler{db: db, cfg: cfg, cache: cache}
-	h.initRouter()
-	h.setupRouter(bgServices)
+	h := &Handler{
+		r: chi.NewRouter(),
+	}
+	h.r.NotFound(adminNotFound)
+
+	h.r.Group(func(r chi.Router) {
+		r.Use(flashMiddleware)
+		r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
+			OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
+				olhttp.Write500(w, r, err)
+			},
+		}))
+
+		// anonymous area
+		h.r.HandleFunc("/login", loginController.Login)
+
+		// authorization required
+		r.Group(func(r chi.Router) {
+			r.Use(func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					session, ok := auth.GetSession(r.Context())
+					if !ok {
+						http.Redirect(w, r, "/admin/login", http.StatusFound)
+						return
+					}
+					if session.UserRole != app.RoleAdmin {
+						w.WriteHeader(http.StatusForbidden)
+						templates.Forbidden().Render(r.Context(), w)
+						return
+					}
+					next.ServeHTTP(w, r)
+				})
+			})
+
+			r.Route("/tags", func(r chi.Router) {
+				tagsController.Setup(r)
+			})
+
+			r.Route("/users", func(r chi.Router) {
+				r.Get("/", usersController.Users)
+				r.Get("/{id}", usersController.User)
+				r.With(httpin.NewInput(updateUserRequest{})).Post("/{id}", usersController.UserUpdate)
+			})
+
+			r.Route("/books", func(r chi.Router) {
+				booksController.Register(r)
+			})
+
+			r.Handle("/debug", http.HandlerFunc(debugController.Actions))
+		})
+	})
 	return h
 }
 
-func (h *Handler) initRouter() {
-	h.r = chi.NewRouter()
-}
-
-// Start starts all background services and sets started flag to true.
-// If any of the services fail to start, an error is returned.
-func (h *Handler) Start() error {
-	h._mutex.Lock()
-	defer h._mutex.Unlock()
-	if h._started {
-		return nil
-	}
-
-	for _, s := range h.backgroundServices {
-		err := s.Start()
-		if err != nil {
-			return err
-		}
-	}
-
-	h._started = true
-	return nil
-}
-
-func (h *Handler) Stop() {
-	h._mutex.Lock()
-	defer h._mutex.Unlock()
-	if !h._started {
-		return
-	}
-
-	for _, s := range h.backgroundServices {
-		s.Stop()
-	}
-
-	h._started = false
-}
+func (h *Handler) MountAt() string { return "/admin" }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if !h._started {
-		panic("cannot serve http until handle has been started")
-	}
-
 	h.r.ServeHTTP(w, r)
 }
 

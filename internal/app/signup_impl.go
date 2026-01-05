@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/app/email"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -78,7 +79,7 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 		userWithSameEmailExists, err := queries.User_ExistsByEmail(ctx, input.Username)
 		if err != nil {
 			rollbackTx(ctx, tx)
-			return SignUpResult{}, wrapUnexpectedDBError(err)
+			return SignUpResult{}, apperror.WrapUnexpectedDBError(err)
 		}
 
 		if userWithSameEmailExists {
@@ -89,7 +90,7 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 	userWithSameNameExists, err := queries.User_ExistsByUsername(ctx, input.Username)
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return SignUpResult{}, wrapUnexpectedDBError(err)
+		return SignUpResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	if userWithSameNameExists {
@@ -126,13 +127,13 @@ func (s *signUpService) verifyEmailRequest(ctx context.Context, email string, us
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return time.Time{}, wrapUnexpectedDBError(err)
+		return time.Time{}, apperror.WrapUnexpectedDBError(err)
 	}
 	queries := store.New(s.db).WithTx(tx)
 	err = queries.EmailVerification_Delete(ctx, email)
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return time.Time{}, wrapUnexpectedDBError(err)
+		return time.Time{}, apperror.WrapUnexpectedDBError(err)
 	}
 	err = queries.EmailVerification_Insert(ctx, store.EmailVerification_InsertParams{
 		UserID:               uuidDomainToDb(userID),
@@ -142,7 +143,7 @@ func (s *signUpService) verifyEmailRequest(ctx context.Context, email string, us
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return time.Time{}, wrapUnexpectedDBError(err)
+		return time.Time{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	// TODO some good looking message or something
@@ -154,7 +155,7 @@ func (s *signUpService) verifyEmailRequest(ctx context.Context, email string, us
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return time.Time{}, wrapUnexpectedDBError(err)
+		return time.Time{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return time.Now().Add(s.emailCodeResendAfter), nil
@@ -183,13 +184,13 @@ func (s *signUpService) VerifyEmail(ctx context.Context, cmd VerifyEmailCommand)
 	queries := store.New(s.db)
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	queries = queries.WithTx(tx)
 
 	user, err := queries.User_Get(ctx, uuidDomainToDb(cmd.UserID))
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	if user.Email == "" {
@@ -198,7 +199,7 @@ func (s *signUpService) VerifyEmail(ctx context.Context, cmd VerifyEmailCommand)
 
 	verification, err := queries.EmailVerification_Get(ctx, user.Email)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	if verification.ValidThrough.Time.Before(time.Now()) {
@@ -211,11 +212,11 @@ func (s *signUpService) VerifyEmail(ctx context.Context, cmd VerifyEmailCommand)
 			EmailVerified: true,
 		})
 		if err != nil {
-			return wrapUnexpectedDBError(err)
+			return apperror.WrapUnexpectedDBError(err)
 		}
 		err = tx.Commit(ctx)
 		if err != nil {
-			return wrapUnexpectedDBError(err)
+			return apperror.WrapUnexpectedDBError(err)
 		}
 		return nil
 	} else {
@@ -230,7 +231,7 @@ func (s *signUpService) SendEmailVerification(ctx context.Context, cmd SendEmail
 
 	user, err := queries.User_Get(ctx, uuidDomainToDb(cmd.UserID))
 	if err != nil {
-		return SendEmailVerificationResult{}, wrapUnexpectedDBError(err)
+		return SendEmailVerificationResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	if user.Email == "" {
@@ -239,7 +240,7 @@ func (s *signUpService) SendEmailVerification(ctx context.Context, cmd SendEmail
 
 	verification, err := queries.EmailVerification_Get(ctx, user.Email)
 	if err != nil {
-		return SendEmailVerificationResult{}, wrapUnexpectedDBError(err)
+		return SendEmailVerificationResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	if verification.UserID == user.ID && time.Now().Sub(verification.CreatedAt.Time) < s.emailCodeResendAfter && !cmd.BypassRateLimit {
@@ -261,11 +262,11 @@ func (s *signUpService) GetEmailVerificationStatus(ctx context.Context, userID u
 
 	user, err := queries.User_Get(ctx, uuidDomainToDb(userID))
 	if err != nil {
-		return EmailVerificationStatus{}, wrapUnexpectedDBError(err)
+		return EmailVerificationStatus{}, apperror.WrapUnexpectedDBError(err)
 	}
 	verification, err := queries.EmailVerification_Get(ctx, user.Email)
 	if err != nil && err != store.ErrNoRows {
-		return EmailVerificationStatus{}, wrapUnexpectedDBError(err)
+		return EmailVerificationStatus{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	status := EmailVerificationStatus{}

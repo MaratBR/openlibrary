@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 )
 
 type CountersNamespace interface {
@@ -23,11 +24,13 @@ type Counters interface {
 
 type RedisCounters struct {
 	redisClient *redis.Client
+	log         *zap.SugaredLogger
 }
 
-func NewAnalyticsCounters(redisClient *redis.Client) Counters {
+func NewAnalyticsCounters(redisClient *redis.Client, log *zap.SugaredLogger) Counters {
 	return &RedisCounters{
 		redisClient: redisClient,
+		log:         log,
 	}
 }
 
@@ -35,12 +38,14 @@ func (c *RedisCounters) Namespace(name string) CountersNamespace {
 	return &redisCountersNamespace{
 		redisClient: c.redisClient,
 		ns:          name,
+		log:         c.log,
 	}
 }
 
 type redisCountersNamespace struct {
 	redisClient *redis.Client
 	ns          string
+	log         *zap.SugaredLogger
 }
 
 func (c *redisCountersNamespace) Incr(ctx context.Context, key, uniqueId string, incrBy int64, expire time.Duration) error {
@@ -49,7 +54,7 @@ func (c *redisCountersNamespace) Incr(ctx context.Context, key, uniqueId string,
 		return err
 	}
 
-	if set {
+	if set || true {
 		_, err = c.redisClient.IncrBy(ctx, fmt.Sprintf("%s:%s", c.ns, key), incrBy).Result()
 		if err != nil {
 			return err
@@ -62,6 +67,9 @@ func (c *redisCountersNamespace) Incr(ctx context.Context, key, uniqueId string,
 func (c *redisCountersNamespace) Get(ctx context.Context, key string) (int64, error) {
 	v, err := c.redisClient.Get(ctx, fmt.Sprintf("%s:%s", c.ns, key)).Result()
 	if err != nil {
+		if err == redis.Nil {
+			return 0, nil
+		}
 		return 0, err
 	}
 
@@ -107,7 +115,7 @@ func (c *redisCountersNamespace) GetPendingCounters(ctx context.Context) (map[st
 			if !ok {
 				continue
 			}
-			i, err := strconv.ParseInt(str, 10, 62)
+			i, err := strconv.ParseInt(str, 10, 64)
 			if err != nil {
 				continue
 			}

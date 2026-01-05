@@ -1,8 +1,6 @@
-package app
+package apperror
 
-import (
-	"github.com/joomcode/errorx"
-)
+import "github.com/joomcode/errorx"
 
 var (
 	ErrTraitForbidden          = errorx.RegisterTrait("forbidden")
@@ -19,11 +17,11 @@ var (
 	ValidationError = AppErrors.NewType("validation", ErrTraitValidationError)
 )
 
-func wrapUnexpectedAppError(err error) error {
+func WrapUnexpectedAppError(err error) error {
 	return UnexpectedError.New(err.Error())
 }
 
-func wrapUnexpectedDBError(err error) error {
+func WrapUnexpectedDBError(err error) error {
 	return ErrDbError.Wrap(err, "unexpected database error")
 }
 

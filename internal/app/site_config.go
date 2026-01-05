@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/knadh/koanf/v2"
 )
@@ -47,7 +48,7 @@ type CaptchaSettings struct {
 }
 
 var (
-	PasswordError = AppErrors.NewType("password")
+	PasswordError = apperror.AppErrors.NewType("password")
 )
 
 type PasswordRequirements struct {
@@ -128,7 +129,7 @@ func (s *SiteConfig) Load(ctx context.Context) error {
 		if err == store.ErrNoRows {
 			return nil
 		} else {
-			return wrapUnexpectedDBError(err)
+			return apperror.WrapUnexpectedDBError(err)
 		}
 	}
 
@@ -177,7 +178,7 @@ func (s *SiteConfig) save(ctx context.Context, cfg SiteConfigData) error {
 	queries := store.New(s.db)
 	err = queries.SiteConfig_Set(ctx, newJson)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }

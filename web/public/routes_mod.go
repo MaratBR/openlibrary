@@ -28,10 +28,10 @@ func newModController(
 }
 
 func (c *modController) Register(r chi.Router) {
-	r.Get("/book/{bookID}", c.book)
-	r.Get("/book/{bookID}/log", c.bookLogs)
-	r.Get("/book/{bookID}/mod-action", c.bookPerformAction)
-	r.Post("/book/{bookID}/mod-action", c.bookPerformAction)
+	r.Get("/mod/book/{bookID}", c.book)
+	r.Get("/mod/book/{bookID}/log", c.bookLogs)
+	r.Get("/mod/book/{bookID}/mod-action", c.bookPerformAction)
+	r.Post("/mod/book/{bookID}/mod-action", c.bookPerformAction)
 }
 
 func (c *modController) bookLogs(w http.ResponseWriter, r *http.Request) {

@@ -228,7 +228,7 @@ templ bookCover(cover, bookName string, height int) {
     <div class="book-cover" { templ.Attributes{
             "style": fmt.Sprintf("height:%dpx", height),
         }... }>
-        <img loading="lazy" src={ cover } />
+        <img loading="lazy" src={ cover } alt={ bookName } />
     </div>
 }
 

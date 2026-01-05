@@ -2,13 +2,14 @@ package analytics
 
 import (
 	"context"
-	"log/slog"
 	"net"
 	"runtime/debug"
 	"sync"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 type AnalyticsPeriod int32
@@ -54,9 +55,15 @@ func CurrentAnalyticsPeriods(now time.Time) AnalyticsPeriods {
 	}
 }
 
+type BookViewEntry struct {
+	BookID int64
+	Views  int64
+}
+
 type ViewsService interface {
 	IncrBookView(ctx context.Context, bookID int64, userID uuid.NullUUID, ip net.IP) error
 	GetBookViews(ctx context.Context, bookID int64) (Views, error)
+	GetMostViewedBooks(ctx context.Context, period AnalyticsPeriod) ([]BookViewEntry, error)
 
 	ApplyPendingViews(ctx context.Context)
 }
@@ -67,12 +74,24 @@ type AnalyticsBackgroundService struct {
 	analytics      ViewsService
 	stopWg         sync.WaitGroup
 	stopRequested  bool
+	stopCh         chan struct{}
 	nextLaunchTime time.Time
 	parentCtx      context.Context
+	log            *zap.SugaredLogger
 }
 
-func NewAnalyticsBackgroundService(analytics ViewsService) *AnalyticsBackgroundService {
-	srv := &AnalyticsBackgroundService{analytics: analytics}
+func NewAnalyticsBackgroundService(analytics ViewsService, log *zap.SugaredLogger, lc fx.Lifecycle) *AnalyticsBackgroundService {
+	srv := &AnalyticsBackgroundService{analytics: analytics, stopCh: make(chan struct{}), log: log}
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			srv.Start()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			srv.Stop()
+			return nil
+		},
+	})
 	return srv
 }
 
@@ -86,6 +105,20 @@ func (s *AnalyticsBackgroundService) Start() {
 
 	s.started = true
 	go s.start()
+	s.log.Info("AnalyticsBackgroundService started")
+}
+
+func (s *AnalyticsBackgroundService) Stop() {
+	s.mx.Lock()
+	defer s.mx.Unlock()
+
+	if !s.started {
+		return
+	}
+
+	s.stopRequested = true
+	s.stopCh <- struct{}{}
+	s.stopWg.Wait()
 }
 
 func (s *AnalyticsBackgroundService) start() {
@@ -96,25 +129,32 @@ func (s *AnalyticsBackgroundService) start() {
 	s.parentCtx, cancel = context.WithCancel(context.Background())
 	defer cancel()
 
+forLoop:
 	for !s.stopRequested {
-		time.Sleep(time.Minute)
-
 		if s.itIsTime() {
 			s.nextLaunchTime = s.calculateNextLaunchTime()
 			s.process()
 		}
+
+		select {
+		case <-time.After(time.Minute):
+		case <-s.stopCh:
+			break forLoop
+		}
 	}
+
+	s.log.Info("AnalyticsBackgroundService stopped")
 }
 
 func (s *AnalyticsBackgroundService) process() {
 	defer func() {
 		if rec := recover(); rec != nil {
-			slog.Error("AnalyticsBackgroundService panicked")
+			s.log.Error("AnalyticsBackgroundService panicked")
 			debug.PrintStack()
 		}
 	}()
 
-	slog.Debug("AnalyticsBackgroundService.process")
+	s.log.Debug("AnalyticsBackgroundService.process")
 	s.analytics.ApplyPendingViews(s.parentCtx)
 }
 

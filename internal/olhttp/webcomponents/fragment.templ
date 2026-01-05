@@ -1,0 +1,15 @@
+package webcomponents
+
+import "fmt"
+
+type FragmentProps struct {
+    Path string
+    Height int
+    Width int
+}
+
+templ Fragment(props FragmentProps) {
+    <div x-data={fmt.Sprintf("Frag({url:%q})", props.Path)}>
+        { children... }
+    </div>
+}

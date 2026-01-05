@@ -69,3 +69,19 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
     this._unmount()
   },
 }))
+
+Alpine.data('Frag', ({ url }: { url: string }) => ({
+  init() {
+    const urlIstance = new URL(url, window.location.origin)
+    const searchParams = new URLSearchParams(urlIstance.search)
+    const rec = this.$el.getBoundingClientRect()
+    searchParams.set('Frag.h', `${rec.height}`)
+    searchParams.set('Frag.w', `${rec.width}`)
+    urlIstance.search = searchParams.toString()
+    fetch(urlIstance)
+      .then((res) => res.text())
+      .then((content) => {
+        this.$el.innerHTML = content
+      })
+  },
+}))

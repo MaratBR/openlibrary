@@ -4,12 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 	"github.com/mileusna/useragent"
 )
 
 var (
-	ErrSessionNotFound = AppErrors.NewType("session_not_found").New("session not found")
+	ErrSessionNotFound = apperror.AppErrors.NewType("session_not_found").New("session not found")
 )
 
 type SessionInfo struct {

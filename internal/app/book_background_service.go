@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 type BookRecalculationIngest interface {
@@ -37,8 +39,22 @@ type bookBackgroundService struct {
 	running bool
 }
 
-func NewBookBackgroundService(db DB) BookBackgroundService {
-	return &bookBackgroundService{db: db}
+func NewBookBackgroundService(db DB, lc fx.Lifecycle, log *zap.SugaredLogger) BookBackgroundService {
+	srv := &bookBackgroundService{db: db}
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			log.Info("starting bookBackgroundService...")
+			return srv.Start()
+		},
+		OnStop: func(ctx context.Context) error {
+			log.Info("stopping bookBackgroundService...")
+			srv.Stop()
+			return nil
+		},
+	})
+
+	return srv
 }
 
 func (s *bookBackgroundService) Start() error {
@@ -96,7 +112,7 @@ func (c *bookBackgroundService) worker(baseCtx context.Context) {
 				continue
 			}
 
-			for bookID, _ := range books {
+			for bookID := range books {
 				ctx, cancel := context.WithTimeout(baseCtx, time.Second*5)
 				defer cancel()
 

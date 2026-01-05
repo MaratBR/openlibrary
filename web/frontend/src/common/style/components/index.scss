@@ -7,13 +7,16 @@
 @use "./book.scss";
 @use "./button.scss";
 @use "./card.scss";
+@use "./chapter-comment.scss";
 @use "./checkbox.scss";
 @use "./chip.scss";
 @use "./error.scss";
 @use "./flash.scss";
 @use "./hero.scss";
+@use "./ImageUploader.scss";
 @use "./input.scss";
 @use "./library.scss";
+@use "./link.scss";
 @use "./list.scss";
 @use "./loader.scss";
 @use "./modal.scss";
@@ -21,7 +24,10 @@
 @use "./pagination.scss";
 @use "./password-input.scss";
 @use "./profile.scss";
+@use "./ProseMirror.scss";
+@use "./recommendations.scss";
 @use "./search.scss";
+@use "./SimpleEditor.scss";
 @use "./star-rating.scss";
 @use "./switch.scss";
 @use "./table.scss";
@@ -29,8 +35,3 @@
 @use "./tag.scss";
 @use "./user-content.scss";
 @use "./util.scss";
-@use "./ProseMirror.scss";
-@use "./SimpleEditor.scss";
-@use "./ImageUploader.scss";
-@use "./link.scss";
-@use "./chapter-comment.scss";

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -23,7 +24,7 @@ func (s *readingListService) GetReadingListBooks(ctx context.Context, query GetR
 		Limit:  int32(query.Limit),
 	})
 	if err != nil {
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	return MapSlice(rows, func(r store.GetUserLibraryRow) BookLibraryDto {
 		var lastChapter Nullable[BookReadingListItemLastChapterDto]
@@ -57,7 +58,7 @@ func (r *readingListService) GetStatus(ctx context.Context, userID uuid.UUID, bo
 		if err == store.ErrNoRows {
 			return Null[BookReadingListDto](), nil
 		}
-		return Null[BookReadingListDto](), wrapUnexpectedDBError(err)
+		return Null[BookReadingListDto](), apperror.WrapUnexpectedDBError(err)
 	}
 
 	return Value(BookReadingListDto{
@@ -111,7 +112,7 @@ func (r *readingListService) setStatus(
 		Status: status,
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -131,7 +132,7 @@ func (r *readingListService) setStatusAndChapter(
 		LastAccessedChapterID: pgtype.Int8{Valid: true, Int64: chapterID},
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -145,7 +146,7 @@ func (r *readingListService) MarkChapterRead(ctx context.Context, command MarkCh
 		if err == store.ErrNoRows {
 			return ReadingListChapterNotFound.New(fmt.Sprintf("chapter %d not found", command.ChapterID), command.ChapterID)
 		} else {
-			return wrapUnexpectedDBError(err)
+			return apperror.WrapUnexpectedDBError(err)
 		}
 	}
 	err = queries.SetBookReadingListChapter(
@@ -158,7 +159,7 @@ func (r *readingListService) MarkChapterRead(ctx context.Context, command MarkCh
 	)
 
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil

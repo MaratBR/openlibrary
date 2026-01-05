@@ -1,0 +1,11 @@
+.books-recommendation-list {
+    @apply flex gap-4;
+
+    & > li {
+        @apply block transition cursor-pointer hover:scale-105;
+
+        & > a > .book-cover {
+            @apply block;
+        }
+    }
+}

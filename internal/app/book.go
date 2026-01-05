@@ -4,12 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 )
 
 var (
-	ErrTypeBookNotFound = AppErrors.NewType("book404", ErrTraitEntityNotFound)
-	ErrTypeBookPrivated = AppErrors.NewType("access_denied_book_private", ErrTraitForbidden)
+	ErrTypeBookNotFound = apperror.AppErrors.NewType("book404", apperror.ErrTraitEntityNotFound)
+	ErrTypeBookPrivated = apperror.AppErrors.NewType("access_denied_book_private", apperror.ErrTraitForbidden)
 )
 
 type BookDetailsDto struct {
@@ -84,7 +85,7 @@ type BookUserPermissions struct {
 	CanEdit bool `json:"canEdit"`
 }
 
-type PinnedBookDto struct {
+type BookListDto struct {
 	ID              int64     `json:"id,string"`
 	Name            string    `json:"name"`
 	CreatedAt       time.Time `json:"createdAt"`
@@ -121,8 +122,8 @@ type GetPinnedUserBooksQuery struct {
 }
 
 type GetPinnedUserBooksResult struct {
-	Books   []PinnedBookDto `json:"books"`
-	HasMore bool            `json:"hasMore"`
+	Books   []BookListDto `json:"books"`
+	HasMore bool          `json:"hasMore"`
 }
 
 type ChapterDto struct {
@@ -169,5 +170,5 @@ type BookService interface {
 	GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error)
 	GetRandomBookID(ctx context.Context) (Nullable[int64], error)
 	GetPinnedBooks(ctx context.Context, input GetPinnedUserBooksQuery) (GetPinnedUserBooksResult, error)
-	SearchBooks(ctx context.Context, input SearchUserBooksQuery) (SearchUserBooksResult, error)
+	GetBooksById(ctx context.Context, ids []int64) ([]BookListDto, error)
 }

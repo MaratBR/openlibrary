@@ -8,14 +8,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
+	"go.uber.org/zap"
 )
 
 type analyticsViewsService struct {
 	counter CountersNamespace
-	db      app.DB
+	db      store.DBTX
+	log     *zap.SugaredLogger
 }
 
 // GetBookViews implements AnalyticsViewsService.
@@ -91,8 +93,9 @@ func (a *analyticsViewsService) ApplyPendingViews(ctx context.Context) {
 		if count <= 0 {
 			continue
 		}
-		id, err := strconv.ParseInt(key, 10, 62)
+		id, err := strconv.ParseInt(key, 10, 64)
 		if err != nil {
+			a.log.Errorw("failed to parse book id as int64", "v", key)
 			continue
 		}
 
@@ -103,6 +106,28 @@ func (a *analyticsViewsService) ApplyPendingViews(ctx context.Context) {
 		updateCounter(queries, ctx, periods.Year, id, count)
 		updateCounter(queries, ctx, AnalyticsPeriodTotal, id, count)
 	}
+}
+
+func (a *analyticsViewsService) GetMostViewedBooks(ctx context.Context, period AnalyticsPeriod) ([]BookViewEntry, error) {
+	queries := store.New(a.db)
+	rows, err := queries.Analytics_GetMostViewedBooks(ctx, store.Analytics_GetMostViewedBooksParams{
+		Period: int32(period),
+		Limit:  50,
+	})
+	if err != nil {
+		return nil, apperror.WrapUnexpectedDBError(err)
+	}
+
+	entries := make([]BookViewEntry, len(rows))
+
+	for i := 0; i < len(rows); i++ {
+		entries[i] = BookViewEntry{
+			BookID: rows[i].BookID,
+			Views:  rows[i].Count,
+		}
+	}
+
+	return entries, err
 
 }
 
@@ -118,9 +143,10 @@ func updateCounter(queries *store.Queries, ctx context.Context, period Analytics
 	}
 }
 
-func NewAnalyticsViewsService(db app.DB, counters Counters) ViewsService {
+func NewAnalyticsViewsService(db store.DBTX, counters Counters, log *zap.SugaredLogger) ViewsService {
 	return &analyticsViewsService{
 		counter: counters.Namespace("views"),
 		db:      db,
+		log:     log,
 	}
 }

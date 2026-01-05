@@ -3,7 +3,7 @@ package upload
 import (
 	"math"
 
-	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/joomcode/errorx"
 	"github.com/knadh/koanf/v2"
 )
@@ -11,7 +11,7 @@ import (
 var (
 	errNamespace = errorx.NewNamespace("file_validator")
 
-	ErrFileTooLarge = errNamespace.NewType("file_too_large", app.ErrTraitValidationError).New("file is too large to be uploaded")
+	ErrFileTooLarge = errNamespace.NewType("file_too_large", apperror.ErrTraitValidationError).New("file is too large to be uploaded")
 )
 
 type FileValidator interface {

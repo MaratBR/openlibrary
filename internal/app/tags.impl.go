@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -23,7 +24,7 @@ func (t *tagsService) GetTag(ctx context.Context, id int64) (TagDetailsItemDto, 
 			return TagDetailsItemDto{}, ErrTagNotFound
 		}
 
-		return TagDetailsItemDto{}, wrapUnexpectedDBError(err)
+		return TagDetailsItemDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	var synonym Nullable[struct {
@@ -153,7 +154,7 @@ func (t *tagsService) List(ctx context.Context, query ListTagsQuery) (ListTagsRe
 	}
 	tags, err := store.ListTags(ctx, t.db, dbQuery)
 	if err != nil {
-		return ListTagsResult{}, wrapUnexpectedDBError(err)
+		return ListTagsResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	count, err := store.CountTags(ctx, t.db, dbQuery)
@@ -215,7 +216,7 @@ func (t *tagsService) UpdateTag(ctx context.Context, command UpdateTagCommand) e
 		SynonymOf:   int64NullableDomainToDb(command.SynonymOfTagID),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -275,11 +276,11 @@ func (agg *tagsAggregator) BookTags(bookID int64) []int64 {
 
 func validateTagName(name string) error {
 	if name == "" {
-		return ValidationError.New("tag name cannot be empty")
+		return apperror.ValidationError.New("tag name cannot be empty")
 	}
 
 	if len(name) > 50 {
-		return ValidationError.New("tag name cannot be larger than 50 characters")
+		return apperror.ValidationError.New("tag name cannot be larger than 50 characters")
 	}
 
 	return nil
@@ -287,7 +288,7 @@ func validateTagName(name string) error {
 
 func validateTagDescription(value string) error {
 	if len(value) > 500 {
-		return ValidationError.New("tag description cannot be larger than 500 characters")
+		return apperror.ValidationError.New("tag description cannot be larger than 500 characters")
 	}
 
 	return nil

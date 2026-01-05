@@ -5,13 +5,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 )
 
 var (
-	CommentErrors                = AppErrors.NewSubNamespace("comment")
-	ErrTypeCommentNotFound       = CommentErrors.NewType("not_found", ErrTraitEntityNotFound)
-	ErrTypeCommentContentInvalid = CommentErrors.NewType("invalid_content", ErrTraitValidationError)
+	CommentErrors                = apperror.AppErrors.NewSubNamespace("comment")
+	ErrTypeCommentNotFound       = CommentErrors.NewType("not_found", apperror.ErrTraitEntityNotFound)
+	ErrTypeCommentContentInvalid = CommentErrors.NewType("invalid_content", apperror.ErrTraitValidationError)
 	ErrCommentContentEmpty       = ErrTypeCommentContentInvalid.New("comment content is empty")
 	ErrCommentContentTooLarge    = ErrTypeCommentContentInvalid.New("comment content is too large")
 )

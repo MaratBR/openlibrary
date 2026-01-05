@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/app/gravatar"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -35,12 +36,12 @@ func (u *userService) ListUsers(ctx context.Context, req UsersQuery) (UserListRe
 
 	count, err := store.CountUsers(ctx, u.db, &dbQuery)
 	if err != nil {
-		return UserListResponse{}, wrapUnexpectedDBError(err)
+		return UserListResponse{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	users, err := store.ListUsers(ctx, u.db, dbQuery)
 	if err != nil {
-		return UserListResponse{}, wrapUnexpectedDBError(err)
+		return UserListResponse{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return UserListResponse{
@@ -70,7 +71,7 @@ func (u *userService) FollowUser(ctx context.Context, cmd FollowUserCommand) err
 		FollowedID: uuidDomainToDb(cmd.UserID),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	if isFollowing {
 		return nil
@@ -81,7 +82,7 @@ func (u *userService) FollowUser(ctx context.Context, cmd FollowUserCommand) err
 		FollowedID: uuidDomainToDb(cmd.UserID),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }
@@ -93,7 +94,7 @@ func (u *userService) UnfollowUser(ctx context.Context, cmd UnfollowUserCommand)
 		FollowedID: uuidDomainToDb(cmd.UserID),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }
@@ -102,7 +103,7 @@ func (u *userService) UnfollowUser(ctx context.Context, cmd UnfollowUserCommand)
 func (u *userService) GetUserModerationSettings(ctx context.Context, userID uuid.UUID) (*UserModerationSettings, error) {
 	user, err := u.queries.User_GetModerationSettings(ctx, uuidDomainToDb(userID))
 	if err != nil {
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	return &UserModerationSettings{
 		CensoredTags:     user.CensoredTags,
@@ -115,7 +116,7 @@ func (u *userService) GetUserModerationSettings(ctx context.Context, userID uuid
 func (u *userService) GetUserPrivacySettings(ctx context.Context, userID uuid.UUID) (*UserPrivacySettings, error) {
 	user, err := u.queries.GetUserPrivacySettings(ctx, uuidDomainToDb(userID))
 	if err != nil {
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	return &UserPrivacySettings{
 		HideStats:      user.PrivacyHideStats,
@@ -129,7 +130,7 @@ func (u *userService) GetUserPrivacySettings(ctx context.Context, userID uuid.UU
 func (u *userService) GetUserAboutSettings(ctx context.Context, userID uuid.UUID) (*UserAboutSettings, error) {
 	user, err := u.queries.User_GetAboutSettings(ctx, uuidDomainToDb(userID))
 	if err != nil {
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	return &UserAboutSettings{
 		About:  user.About,
@@ -141,7 +142,7 @@ func (u *userService) GetUserAboutSettings(ctx context.Context, userID uuid.UUID
 func (u *userService) GetUserCustomizationSettings(ctx context.Context, userID uuid.UUID) (*UserCustomizationSetting, error) {
 	user, err := u.queries.User_GetCustomizationSettings(ctx, uuidDomainToDb(userID))
 	if err != nil {
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	return &UserCustomizationSetting{
 		ProfileCSS:       user.ProfileCss,
@@ -158,7 +159,7 @@ func (u *userService) UpdateUserAboutSettings(ctx context.Context, userID uuid.U
 		ID:     uuidDomainToDb(userID),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }
@@ -172,7 +173,7 @@ func (u *userService) UpdateUserCustomizationSettings(ctx context.Context, userI
 		ID:               uuidDomainToDb(userID),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }
@@ -186,7 +187,7 @@ func (u *userService) UpdateUserModerationSettings(ctx context.Context, userID u
 		ID:               uuidDomainToDb(userID),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }
@@ -201,7 +202,7 @@ func (u *userService) UpdateUserPrivacySettings(ctx context.Context, userID uuid
 		ID:                    uuidDomainToDb(userID),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }
@@ -210,7 +211,7 @@ func (u *userService) UpdateUserPrivacySettings(ctx context.Context, userID uuid
 func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) error {
 	tx, err := u.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	queries := u.queries.WithTx(tx)
 
@@ -218,7 +219,7 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 		hash, err := hashPassword(cmd.Password)
 		if err != nil {
 			rollbackTx(ctx, tx)
-			return wrapUnexpectedAppError(err)
+			return apperror.WrapUnexpectedAppError(err)
 		}
 
 		err = queries.User_UpdatePassword(ctx, store.User_UpdatePasswordParams{
@@ -227,7 +228,7 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 		})
 		if err != nil {
 			rollbackTx(ctx, tx)
-			return wrapUnexpectedDBError(err)
+			return apperror.WrapUnexpectedDBError(err)
 		}
 	}
 
@@ -238,7 +239,7 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	if cmd.Role.Valid {
@@ -251,7 +252,7 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -263,7 +264,7 @@ func (u *userService) updateUserRole(ctx context.Context, queries *store.Queries
 		Role: store.UserRole(role),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }

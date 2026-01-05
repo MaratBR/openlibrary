@@ -6,15 +6,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 )
 
 var (
-	ModerationBookErrors                = AppErrors.NewSubNamespace("mod_books")
+	ModerationBookErrors                = apperror.AppErrors.NewSubNamespace("mod_books")
 	InvalidModerationActionError        = ModerationBookErrors.NewType("invalid_mod_action")
 	ErrInvalidModerationAction_NoReason = InvalidModerationActionError.New("no reason provided")
-	ModerationBookNotFoundError         = ModerationBookErrors.NewType("book_404", ErrTraitEntityNotFound)
+	ModerationBookNotFoundError         = ModerationBookErrors.NewType("book_404", apperror.ErrTraitEntityNotFound)
 )
 
 type ModerationPerformBookActionCommand struct {

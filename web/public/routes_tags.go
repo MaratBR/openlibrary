@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
@@ -31,7 +32,7 @@ func (t *tagsController) TagPage(w http.ResponseWriter, r *http.Request) {
 	tag, err := t.service.GetTag(r.Context(), tagID)
 
 	if err != nil {
-		if app.IsNotFoundError(err) {
+		if apperror.IsNotFoundError(err) {
 			http.Redirect(w, r, "/tags", http.StatusFound)
 			return
 		}

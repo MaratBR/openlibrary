@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 )
 
@@ -24,12 +25,12 @@ func (c *commentsService) AddComment(ctx context.Context, command AddCommentComm
 		Content:   command.Content,
 	})
 	if err != nil {
-		return AddCommentResult{}, wrapUnexpectedDBError(err)
+		return AddCommentResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	comment, err := c.getByID(ctx, id)
 	if err != nil {
-		return AddCommentResult{}, UnexpectedError.New(err.Error())
+		return AddCommentResult{}, apperror.UnexpectedError.New(err.Error())
 	}
 
 	return AddCommentResult{Comment: comment}, err
@@ -48,7 +49,7 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 			Limit:     query.Limit,
 		})
 		if err != nil {
-			err = wrapUnexpectedDBError(err)
+			err = apperror.WrapUnexpectedDBError(err)
 			return
 		}
 		result.Comments = MapSlice(rows, func(r store.GetChapterCommentsRow) CommentDto {
@@ -70,7 +71,7 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 			CreatedAt: timeToTimestamptz(ts),
 		})
 		if err != nil {
-			err = wrapUnexpectedDBError(err)
+			err = apperror.WrapUnexpectedDBError(err)
 			return
 		}
 		result.Comments = MapSlice(rows, func(r store.GetChapterCommentsAfterRow) CommentDto {
@@ -104,7 +105,7 @@ func (c *commentsService) UpdateComment(ctx context.Context, command UpdateComme
 		Content: command.Content,
 	})
 	if err != nil {
-		return UpdateCommentResult{}, wrapUnexpectedDBError(err)
+		return UpdateCommentResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	if result.RowsAffected() == 0 {
@@ -113,7 +114,7 @@ func (c *commentsService) UpdateComment(ctx context.Context, command UpdateComme
 
 	comment, err := c.getByID(ctx, command.ID)
 	if err != nil {
-		return UpdateCommentResult{}, UnexpectedError.New(err.Error())
+		return UpdateCommentResult{}, apperror.UnexpectedError.New(err.Error())
 	}
 
 	return UpdateCommentResult{Comment: comment}, err
@@ -125,7 +126,7 @@ func (c *commentsService) getByID(ctx context.Context, id int64) (CommentDto, er
 		if err == store.ErrNoRows {
 			return CommentDto{}, ErrTypeCommentNotFound.New(fmt.Sprintf("comment with id %d not found", id))
 		}
-		return CommentDto{}, wrapUnexpectedDBError(err)
+		return CommentDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return CommentDto{

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 )
 
@@ -31,7 +32,7 @@ type bookService struct {
 func (s *bookService) GetRandomBookID(ctx context.Context) (Nullable[int64], error) {
 	ids, err := s.queries.GetRandomPublicBookIDs(ctx, 1)
 	if err != nil {
-		return Nullable[int64]{}, wrapUnexpectedDBError(err)
+		return Nullable[int64]{}, apperror.WrapUnexpectedDBError(err)
 	}
 	if len(ids) == 0 {
 		return Null[int64](), nil
@@ -160,11 +161,11 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (B
 
 // GetBookChapters implements BookService.
 func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]BookChapterDto, error) {
-	chapters, err := s.queries.GetPubliclyVisibleBookChapters(ctx, query.ID)
+	chapters, err := s.queries.Book_GetPubliclyVisibleChapters(ctx, query.ID)
 	if err != nil {
 		return nil, err
 	}
-	chapterDtos := MapSlice(chapters, func(chapter store.GetPubliclyVisibleBookChaptersRow) BookChapterDto {
+	chapterDtos := MapSlice(chapters, func(chapter store.Book_GetPubliclyVisibleChaptersRow) BookChapterDto {
 		return BookChapterDto{
 			ID:        chapter.ID,
 			Order:     int(chapter.Order),
@@ -228,19 +229,19 @@ func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQu
 
 // GetPinnedBooks implements BookService.
 func (s *bookService) GetPinnedBooks(ctx context.Context, input GetPinnedUserBooksQuery) (GetPinnedUserBooksResult, error) {
-	rows, err := s.queries.GetUserBooks(ctx, store.GetUserBooksParams{
+	rows, err := s.queries.Book_GetByUser(ctx, store.Book_GetByUserParams{
 		AuthorUserID: uuidDomainToDb(input.UserID),
 		Offset:       int32(input.Offset),
 		Limit:        int32(input.Limit + 1),
 	})
 	if err != nil {
-		return GetPinnedUserBooksResult{}, wrapUnexpectedDBError(err)
+		return GetPinnedUserBooksResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	hasMore := len(rows) == input.Limit+1
-	books := make([]PinnedBookDto, 0, min(len(rows), input.Limit))
+	books := make([]BookListDto, 0, min(len(rows), input.Limit))
 	for i := 0; i < min(len(rows), input.Limit); i++ {
-		books = append(books, PinnedBookDto{
+		books = append(books, BookListDto{
 			ID:        rows[i].ID,
 			Name:      rows[i].Name,
 			CreatedAt: rows[i].CreatedAt.Time,
@@ -261,7 +262,29 @@ func (s *bookService) GetPinnedBooks(ctx context.Context, input GetPinnedUserBoo
 	}, nil
 }
 
-// SearchBooks implements BookService.
-func (s *bookService) SearchBooks(ctx context.Context, input SearchUserBooksQuery) (SearchUserBooksResult, error) {
-	panic("unimplemented")
+func (s *bookService) GetBooksById(ctx context.Context, ids []int64) ([]BookListDto, error) {
+	rows, err := s.queries.Book_GetByIds(ctx, ids)
+	if err != nil {
+		return nil, apperror.WrapUnexpectedDBError(err)
+	}
+
+	books := make([]BookListDto, 0, len(rows))
+	for i := range rows {
+		books = append(books, BookListDto{
+			ID:        rows[i].ID,
+			Name:      rows[i].Name,
+			CreatedAt: rows[i].CreatedAt.Time,
+			AgeRating: ageRatingFromDbValue(rows[i].AgeRating),
+			Words:     int(rows[i].Words),
+			WordsPerChapter: getWordsPerChapter(
+				int(rows[i].Words),
+				int(rows[i].Chapters)),
+			Chapters: int(rows[i].Chapters),
+			Cover:    getBookCoverURL(s.uploadService, rows[i].Cover),
+			IsPinned: rows[i].IsPinned,
+		})
+	}
+
+	return books, nil
+
 }

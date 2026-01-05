@@ -5,15 +5,16 @@ import (
 	"io"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 	"github.com/joomcode/errorx"
 )
 
 var (
-	ErrTypeBookSanitizationFailed = AppErrors.NewType("content_sanitization_failed")
-	ErrTypeChaptersReorder        = AppErrors.NewType("chapters_reorder")
-	ErrDraftNotFound              = AppErrors.NewType("draft_not_found", errorx.NotFound(), ErrTraitEntityNotFound).New("draft not found")
-	ErrTypeChapterDoesNotExist    = AppErrors.NewType("chapter_not_found", ErrTraitEntityNotFound)
+	ErrTypeBookSanitizationFailed = apperror.AppErrors.NewType("content_sanitization_failed")
+	ErrTypeChaptersReorder        = apperror.AppErrors.NewType("chapters_reorder")
+	ErrDraftNotFound              = apperror.AppErrors.NewType("draft_not_found", errorx.NotFound(), apperror.ErrTraitEntityNotFound).New("draft not found")
+	ErrTypeChapterDoesNotExist    = apperror.AppErrors.NewType("chapter_not_found", apperror.ErrTraitEntityNotFound)
 )
 
 type CreateBookCommand struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 )
@@ -11,7 +12,7 @@ import (
 type ReadingListStatus store.ReadingListStatus
 
 var (
-	ReadingListErrors            = AppErrors.NewSubNamespace("reading_list")
+	ReadingListErrors            = apperror.AppErrors.NewSubNamespace("reading_list")
 	ReadingListInvalidTransition = ReadingListErrors.NewType("invalid_transition")
 	ErrReadingListEmptyBook      = ReadingListInvalidTransition.NewSubtype("empty_book").New("cannot update reading list for empty book")
 	ReadingListChapterNotFound   = ReadingListErrors.NewType("chapter404")

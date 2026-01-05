@@ -2,125 +2,117 @@ package public
 
 import (
 	_ "embed"
+	"errors"
+	"log/slog"
 	"net/http"
-	"sync"
+	"net/url"
 
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/MaratBR/openlibrary/internal/app/cache"
-	"github.com/MaratBR/openlibrary/internal/app/email"
-	"github.com/MaratBR/openlibrary/internal/csrf"
+	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/MaratBR/openlibrary/web/webfx"
 	"github.com/NYTimes/gziphandler"
-	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/go-chi/chi/v5"
-	"github.com/knadh/koanf/v2"
-	"github.com/redis/go-redis/v9"
+	"go.uber.org/fx"
 )
 
 type Handler struct {
-	_mutex   sync.Mutex
-	_started bool
-
-	r             chi.Router
-	db            app.DB
-	esClient      *elasticsearch.TypedClient
-	cfg           *koanf.Koanf
-	redisClient   *redis.Client
-	cache         *cache.Cache
-	csrfHandler   *csrf.Handler
-	uploadService *app.UploadService
-	siteConfig    *app.SiteConfig
-	emailService  email.Service
+	r chi.Router
 }
+
+var FXModule = fx.Module("public_ui_handler",
+
+	fx.Provide(
+		newHomeController,
+		newAuthController,
+		newBookController,
+		newChaptersController,
+		newSearchController,
+		newTagsController,
+		newProfileController,
+		newLibraryController,
+		newCollectionController,
+		newBookManagerController,
+		newModController,
+		newAPIBookController,
+		newAPIReadingListController,
+		newAPITagsController,
+		newAPIBookManagerController,
+		newAPICollectionController,
+		webfx.AsMountableHandler(newHandler),
+	))
 
 // i should really do something with number of params in this function...
 
-func NewHandler(
-	db app.DB,
-	cfg *koanf.Koanf,
-	redisService *redis.Client,
-	cache *cache.Cache,
-	csrfHandler *csrf.Handler,
-	bgServices *app.BackgroundServices,
-	uploadService *app.UploadService,
-	esClient *elasticsearch.TypedClient,
-	siteConfig *app.SiteConfig,
-	emailService email.Service,
-) *Handler {
-	if cache == nil {
-		panic("cache is nil")
-	}
-	if cfg == nil {
-		panic("cfg is nil")
-	}
-	if db == nil {
-		panic("db is nil")
-	}
-	if esClient == nil {
-		panic("esClient is nil")
-	}
+func newHandler(
+	sessionService app.SessionService,
+	userService app.UserService,
 
-	h := &Handler{
-		db:            db,
-		cfg:           cfg,
-		cache:         cache,
-		redisClient:   redisService,
-		csrfHandler:   csrfHandler,
-		uploadService: uploadService,
-		esClient:      esClient,
-		siteConfig:    siteConfig,
-		emailService:  emailService,
-	}
-	h.initRouter()
-	h.setupRouter(bgServices)
-	return h
-}
+	homeController *homeController,
+	authController *authController,
+	bookController *bookController,
+	bookManagerController *bookManagerController,
+	chapterController *chaptersController,
+	collectionController *collectionController,
+	modController *modController,
+	libraryController *libraryController,
+	profileController *profileController,
+	searchController *searchController,
 
-func (h *Handler) initRouter() {
+	flashMiddleware flash.Middleware,
+) webfx.MountableHandler {
+	h := &Handler{}
+
 	h.r = chi.NewRouter()
 	h.r.Use(gziphandler.GzipHandler)
-	h.r.Use(flash.Middleware)
+	h.r.Use(flashMiddleware)
 
 	h.r.NotFound(notFoundHandler)
 	h.r.MethodNotAllowed(methodNotAllowed)
-}
 
-// Start starts all background services and sets started flag to true.
-// If any of the services fail to start, an error is returned.
-func (h *Handler) Start() error {
-	h._mutex.Lock()
-	defer h._mutex.Unlock()
-	if h._started {
-		return nil
-	}
+	h.r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
+		OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
+			olhttp.Write500(w, r, err)
+		},
+	}))
 
-	h._started = true
-	return nil
-}
+	homeController.Register(h.r)
+	authController.Register(h.r)
+	bookController.Register(h.r)
+	bookManagerController.Register(h.r)
+	chapterController.Register(h.r)
+	collectionController.Register(h.r)
+	modController.Register(h.r)
+	libraryController.Register(h.r)
+	profileController.Register(h.r)
+	searchController.Register(h.r)
 
-func (h *Handler) Stop() {
-	h._mutex.Lock()
-	defer h._mutex.Unlock()
-	if !h._started {
-		return
-	}
+	h.r.Route("/debug", func(r chi.Router) {
+		r.Handle("/500", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			olhttp.Write500(w, r, errors.New("test error"))
+		}))
+	})
 
-	h._started = false
+	h.r.Route("/_api", func(r chi.Router) {
+
+		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+			olhttp.NewAPIError(errors.New("not found")).Write(w)
+		})
+	})
+
+	return h
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if !h._started {
-		panic("cannot serve http until handle has been started")
-	}
-
 	h.r.ServeHTTP(w, r)
 }
 
-var (
-	Dev = true
-)
+func (h *Handler) MountAt() string {
+	return "/"
+}
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
@@ -135,4 +127,59 @@ func methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	} else {
 		templates.MethodNotAllowedPage().Render(r.Context(), w)
 	}
+}
+
+func redirectWithNextParameter(w http.ResponseWriter, r *http.Request, path string) {
+	next := r.URL.Path
+	if r.URL.RawQuery != "" {
+		next += "?" + r.URL.RawQuery
+	}
+
+	u, err := url.Parse(path)
+	if err != nil {
+		slog.Error("failed to parse redirect url")
+	} else {
+		// TODO remove next param is next is the same as the URL we are redirecting too, for some reason
+		q := u.Query()
+		q.Set("next", next)
+		u.RawQuery = q.Encode()
+		path = u.String()
+	}
+
+	http.Redirect(w, r, path, http.StatusFound)
+}
+
+func redirectToLogin(w http.ResponseWriter, r *http.Request) {
+	redirectWithNextParameter(w, r, "/login")
+}
+
+func requiresAuthorizationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, ok := auth.GetUser(r.Context())
+
+		if !ok {
+			redirectToLogin(w, r)
+			return
+		}
+
+		if !user.IsEmailVerified {
+			redirectWithNextParameter(w, r, "/signup/email-verification-code")
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func apiRequiresAuthorizationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, ok := auth.GetSession(r.Context())
+
+		if !ok {
+			apiWriteUnauthorized(w)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

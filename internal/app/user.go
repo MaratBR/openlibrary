@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 )
@@ -76,11 +77,11 @@ func ValidateEmail(email string) error {
 }
 
 var (
-	ErrUserNotFound    = AppErrors.NewType("user_not_found", ErrTraitEntityNotFound).New("user not found")
-	ErrFollowYourself  = AppErrors.NewType("follow_yourself").New("you can't follow yourself")
-	ErrInvalidUserRole = AppErrors.NewType("invalid_user_role").New("invalid user role")
-	ErrUserNameInvalid = AppErrors.NewType("invalid_username")
-	ErrEmailInvalid    = AppErrors.NewType("invalid_email")
+	ErrUserNotFound    = apperror.AppErrors.NewType("user_not_found", apperror.ErrTraitEntityNotFound).New("user not found")
+	ErrFollowYourself  = apperror.AppErrors.NewType("follow_yourself").New("you can't follow yourself")
+	ErrInvalidUserRole = apperror.AppErrors.NewType("invalid_user_role").New("invalid user role")
+	ErrUserNameInvalid = apperror.AppErrors.NewType("invalid_username")
+	ErrEmailInvalid    = apperror.AppErrors.NewType("invalid_email")
 )
 
 type UserDetailsDto struct {

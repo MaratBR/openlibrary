@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 )
 
 var (
-	ErrTagNotFound = AppErrors.NewType("tag404", ErrTraitEntityNotFound).New("tag with this ID cannot be found")
+	ErrTagNotFound = apperror.AppErrors.NewType("tag404", apperror.ErrTraitEntityNotFound).New("tag with this ID cannot be found")
 )
 
 type DefinedTagDto struct {

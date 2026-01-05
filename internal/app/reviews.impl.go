@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 )
@@ -18,7 +19,7 @@ func (r *reviewsService) GetBookReviewsDistribution(ctx context.Context, bookID 
 	queries := store.New(r.db)
 	rows, err := queries.GetBookReviewsDistribution(ctx, bookID)
 	if err != nil {
-		return GetBookReviewsDistributionResult{}, wrapUnexpectedDBError(err)
+		return GetBookReviewsDistributionResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	result := GetBookReviewsDistributionResult{}
@@ -34,7 +35,7 @@ func (r *reviewsService) GetBookReviewsDistribution(ctx context.Context, bookID 
 func (r *reviewsService) DeleteReview(ctx context.Context, cmd DeleteReviewCommand) error {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	queries := store.New(r.db).WithTx(tx)
 	err = queries.DeleteRate(ctx, store.DeleteRateParams{
@@ -43,7 +44,7 @@ func (r *reviewsService) DeleteReview(ctx context.Context, cmd DeleteReviewComma
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = queries.DeleteReview(ctx, store.DeleteReviewParams{
@@ -52,12 +53,12 @@ func (r *reviewsService) DeleteReview(ctx context.Context, cmd DeleteReviewComma
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	r.backgroundService.ScheduleBookRecalculation(cmd.BookID)
@@ -77,7 +78,7 @@ func (r *reviewsService) GetReview(ctx context.Context, query GetReviewQuery) (R
 		if err == store.ErrNoRows {
 			return RatingAndReview{}, nil
 		}
-		return RatingAndReview{}, wrapUnexpectedDBError(err)
+		return RatingAndReview{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	review, err := queries.GetReview(ctx, store.GetReviewParams{
@@ -90,12 +91,12 @@ func (r *reviewsService) GetReview(ctx context.Context, query GetReviewQuery) (R
 				Rating: Value(CreateRatingValue(rating.Rating)),
 			}, nil
 		}
-		return RatingAndReview{}, wrapUnexpectedDBError(err)
+		return RatingAndReview{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	user, err := r.userService.GetUserSelfData(ctx, query.UserID)
 	if err != nil {
-		return RatingAndReview{}, wrapUnexpectedAppError(err)
+		return RatingAndReview{}, apperror.WrapUnexpectedAppError(err)
 	}
 
 	reviewDto := ReviewDto{
@@ -126,12 +127,12 @@ func (r *reviewsService) getDtoFromRow(ctx context.Context, userID uuid.UUID, bo
 		if err == store.ErrNoRows {
 			return ReviewDto{}, err
 		}
-		return ReviewDto{}, wrapUnexpectedDBError(err)
+		return ReviewDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	user, err := r.userService.GetUserSelfData(ctx, userID)
 	if err != nil {
-		return ReviewDto{}, wrapUnexpectedAppError(err)
+		return ReviewDto{}, apperror.WrapUnexpectedAppError(err)
 	}
 
 	return ReviewDto{
@@ -160,7 +161,7 @@ func (r *reviewsService) GetBookReviews(ctx context.Context, query GetBookReview
 		Offset: pagination.Offset(),
 	})
 	if err != nil {
-		return GetBookReviewsResult{}, wrapUnexpectedDBError(err)
+		return GetBookReviewsResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	reviewsDto := make([]ReviewDto, 0, len(reviews))
@@ -189,7 +190,7 @@ func (r *reviewsService) GetBookReviews(ctx context.Context, query GetBookReview
 func (r *reviewsService) UpdateReview(ctx context.Context, cmd UpdateReviewCommand) (ReviewDto, error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
-		return ReviewDto{}, wrapUnexpectedDBError(err)
+		return ReviewDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	queries := store.New(r.db).WithTx(tx)
@@ -200,7 +201,7 @@ func (r *reviewsService) UpdateReview(ctx context.Context, cmd UpdateReviewComma
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return ReviewDto{}, wrapUnexpectedDBError(err)
+		return ReviewDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = queries.InsertOrUpdateRate(ctx, store.InsertOrUpdateRateParams{
@@ -210,12 +211,12 @@ func (r *reviewsService) UpdateReview(ctx context.Context, cmd UpdateReviewComma
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return ReviewDto{}, wrapUnexpectedDBError(err)
+		return ReviewDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return ReviewDto{}, wrapUnexpectedDBError(err)
+		return ReviewDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	r.backgroundService.ScheduleBookRecalculation(cmd.BookID)
@@ -233,7 +234,7 @@ func (r *reviewsService) UpdateRating(ctx context.Context, cmd UpdateRatingComma
 		Rating: cmd.Rating.ToUint16(),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	r.backgroundService.ScheduleBookRecalculation(cmd.BookID)

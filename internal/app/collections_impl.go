@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"math"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/lib/gset"
 	"github.com/gofrs/uuid"
@@ -43,7 +44,7 @@ func (c *collectionService) GetUserCollections(ctx context.Context, query GetUse
 		UserID: uuidDomainToDb(query.UserID),
 	})
 	if err != nil {
-		return GetUserCollectionsResult{}, wrapUnexpectedDBError(err)
+		return GetUserCollectionsResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	collections := MapSlice(rows, func(row store.Collection_GetByUserRow) CollectionDto {
@@ -52,7 +53,7 @@ func (c *collectionService) GetUserCollections(ctx context.Context, query GetUse
 
 	count, err := c.queries.Collection_CountByUser(ctx, uuidDomainToDb(query.UserID))
 	if err != nil {
-		return GetUserCollectionsResult{}, wrapUnexpectedDBError(err)
+		return GetUserCollectionsResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return GetUserCollectionsResult{
@@ -69,7 +70,7 @@ func (c *collectionService) GetRecentUserCollections(ctx context.Context, query 
 		Limit:  query.Limit,
 	})
 	if err != nil {
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return MapSlice(rows, storeCollectionToCollectionDto), nil
@@ -78,7 +79,7 @@ func (c *collectionService) GetRecentUserCollections(ctx context.Context, query 
 func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToCollectionsCommand) error {
 	tx, err := c.db.Begin(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	queries := c.queries.WithTx(tx)
@@ -87,7 +88,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 	collections, err := queries.Collections_ListByID(ctx, cmd.CollectionID)
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	bookCollections, err := queries.Collection_GetByBook(ctx, store.Collection_GetByBookParams{
 		UserID: uuidDomainToDb(cmd.ActorUserID),
@@ -95,7 +96,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 	})
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	addCollections := make([]int64, 0)
@@ -132,7 +133,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 		})
 		if err != nil {
 			rollbackTx(ctx, tx)
-			return wrapUnexpectedDBError(err)
+			return apperror.WrapUnexpectedDBError(err)
 		}
 	}
 
@@ -143,7 +144,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 		})
 		if err != nil {
 			rollbackTx(ctx, tx)
-			return wrapUnexpectedDBError(err)
+			return apperror.WrapUnexpectedDBError(err)
 		}
 
 	}
@@ -153,7 +154,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 		err = queries.Collection_RecalculateCounter(ctx, colID)
 		if err != nil {
 			rollbackTx(ctx, tx)
-			return wrapUnexpectedDBError(err)
+			return apperror.WrapUnexpectedDBError(err)
 		}
 	}
 
@@ -161,13 +162,13 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 		err = queries.Collection_RecalculateCounter(ctx, colID)
 		if err != nil {
 			rollbackTx(ctx, tx)
-			return wrapUnexpectedDBError(err)
+			return apperror.WrapUnexpectedDBError(err)
 		}
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -185,7 +186,7 @@ func (c *collectionService) RemoveFromCollection(ctx context.Context, cmd Remove
 	})
 
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = c.queries.Collection_RecalculateCounter(ctx, cmd.CollectionID)
@@ -224,7 +225,7 @@ func (c *collectionService) UpdateCollection(ctx context.Context, cmd UpdateColl
 		Slug:    makeSlug(cmd.Name),
 	})
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	return nil
@@ -236,7 +237,7 @@ func (c *collectionService) GetBookCollections(ctx context.Context, query GetBoo
 		BookID: query.BookID,
 	})
 	if err != nil {
-		return nil, wrapUnexpectedDBError(err)
+		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return MapSlice(rows, func(row store.Collection_GetByBookRow) CollectionDto {
@@ -252,7 +253,7 @@ func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCol
 		CollectionID: query.CollectionID,
 	})
 	if err != nil {
-		return GetCollectionBooksResult{}, wrapUnexpectedDBError(err)
+		return GetCollectionBooksResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	books := make([]CollectionBook2Dto, 0, len(rows))
@@ -293,7 +294,7 @@ func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCol
 
 	booksCount, err := c.queries.Collection_CountBooks(ctx, query.CollectionID)
 	if err != nil {
-		return GetCollectionBooksResult{}, wrapUnexpectedDBError(err)
+		return GetCollectionBooksResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return GetCollectionBooksResult{
@@ -343,7 +344,7 @@ func (c *collectionService) GetCollectionBooksMap(ctx context.Context, collectio
 func (c *collectionService) GetCollection(ctx context.Context, id int64) (Nullable[CollectionDto], error) {
 	row, err := c.queries.Collection_Get(ctx, id)
 	if err != nil {
-		return Nullable[CollectionDto]{}, wrapUnexpectedDBError(err)
+		return Nullable[CollectionDto]{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	return Value(newCollectionDto(row.ID, row.Name, int(row.BooksCount), row.LastUpdatedAt, row.UserID, row.UserName, row.IsPublic, row.Summary, row.Slug)), nil
@@ -352,11 +353,11 @@ func (c *collectionService) GetCollection(ctx context.Context, id int64) (Nullab
 func (c *collectionService) DeleteCollection(ctx context.Context, cmd DeleteCollectionCommand) error {
 	err := c.queries.Collection_DeleteAllBooks(ctx, cmd.CollectionID)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	err = c.queries.Collection_Delete(ctx, cmd.CollectionID)
 	if err != nil {
-		return wrapUnexpectedDBError(err)
+		return apperror.WrapUnexpectedDBError(err)
 	}
 	return nil
 }

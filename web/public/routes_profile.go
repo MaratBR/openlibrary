@@ -11,24 +11,24 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-type userController struct {
+type profileController struct {
 	service           app.UserService
 	collectionService app.CollectionService
 	bookService       app.BookService
 	searchService     app.SearchService
 }
 
-func newProfileController(service app.UserService, bookService app.BookService, searchService app.SearchService, collectionService app.CollectionService) *userController {
-	return &userController{service: service, bookService: bookService, searchService: searchService, collectionService: collectionService}
+func newProfileController(service app.UserService, bookService app.BookService, searchService app.SearchService, collectionService app.CollectionService) *profileController {
+	return &profileController{service: service, bookService: bookService, searchService: searchService, collectionService: collectionService}
 }
 
-func (c *userController) Register(r chi.Router) {
+func (c *profileController) Register(r chi.Router) {
 	r.Get("/users/{id}", c.GetProfile)
 	r.Get("/users/{id}/books", c.GetBooks)
 	r.Get("/users/{id}/collections", c.GetCollections)
 }
 
-func (c *userController) GetBooks(w http.ResponseWriter, r *http.Request) {
+func (c *profileController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	userID, err := olhttp.URLParamUUID(r, "id")
 	if err != nil {
 		writeBadRequest(w, r, err)
@@ -85,7 +85,7 @@ func (c *userController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	olhttp.WriteTemplate(w, r.Context(), templates.ProfileBooks(user, result, explainedQuery))
 }
 
-func (c *userController) GetCollections(w http.ResponseWriter, r *http.Request) {
+func (c *profileController) GetCollections(w http.ResponseWriter, r *http.Request) {
 	userID, err := olhttp.URLParamUUID(r, "id")
 	if err != nil {
 		writeBadRequest(w, r, err)
@@ -120,7 +120,7 @@ func (c *userController) GetCollections(w http.ResponseWriter, r *http.Request) 
 	olhttp.WriteTemplate(w, r.Context(), templates.ProfileCollections(user, result, booksMap))
 }
 
-func (c *userController) GetProfile(w http.ResponseWriter, r *http.Request) {
+func (c *profileController) GetProfile(w http.ResponseWriter, r *http.Request) {
 	userID, err := olhttp.URLParamUUID(r, "id")
 	if err != nil {
 		writeBadRequest(w, r, err)

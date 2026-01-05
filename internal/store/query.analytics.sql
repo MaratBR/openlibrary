@@ -26,3 +26,10 @@ where book_id = $1 and "period" >= sqlc.arg('from') and "period" <= sqlc.arg('to
 select count
 from ol_analytics.view_bucket
 where book_id = $1 and "period" = 0; 
+
+-- name: Analytics_GetMostViewedBooks :many
+select book_id, count
+from ol_analytics.view_bucket
+where "period" = $1
+order by count desc
+limit $2;

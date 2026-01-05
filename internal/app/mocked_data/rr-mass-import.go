@@ -13,7 +13,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
-	royalroadapi "github.com/MaratBR/openlibrary/internal/royal-road-api"
+	royalroadapi "github.com/MaratBR/openlibrary/internal/royalroadapi"
 	"github.com/gofrs/uuid"
 )
 
