@@ -1,4 +1,5 @@
 import { OLIsland, OLIslandMounted } from '@/lib/island'
+import { addGlobalMutationObserverCallback } from '@/lib/mutation-observer'
 import Alpine from 'alpinejs'
 
 export namespace Islands {
@@ -65,17 +66,39 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
   },
 }))
 
-Alpine.data('Frag', ({ url }: { url: string }) => ({
-  async init() {
-    const urlIstance = new URL(url, window.location.origin)
-    const searchParams = new URLSearchParams(urlIstance.search)
-    const rec = this.$el.getBoundingClientRect()
-    searchParams.set('Frag.h', `${rec.height}`)
-    searchParams.set('Frag.w', `${rec.width}`)
-    urlIstance.search = searchParams.toString()
-    const res = await fetch(urlIstance)
-    if (res.status >= 400) return
-    const content = await res.text()
-    this.$el.innerHTML = content
+Alpine.data('Frag', () => ({
+  init() {
+    const urlAttrName = 'data-url'
+
+    const load = async (url: string) => {
+      if (!url) {
+        return
+      }
+
+      const urlIstance = new URL(url, window.location.origin)
+      const searchParams = new URLSearchParams(urlIstance.search)
+      const rec = this.$el.getBoundingClientRect()
+      searchParams.set('Frag.h', `${rec.height}`)
+      searchParams.set('Frag.w', `${rec.width}`)
+      urlIstance.search = searchParams.toString()
+      const res = await fetch(urlIstance)
+      if (res.status >= 400) return
+      const content = await res.text()
+      this.$el.innerHTML = content
+    }
+
+    load(this.$el.getAttribute(urlAttrName) || '')
+
+    if (this.$el.dataset.dynamic === 'true') {
+      subscribeToAttribute(this.$el, urlAttrName, load)
+    }
   },
 }))
+
+function subscribeToAttribute(el: HTMLElement, attr: string, callback: (newValue: string) => void) {
+  addGlobalMutationObserverCallback(el, (record) => {
+    if (record.attributeName === attr && el.getAttribute(attr) !== record.oldValue) {
+      callback(el.getAttribute(attr) || '')
+    }
+  })
+}

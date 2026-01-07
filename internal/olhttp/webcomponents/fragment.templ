@@ -1,7 +1,5 @@
 package webcomponents
 
-import "fmt"
-
 type FragmentProps struct {
     Path string
     Height int
@@ -9,7 +7,7 @@ type FragmentProps struct {
 }
 
 templ Fragment(props FragmentProps) {
-    <div x-data={fmt.Sprintf("Frag({url:%q})", props.Path)}>
+    <div x-data="Frag" data-url={props.Path} data-dynamic="false">
         { children... }
     </div>
 }
