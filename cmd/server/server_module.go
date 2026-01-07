@@ -83,10 +83,9 @@ func newRootMux(
 ) http.Handler {
 
 	r := chi.NewRouter()
-
-	r.Use(olhttp.ReqCtxMiddleware)
-	r.Use(reqid.New())
 	r.Use(olhttp.MakeRecoveryMiddleware())
+	r.Use(reqid.New())
+	r.Use(olhttp.ReqCtxMiddleware)
 	r.Use(csrfHandler.Middleware)
 	r.Use(localeProvider.Middleware)
 

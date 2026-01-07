@@ -40,12 +40,7 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
 
   _mount(island: OLIsland) {
     this._unmount()
-
-    const container = document.createElement('div')
-    container.style.display = 'contents'
-    this._mounted = island.mount(container, data)
-    this.$root.appendChild(container)
-
+    this._mounted = island.mount(this.$root, data)
     this.$el.dispatchEvent(new CustomEvent('island:mount'))
   },
 
@@ -55,8 +50,8 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
       this._mounted = null
     }
 
-    if (this.$refs._container instanceof HTMLElement) {
-      this.$refs._container.remove()
+    while (this.$root.firstChild) {
+      this.$root.removeChild(this.$root.firstChild)
     }
   },
 
@@ -71,17 +66,16 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
 }))
 
 Alpine.data('Frag', ({ url }: { url: string }) => ({
-  init() {
+  async init() {
     const urlIstance = new URL(url, window.location.origin)
     const searchParams = new URLSearchParams(urlIstance.search)
     const rec = this.$el.getBoundingClientRect()
     searchParams.set('Frag.h', `${rec.height}`)
     searchParams.set('Frag.w', `${rec.width}`)
     urlIstance.search = searchParams.toString()
-    fetch(urlIstance)
-      .then((res) => res.text())
-      .then((content) => {
-        this.$el.innerHTML = content
-      })
+    const res = await fetch(urlIstance)
+    if (res.status >= 400) return
+    const content = await res.text()
+    this.$el.innerHTML = content
   },
 }))

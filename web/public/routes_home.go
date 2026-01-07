@@ -51,5 +51,5 @@ func (c *homeController) getMostViewedBooksWidget(w http.ResponseWriter, r *http
 		return
 	}
 
-	olhttp.WriteTemplate(w, r.Context(), templates.HomeBooksListFragment(books, views))
+	olhttp.WriteTemplate(w, r.Context(), templates.HomeBooksListFragment(analytics.AnalyticsPeriod(period), books, views))
 }

@@ -26,7 +26,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
     @dashboardLayout("Tags") {
         <div class="admin-page-content">
             <header class="page-header-container">
-                <h1 class="page-header mb-3">Tags</h1>
+                <h1 class="page-header">Tags</h1>
                 <p>View list of tags and create new tags or edit existing ones.</p>
             </header>
 
@@ -163,7 +163,7 @@ templ Tag(tag app.TagDetailsItemDto) {
     @dashboardLayout("Admin - " + tag.Name) {
         <div class="admin-page-content">
             <header class="page-header-container">
-                <h1 class="page-header mb-3">
+                <h1 class="page-header">
                     { tag.Name }
                 </h1>
 

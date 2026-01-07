@@ -18,21 +18,18 @@
  * Main page header
  */ 
 .page-header {
-    @apply font-medium mb-1 mt-1 mr-2;
+    @apply font-medium text-3xl inline-block font-semibold;
     line-height: 1.3;
     vertical-align: bottom;
 
-    &-text {
-        @apply mb-4 text-2xl font-semibold;
-    }
-
     &__after {
-        @apply text-sm inline-block leading-[2.2] ml-4;
+        @apply text-sm font-normal ml-4 mt-1 inline-block leading-[2.2];
+        vertical-align: top
     }
 }
 
 .page-header-container {
-    @apply my-4 relative;
+    @apply relative mb-8;
 
     --page-header-container-right-width: 300px;
 
@@ -60,4 +57,23 @@
             @apply border-b-0;
         }
     }
+}
+
+
+.skeleton {
+  display: inline-block;
+  height: 1em;
+  position: relative;
+  overflow: hidden;
+  background-color: #DDDBDD;
+  animation: shimmer 2s linear alternate infinite;
+
+  @keyframes shimmer {
+    0% {
+        background-color: #DDDBDD;
+    }
+    100% {
+        background-color: #F0F0F0;
+    }
+  }
 }

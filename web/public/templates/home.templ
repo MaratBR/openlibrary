@@ -2,9 +2,10 @@ package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
-import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "strconv"
 import "fmt"
+import "github.com/MaratBR/openlibrary/internal/app/analytics"
+import "time"
 
 
 templ Home() {
@@ -14,13 +15,29 @@ templ Home() {
         },
     }) {
         <div class="ol-container">
-            This is going to be a testing area for stuff until I actually make something here
+            
+            <section>
+                <header class="my-4">
+                    <h2 class="text-3xl font-semibold">
+                        Most viewed books { time.Now().Year() }
+                    </h2>
+                </header>
+                {{
+                    periods := analytics.CurrentAnalyticsPeriods(time.Now())
+                }}
+                @webcomponents.Fragment(webcomponents.FragmentProps{
+                    Path: "/__fragment/most-viewed-books?period=" + strconv.FormatInt(int64(periods.Month), 10),
+                }) {
+                    <div class="flex gap-4 overflow-hidden p-4">
+                        <div style="min-width:133px;height:200px;" class="skeleton rounded-r-xl" />
+                        <div style="min-width:133px;height:200px;" class="skeleton rounded-r-xl" />
+                        <div style="min-width:133px;height:200px;" class="skeleton rounded-r-xl" />
+                        <div style="min-width:133px;height:200px;" class="skeleton rounded-r-xl" />
+                    </div>
+                }
+            </section>
 
-            @webcomponents.Fragment(webcomponents.FragmentProps{
-                Path: "/__fragment/most-viewed-books",
-            }) {
-                <div style="height: 200px;" />
-            }
+
         
         </div>
     }
@@ -28,24 +45,25 @@ templ Home() {
 
 
 templ HomeBooksListFragment(
+    period analytics.AnalyticsPeriod,
     books []app.BookListDto,
     views map[int64]int64,
 ) {
-    {{
-        id := olhttp.GetID(ctx)
-    }}
-
-    <ul id={id} class="books-recommendation-list">
+    <ul class="books-recommendation-list" data-period={strconv.FormatInt(int64(period), 10)}>
         for _, book := range books {
-            <li data-book-card-preview={strconv.FormatInt(book.ID, 10)}>
+            {{
+                viewCount, _ := views[book.ID] 
+            }}
+            <li data-views={strconv.FormatInt(viewCount, 10)} data-book-card-preview={strconv.FormatInt(book.ID, 10)}>
                 <a href={ fmt.Sprintf("/book/%d", book.ID) }>
                     @bookCover(book.Cover, book.Name, 200)
                 </a>
             </li>
         }
+        @webcomponents.Island2(webcomponents.Island2Props{
+            Name: "book-card-preview",
+            Data: map[string]string{"selector": ":parent"},
+        })
     </ul>
-    @webcomponents.Island2(webcomponents.Island2Props{
-        Name: "book-card-preview",
-        Data: map[string]string{"selector": "#" + id},
-    })
+    
 }

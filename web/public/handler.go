@@ -60,6 +60,13 @@ func newHandler(
 	libraryController *libraryController,
 	profileController *profileController,
 	searchController *searchController,
+	tagsController *tagsController,
+
+	apiControllerTags *apiControllerTags,
+	apiControllerBook *apiControllerBook,
+	apiControllerBookManager *apiControllerBookManager,
+	apiControllerCollection *apiControllerCollection,
+	apiControllerReadingList *apiControllerReadingList,
 
 	flashMiddleware flash.Middleware,
 ) webfx.MountableHandler {
@@ -88,6 +95,7 @@ func newHandler(
 	libraryController.Register(h.r)
 	profileController.Register(h.r)
 	searchController.Register(h.r)
+	tagsController.Register(h.r)
 
 	h.r.Route("/debug", func(r chi.Router) {
 		r.Handle("/500", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +104,12 @@ func newHandler(
 	})
 
 	h.r.Route("/_api", func(r chi.Router) {
+
+		apiControllerBook.Register(r)
+		apiControllerBookManager.Register(r)
+		apiControllerCollection.Register(r)
+		apiControllerReadingList.Register(r)
+		apiControllerTags.Register(r)
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)

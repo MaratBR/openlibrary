@@ -36,6 +36,7 @@ func GetRequest(ctx context.Context) *http.Request {
 
 func GetID(ctx context.Context) string {
 	counter := ctx.Value(contextKeyIDCounter)
+
 	if counter == nil {
 		return fmt.Sprintf("IDRNG%d", rand.Int())
 	} else {

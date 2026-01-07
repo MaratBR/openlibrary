@@ -59,9 +59,9 @@ templ SearchResultFragment(
             <h1 class="page-header">
                 if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
                     {{ firstTag := explainedQuery.IncludeTags[0] }}
-                    <span>{ firstTag.Name }</span>
+                    { firstTag.Name }
                 } else {
-                    <span>{ l.T("search.search") }</span>
+                    { l.T("search.search") }
                 }
             </h1>
         }

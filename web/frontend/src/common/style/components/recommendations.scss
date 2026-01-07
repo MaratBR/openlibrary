@@ -1,5 +1,5 @@
 .books-recommendation-list {
-    @apply flex gap-4;
+    @apply flex gap-4 p-4 overflow-x-auto;
 
     & > li {
         @apply block transition cursor-pointer hover:scale-105;

@@ -2,20 +2,31 @@ package reqid
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/binary"
 	"net/http"
-
-	"github.com/gofrs/uuid"
+	"strconv"
+	"sync/atomic"
+	"time"
 )
 
 type keyType struct{}
 
 var key keyType
 
+var instanceID string
+
+func init() {
+	ts := uint64(time.Now().Unix())
+	var b [8]byte
+	binary.BigEndian.PutUint64(b[:], ts)
+	instanceID = base64.RawURLEncoding.EncodeToString(b[:])
+}
+
 func New() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			id := generateID(r)
-
+			id := generateID()
 			w.Header().Add("X-ReqID", id)
 			r = r.WithContext(context.WithValue(r.Context(), key, id))
 
@@ -32,6 +43,9 @@ func Get(r *http.Request) string {
 	return v.(string)
 }
 
-func generateID(r *http.Request) string {
-	return uuid.Must(uuid.NewV4()).String()
+var globalRequestID int64
+
+func generateID() string {
+	intID := atomic.AddInt64(&globalRequestID, 1)
+	return instanceID + strconv.FormatInt(intID, 36)
 }

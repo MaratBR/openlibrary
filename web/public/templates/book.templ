@@ -96,8 +96,8 @@ templ BookPage(
                 }
             </div>
             <div class="book-page__right">
-                <header class="page-header">
-                    <h1 class="page-header-text">{book.Name}</h1>
+                <header class="page-header-container">
+                    <h1 class="page-header">{book.Name}</h1>
                     <p>
                         <a class="link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
                     </p>
@@ -226,7 +226,7 @@ templ bookCover(cover, bookName string, height int) {
     }}
 
     <div class="book-cover" { templ.Attributes{
-            "style": fmt.Sprintf("height:%dpx", height),
+            "style": fmt.Sprintf("height:%dpx;width:%fpx", height, float64(height)*2/3),
         }... }>
         <img loading="lazy" src={ cover } alt={ bookName } />
     </div>

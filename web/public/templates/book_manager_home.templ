@@ -93,7 +93,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 	@bmMainPage("bookManager.books.title") {
 		<section>
 			<header class="page-header-container">
-				<h1 class="page-header inline-block">
+				<h1 class="page-header">
 					{ l.T("bookManager.books.title") }
 				</h1>
 				<div class="page-header__after">
@@ -102,7 +102,6 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 						{ l.T("bookManager.createNewBook") }
 					</a>
 				</div>
-
 				<div class="page-header-container__right">
 					@webcomponents.SimpleSearchForm(webcomponents.SimpleSearchFormProps{
 						ParamName: "q",

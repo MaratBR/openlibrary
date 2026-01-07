@@ -54,7 +54,7 @@ func (c *redisCountersNamespace) Incr(ctx context.Context, key, uniqueId string,
 		return err
 	}
 
-	if set || true {
+	if set {
 		_, err = c.redisClient.IncrBy(ctx, fmt.Sprintf("%s:%s", c.ns, key), incrBy).Result()
 		if err != nil {
 			return err

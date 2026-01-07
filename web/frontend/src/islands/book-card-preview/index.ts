@@ -14,11 +14,18 @@ const DUMMY_ISLAND: OLIslandMounted = {
   dispose() {},
 }
 
+function findBySelector($el: HTMLElement, selector: string) {
+  if (selector === ':parent') {
+    return $el.parentElement
+  }
+  return document.querySelector(selector)
+}
+
 class BookCardPreviewIsland implements OLIsland {
-  mount(_el: HTMLElement, data: unknown): OLIslandMounted {
+  mount(el: HTMLElement, data: unknown): OLIslandMounted {
     const { selector } = dataSchema.parse(data)
     if (!selector) return DUMMY_ISLAND
-    const $root = document.querySelector(selector)
+    const $root = findBySelector(el, selector)
     if (!$root) return DUMMY_ISLAND
 
     const popover = createPopover()
@@ -30,6 +37,12 @@ class BookCardPreviewIsland implements OLIsland {
       if (!bookId) {
         return
       }
+
+      if (($el as { _bookCardPreviewReady?: boolean })._bookCardPreviewReady === true) {
+        return
+      }
+
+      ;($el as { _bookCardPreviewReady?: boolean })._bookCardPreviewReady = true
 
       const onMouseOver = debounce(() => {
         popover.animation.setShow(false, 0)
