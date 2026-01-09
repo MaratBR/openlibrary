@@ -25,6 +25,7 @@ crop = "Crop"
 confirm = "Confirm"
 adult = "Adult"
 spoiler = "Spoiler"
+reply = "Reply"
 
 [uiTheme]
 dark = "Dark"

@@ -41,6 +41,7 @@ var FXModule = fx.Module("public_ui_handler",
 		newAPITagsController,
 		newAPIBookManagerController,
 		newAPICollectionController,
+		newAPICommentsController,
 		webfx.AsMountableHandler(newHandler),
 	))
 
@@ -67,6 +68,7 @@ func newHandler(
 	apiControllerBookManager *apiControllerBookManager,
 	apiControllerCollection *apiControllerCollection,
 	apiControllerReadingList *apiControllerReadingList,
+	apiControllerComments *apiControllerComments,
 
 	flashMiddleware flash.Middleware,
 ) webfx.MountableHandler {
@@ -110,6 +112,7 @@ func newHandler(
 		apiControllerCollection.Register(r)
 		apiControllerReadingList.Register(r)
 		apiControllerTags.Register(r)
+		apiControllerComments.Register(r)
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)

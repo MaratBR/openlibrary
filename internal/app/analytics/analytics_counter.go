@@ -15,7 +15,7 @@ type CountersNamespace interface {
 	Incr(ctx context.Context, key, uniqueId string, incrBy int64, expire time.Duration) error
 	Get(ctx context.Context, key string) (int64, error)
 	Delete(ctx context.Context, key string) error
-	GetPendingCounters(ctx context.Context) (map[string]int64, error)
+	PullPendingCounters(ctx context.Context) (map[string]int64, error)
 }
 
 type Counters interface {
@@ -49,9 +49,18 @@ type redisCountersNamespace struct {
 }
 
 func (c *redisCountersNamespace) Incr(ctx context.Context, key, uniqueId string, incrBy int64, expire time.Duration) error {
-	set, err := c.redisClient.SetNX(ctx, fmt.Sprintf("%s_set:%s:%s", c.ns, key, uniqueId), 1, expire).Result()
-	if err != nil {
-		return err
+	var (
+		err error
+		set bool
+	)
+
+	if uniqueId != "" {
+		set, err = c.redisClient.SetNX(ctx, fmt.Sprintf("%s_set:%s:%s", c.ns, key, uniqueId), 1, expire).Result()
+		if err != nil {
+			return err
+		}
+	} else {
+		set = true
 	}
 
 	if set {
@@ -85,7 +94,7 @@ func (c *redisCountersNamespace) Delete(ctx context.Context, key string) error {
 	return err
 }
 
-func (c *redisCountersNamespace) GetPendingCounters(ctx context.Context) (map[string]int64, error) {
+func (c *redisCountersNamespace) PullPendingCounters(ctx context.Context) (map[string]int64, error) {
 	var (
 		cursor uint64
 		err    error

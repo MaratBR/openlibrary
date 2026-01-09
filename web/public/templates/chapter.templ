@@ -215,7 +215,11 @@ templ ChapterComments(
         DisableFooter: true,
     }) {
         <div class="ol-container">
-            { len(comments) }
+            <header class="page-header-container mt-4">
+                <h1 class="page-header">
+                    Comments
+                </h1>
+            </header>
 
             @ChapterCommentsFragment(comments)
         </div>
@@ -223,26 +227,47 @@ templ ChapterComments(
 }
 
 templ ChapterCommentsFragment(comments []app.CommentDto) {
-    <div id="ChapterCommentsFragment" class="space-y-4">
-    
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+
+    <div id="ChapterCommentsFragment" class="space-y-4 card p-4 mb-8">
         for _, comment := range comments {
-            <div class="chapter-comment">
-                <div class="chapter-comment__left">
-                    <img class="avatar border" src={ comment.User.Avatar } />
+            <div class="chapter-comment" 
+                x-data={fmt.Sprintf("Comment({id:'%d',liked:%t})", comment.ID, comment.LikedAt.Valid)}>
+                <header class="chapter-comment__header">
+                    <img class="avatar border size-12" src={ comment.User.Avatar } />
+
+                    <strong>
+                        { comment.User.Name }
+                    </strong>
+                </header>
+
+
+                <div class="chapter-comment__content">
+                    @webcomponents.UserContent(webcomponents.UserContentProps{
+                        Content: comment.Content,
+                    })
                 </div>
 
-                <div class="chapter-comment__right">
-                    <div class="chapter-comment__content">
-                        @webcomponents.UserContent(webcomponents.UserContentProps{
-                            Content: comment.Content,
-                        })
-                    </div>
+                <div class="chapter-comment__actions">
+                    <button x-bind="like"
+                        if comment.LikedAt.Valid {
+                            data-set="true"
+                        } 
+                        >
+                        <i class="fa-solid fa-thumbs-up"></i>
+                        {{
+                            likes := comment.RealLikesCount()
+                        }}
+                        if likes > 0 {
+                            { likes }
+                        }
+                    </button>
 
-                    <div class="chapter-comment__actions">
-                        <button>
-                            <i class="fa-solid fa-thumbs-up"></i>
-                        </button>
-                    </div>
+                    <button x-bind="reply">
+                        <i class="fa-solid fa-reply"></i>&nbsp;{ l.T("common.reply") }
+                    </button>
                 </div>
             </div>
         }

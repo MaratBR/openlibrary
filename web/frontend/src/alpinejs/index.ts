@@ -19,6 +19,7 @@ import './TagsAutocomplete'
 import './Tabs'
 import './ImageUploader'
 import './Popover'
+import './Comment'
 
 import './island'
 import './islands'

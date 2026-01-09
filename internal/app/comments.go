@@ -26,12 +26,23 @@ type GetCommentsQuery struct {
 }
 
 type CommentDto struct {
-	ID          int64               `json:"id,string"`
-	Content     string              `json:"content"`
-	User        CommentUserDto      `json:"user"`
-	CreatedAt   time.Time           `json:"createdAt"`
-	UpdatedAt   Nullable[time.Time] `json:"updatedAt"`
-	Subcomments int                 `json:"subcomments"`
+	ID             int64               `json:"id,string"`
+	Content        string              `json:"content"`
+	User           CommentUserDto      `json:"user"`
+	CreatedAt      time.Time           `json:"createdAt"`
+	UpdatedAt      Nullable[time.Time] `json:"updatedAt"`
+	LikedAt        Nullable[time.Time] `json:"likedAt"`
+	Likes          int64               `json:"likes"`
+	LikesUpdatedAt time.Time           `json:"likesUpdatedAt"`
+	Subcomments    int                 `json:"subcomments"`
+}
+
+func (c CommentDto) RealLikesCount() int64 {
+	count := c.Likes
+	if c.LikedAt.Valid && c.LikesUpdatedAt.Before(c.LikedAt.Value) {
+		count++
+	}
+	return count
 }
 
 type CommentUserDto struct {
@@ -85,9 +96,15 @@ type UpdateCommentResult struct {
 	Comment CommentDto
 }
 
+type LikeCommentCommand struct {
+	CommentID int64
+	UserID    uuid.UUID
+	Like      bool
+}
+
 type CommentsService interface {
 	GetList(ctx context.Context, query GetCommentsQuery) (GetCommentsResult, error)
-
 	AddComment(ctx context.Context, command AddCommentCommand) (AddCommentResult, error)
 	UpdateComment(ctx context.Context, command UpdateCommentCommand) (UpdateCommentResult, error)
+	LikeComment(ctx context.Context, command LikeCommentCommand) (bool, error)
 }

@@ -1,16 +1,46 @@
 .chapter-comment {
-    @apply grid gap-col-2;
-    grid-template-columns: 84px 1fr;
+    --avatar-size: 48px;
+
+    &__header {
+        @apply grid gap-col-2 items-center;
+        grid-template-columns: var(--avatar-size) 1fr; 
+    }
 
     &__content {
-        @apply bg-card p-4 rounded-4xl mt-2;
+        margin-left: calc(var(--avatar-size) + var(--spacing) * 2);
     }
 
     &__actions {
-        @apply mt-1 inline-flex gap-2 bg-card rounded-3xl;
+        margin-left: calc(var(--avatar-size) + var(--spacing) * 2);
+        @apply mt-1 inline-flex gap-4 font-semibold text-sm;
+        vertical-align: middle;
 
         & > button {
-            @apply flex items-center justify-center size-8 text-muted-foreground hover:text-foreground;
+            @apply 
+                flex items-center justify-center h-8 min-w-8 text-muted-foreground transition relative 
+                hover:text-primary;
+            z-index: 1;
+
+            &[data-set=true] {
+                @apply text-primary-foreground;
+            }
+
+            &::after {
+                content: ' ';
+                z-index: -1;
+                @apply opacity-0 pointer-events-none inset-0 relative block bg-secondary rounded-2xl absolute transition;
+            }
+
+            &:hover::after,
+            &[data-set=true]::after {
+                left: -8px;
+                right: -8px;
+                @apply opacity-100;
+            }
+
+            &[data-set=true]::after {
+                @apply bg-primary;
+            }
         }
     }
 }

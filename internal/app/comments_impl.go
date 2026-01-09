@@ -17,7 +17,7 @@ type commentsService struct {
 func (c *commentsService) AddComment(ctx context.Context, command AddCommentCommand) (AddCommentResult, error) {
 	queries := store.New(c.db)
 	id := GenID()
-	err := queries.InsertComment(ctx, store.InsertCommentParams{
+	err := queries.Comment_Insert(ctx, store.Comment_InsertParams{
 		ID:        id,
 		ChapterID: command.ChapterID,
 		ParentID:  int64NullableDomainToDb(command.ParentCommentID),
@@ -43,8 +43,8 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 	result.Cursor = query.Cursor
 
 	if query.Cursor == 0 {
-		var rows []store.GetChapterCommentsRow
-		rows, err = queries.GetChapterComments(ctx, store.GetChapterCommentsParams{
+		var rows []store.Comment_GetByChapterRow
+		rows, err = queries.Comment_GetByChapter(ctx, store.Comment_GetByChapterParams{
 			ChapterID: query.ChapterID,
 			Limit:     query.Limit,
 		})
@@ -52,7 +52,7 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 			err = apperror.WrapUnexpectedDBError(err)
 			return
 		}
-		result.Comments = MapSlice(rows, func(r store.GetChapterCommentsRow) CommentDto {
+		result.Comments = MapSlice(rows, func(r store.Comment_GetByChapterRow) CommentDto {
 			return CommentDto{
 				ID:        r.ID,
 				Content:   r.Content,
@@ -64,8 +64,8 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 	} else {
 		ts := time.Unix(int64(query.Cursor), 0)
 
-		var rows []store.GetChapterCommentsAfterRow
-		rows, err = queries.GetChapterCommentsAfter(ctx, store.GetChapterCommentsAfterParams{
+		var rows []store.Comment_GetByChapterAfterRow
+		rows, err = queries.Comment_GetByChapterAfter(ctx, store.Comment_GetByChapterAfterParams{
 			ChapterID: query.ChapterID,
 			Limit:     query.Limit,
 			CreatedAt: timeToTimestamptz(ts),
@@ -74,7 +74,7 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 			err = apperror.WrapUnexpectedDBError(err)
 			return
 		}
-		result.Comments = MapSlice(rows, func(r store.GetChapterCommentsAfterRow) CommentDto {
+		result.Comments = MapSlice(rows, func(r store.Comment_GetByChapterAfterRow) CommentDto {
 			return CommentDto{
 				ID:        r.ID,
 				Content:   r.Content,
@@ -90,6 +90,36 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 	} else {
 		unixTs := result.Comments[len(result.Comments)-1].CreatedAt.Unix()
 		result.NextCursor = uint32(unixTs)
+
+		if query.ActorUserID.Valid {
+			commentIds := make([]int64, len(result.Comments))
+			for i := range result.Comments {
+				commentIds[i] = result.Comments[i].ID
+			}
+
+			var likedComments []store.Comment_GetLikedCommentsRow
+			likedComments, err = queries.Comment_GetLikedComments(ctx, store.Comment_GetLikedCommentsParams{
+				UserID: uuidDomainToDb(query.ActorUserID.UUID),
+				Ids:    commentIds,
+			})
+			if err != nil {
+				err = apperror.WrapUnexpectedDBError(err)
+				return
+			}
+			likedCommentsMapping := map[int64]time.Time{}
+
+			for _, likedComment := range likedComments {
+				likedCommentsMapping[likedComment.CommentID] = timeDbToDomain(likedComment.LikedAt)
+			}
+
+			for i := range result.Comments {
+				comment := result.Comments[i]
+				if likedAt, ok := likedCommentsMapping[comment.ID]; ok {
+					comment.LikedAt = Value(likedAt)
+					result.Comments[i] = comment
+				}
+			}
+		}
 	}
 
 	return
@@ -100,7 +130,7 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 func (c *commentsService) UpdateComment(ctx context.Context, command UpdateCommentCommand) (UpdateCommentResult, error) {
 	queries := store.New(c.db)
 
-	result, err := queries.UpdateComment(ctx, store.UpdateCommentParams{
+	result, err := queries.Comment_Update(ctx, store.Comment_UpdateParams{
 		ID:      command.ID,
 		Content: command.Content,
 	})
@@ -121,7 +151,7 @@ func (c *commentsService) UpdateComment(ctx context.Context, command UpdateComme
 }
 
 func (c *commentsService) getByID(ctx context.Context, id int64) (CommentDto, error) {
-	row, err := store.New(c.db).GetCommentWithUserByID(ctx, id)
+	row, err := store.New(c.db).Comment_GetWithUserByID(ctx, id)
 	if err != nil {
 		if err == store.ErrNoRows {
 			return CommentDto{}, ErrTypeCommentNotFound.New(fmt.Sprintf("comment with id %d not found", id))
@@ -136,6 +166,30 @@ func (c *commentsService) getByID(ctx context.Context, id int64) (CommentDto, er
 		CreatedAt: timeDbToDomain(row.CreatedAt),
 		UpdatedAt: timeNullableDbToDomain(row.UpdatedAt),
 	}, nil
+}
+
+func (c *commentsService) LikeComment(ctx context.Context, command LikeCommentCommand) (bool, error) {
+	queries := store.New(c.db)
+	userID := uuidDomainToDb(command.UserID)
+	var err error
+
+	if command.Like {
+		err = queries.Comment_Like(ctx, store.Comment_LikeParams{
+			CommentID: command.CommentID,
+			UserID:    userID,
+		})
+	} else {
+		err = queries.Comment_UnLike(ctx, store.Comment_UnLikeParams{
+			CommentID: command.CommentID,
+			UserID:    userID,
+		})
+	}
+
+	if err != nil {
+		return false, apperror.WrapUnexpectedDBError(err)
+	}
+
+	return command.Like, nil
 }
 
 func NewCommentsService(db store.DBTX) CommentsService {

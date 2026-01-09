@@ -77,12 +77,12 @@ func (a *analyticsViewsService) IncrBookView(ctx context.Context, bookID int64, 
 	return err
 }
 
-func (a *analyticsViewsService) ApplyPendingViews(ctx context.Context) {
+func (a *analyticsViewsService) CommitPendingViewsToDB(ctx context.Context) {
 	queries := store.New(a.db)
 
 	periods := CurrentAnalyticsPeriods(time.Now())
 
-	views, err := a.counter.GetPendingCounters(ctx)
+	views, err := a.counter.PullPendingCounters(ctx)
 	if err != nil {
 		slog.Error("could not find pending counters", "err", err)
 		return

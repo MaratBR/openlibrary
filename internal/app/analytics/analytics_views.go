@@ -65,7 +65,7 @@ type ViewsService interface {
 	GetBookViews(ctx context.Context, bookID int64) (Views, error)
 	GetMostViewedBooks(ctx context.Context, period AnalyticsPeriod) ([]BookViewEntry, error)
 
-	ApplyPendingViews(ctx context.Context)
+	CommitPendingViewsToDB(ctx context.Context)
 }
 
 type AnalyticsBackgroundService struct {
@@ -155,7 +155,7 @@ func (s *AnalyticsBackgroundService) process() {
 	}()
 
 	s.log.Debug("AnalyticsBackgroundService.process")
-	s.analytics.ApplyPendingViews(s.parentCtx)
+	s.analytics.CommitPendingViewsToDB(s.parentCtx)
 }
 
 func (s *AnalyticsBackgroundService) itIsTime() bool {
