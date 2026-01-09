@@ -26,6 +26,7 @@ confirm = "Confirm"
 adult = "Adult"
 spoiler = "Spoiler"
 reply = "Reply"
+replyPlaceholder = "Write your reply here..."
 
 [uiTheme]
 dark = "Dark"

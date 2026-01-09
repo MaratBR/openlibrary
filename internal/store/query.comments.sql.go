@@ -164,14 +164,14 @@ const comment_GetChildComments = `-- name: Comment_GetChildComments :many
 select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at, comments.parent_id, comments.subcomments, comments.likes, comments.likes_recalculated_at, users.name as user_name
 from comments
 join users on comments.user_id = users.id
-where parent_id = $1
+where parent_id = $2::int8
 order by created_at desc
-limit $2
+limit $1
 `
 
 type Comment_GetChildCommentsParams struct {
-	ParentID pgtype.Int8
 	Limit    int32
+	ParentID int64
 }
 
 type Comment_GetChildCommentsRow struct {
@@ -190,7 +190,7 @@ type Comment_GetChildCommentsRow struct {
 }
 
 func (q *Queries) Comment_GetChildComments(ctx context.Context, arg Comment_GetChildCommentsParams) ([]Comment_GetChildCommentsRow, error) {
-	rows, err := q.db.Query(ctx, comment_GetChildComments, arg.ParentID, arg.Limit)
+	rows, err := q.db.Query(ctx, comment_GetChildComments, arg.Limit, arg.ParentID)
 	if err != nil {
 		return nil, err
 	}
@@ -226,15 +226,15 @@ const comment_GetChildCommentsAfter = `-- name: Comment_GetChildCommentsAfter :m
 select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at, comments.parent_id, comments.subcomments, comments.likes, comments.likes_recalculated_at, users.name as user_name
 from comments
 join users on comments.user_id = users.id
-where parent_id = $1 and created_at < $3
+where parent_id = $3::int8 and created_at < $2
 order by created_at desc
-limit $2
+limit $1
 `
 
 type Comment_GetChildCommentsAfterParams struct {
-	ParentID  pgtype.Int8
 	Limit     int32
 	CreatedAt pgtype.Timestamptz
+	ParentID  int64
 }
 
 type Comment_GetChildCommentsAfterRow struct {
@@ -253,7 +253,7 @@ type Comment_GetChildCommentsAfterRow struct {
 }
 
 func (q *Queries) Comment_GetChildCommentsAfter(ctx context.Context, arg Comment_GetChildCommentsAfterParams) ([]Comment_GetChildCommentsAfterRow, error) {
-	rows, err := q.db.Query(ctx, comment_GetChildCommentsAfter, arg.ParentID, arg.Limit, arg.CreatedAt)
+	rows, err := q.db.Query(ctx, comment_GetChildCommentsAfter, arg.Limit, arg.CreatedAt, arg.ParentID)
 	if err != nil {
 		return nil, err
 	}

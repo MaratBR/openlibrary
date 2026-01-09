@@ -18,17 +18,17 @@ limit $2;
 select comments.*, users.name as user_name
 from comments
 join users on comments.user_id = users.id
-where parent_id = $1
+where parent_id = sqlc.arg('parent_id')::int8
 order by created_at desc
-limit $2;
+limit $1;
 
 -- name: Comment_GetChildCommentsAfter :many
 select comments.*, users.name as user_name
 from comments
 join users on comments.user_id = users.id
-where parent_id = $1 and created_at < $3
+where parent_id = sqlc.arg('parent_id')::int8 and created_at < $2
 order by created_at desc
-limit $2;
+limit $1;
 
 
 -- name: Comment_GetByID :one

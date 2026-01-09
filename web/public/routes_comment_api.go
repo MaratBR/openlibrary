@@ -25,6 +25,7 @@ func (c *apiControllerComments) Register(r chi.Router) {
 	r.Route("/comments", func(r chi.Router) {
 		r.Use(requiresAuthorizationMiddleware)
 		r.Post("/like", c.like)
+		r.Get("/replies", c.replies)
 	})
 }
 
@@ -49,4 +50,25 @@ func (c *apiControllerComments) like(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	olhttp.NewAPIResponse(liked).Write(w)
+}
+
+func (c *apiControllerComments) replies(w http.ResponseWriter, r *http.Request) {
+	cursor, _ := olhttp.URLQueryParamInt64(r, "cursor")
+	commentId, _ := olhttp.URLQueryParamInt64(r, "commentId")
+
+	result, err := c.commentsService.GetReplies(r.Context(), app.GetCommentRepliesQuery{
+		ActorUserID: auth.GetNullableUserID(r.Context()),
+		Limit:       20,
+		Cursor:      uint32(cursor),
+		CommentID:   commentId,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	olhttp.NewAPIResponse(map[string]any{
+		"cursor":     result.Cursor,
+		"nextCursor": result.NextCursor,
+		"comments":   result.Comments,
+	}).Write(w)
 }

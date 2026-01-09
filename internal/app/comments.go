@@ -19,10 +19,9 @@ var (
 
 type GetCommentsQuery struct {
 	ActorUserID uuid.NullUUID
-
-	ChapterID int64
-	Limit     int32
-	Cursor    uint32
+	Limit       int32
+	Cursor      uint32
+	ChapterID   int64
 }
 
 type CommentDto struct {
@@ -52,6 +51,18 @@ type CommentUserDto struct {
 }
 
 type GetCommentsResult struct {
+	Cursor     uint32
+	NextCursor uint32
+	Comments   []CommentDto
+}
+type GetCommentRepliesQuery struct {
+	ActorUserID uuid.NullUUID
+	Limit       int32
+	Cursor      uint32
+	CommentID   int64
+}
+
+type GetCommentRepliesResult struct {
 	Cursor     uint32
 	NextCursor uint32
 	Comments   []CommentDto
@@ -104,6 +115,8 @@ type LikeCommentCommand struct {
 
 type CommentsService interface {
 	GetList(ctx context.Context, query GetCommentsQuery) (GetCommentsResult, error)
+	GetReplies(ctx context.Context, query GetCommentRepliesQuery) (GetCommentRepliesResult, error)
+
 	AddComment(ctx context.Context, command AddCommentCommand) (AddCommentResult, error)
 	UpdateComment(ctx context.Context, command UpdateCommentCommand) (UpdateCommentResult, error)
 	LikeComment(ctx context.Context, command LikeCommentCommand) (bool, error)

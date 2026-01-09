@@ -13,7 +13,7 @@ create table comments (
 );
 
 create index ix_comments_special_root_comments on comments (chapter_id, created_at) where parent_id is null;
-create index ix_comments_special_sub_comments on comments (chapter_id, parent_id, created_at);
+create index ix_comments_special_sub_comments on comments (parent_id, created_at);
 
 create table comments_liked (
     comment_id int8 not null references comments(id),

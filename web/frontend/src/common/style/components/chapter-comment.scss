@@ -33,8 +33,8 @@
 
             &:hover::after,
             &[data-set=true]::after {
-                left: -8px;
-                right: -8px;
+                left: -4px;
+                right: -4px;
                 @apply opacity-100;
             }
 
@@ -43,4 +43,23 @@
             }
         }
     }
+}
+
+.chapter-comment-reply {
+    @apply relative mt-4 grid gap-col-1;
+    grid-template-columns: 1fr auto;
+
+    &__reply {
+    }
+
+    &__text {
+        @apply border-b border-b-2 outline-none w-full p-1 focus:border-current transition;
+        scrollbar-width: thin;
+        min-height: 60px;
+        max-height: 300px;
+    }
+}
+
+.comment-replies {
+    margin-left: calc(var(--avatar-size) + var(--spacing) * 2);
 }
