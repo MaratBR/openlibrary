@@ -22,7 +22,7 @@ import (
 	"github.com/MaratBR/openlibrary/web/admin"
 	"github.com/MaratBR/openlibrary/web/frontend"
 	"github.com/MaratBR/openlibrary/web/public"
-	"github.com/MaratBR/openlibrary/web/webfx"
+	"github.com/MaratBR/openlibrary/web/webinfra"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/fx"
@@ -63,7 +63,7 @@ func mainServer(
 			},
 			fx.Annotate(
 				newRootMux,
-				webfx.ProviderMountables(),
+				webinfra.ProviderMountables(),
 			),
 		),
 		fx.Invoke(postInit, func(*http.Server) {}),
@@ -72,7 +72,7 @@ func mainServer(
 
 func newRootMux(
 	// handlers MUST go first
-	handlers []webfx.MountableHandler,
+	handlers []webinfra.MountableHandler,
 	cliParams cliParams,
 	config *koanf.Koanf,
 	csrfHandler *csrf.Handler,

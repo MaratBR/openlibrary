@@ -29,8 +29,6 @@ func (c *chaptersController) Register(r chi.Router) {
 }
 
 func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
-	rl := r.URL.Query().Get("rl")
-
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
 		writeBadRequest(w, r, err)
@@ -61,16 +59,21 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	options := c.getChapterProgressTrackerOptions(r, &result.Chapter)
+	templates.Chapter(result.Chapter, book, options).Render(r.Context(), w)
+}
+
+func (c *chaptersController) getChapterProgressTrackerOptions(r *http.Request, chapter *app.ChapterDto) templates.ChapterProgressTrackerOptions {
 	var options templates.ChapterProgressTrackerOptions
 
-	session, ok := auth.GetSession(r.Context())
-	if ok {
+	session, hasSession := auth.GetSession(r.Context())
+	if hasSession {
 		options.Enable = true
 
-		status, err := c.readingListService.GetStatus(r.Context(), session.UserID, bookID)
+		status, err := c.readingListService.GetStatus(r.Context(), session.UserID, chapter.BookID)
 		if err == nil && status.Valid && status.Value.ChapterID.Valid {
 			statusChapterOrder := status.Value.ChapterOrder
-			chapterOrder := result.Chapter.Order
+			chapterOrder := chapter.Order
 			if statusChapterOrder == chapterOrder {
 				// if it's same chapter - no need to do anything, disable chapter auto-marking
 				options.Enable = false
@@ -83,9 +86,11 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		rl := r.URL.Query().Get("rl")
+
 		// if rl is 1 then update status
 		if rl == "1" {
-			readingListStatus, err := c.readingListService.GetStatus(r.Context(), session.UserID, result.Chapter.BookID)
+			readingListStatus, err := c.readingListService.GetStatus(r.Context(), session.UserID, chapter.BookID)
 			if err != nil {
 				slog.Warn("readingListService.GetStatus error", "err", err)
 			} else {
@@ -93,8 +98,8 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 					err = c.readingListService.MarkAsReadingWithChapterID(
 						r.Context(),
 						session.UserID,
-						book.ID,
-						chapterID,
+						chapter.BookID,
+						chapter.ID,
 					)
 					if err != nil {
 						slog.Warn("readingListService.MarkAsReadingWithChapterID error", "err", err)
@@ -104,7 +109,8 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	templates.Chapter(result.Chapter, book, options).Render(r.Context(), w)
+	return options
+
 }
 
 func (c *chaptersController) chapterComments(w http.ResponseWriter, r *http.Request) {
@@ -123,5 +129,5 @@ func (c *chaptersController) chapterComments(w http.ResponseWriter, r *http.Requ
 		Cursor:      uint32(cursor),
 	})
 
-	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(result.Comments))
+	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(result.Comments, result.NextCursor))
 }

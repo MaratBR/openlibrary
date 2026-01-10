@@ -4,20 +4,21 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 	"go.uber.org/zap"
 )
 
 type analyticsViewsService struct {
-	counter CountersNamespace
-	db      store.DBTX
-	log     *zap.SugaredLogger
+	counterBooks    CountersNamespace
+	counterChapters CountersNamespace
+	db              store.DBTX
+	log             *zap.SugaredLogger
+	commitMX        sync.Mutex
 }
 
 // GetBookViews implements AnalyticsViewsService.
@@ -36,59 +37,66 @@ func (a *analyticsViewsService) GetBookViews(ctx context.Context, bookID int64) 
 
 	for _, row := range rows {
 		if row.Period == int32(periods.Year) {
-			views.Year = row.Count
+			views.Year = row.ViewCount
 		} else if row.Period == int32(periods.Month) {
-			views.Month = row.Count
+			views.Month = row.ViewCount
 		} else if row.Period == int32(periods.Week) {
-			views.Week = row.Count
+			views.Week = row.ViewCount
 		} else if row.Period == int32(periods.Day) {
-			views.Day = row.Count
+			views.Day = row.ViewCount
 		} else if row.Period == int32(periods.Hour) {
-			views.Hour = row.Count
-		} else if row.Period == int32(AnalyticsPeriodTotal) {
-			views.Total = row.Count
+			views.Hour = row.ViewCount
+		} else if row.Period == int32(ANALYTICS_PERIOD_TOTAL) {
+			views.Total = row.ViewCount
 		}
 	}
 
-	hourCount, err := a.counter.Get(ctx, fmt.Sprintf("%d", bookID))
+	pendingViews, err := a.counterBooks.Get(ctx, fmt.Sprintf("%d", bookID))
 	if err != nil {
 		slog.Error("failed to get views count from redis", "err", err, "bookID", bookID)
-	} else if hourCount > 0 {
-		views.Hour += hourCount
-		views.Day += hourCount
-		views.Week += hourCount
-		views.Month += hourCount
-		views.Year += hourCount
-		views.Total += hourCount
+	} else if pendingViews > 0 {
+		views.Hour += pendingViews
+		views.Day += pendingViews
+		views.Week += pendingViews
+		views.Month += pendingViews
+		views.Year += pendingViews
+		views.Total += pendingViews
 	}
 
 	return views, nil
 }
 
 // IncrBookView implements AnalyticsViewsService.
-func (a *analyticsViewsService) IncrBookView(ctx context.Context, bookID int64, userID uuid.NullUUID, ip net.IP) error {
-	var uniqueId string
-	if userID.Valid {
-		uniqueId = userID.UUID.String()
-	} else {
-		uniqueId = ip.String()
-	}
-	err := a.counter.Incr(ctx, fmt.Sprintf("%d", bookID), uniqueId, 1, time.Hour)
+func (a *analyticsViewsService) IncrBookView(ctx context.Context, bookID int64, meta ViewMetadata) error {
+	err := a.counterBooks.Incr(ctx, fmt.Sprintf("%d", bookID), meta.UniqueID(), 1, time.Hour)
+	return err
+}
+
+// IncrBookView implements AnalyticsViewsService.
+func (a *analyticsViewsService) IncrChapterView(ctx context.Context, bookID, chapterID int64, meta ViewMetadata) error {
+	err := a.counterBooks.Incr(ctx, fmt.Sprintf("%d,%d", bookID, chapterID), meta.UniqueID(), 1, time.Hour)
 	return err
 }
 
 func (a *analyticsViewsService) CommitPendingViewsToDB(ctx context.Context) {
-	queries := store.New(a.db)
+	a.commitMX.Lock()
+	defer a.commitMX.Unlock()
 
+	queries := store.New(a.db)
 	periods := CurrentAnalyticsPeriods(time.Now())
 
-	views, err := a.counter.PullPendingCounters(ctx)
+	views, err := a.counterBooks.PullPendingCounters(ctx, true)
 	if err != nil {
 		slog.Error("could not find pending counters", "err", err)
 		return
 	}
 
+	if len(views) == 0 {
+		return
+	}
+
 	slog.Warn("found pending counters", "count", len(views))
+
 	for key, count := range views {
 		if count <= 0 {
 			continue
@@ -99,18 +107,19 @@ func (a *analyticsViewsService) CommitPendingViewsToDB(ctx context.Context) {
 			continue
 		}
 
-		updateCounter(queries, ctx, periods.Hour, id, count)
-		updateCounter(queries, ctx, periods.Day, id, count)
-		updateCounter(queries, ctx, periods.Week, id, count)
-		updateCounter(queries, ctx, periods.Month, id, count)
-		updateCounter(queries, ctx, periods.Year, id, count)
-		updateCounter(queries, ctx, AnalyticsPeriodTotal, id, count)
+		updateCounter(ctx, queries, periods.Hour, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
+		updateCounter(ctx, queries, periods.Day, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
+		updateCounter(ctx, queries, periods.Week, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
+		updateCounter(ctx, queries, periods.Month, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
+		updateCounter(ctx, queries, periods.Year, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
+		updateCounter(ctx, queries, ANALYTICS_PERIOD_TOTAL, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
 	}
 }
 
 func (a *analyticsViewsService) GetMostViewedBooks(ctx context.Context, period AnalyticsPeriod) ([]BookViewEntry, error) {
 	queries := store.New(a.db)
-	rows, err := queries.Analytics_GetMostViewedBooks(ctx, store.Analytics_GetMostViewedBooksParams{
+	// TODO take into account chapter views too?
+	rows, err := queries.Analytics_GetMostViewedBooksByBookViewsOnly(ctx, store.Analytics_GetMostViewedBooksByBookViewsOnlyParams{
 		Period: int32(period),
 		Limit:  50,
 	})
@@ -120,10 +129,10 @@ func (a *analyticsViewsService) GetMostViewedBooks(ctx context.Context, period A
 
 	entries := make([]BookViewEntry, len(rows))
 
-	for i := 0; i < len(rows); i++ {
+	for i := range rows {
 		entries[i] = BookViewEntry{
 			BookID: rows[i].BookID,
-			Views:  rows[i].Count,
+			Views:  rows[i].ViewCount,
 		}
 	}
 
@@ -131,22 +140,34 @@ func (a *analyticsViewsService) GetMostViewedBooks(ctx context.Context, period A
 
 }
 
-func updateCounter(queries *store.Queries, ctx context.Context, period AnalyticsPeriod, bookID int64, incr int64) {
-	slog.Debug("incrementing views counter", "period", period, "bookID", bookID, "incrBy", incr)
+func updateCounter(
+	ctx context.Context,
+	queries *store.Queries,
+	period AnalyticsPeriod,
+	bookID int64,
+	entityType int16,
+	entityID int64,
+	incr int64,
+	log *zap.SugaredLogger,
+) {
+	log.Debug("incrementing views counter", "period", period, "bookID", bookID, "incrBy", incr)
 	err := queries.Analytics_IncrView(ctx, store.Analytics_IncrViewParams{
-		BookID: bookID,
-		Count:  incr,
-		Period: int32(period),
+		BookID:     bookID,
+		EntityType: entityType,
+		EntityID:   entityID,
+		IncrBy:     incr,
+		Period:     int32(period),
 	})
 	if err != nil {
-		slog.Error("failed to update counter for period", "period", period, "err", err)
+		log.Error("failed to update counter for period", "period", period, "err", err)
 	}
 }
 
 func NewAnalyticsViewsService(db store.DBTX, counters Counters, log *zap.SugaredLogger) ViewsService {
 	return &analyticsViewsService{
-		counter: counters.Namespace("views"),
-		db:      db,
-		log:     log,
+		counterBooks:    counters.Namespace("views"),
+		counterChapters: counters.Namespace("views_chapters"),
+		db:              db,
+		log:             log,
 	}
 }

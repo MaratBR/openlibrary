@@ -27,6 +27,8 @@ adult = "Adult"
 spoiler = "Spoiler"
 reply = "Reply"
 replyPlaceholder = "Write your reply here..."
+loadMore = "Load more"
+commentsCount = "{{.Count}} comments"
 
 [uiTheme]
 dark = "Dark"

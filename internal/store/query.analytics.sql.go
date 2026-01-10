@@ -9,34 +9,90 @@ import (
 	"context"
 )
 
-const analytics_GetMostViewedBooks = `-- name: Analytics_GetMostViewedBooks :many
-select book_id, count
-from ol_analytics.view_bucket
-where "period" = $1
-order by count desc
-limit $2
+const analytics_GetChapterViews = `-- name: Analytics_GetChapterViews :many
+select "period", sum(view_count) as agg_view_count
+from ol_analytics.view_counter
+where
+    book_id = $1 and entity_type = 1 and (
+        "period" = 0 or
+        "period" = $2 or
+        "period" = $3 or
+        "period" = $4 or
+        "period" = $5 or
+        "period" = $6
+    )
+group by entity_id
 `
 
-type Analytics_GetMostViewedBooksParams struct {
-	Period int32
-	Limit  int32
+type Analytics_GetChapterViewsParams struct {
+	BookID      int64
+	YearPeriod  int32
+	MonthPeriod int32
+	WeekPeriod  int32
+	DayPeriod   int32
+	HourPeriod  int32
 }
 
-type Analytics_GetMostViewedBooksRow struct {
-	BookID int64
-	Count  int64
+type Analytics_GetChapterViewsRow struct {
+	Period       int32
+	AggViewCount int64
 }
 
-func (q *Queries) Analytics_GetMostViewedBooks(ctx context.Context, arg Analytics_GetMostViewedBooksParams) ([]Analytics_GetMostViewedBooksRow, error) {
-	rows, err := q.db.Query(ctx, analytics_GetMostViewedBooks, arg.Period, arg.Limit)
+func (q *Queries) Analytics_GetChapterViews(ctx context.Context, arg Analytics_GetChapterViewsParams) ([]Analytics_GetChapterViewsRow, error) {
+	rows, err := q.db.Query(ctx, analytics_GetChapterViews,
+		arg.BookID,
+		arg.YearPeriod,
+		arg.MonthPeriod,
+		arg.WeekPeriod,
+		arg.DayPeriod,
+		arg.HourPeriod,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Analytics_GetMostViewedBooksRow
+	var items []Analytics_GetChapterViewsRow
 	for rows.Next() {
-		var i Analytics_GetMostViewedBooksRow
-		if err := rows.Scan(&i.BookID, &i.Count); err != nil {
+		var i Analytics_GetChapterViewsRow
+		if err := rows.Scan(&i.Period, &i.AggViewCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const analytics_GetMostViewedBooksByBookViewsOnly = `-- name: Analytics_GetMostViewedBooksByBookViewsOnly :many
+select book_id, view_count
+from ol_analytics.view_counter
+where "period" = $1 and entity_type = 0
+order by view_count desc
+limit $2
+`
+
+type Analytics_GetMostViewedBooksByBookViewsOnlyParams struct {
+	Period int32
+	Limit  int32
+}
+
+type Analytics_GetMostViewedBooksByBookViewsOnlyRow struct {
+	BookID    int64
+	ViewCount int64
+}
+
+func (q *Queries) Analytics_GetMostViewedBooksByBookViewsOnly(ctx context.Context, arg Analytics_GetMostViewedBooksByBookViewsOnlyParams) ([]Analytics_GetMostViewedBooksByBookViewsOnlyRow, error) {
+	rows, err := q.db.Query(ctx, analytics_GetMostViewedBooksByBookViewsOnly, arg.Period, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Analytics_GetMostViewedBooksByBookViewsOnlyRow
+	for rows.Next() {
+		var i Analytics_GetMostViewedBooksByBookViewsOnlyRow
+		if err := rows.Scan(&i.BookID, &i.ViewCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -48,60 +104,23 @@ func (q *Queries) Analytics_GetMostViewedBooks(ctx context.Context, arg Analytic
 }
 
 const analytics_GetTotalViews = `-- name: Analytics_GetTotalViews :one
-select count
-from ol_analytics.view_bucket
-where book_id = $1 and "period" = 0
+select view_count
+from ol_analytics.view_counter
+where book_id = $1 and "period" = 0 and entity_type = 0
 `
 
 func (q *Queries) Analytics_GetTotalViews(ctx context.Context, bookID int64) (int64, error) {
 	row := q.db.QueryRow(ctx, analytics_GetTotalViews, bookID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const analytics_GetViewBuckets = `-- name: Analytics_GetViewBuckets :many
-select "period", count
-from ol_analytics.view_bucket
-where book_id = $1 and "period" >= $2 and "period" <= $3
-`
-
-type Analytics_GetViewBucketsParams struct {
-	BookID int64
-	From   int32
-	To     int32
-}
-
-type Analytics_GetViewBucketsRow struct {
-	Period int32
-	Count  int64
-}
-
-func (q *Queries) Analytics_GetViewBuckets(ctx context.Context, arg Analytics_GetViewBucketsParams) ([]Analytics_GetViewBucketsRow, error) {
-	rows, err := q.db.Query(ctx, analytics_GetViewBuckets, arg.BookID, arg.From, arg.To)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Analytics_GetViewBucketsRow
-	for rows.Next() {
-		var i Analytics_GetViewBucketsRow
-		if err := rows.Scan(&i.Period, &i.Count); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+	var view_count int64
+	err := row.Scan(&view_count)
+	return view_count, err
 }
 
 const analytics_GetViews = `-- name: Analytics_GetViews :many
-select "period", count
-from ol_analytics.view_bucket
+select "period", view_count
+from ol_analytics.view_counter
 where 
-    book_id = $1 and (
+    book_id = $1 and entity_type = 0 and (
         "period" = 0 or
         "period" = $2 or
         "period" = $3 or
@@ -121,8 +140,8 @@ type Analytics_GetViewsParams struct {
 }
 
 type Analytics_GetViewsRow struct {
-	Period int32
-	Count  int64
+	Period    int32
+	ViewCount int64
 }
 
 func (q *Queries) Analytics_GetViews(ctx context.Context, arg Analytics_GetViewsParams) ([]Analytics_GetViewsRow, error) {
@@ -141,7 +160,7 @@ func (q *Queries) Analytics_GetViews(ctx context.Context, arg Analytics_GetViews
 	var items []Analytics_GetViewsRow
 	for rows.Next() {
 		var i Analytics_GetViewsRow
-		if err := rows.Scan(&i.Period, &i.Count); err != nil {
+		if err := rows.Scan(&i.Period, &i.ViewCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -153,19 +172,27 @@ func (q *Queries) Analytics_GetViews(ctx context.Context, arg Analytics_GetViews
 }
 
 const analytics_IncrView = `-- name: Analytics_IncrView :exec
-insert into ol_analytics.view_bucket ("period", book_id, "count")
-values ($1, $2, $3)
-on conflict ("period", book_id)
-do update set "count" = EXCLUDED."count" + ol_analytics.view_bucket."count"
+insert into ol_analytics.view_counter ("period", book_id, view_count, entity_type, entity_id)
+values ($1, $2, $3, $4, $5)
+on conflict (period, entity_type, entity_id)
+do update set view_count = EXCLUDED.view_count + ol_analytics.view_bucket.view_count
 `
 
 type Analytics_IncrViewParams struct {
-	Period int32
-	BookID int64
-	Count  int64
+	Period     int32
+	BookID     int64
+	IncrBy     int64
+	EntityType int16
+	EntityID   int64
 }
 
 func (q *Queries) Analytics_IncrView(ctx context.Context, arg Analytics_IncrViewParams) error {
-	_, err := q.db.Exec(ctx, analytics_IncrView, arg.Period, arg.BookID, arg.Count)
+	_, err := q.db.Exec(ctx, analytics_IncrView,
+		arg.Period,
+		arg.BookID,
+		arg.IncrBy,
+		arg.EntityType,
+		arg.EntityID,
+	)
 	return err
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/MaratBR/openlibrary/web/webinfra"
 	"github.com/go-chi/chi/v5"
 	"github.com/joomcode/errorx"
 )
@@ -100,8 +101,7 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 		reviews = reviewsResult.Reviews
 	}
 
-	ip := olhttp.GetIP(r)
-	b.viewsService.IncrBookView(r.Context(), bookID, userID, ip)
+	b.viewsService.IncrBookView(r.Context(), bookID, webinfra.GetAnalyticsViewMetadata(r))
 
 	views, err := b.viewsService.GetBookViews(r.Context(), bookID)
 

@@ -503,10 +503,12 @@ type EmailVerification struct {
 	ValidThrough         pgtype.Timestamptz
 }
 
-type OlAnalyticsViewBucket struct {
-	Period int32
-	BookID int64
-	Count  int64
+type OlAnalyticsViewCounter struct {
+	Period     int32
+	EntityType int16
+	EntityID   int64
+	BookID     int64
+	ViewCount  int64
 }
 
 type Rating struct {

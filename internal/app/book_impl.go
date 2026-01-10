@@ -160,13 +160,13 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (B
 }
 
 // GetBookChapters implements BookService.
-func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]BookChapterDto, error) {
+func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]ChapterListDto, error) {
 	chapters, err := s.queries.Book_GetPubliclyVisibleChapters(ctx, query.ID)
 	if err != nil {
 		return nil, err
 	}
-	chapterDtos := MapSlice(chapters, func(chapter store.Book_GetPubliclyVisibleChaptersRow) BookChapterDto {
-		return BookChapterDto{
+	chapterDtos := MapSlice(chapters, func(chapter store.Book_GetPubliclyVisibleChaptersRow) ChapterListDto {
+		return ChapterListDto{
 			ID:        chapter.ID,
 			Order:     int(chapter.Order),
 			Name:      chapter.Name,

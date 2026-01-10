@@ -67,7 +67,7 @@ type GetBookChaptersQuery struct {
 	ID int64
 }
 
-type BookChapterDto struct {
+type ChapterListDto struct {
 	ID        int64     `json:"id,string"`
 	Order     int       `json:"order"`
 	Name      string    `json:"name"`
@@ -166,7 +166,7 @@ type GetBookChapterResult struct {
 
 type BookService interface {
 	GetBookDetails(ctx context.Context, query GetBookQuery) (BookDetailsDto, error)
-	GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]BookChapterDto, error)
+	GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]ChapterListDto, error)
 	GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error)
 	GetRandomBookID(ctx context.Context) (Nullable[int64], error)
 	GetPinnedBooks(ctx context.Context, input GetPinnedUserBooksQuery) (GetPinnedUserBooksResult, error)

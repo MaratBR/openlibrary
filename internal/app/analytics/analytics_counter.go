@@ -15,7 +15,7 @@ type CountersNamespace interface {
 	Incr(ctx context.Context, key, uniqueId string, incrBy int64, expire time.Duration) error
 	Get(ctx context.Context, key string) (int64, error)
 	Delete(ctx context.Context, key string) error
-	PullPendingCounters(ctx context.Context) (map[string]int64, error)
+	PullPendingCounters(ctx context.Context, delete bool) (map[string]int64, error)
 }
 
 type Counters interface {
@@ -94,7 +94,7 @@ func (c *redisCountersNamespace) Delete(ctx context.Context, key string) error {
 	return err
 }
 
-func (c *redisCountersNamespace) PullPendingCounters(ctx context.Context) (map[string]int64, error) {
+func (c *redisCountersNamespace) PullPendingCounters(ctx context.Context, delete bool) (map[string]int64, error) {
 	var (
 		cursor uint64
 		err    error
@@ -131,9 +131,11 @@ func (c *redisCountersNamespace) PullPendingCounters(ctx context.Context) (map[s
 			m[key[len(fmt.Sprintf("%s:", c.ns)):]] = i
 		}
 
-		_, err = c.redisClient.Del(ctx, keys...).Result()
-		if err != nil {
-			slog.Error("failed to deleted pending keys", "keys", keys, "err", err, "ns", c.ns)
+		if delete {
+			_, err = c.redisClient.Del(ctx, keys...).Result()
+			if err != nil {
+				slog.Error("failed to deleted pending keys", "keys", keys, "err", err, "ns", c.ns)
+			}
 		}
 
 		if cursor == 0 {

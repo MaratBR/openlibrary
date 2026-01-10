@@ -9,7 +9,7 @@ import "fmt"
 templ BookTOC(
     ctx context.Context,
     bookID int64,
-    chapters []app.BookChapterDto,
+    chapters []app.ChapterListDto,
     activeChapterID int64,
 ) {
     {{ l := i18n.GetLocalizer(ctx) }}

@@ -14,7 +14,7 @@ import (
 
 type AnalyticsPeriod int32
 
-const AnalyticsPeriodTotal AnalyticsPeriod = 0
+const ANALYTICS_PERIOD_TOTAL AnalyticsPeriod = 0
 
 type AnalyticsPeriods struct {
 	Hour  AnalyticsPeriod
@@ -39,18 +39,19 @@ func CurrentAnalyticsPeriods(now time.Time) AnalyticsPeriods {
 		month     int
 		dayInYear int
 		week      int
+		weekYear  int
 	)
 
 	year = now.Year()
 	month = int(now.Month())
-	dayInYear = now.Day()
-	_, week = now.ISOWeek()
+	dayInYear = now.YearDay()
+	weekYear, week = now.ISOWeek()
 
 	return AnalyticsPeriods{
 		Year:  AnalyticsPeriod(50_000 + year),
 		Month: AnalyticsPeriod(4_000_000 + year*100 + month),
 		Day:   AnalyticsPeriod(30_000_000 + year*1_000 + dayInYear),
-		Week:  AnalyticsPeriod(2_000_000 + year*100 + week),
+		Week:  AnalyticsPeriod(2_000_000 + weekYear*100 + week),
 		Hour:  AnalyticsPeriod(1_000_000_000 + year*100_000 + dayInYear*100 + now.Hour()),
 	}
 }
@@ -60,11 +61,28 @@ type BookViewEntry struct {
 	Views  int64
 }
 
+type ViewMetadata struct {
+	UserID uuid.NullUUID
+	IP     net.IP
+}
+
+func (m ViewMetadata) UniqueID() string {
+	if m.UserID.Valid {
+		return "U" + m.UserID.UUID.String()
+	}
+
+	if m.IP != nil {
+		return m.IP.String()
+	}
+
+	return "unknown"
+}
+
 type ViewsService interface {
-	IncrBookView(ctx context.Context, bookID int64, userID uuid.NullUUID, ip net.IP) error
+	IncrBookView(ctx context.Context, bookID int64, meta ViewMetadata) error
+	IncrChapterView(ctx context.Context, bookID, chapterID int64, meta ViewMetadata) error
 	GetBookViews(ctx context.Context, bookID int64) (Views, error)
 	GetMostViewedBooks(ctx context.Context, period AnalyticsPeriod) ([]BookViewEntry, error)
-
 	CommitPendingViewsToDB(ctx context.Context)
 }
 

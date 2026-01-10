@@ -12,7 +12,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
-	"github.com/MaratBR/openlibrary/web/webfx"
+	"github.com/MaratBR/openlibrary/web/webinfra"
 	"github.com/NYTimes/gziphandler"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/fx"
@@ -42,7 +42,7 @@ var FXModule = fx.Module("public_ui_handler",
 		newAPIBookManagerController,
 		newAPICollectionController,
 		newAPICommentsController,
-		webfx.AsMountableHandler(newHandler),
+		webinfra.AsMountableHandler(newHandler),
 	))
 
 // i should really do something with number of params in this function...
@@ -71,7 +71,7 @@ func newHandler(
 	apiControllerComments *apiControllerComments,
 
 	flashMiddleware flash.Middleware,
-) webfx.MountableHandler {
+) webinfra.MountableHandler {
 	h := &Handler{}
 
 	h.r = chi.NewRouter()

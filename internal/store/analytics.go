@@ -1,0 +1,6 @@
+package store
+
+const (
+	ANALYTICS_VIEW_COUNTER_TYPE_BOOK    int16 = 0
+	ANALYTICS_VIEW_COUNTER_TYPE_CHAPTER int16 = 1
+)

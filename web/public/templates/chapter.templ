@@ -20,6 +20,7 @@ templ Chapter(
     options ChapterProgressTrackerOptions,
 ) {
     {{
+        l := i18n.GetLocalizer(ctx)
         uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
     }}
 
@@ -79,7 +80,9 @@ templ Chapter(
                     <div class="mt-8">
                         <a class="btn btn--ghost btn--lg" href={ fmt.Sprintf("/book/%d/chapters/%d/comments", chapter.BookID, chapter.ID) }>
                             <i class="fa-solid fa-comments"></i>
-                            { chapter.CommentsCount } comments
+                            { l.TData("common.commentsCount", map[string]int64{
+                                "Count": chapter.CommentsCount,
+                            }) }
                         </a>
                     </div>
                 </div>
@@ -210,6 +213,7 @@ templ ChapterContent(content string) {
 
 templ ChapterComments(
     comments []app.CommentDto,
+    nextCursor uint32,
 ) {
     @standardPageLayout(standardPageLayoutProps{
         DisableFooter: true,
@@ -221,70 +225,89 @@ templ ChapterComments(
                 </h1>
             </header>
 
-            @ChapterCommentsFragment(comments)
+            @ChapterCommentsFragment(comments, nextCursor)
         </div>
     }
 }
 
-templ ChapterCommentsFragment(comments []app.CommentDto) {
+templ ChapterCommentsFragment(
+    comments []app.CommentDto, 
+    nextCursor uint32,
+) {
     {{
+        r := olhttp.GetRequest(ctx)
+        url := *r.URL
+        urlQuery := url.Query()
+        urlQuery.Set("cursor", strconv.FormatInt(int64(nextCursor), 10))
+        urlQuery.Set("ajax", "1")
+        url.RawQuery = urlQuery.Encode()
         l := i18n.GetLocalizer(ctx)
     }}
 
-    <div id="ChapterCommentsFragment" class="space-y-4 card p-4 mb-8">
-        for _, comment := range comments {
-            <div class="chapter-comment" 
-                x-data={fmt.Sprintf("Comment({id:'%d',liked:%t,replies:%d})", comment.ID, comment.LikedAt.Valid, comment.Subcomments)}>
-                <header class="chapter-comment__header">
-                    <img class="avatar border size-12" src={ comment.User.Avatar } />
+    <div class="card p-4 mb-8" id="ChapterCommentsFragment">
+        <div id="ChapterCommentsList" class="space-y-4" x-merge="append">
+            for _, comment := range comments {
+                <div class="chapter-comment"
+                    x-data={fmt.Sprintf("Comment({id:'%d',liked:%t,replies:%d})", comment.ID, comment.LikedAt.Valid, comment.Subcomments)}>
+                    <header class="chapter-comment__header">
+                        <img class="avatar border size-12" src={ comment.User.Avatar } />
 
-                    <strong>
-                        { comment.User.Name }
-                    </strong>
-                </header>
+                        <strong>
+                            { comment.User.Name }
+                        </strong>
+                    </header>
 
 
-                <div class="chapter-comment__content">
-                    @webcomponents.UserContent(webcomponents.UserContentProps{
-                        Content: comment.Content,
-                    })
+                    <div class="chapter-comment__content">
+                        @webcomponents.UserContent(webcomponents.UserContentProps{
+                            Content: comment.Content,
+                        })
+                    </div>
+
+                    <div class="chapter-comment__actions">
+                        <button x-bind="like"
+                            if comment.LikedAt.Valid {
+                                data-set="true"
+                            } 
+                            >
+                            <i class="fa-solid fa-thumbs-up"></i>
+                            {{
+                                likes := comment.RealLikesCount()
+                            }}
+                            if likes > 0 {
+                                { likes }
+                            }
+                        </button>
+
+                        <button x-bind="reply">
+                            <i class="fa-solid fa-reply"></i>&nbsp;{ l.T("common.reply") }
+                        </button>
+                    </div>
+
+                    <div class="comment-replies" x-ref="replies">
+                        <div x-ref="slotReply" class="contents" />
+                        <button 
+                            if comment.Subcomments == 0 {
+                                x-cloak
+                            }
+                            x-bind="openRepliesBtn" 
+                            class="btn btn--ghost comment-replies__open">
+                            <i class="fa-solid fa-caret-down"></i>
+                            { comment.Subcomments } replies
+                        </button>
+                        <div x-ref="slotReplies" class="contents" />
+                    </div>
                 </div>
-
-                <div class="chapter-comment__actions">
-                    <button x-bind="like"
-                        if comment.LikedAt.Valid {
-                            data-set="true"
-                        } 
-                        >
-                        <i class="fa-solid fa-thumbs-up"></i>
-                        {{
-                            likes := comment.RealLikesCount()
-                        }}
-                        if likes > 0 {
-                            { likes }
-                        }
-                    </button>
-
-                    <button x-bind="reply">
-                        <i class="fa-solid fa-reply"></i>&nbsp;{ l.T("common.reply") }
-                    </button>
-                </div>
-
-                <div class="comment-replies" x-ref="replies">
-                    <div x-ref="slotReply" class="contents" />
-                    <button 
-                        if comment.Subcomments == 0 {
-                            x-cloak
-                        }
-                        x-bind="openRepliesBtn" 
-                        class="btn btn--ghost comment-replies__open">
-                        <i class="fa-solid fa-caret-down"></i>
-                        { comment.Subcomments } replies
-                    </button>
-                    <div x-ref="slotReplies" class="contents" />
-                </div>
-            </div>
+            }
+        </div>
+        if nextCursor > 0 {
+            <button 
+                x-init 
+                @click={fmt.Sprintf("$ajax(%q, {target:'ChapterCommentsList ChapterCommentNext'})", url.String())} 
+                id="ChapterCommentNext" 
+                class="btn btn--ghost btn--lg mt-4">
+                { l.T("common.loadMore") }
+            </button>
         }
-    
     </div>
 }

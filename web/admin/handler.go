@@ -9,7 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
-	"github.com/MaratBR/openlibrary/web/webfx"
+	"github.com/MaratBR/openlibrary/web/webinfra"
 	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
@@ -23,7 +23,7 @@ var FXModule = fx.Module("http_admin", fx.Provide(
 	newDebugController,
 	newLoginController,
 	newUsersController,
-	webfx.AsMountableHandler(newHandler),
+	webinfra.AsMountableHandler(newHandler),
 ))
 
 type Handler struct {

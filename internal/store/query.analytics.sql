@@ -1,14 +1,14 @@
 -- name: Analytics_IncrView :exec
-insert into ol_analytics.view_bucket ("period", book_id, "count")
-values ($1, $2, $3)
-on conflict ("period", book_id)
-do update set "count" = EXCLUDED."count" + ol_analytics.view_bucket."count";
+insert into ol_analytics.view_counter ("period", book_id, view_count, entity_type, entity_id)
+values (sqlc.arg('period'), sqlc.arg('book_id'), sqlc.arg('incr_by'), sqlc.arg('entity_type'), sqlc.arg('entity_id'))
+on conflict (period, entity_type, entity_id)
+do update set view_count = EXCLUDED.view_count + ol_analytics.view_bucket.view_count;
 
 -- name: Analytics_GetViews :many
-select "period", count
-from ol_analytics.view_bucket
+select "period", view_count
+from ol_analytics.view_counter
 where 
-    book_id = sqlc.arg('book_id') and (
+    book_id = sqlc.arg('book_id') and entity_type = 0 and (
         "period" = 0 or
         "period" = sqlc.arg('year_period') or
         "period" = sqlc.arg('month_period') or
@@ -17,19 +17,28 @@ where
         "period" = sqlc.arg('hour_period')
     );
 
--- name: Analytics_GetViewBuckets :many
-select "period", count
-from ol_analytics.view_bucket
-where book_id = $1 and "period" >= sqlc.arg('from') and "period" <= sqlc.arg('to');
+-- name: Analytics_GetChapterViews :many
+select "period", sum(view_count) as agg_view_count
+from ol_analytics.view_counter
+where
+    book_id = sqlc.arg('book_id') and entity_type = 1 and (
+        "period" = 0 or
+        "period" = sqlc.arg('year_period') or
+        "period" = sqlc.arg('month_period') or
+        "period" = sqlc.arg('week_period') or
+        "period" = sqlc.arg('day_period') or
+        "period" = sqlc.arg('hour_period')
+    )
+group by entity_id;
 
 -- name: Analytics_GetTotalViews :one
-select count
-from ol_analytics.view_bucket
-where book_id = $1 and "period" = 0; 
+select view_count
+from ol_analytics.view_counter
+where book_id = $1 and "period" = 0 and entity_type = 0; 
 
--- name: Analytics_GetMostViewedBooks :many
-select book_id, count
-from ol_analytics.view_bucket
-where "period" = $1
-order by count desc
+-- name: Analytics_GetMostViewedBooksByBookViewsOnly :many
+select book_id, view_count
+from ol_analytics.view_counter
+where "period" = $1 and entity_type = 0
+order by view_count desc
 limit $2;
