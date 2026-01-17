@@ -5,28 +5,29 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log/slog"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/elastic/go-elasticsearch/v9"
-	"github.com/elastic/go-elasticsearch/v9/esapi"
-	"github.com/elastic/go-elasticsearch/v9/typedapi/types"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"go.uber.org/zap"
 )
 
 type bookReindexService struct {
-	mutex  sync.Mutex
-	db     store.DBTX
-	cancel context.CancelFunc
-	client *elasticsearch.TypedClient
+	mutex    sync.Mutex
+	db       store.DBTX
+	cancel   context.CancelFunc
+	osClient *opensearchapi.Client
+	log      *zap.SugaredLogger
 }
 
-func NewBookFullReindexService(db store.DBTX, client *elasticsearch.TypedClient) BookReindexService {
-	return &bookReindexService{db: db, client: client}
+func NewBookFullReindexService(db store.DBTX, osClient *opensearchapi.Client, log *zap.SugaredLogger) BookReindexService {
+
+	return &bookReindexService{db: db, osClient: osClient, log: log}
 }
 
 func (s *bookReindexService) ScheduleReindexAll() error {
@@ -76,20 +77,36 @@ func (s *bookReindexService) Reindex(ctx context.Context, id int64) error {
 			int(book.Chapters))),
 	}
 	idx.Normalize()
-	_, err = s.client.Index(elasticstore.BOOKS_INDEX_NAME).Id(strconv.FormatInt(book.ID, 10)).Request(idx).Do(ctx)
+
+	docBytes, err := json.Marshal(idx)
 	if err != nil {
 		return err
 	}
+	req := opensearchapi.IndexReq{
+		Index:      elasticstore.BOOKS_INDEX_NAME,
+		DocumentID: strconv.FormatInt(book.ID, 10),
+		Body:       bytes.NewReader(docBytes),
+	}
+	_, err = s.osClient.Index(ctx, req)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (s *bookReindexService) reindexAll(ctx context.Context, batchSize int) {
-	_, err := s.client.DeleteByQuery(elasticstore.BOOKS_INDEX_NAME).Query(&types.Query{
-		MatchAll: types.NewMatchAllQuery(),
-	}).Do(ctx)
-
+	_, err := s.osClient.Document.DeleteByQuery(ctx, opensearchapi.DocumentDeleteByQueryReq{
+		Indices: []string{elasticstore.BOOKS_INDEX_NAME},
+		Body: strings.NewReader(`{
+			"query": {
+				"match_all": {}
+			}
+		}`),
+	})
 	if err != nil {
-		slog.Error("failed to delete all docs from index", "index", elasticstore.BOOKS_INDEX_NAME, "err", err)
+		s.log.Errorw("failed to delete everything from index", "err", err)
+		return
 	}
 
 	var cursor int64
@@ -162,20 +179,14 @@ func (s *bookReindexService) reindexAll(ctx context.Context, batchSize int) {
 			}
 		}
 
-		res, err := esapi.BulkRequest{
-			Index:  elasticstore.BOOKS_INDEX_NAME,
-			Body:   &body,
-			Pretty: true,
-		}.Do(ctx, s.client)
+		req := opensearchapi.BulkReq{
+			Index: elasticstore.BOOKS_INDEX_NAME,
+			Body:  &body,
+		}
+		_, err = s.osClient.Bulk(ctx, req)
 
 		if err != nil {
 			slog.Error("failed to index books batch", "logger", "BookFullReindexService", "err", err)
-			return
-		}
-
-		if res.IsError() {
-			resBytes, _ := io.ReadAll(res.Body)
-			slog.Error("failed to index books batch", "logger", "BookFullReindexService", "err", string(resBytes))
 			return
 		}
 

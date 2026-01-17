@@ -10,10 +10,10 @@ import (
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/MaratBR/openlibrary/web/webinfra"
-	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"go.uber.org/fx"
 )
 
@@ -36,7 +36,7 @@ func newHandler(
 	cache *cache.Cache,
 	sessionService app.SessionService,
 	userService app.UserService,
-	esClient *elasticsearch.TypedClient,
+	osClient *opensearchapi.Client,
 	loginController *loginController,
 	tagsController *tagsController,
 	usersController *usersController,

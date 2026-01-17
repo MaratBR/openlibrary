@@ -1,14 +1,13 @@
 package elasticstore
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"log/slog"
 	"strconv"
 
-	"github.com/elastic/go-elasticsearch/v9"
-	"github.com/elastic/go-elasticsearch/v9/typedapi/core/search"
-	"github.com/elastic/go-elasticsearch/v9/typedapi/types"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 )
 
 type Int32 struct {
@@ -50,26 +49,26 @@ type SearchResult struct {
 	Total  int64
 }
 
-func createNumberRangeQuery(rng Range) *types.NumberRangeQuery {
-	rangeQuery := types.NewNumberRangeQuery()
+func createNumberRangeQuery(rng Range) *NumberRangeQuery {
+	rangeQuery := &NumberRangeQuery{}
 
 	if rng.Min.Valid {
-		value := types.Float64(float64(rng.Min.Int32))
+		value := float64(rng.Min.Int32)
 		rangeQuery.Gte = &value
 	}
 	if rng.Max.Valid {
-		value := types.Float64(float64(rng.Max.Int32))
+		value := float64(rng.Max.Int32)
 		rangeQuery.Lte = &value
 	}
 
 	return rangeQuery
 }
 
-func createAndTermQuery(term string, values []types.FieldValue) types.Query {
-	subQueries := make([]types.Query, len(values))
+func createAndTermQuery(term string, values []FieldValue) Query {
+	subQueries := make([]Query, len(values))
 	for i := 0; i < len(values); i++ {
-		subQueries[i] = types.Query{
-			Term: map[string]types.TermQuery{
+		subQueries[i] = Query{
+			Term: map[string]TermQuery{
 				term: {
 					Value: values[i],
 				},
@@ -77,18 +76,18 @@ func createAndTermQuery(term string, values []types.FieldValue) types.Query {
 		}
 	}
 
-	return types.Query{
-		Bool: &types.BoolQuery{
+	return Query{
+		Bool: &BoolQuery{
 			Must: subQueries,
 		},
 	}
 }
 
-func createNegativeAndTermQuery(term string, values []types.FieldValue) types.Query {
-	subQueries := make([]types.Query, len(values))
+func createNegativeAndTermQuery(term string, values []FieldValue) Query {
+	subQueries := make([]Query, len(values))
 	for i := 0; i < len(values); i++ {
-		subQueries[i] = types.Query{
-			Term: map[string]types.TermQuery{
+		subQueries[i] = Query{
+			Term: map[string]TermQuery{
 				term: {
 					Value: values[i],
 				},
@@ -96,8 +95,8 @@ func createNegativeAndTermQuery(term string, values []types.FieldValue) types.Qu
 		}
 	}
 
-	return types.Query{
-		Bool: &types.BoolQuery{
+	return Query{
+		Bool: &BoolQuery{
 			MustNot: subQueries,
 		},
 	}
@@ -105,19 +104,19 @@ func createNegativeAndTermQuery(term string, values []types.FieldValue) types.Qu
 
 func Search(
 	ctx context.Context,
-	client *elasticsearch.TypedClient,
+	client *opensearchapi.Client,
 	req SearchRequest,
 ) (SearchResult, error) {
-	must := []types.Query{
+	must := []Query{
 		{
-			Term: map[string]types.TermQuery{
+			Term: map[string]TermQuery{
 				"isTrashed": {
 					Value: false,
 				},
 			},
 		},
 		{
-			Term: map[string]types.TermQuery{
+			Term: map[string]TermQuery{
 				"isPubliclyVisible": {
 					Value: true,
 				},
@@ -126,14 +125,14 @@ func Search(
 	}
 
 	if req.Query != "" {
-		must = append(must, types.Query{
-			QueryString: &types.QueryStringQuery{
+		must = append(must, Query{
+			QueryString: &QueryStringQuery{
 				Query: req.Query,
 			},
 		})
 	}
 
-	rangeQueries := map[string]types.RangeQuery{}
+	rangeQueries := map[string]RangeQuery{}
 
 	if req.Words.Has() {
 		rangeQueries["words"] = createNumberRangeQuery(req.Words)
@@ -146,13 +145,13 @@ func Search(
 	}
 
 	if len(rangeQueries) > 0 {
-		must = append(must, types.Query{
+		must = append(must, Query{
 			Range: rangeQueries,
 		})
 	}
 
 	if len(req.IncludeUsers) > 0 {
-		ids := make([]types.FieldValue, len(req.IncludeUsers))
+		ids := make([]FieldValue, len(req.IncludeUsers))
 		for i := 0; i < len(req.IncludeUsers); i++ {
 			ids[i] = req.IncludeUsers[i]
 		}
@@ -160,7 +159,7 @@ func Search(
 	}
 
 	if len(req.ExcludeUsers) > 0 {
-		ids := make([]types.FieldValue, len(req.IncludeUsers))
+		ids := make([]FieldValue, len(req.IncludeUsers))
 		for i := 0; i < len(req.ExcludeUsers); i++ {
 			ids[i] = req.ExcludeUsers[i]
 		}
@@ -168,7 +167,7 @@ func Search(
 	}
 
 	if len(req.IncludeTags) > 0 {
-		ids := make([]types.FieldValue, len(req.IncludeTags))
+		ids := make([]FieldValue, len(req.IncludeTags))
 		for i := 0; i < len(req.IncludeTags); i++ {
 			ids[i] = req.IncludeTags[i]
 		}
@@ -176,7 +175,7 @@ func Search(
 	}
 
 	if len(req.ExcludeTags) > 0 {
-		ids := make([]types.FieldValue, len(req.ExcludeTags))
+		ids := make([]FieldValue, len(req.ExcludeTags))
 		for i := 0; i < len(req.ExcludeTags); i++ {
 			ids[i] = req.ExcludeTags[i]
 		}
@@ -189,42 +188,51 @@ func Search(
 		from = 0
 	}
 
-	esReq := &search.Request{
-		Query: &types.Query{
-			Bool: &types.BoolQuery{
+	searchReqBody := SearchReqBody{
+		Query: Query{
+			Bool: &BoolQuery{
 				Must: must,
 			},
 		},
-		From: &from,
-		Size: &size,
+		From: from,
+		Size: size,
 	}
-	resp, err := client.Search().Request(esReq).Do(ctx)
+	searchReqBodyBytes, err := json.Marshal(searchReqBody)
+	if err != nil {
+		return SearchResult{}, err
+	}
+
+	searchRequest := opensearchapi.SearchReq{
+		Indices: []string{BOOKS_INDEX_NAME},
+		Body:    bytes.NewReader(searchReqBodyBytes),
+	}
+	resp, err := client.Search(ctx, &searchRequest)
 
 	if err != nil {
-		onSearchFail(esReq, err)
+		onSearchFail(searchRequest, err)
 		return SearchResult{}, err
 	}
 
 	results := make([]SearchRow, 0, len(resp.Hits.Hits))
 
 	if len(resp.Hits.Hits) == 0 {
-		onSearchEmpty(esReq)
+		onSearchEmpty(searchRequest)
 	}
 
 	for i := 0; i < len(resp.Hits.Hits); i++ {
 		hit := resp.Hits.Hits[i]
 		var result SearchRow
 
-		if hit.Id_ == nil {
+		if hit.ID == "" {
 			continue
 		}
 
-		id, err := strconv.ParseInt(*hit.Id_, 10, 64)
+		id, err := strconv.ParseInt(hit.ID, 10, 64)
 		if err != nil {
 			continue
 		}
 
-		err = json.Unmarshal(hit.Source_, &result)
+		err = json.Unmarshal(hit.Source, &result)
 
 		if err != nil {
 			continue
@@ -237,12 +245,12 @@ func Search(
 
 	return SearchResult{
 		Hits:   results,
-		TookMS: resp.Took,
-		Total:  resp.Hits.Total.Value,
+		TookMS: int64(resp.Took),
+		Total:  int64(resp.Hits.Total.Value),
 	}, nil
 }
 
-func onSearchFail(req *search.Request, err error) {
+func onSearchFail(req opensearchapi.SearchReq, err error) {
 	jsonText, err_ := json.Marshal(req)
 	if err_ != nil {
 		slog.Error("failed to serialize elastic request to JSON", "err", err_)
@@ -252,7 +260,7 @@ func onSearchFail(req *search.Request, err error) {
 	}
 }
 
-func onSearchEmpty(req *search.Request) {
+func onSearchEmpty(req opensearchapi.SearchReq) {
 	jsonText, err := json.Marshal(req)
 	if err == nil {
 		slog.Debug("empty search result", "req", string(jsonText))

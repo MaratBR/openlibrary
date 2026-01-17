@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -17,10 +19,11 @@ import (
 	"github.com/MaratBR/openlibrary/internal/session"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/internal/upload"
-	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/knadh/koanf/v2"
 	"github.com/mailgun/errors"
+	"github.com/opensearch-project/opensearch-go/v4"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 	"golang.org/x/text/language"
@@ -32,7 +35,7 @@ var infraModule = fx.Module("infra", fx.Provide(
 	newLocaleProvider,
 	createCache,
 	createMailService,
-	setupElasticsearch,
+	createOpensearch,
 	func() *csrf.Handler {
 		return csrf.NewHandler("CSRF HANDLER HERE")
 	},
@@ -153,15 +156,24 @@ func createCache(config *koanf.Koanf) *cache.Cache {
 	return cacheInstance
 }
 
-func setupElasticsearch(config *koanf.Koanf) *elasticsearch.TypedClient {
+func createOpensearch(config *koanf.Koanf) *opensearchapi.Client {
 	elasticsearchURL := config.String("elasticsearch.url")
 	if elasticsearchURL == "" {
 		slog.Error("elasticsearch.url is empty")
 		os.Exit(1)
 	}
 
-	client, err := elasticsearch.NewTypedClient(elasticsearch.Config{
-		Addresses: []string{elasticsearchURL},
+	client, err := opensearchapi.NewClient(opensearchapi.Config{
+		Client: opensearch.Config{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+			Addresses: []string{elasticsearchURL},
+			Username:  config.String("opensearch.user"),
+			Password:  config.String("opensearch.password"),
+		},
 	})
 	if err != nil {
 		panic(err)

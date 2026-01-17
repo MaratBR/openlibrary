@@ -10,8 +10,8 @@ import (
 	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/lib/gset"
-	"github.com/elastic/go-elasticsearch/v9"
 	"github.com/gofrs/uuid"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 )
 
 type searchService struct {
@@ -20,7 +20,7 @@ type searchService struct {
 	tagsService   TagsService
 	uploadService *UploadService
 	userService   UserService
-	esClient      *elasticsearch.TypedClient
+	osClient      *opensearchapi.Client
 }
 
 // ExplainSearchQuery implements SearchService.
@@ -134,7 +134,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 	}
 
 	now := time.Now()
-	result, err := elasticstore.Search(ctx, s.esClient, esReq)
+	result, err := elasticstore.Search(ctx, s.osClient, esReq)
 	tookTotal := time.Since(now).Microseconds()
 	if err != nil {
 		return nil, err
@@ -254,13 +254,13 @@ func (s *searchService) GetBookExtremes(ctx context.Context) (*BookExtremes, err
 	}, nil
 }
 
-func NewSearchService(db store.DBTX, tagsService TagsService, uploadService *UploadService, userService UserService, esClient *elasticsearch.TypedClient) SearchService {
+func NewSearchService(db store.DBTX, tagsService TagsService, uploadService *UploadService, userService UserService, osClient *opensearchapi.Client) SearchService {
 	return &searchService{
 		db:            db,
 		queries:       store.New(db),
 		tagsService:   tagsService,
 		uploadService: uploadService,
 		userService:   userService,
-		esClient:      esClient,
+		osClient:      osClient,
 	}
 }
