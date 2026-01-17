@@ -12,7 +12,7 @@ type Query struct {
 type SearchReqBody struct {
 	Query Query `json:"query"`
 	From  int   `json:"from,omitempty"`
-	Size  int   `json:"from,omitempty"`
+	Size  int   `json:"size,omitempty"`
 }
 
 type TermQuery struct {
