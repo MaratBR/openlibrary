@@ -15,54 +15,52 @@ templ BookManagerBook(book *app.ManagerBookDetailsDto) {
     @bmLayout(l.T("bookManager.title") + " - " + book.Name) {
         @i18nExtractKeysByPrefix(l, "bookManager.edit")
 
-        <header class="page-header-container">
-            <h1 class="page-header">
-                { book.Name }
-            </h1>
-            <div class="page-header__after">
-                <a href={fmt.Sprintf("/book/%d", book.ID)} class="link">
-                    { l.T("bookManager.edit.goToPage") }&nbsp;
-                    <i class="fa-solid fa-arrow-right"></i>
-                </a>
-            </div>
-        </header>
+        <section class="dashboard-content">
+            <header class="page-header-container">
+                <h1 class="page-header">
+                    { book.Name }
+                </h1>
+                <div class="page-header__after">
+                    <a href={fmt.Sprintf("/book/%d", book.ID)} class="link">
+                        { l.T("bookManager.edit.goToPage") }&nbsp;
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </header>
 
-        @webcomponents.TabsWrap(webcomponents.TabsWrapProps{
-            DefaultTab: "general",
-        }) {
-            @webcomponents.TabsList(webcomponents.TabsListProps{
+            @webcomponents.TabsWrap(webcomponents.TabsWrapProps{
                 DefaultTab: "general",
-                Tabs: []webcomponents.Tab{
-                    {ID: "general", Label: l.T("bookManager.edit.generalInformation")},
-                    {ID: "cover", Label: l.T("bookManager.edit.cover")},
-                    {ID: "chapters", Label: l.T("bookManager.edit.chapters")},
-                },
-            })
-            @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
-                ID: "general",
             }) {
-                <div class="card">
+                <div class="border-b -mx-8 px-8">
+                    @webcomponents.TabsList(webcomponents.TabsListProps{
+                        DefaultTab: "general",
+                        Tabs: []webcomponents.Tab{
+                            {ID: "general", Label: l.T("bookManager.edit.generalInformation")},
+                            {ID: "cover", Label: l.T("bookManager.edit.cover")},
+                            {ID: "chapters", Label: l.T("bookManager.edit.chapters")},
+                        },
+                    })
+                </div>
+                @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
+                    ID: "general",
+                }) {
                     @bookEditForm(book)
-                </div>
-            }
+                }
 
-            @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
-                ID: "cover",
-            }) {
-                <div class="card">
+                @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
+                    ID: "cover",
+                }) {
                     @bookCoverUploadForm(book)
-                </div>
-            }
+                }
 
-            @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
-                ID: "chapters",
-                KeepUnmounted: true,
-            }) {
-                <div class="card">
+                @webcomponents.TabsPanel(webcomponents.TabsPanelProps{
+                    ID: "chapters",
+                    KeepUnmounted: true,
+                }) {
                     @bookChapterForm(book)
-                </div>
+                }
             }
-        }
+        </section>
     }
 }
 

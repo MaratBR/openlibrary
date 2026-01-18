@@ -11,12 +11,12 @@
 
     &--primary {
         .tab {
-            @apply font-medium relative mx-2 border-transparent text-muted-foreground hover:text-foreground;
+            @apply font-medium relative mx-2 border-transparent text-muted-foreground hover:text-foreground transition;
             padding-bottom: 3px;
 
             &::after {
                 content: ' ';
-                @apply block absolute left-0 right-0 bottom-0;
+                @apply block absolute left-0 right-0 bottom-0 transition;
                 height: 3px;
             }
 

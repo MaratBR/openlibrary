@@ -19,15 +19,9 @@
         @apply v-start;
     }
 
-    thead {
-        tr {
+    tbody {
+        tr:nth-child(2n) {
             @apply bg-background;
-        }
-    }
-
-    tfoot {
-        tr:first-child {
-            @apply border-t;
         }
     }
 }

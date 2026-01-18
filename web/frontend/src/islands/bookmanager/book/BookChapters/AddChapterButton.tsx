@@ -43,7 +43,7 @@ export default function AddChapterButton({ bookId }: { bookId: string }) {
       </button>
       <div
         style={{ display: open ? undefined : 'none' }}
-        class="card border-none relative p-4 mt-1 mb-6"
+        class="shadow-sm rounded-lg border-none relative p-4 mt-1 mb-6"
       >
         <input
           ref={inputRef}
