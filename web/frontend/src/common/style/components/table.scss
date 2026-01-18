@@ -1,10 +1,18 @@
 .table {
     width: 100%;
     table-layout: fixed;
-    @apply border border-border border-b-2 bg-card;
+    @apply bg-card;
 
     td, th {
         @apply p-2 text-start font-normal;
+    }
+
+    tr {
+        @apply border-b;
+    }
+
+    th {
+        @apply font-medium;
     }
 
     td {
@@ -12,8 +20,8 @@
     }
 
     thead {
-        tr:last-child {
-            @apply border-b;
+        tr {
+            @apply bg-background;
         }
     }
 

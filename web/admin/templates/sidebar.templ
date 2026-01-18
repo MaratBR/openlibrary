@@ -6,16 +6,16 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ sidebar() {
     {{ l := i18n.GetLocalizer(ctx) }}
-		<aside class="sitebar">
+		<aside class="dashboard-sidebar">
             <div class="flex justify-center my-4">
-                @logo()
+                <img class="h-20" src="/_/embed-assets/logo.svg" />
             </div>
-            <a href="/?ol.from=admin" class="sitebar-ghost-btn inline-block text-sm w-full">
+            <a href="/?ol.from=admin" class="dashboard-sidebar-ghost-btn inline-block text-sm w-full">
                 <i class="fa-solid fa-arrow-left"></i>
                 { l.T("admin.goBackToSite") }
             </a>
-            <hr class="sitebar-hr my-3" />
-			<ul class="sitebar-list">
+            <hr class="dashboard-sidebar-hr my-3" />
+			<ul class="dashboard-sidebar-list">
                 @sidebarItem("/admin", "fa-solid fa-house") {
                     <span>{ l.T("admin.sidebar.home") }</span>
                 }
@@ -53,9 +53,9 @@ templ sidebarItem(href, icon string) {
     
     <li
         if isCurrent {
-            class="sitebar-item sitebar-item--active"
+            class="dashboard-sidebar-item dashboard-sidebar-item--active"
         } else {
-            class="sitebar-item"
+            class="dashboard-sidebar-item"
         }
         >
         <a 
@@ -63,10 +63,10 @@ templ sidebarItem(href, icon string) {
                 data-link-active="true"
             }
             href={templ.SafeURL(href)}>
-            <div class="sitebar-item__icon">
+            <div class="dashboard-sidebar-item__icon">
                 <i class={ icon }></i>
             </div>
-            <div class="sitebar-item__label">
+            <div class="dashboard-sidebar-item__label">
                 { children... }
             </div>
         </a>

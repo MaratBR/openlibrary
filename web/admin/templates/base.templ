@@ -3,18 +3,13 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/flash"
 
-templ logo() {
-    <img class="h-20" src="/_/embed-assets/logo-dark.svg" />
-}
-
-
 templ flashes() {
     {{
         arr := flash.PullFlashes(ctx)
     }}
 
     if len(arr) > 0 {
-        <div style="left: var(--sitebar-width);" class="fixed top-0 right-0 p-1 z-20">
+        <div style="left: var(--dashboard-sidebar-width);" class="fixed top-0 right-0 p-1 z-20">
             for _, f := range arr {
                 <div x-data="{}" class="bg-emerald-400 border-emerald-800 border p-2 relative min-h-10">
                     @f
@@ -32,7 +27,7 @@ templ dashboardLayout(title string) {
     @baseLayout(title) {
         @flashes()
         @sidebar()
-		<div class="sitebar-body">
+		<div class="dashboard-sidebar-body">
             { children... }
         </div>
     }

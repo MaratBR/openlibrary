@@ -99,56 +99,64 @@
 }
 
 :root {
-    --sitebar-width: 160px;
-    --sitebar-item-height: 36px;
-    --sitebar-item-icon-width: 36px;
+    --dashboard-sidebar-width: 220px;
+    --dashboard-sidebar-item-height: 36px;
+    --dashboard-sidebar-item-icon-width: 36px;
 }
 
-.sitebar {
-    @apply fixed bg-zinc-800 text-white h-full;
-    width: var(--sitebar-width);
+.dashboard-sidebar {
+    @apply fixed h-full;
+    width: var(--dashboard-sidebar-width);
     z-index: 1;
 }
 
-.sitebar-ghost-btn {
-    @apply rounded-md p-2 transition-colors hover:bg-white/20 text-white;
+.dashboard-sidebar-ghost-btn {
+    @apply rounded-xl py-4 px-2 mx-2 transition-colors font-semibold hover:bg-black/10 hover:text-foreground text-muted-foreground;
 }
 
-.sitebar-hr {
+.dashboard-sidebar-hr {
     @apply border-white/10;
 }
 
-.sitebar-item {
-    @apply cursor-pointer text-sm;
+.dashboard-sidebar-list {
+    @apply px-2 space-y-2;
+}
+
+.dashboard-sidebar-item {
+    @apply cursor-pointer text-md text-muted-foreground transition;
 
     &--active {
-        @apply bg-blue-500 text-white font-semibold;
+        @apply font-semibold bg-card shadow-sm rounded-xl text-foreground;
     }
     
     &:hover:not(&--active) {
-        @apply text-blue-300 bg-blue-300/10;
+        @apply text-foreground;
     }
 
     &__icon {
         @apply float-left text-center v-middle;
-        height: var(--sitebar-item-height);
-        width: var(--sitebar-item-icon-width);
+        height: var(--dashboard-sidebar-item-height);
+        width: var(--dashboard-sidebar-item-icon-width);
 
         & > i {
-            line-height: var(--sitebar-item-height);
+            line-height: var(--dashboard-sidebar-item-height);
         }
     }
 
     &__label {
-        padding: 8px 0 8px var(--sitebar-item-icon-width);
+        padding: 8px 0 8px var(--dashboard-sidebar-item-icon-width);
     }
 }
 
-.sitebar-body {
-    margin-left: var(--sitebar-width);
+.dashboard-sidebar-body {
+    margin-left: var(--dashboard-sidebar-width);
     @apply pl-4;
 
     &__content {
         @apply float-left w-full py-4 pr-4;
     }
+}
+
+.dashboard-content {
+    @apply bg-card rounded-2xl p-8 shadow-md;
 }

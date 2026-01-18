@@ -10,7 +10,7 @@ import "net/url"
 import "strings"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
-templ bmLayoutBase(title string, sitebar bool) {
+templ bmLayoutBase(title string, sidebar bool) {
 	@olhttp.Doc(olhttp.DocProps{
 		Title:        title,
 		Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js", "/_/assets/bookmanager-common.js"},
@@ -25,16 +25,16 @@ templ bmLayoutBase(title string, sitebar bool) {
 		}}
 		@i18nExtractKeysByPrefix(l, "common")
 
-		if sitebar {
-			<aside class="sitebar">
-				<ul class="sitebar-list">
-					@bmSidebarItem("fa-solid fa-house", "/books-manager", l.T("bookManager.home"))
-					@bmSidebarItem("fa-solid fa-book", "/books-manager/books", l.T("bookManager.books.title"))
-					@bmSidebarItem("fa-solid fa-rectangle-list", "/books-manager/collections", l.T("bookManager.collections"))
-				</ul>
+		if sidebar {
+			<aside class="dashboard-sidebar">
+				@bmSidebar([]bmSidebarItem{
+					{ Icon: "fa-solid fa-house", URL: "/books-manager", Text: l.T("bookManager.home") },
+					{ Icon: "fa-solid fa-book", URL: "/books-manager/books", Text: l.T("bookManager.books.title") },
+					{ Icon: "fa-solid fa-rectangle-list", URL: "/books-manager/collections", Text: l.T("bookManager.collections") },
+				})
 			</aside>
-			<div class="sitebar-body">
-				<div class="sitebar-body__content">
+			<div class="dashboard-sidebar-body">
+				<div class="dashboard-sidebar-body__content" id="BMContent">
 					@flashes()
 					{ children... }
 				</div>
@@ -45,27 +45,41 @@ templ bmLayoutBase(title string, sitebar bool) {
 	}
 }
 
-templ bmSidebarItem(icon, url, text string) {
+type bmSidebarItem struct {
+	Icon string
+	URL string
+	Text string
+}
+
+templ bmSidebar(items []bmSidebarItem) {
 	{{
 		r := olhttp.GetRequest(ctx)
-		active := r.URL.Path == url
 	}}
-	<li
-		if active {
-			class="sitebar-item sitebar-item--active"
-		} else {
-			class="sitebar-item"
+
+	<ul class="dashboard-sidebar-list">
+		for _, item := range items {
+			{{
+				active := r.URL.Path == item.URL
+			}}
+			<li
+				if active {
+					class="dashboard-sidebar-item dashboard-sidebar-item--active"
+				} else {
+					class="dashboard-sidebar-item"
+				}
+				>
+				<a href={ item.URL }>
+					<div class="dashboard-sidebar-item__icon">
+						<i class={ item.Icon }></i>
+					</div>
+					<div class="dashboard-sidebar-item__label">
+						{ item.Text }
+					</div>
+				</a>
+			</li>
+
 		}
-		>
-		<a href={ url }>
-			<div class="sitebar-item__icon">
-				<i class={ icon }></i>
-			</div>
-			<div class="sitebar-item__label">
-				{ text }
-			</div>
-		</a>
-	</li>
+	</ul>
 }
 
 templ bmLayout(title string) {
@@ -74,7 +88,7 @@ templ bmLayout(title string) {
 	}
 }
 
-templ bmLayoutNoSiteBar(title string) {
+templ bmLayoutNoSidebar(title string) {
 	@bmLayoutBase(title, false) {
 		{ children... }
 	}
@@ -91,7 +105,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 		l := i18n.GetLocalizer(ctx)
 	}}
 	@bmMainPage("bookManager.books.title") {
-		<section>
+		<section class="dashboard-content">
 			<header class="page-header-container">
 				<h1 class="page-header">
 					{ l.T("bookManager.books.title") }

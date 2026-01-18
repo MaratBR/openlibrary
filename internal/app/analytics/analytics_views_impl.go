@@ -150,7 +150,7 @@ func updateCounter(
 	incr int64,
 	log *zap.SugaredLogger,
 ) {
-	log.Debug("incrementing views counter", "period", period, "bookID", bookID, "incrBy", incr)
+	log.Debugw("incrementing views counter", "period", period, "bookID", bookID, "incrBy", incr)
 	err := queries.Analytics_IncrView(ctx, store.Analytics_IncrViewParams{
 		BookID:     bookID,
 		EntityType: entityType,
@@ -159,7 +159,7 @@ func updateCounter(
 		Period:     int32(period),
 	})
 	if err != nil {
-		log.Error("failed to update counter for period", "period", period, "err", err)
+		log.Errorw("failed to update counter for period", "period", period, "err", err)
 	}
 }
 
