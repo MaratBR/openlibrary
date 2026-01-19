@@ -190,7 +190,7 @@ templ Tag(tag app.TagDetailsItemDto) {
                     { l.T("common.edit") }
                 </a>
 
-                <button class="btn btn--lg btn--destructive" x-init @click="alert('not implemented')">
+                <button class="btn btn--lg destructive" x-init @click="alert('not implemented')">
                     { l.T("common.delete") }
                 </button>
             </div>
@@ -314,7 +314,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                 </div>
 
                 <div class="flex gap-2 mt-10">
-                    <button class="btn btn--lg btn--primary" type="submit">
+                    <button class="btn btn--lg primary" type="submit">
                         { l.T("common.save") }
                     </button>
                 </div>

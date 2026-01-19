@@ -81,7 +81,7 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
       <div ref={rootEl} class="review-editor__content user-content user-content--editor" />
 
       <button
-        class="btn btn--lg btn--primary  mt-3"
+        class="btn btn--lg primary  mt-3"
         onClick={() => handleSave()}
         disabled={!formValid}
       >

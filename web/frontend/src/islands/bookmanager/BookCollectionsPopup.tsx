@@ -200,7 +200,7 @@ function BookCollectionsPopup({ data }: PreactIslandProps) {
         </ul>
         {hasChanges && (
           <button
-            class="btn btn--primary m-2"
+            class="btn primary m-2"
             disabled={addToCollections.isPending}
             onClick={() => addToCollections.mutate()}
           >

@@ -24,6 +24,10 @@ func (c *homeController) Register(r chi.Router) {
 		olhttp.WriteTemplate(w, r.Context(), templates.Home())
 	})
 
+	r.Get("/ui-demo", func(w http.ResponseWriter, r *http.Request) {
+		olhttp.WriteTemplate(w, r.Context(), templates.UIDemo())
+	})
+
 	r.Get("/__fragment/most-viewed-books", c.getMostViewedBooksWidget)
 }
 

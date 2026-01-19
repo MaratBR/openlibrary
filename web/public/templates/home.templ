@@ -67,3 +67,36 @@ templ HomeBooksListFragment(
     </ul>
     
 }
+
+templ UIDemo() {
+    @standardPageLayout(standardPageLayoutProps{
+        DisableHeader: true,
+        DisableFooter: true,
+        DisableFlashes: true,
+    }) {
+        <style>
+            .btn { min-width: 100px; }
+        </style>
+        <div class="p-8">
+            <h1>Buttons</h1>
+            <h2>Regular</h2>
+            <div class="flex flex-wrap gap-2">
+                <button class="btn">btn</button>
+                <button class="btn primary">btn primary</button>
+                <button class="btn destructive">btn destructive</button>
+            </div>
+            <h2>Outline</h2>
+            <div class="flex flex-wrap gap-2">
+                <button class="btn btn--outline">btn</button>
+                <button class="btn btn--outline primary">btn primary</button>
+                <button class="btn btn--outline destructive">btn destructive</button>
+            </div>
+            <h2>Ghost</h2>
+            <div class="flex flex-wrap gap-2">
+                <button class="btn btn--ghost">btn</button>
+                <button class="btn btn--ghost primary">btn primary</button>
+                <button class="btn btn--ghost destructive">btn destructive</button>
+            </div>
+        </div>
+    }
+}

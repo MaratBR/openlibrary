@@ -25,3 +25,7 @@ button, [role=button] {
 strong, b {
     @apply font-[600];
 }
+
+@view-transition {
+  navigation: auto;
+}

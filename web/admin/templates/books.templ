@@ -21,7 +21,7 @@ templ BooksPage() {
 
             <div x-data="{id:''}" class="admin-card p-4">
                 <input :value="id" @input="id=$event.target.value.replaceAll(/[^0-9]/g, '');$event.target.value=id" class="input w-64" />
-                <button @click="id && (location.href = `/book/${id}`)" class="btn btn--primary">{ l.T("common.open") }</button>
+                <button @click="id && (location.href = `/book/${id}`)" class="btn primary">{ l.T("common.open") }</button>
             </div>
         </div>
     }

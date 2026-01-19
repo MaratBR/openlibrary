@@ -111,7 +111,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 					{ l.T("bookManager.books.title") }
 				</h1>
 				<div class="page-header__after">
-					<a class="btn btn--sm btn--outline btn--primary2 rounded-md" href="/books-manager/new?ol.from=books-manager">
+					<a class="btn btn--sm btn--outline primary2 rounded-md" href="/books-manager/new?ol.from=books-manager">
 						<i class="fa-solid fa-pencil"></i>
 						{ l.T("bookManager.createNewBook") }
 					</a>
@@ -169,7 +169,7 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 					<form @submit="submitted=true" method="post" action={fmt.Sprintf("/books-manager/books?act=trash&next=%s", url.QueryEscape(r.URL.String()))}>
 						<input aria-hidden="true" class="hidden" name="id" required x-model="deleteBookId" />
 						@csrf.CSRFInputTempl(ctx)
-						<button type="submit" class="btn btn--sm btn--destructive mt-2">
+						<button type="submit" class="btn btn--sm destructive mt-2">
 							<span x-show="submitted" class="loader" />
 							<span x-show="!submitted">
 								{ l.T("common.trash") }
@@ -195,74 +195,76 @@ templ BookManagerBooks(books app.GetUserBooksResult) {
 						</button>
 					</form>
 				</div>
-				<table class="table">
-					<thead>
-						<tr>
-							<th width="80" />
-							<th>
-								{ l.T("bookManager.books.name") }
-							</th>
-							<th>
-								{ l.T("bookManager.books.stats") }
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						for _, book := range books.Books {
+				<div class="-mx-8">
+					<table class="table">
+						<thead>
 							<tr>
-								<td>
-									@bookCover(book.Cover, book.Name, 100)
-								</td>
-								<td>
-									<span>{ book.Name }</span>
-									{{
-										var additionalText []string
-										if book.IsBanned {
-											additionalText = append(additionalText, l.T("bookManager.books.banned"))
-										} 
-										if !book.IsPubliclyVisible {
-											additionalText = append(additionalText, l.T("bookManager.books.notPublic"))
-										} 
-										if book.IsTrashed {
-											additionalText = append(additionalText, l.T("bookManager.books.trashed"))
-										} 
-									}}
-									if len(additionalText) > 0 {
-										&nbsp;&mdash;&nbsp;<span class="font-semibold text-muted-foreground">
-											{ strings.Join(additionalText, ", ") }
-										</span>
-									}
-									<div>
-										<a class="link" href={ fmt.Sprintf("/books-manager/book/%d", book.ID) }>{ l.T("common.edit") }</a> | 
-										if book.IsTrashed {
-											<button 
-												@click={fmt.Sprintf("openRestore($event,'%d')", book.ID)}
-												class="link">{ l.T("common.untrash") }</button> |
-										} else {
-											<button 
-												@click={fmt.Sprintf("openDelete($event,'%d')", book.ID)}
-												class="link">{ l.T("common.trash") }</button> |
+								<th width="80" />
+								<th>
+									{ l.T("bookManager.books.name") }
+								</th>
+								<th>
+									{ l.T("bookManager.books.stats") }
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, book := range books.Books {
+								<tr>
+									<td>
+										@bookCover(book.Cover, book.Name, 100)
+									</td>
+									<td>
+										<span>{ book.Name }</span>
+										{{
+											var additionalText []string
+											if book.IsBanned {
+												additionalText = append(additionalText, l.T("bookManager.books.banned"))
+											} 
+											if !book.IsPubliclyVisible {
+												additionalText = append(additionalText, l.T("bookManager.books.notPublic"))
+											} 
+											if book.IsTrashed {
+												additionalText = append(additionalText, l.T("bookManager.books.trashed"))
+											} 
+										}}
+										if len(additionalText) > 0 {
+											&nbsp;&mdash;&nbsp;<span class="font-semibold text-muted-foreground">
+												{ strings.Join(additionalText, ", ") }
+											</span>
 										}
-										<a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>{ l.T("common.view") }</a>
-									</div>
-								</td>
-								<td>
-								</td>
-							</tr>
-							// @bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
-						}
-						if len(books.Books) == 0 {
-							<tr>
-								<td />
-								<td colspan="2">
-									<p class="max-w-128">
-										{ l.T("bookManager.noBooks") }
-									</p>
-								</td>
-							</tr>
-						}
-					</tbody>
-				</table>
+										<div>
+											<a class="link" href={ fmt.Sprintf("/books-manager/book/%d", book.ID) }>{ l.T("common.edit") }</a> | 
+											if book.IsTrashed {
+												<button 
+													@click={fmt.Sprintf("openRestore($event,'%d')", book.ID)}
+													class="link">{ l.T("common.untrash") }</button> |
+											} else {
+												<button 
+													@click={fmt.Sprintf("openDelete($event,'%d')", book.ID)}
+													class="link">{ l.T("common.trash") }</button> |
+											}
+											<a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>{ l.T("common.view") }</a>
+										</div>
+									</td>
+									<td>
+									</td>
+								</tr>
+								// @bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
+							}
+							if len(books.Books) == 0 {
+								<tr>
+									<td />
+									<td colspan="2">
+										<p class="max-w-128">
+											{ l.T("bookManager.noBooks") }
+										</p>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
 			</section>
 			@olhttp.Pagination(books.Page, books.TotalPages, 10)
 		</section>

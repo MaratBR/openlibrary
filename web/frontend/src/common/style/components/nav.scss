@@ -88,11 +88,11 @@
     &__menu {
         @apply 
             bg-secondary rounded-lg mr-4 mb-4
-            lg:bg-muted lg:rounded-xl lg:absolute lg:top-full lg:right-0 lg:p-1 lg:space-y-1 lg:min-w-48 lg:flex lg:flex-col lg:shadow-md;
+            lg:bg-card lg:rounded-xl lg:absolute lg:top-full lg:right-0 lg:p-1 lg:space-y-1 lg:min-w-48 lg:flex lg:flex-col lg:shadow-md;
 
         &__item {
             @apply px-2 py-2 min-h-10 flex items-center rounded-md transition-all duration-100 w-full
-                hover:bg-card hover:shadow-sm
+                hover:bg-muted
                 active:bg-muted-2;
         }
     }

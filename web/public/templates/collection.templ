@@ -76,7 +76,7 @@ templ Collection(
                         <form :action={fmt.Sprintf("`/_api/collections/removeBook/%d/${bookId}`", collection.ID)} method="post">
                             @csrf.CSRFInputTempl(ctx)
                             <button 
-                                class="btn btn--destructive btn--outline text-lg mt-2"
+                                class="btn destructive btn--outline text-lg mt-2"
                                 type="submit">
                                 //              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                 //              Dispatch this event to the button and corresponding form.
@@ -92,7 +92,7 @@ templ Collection(
                                     <div class="absolute top-1 right-1">
                                         <button l
                                             @click.prevent={fmt.Sprintf("bookId='%d';Alpine.$data(document.getElementById('DeleteBookPopover')).open($el)", book.ID)}
-                                            class="btn btn--ghost btn--destructive">
+                                            class="btn btn--ghost destructive">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </div>
@@ -190,7 +190,7 @@ templ CollectionManage(
                         { l.T("common.save") }
                     </button>
 
-                    <button @click.prevent="deleting=true" class="btn btn--destructive">
+                    <button @click.prevent="deleting=true" class="btn destructive">
                         { l.T("common.delete") }
                     </button>
                 </div>
@@ -202,7 +202,7 @@ templ CollectionManage(
                 <button type="submit"
                     disabled 
                     :disabled={ fmt.Sprintf("confirmationPhrase!==%q", collection.Name) } 
-                    class="btn btn--destructive mt-2">
+                    class="btn destructive mt-2">
                     { l.T("common.delete") }
                 </button>
                 @csrf.CSRFInputTempl(ctx)

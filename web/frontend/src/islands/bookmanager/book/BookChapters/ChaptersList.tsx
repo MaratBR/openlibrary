@@ -89,7 +89,7 @@ function ChapterCard({
           {window._('common.edit')}
         </a>
         <a
-          class="btn btn--ghost btn--destructive"
+          class="btn btn--ghost destructive"
           href={`/books-manager/book/${bookId}/chapter/${chapter.id}`}
         >
           <i class="fa-solid fa-trash" />

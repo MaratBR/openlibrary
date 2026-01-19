@@ -49,7 +49,7 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                 if readingListStatus.Valid {
                     x-cloak
                 }
-                @click="status('want_to_read')" x-show="rl === null" class="btn btn--primary btn--lg  w-full nojs-hidden">
+                @click="status('want_to_read')" x-show="rl === null" class="btn primary btn--lg  w-full nojs-hidden">
                 {l.T("readingList.want_to_read")}
             </button>
 
@@ -65,7 +65,7 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                 }
             </ul>
         } else {
-            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="btn btn--primary btn--lg  w-full">
+            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="btn primary btn--lg  w-full">
                 {l.T("readingList.want_to_read")}
             </a>
         }
