@@ -8,7 +8,7 @@
 
 .btn {
     @apply 
-        inline-block v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition rounded-2xl cursor-pointer relative
+        inline-block v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition rounded-lg cursor-pointer relative
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
         disabled:pointer-events-none disabled:opacity-50 leading-[2.4];
     height: var(--btn-height);
@@ -35,7 +35,7 @@
 
         &:hover {
             --btn-shadow-transparency: 50%;
-            --btn-shadow-params: 0 3px 7px -2px;
+            --btn-shadow-params: 0 3px 6px -2px;
         }
 
         &:active {
@@ -61,7 +61,7 @@
         background-color: transparent;
         box-shadow: none;
 
-        &:hover {
+        &:hover, &:active {
             background-color: color-mix(in srgb, var(--btn-colors-main) 13%, transparent);
         }
 
@@ -78,10 +78,15 @@
         --btn-colors-main: var(--foreground);
         box-shadow: none;
 
-        @apply bg-card transition-all hover:bg-card hover:ring hover:ring-inset;
+        @apply transition-all hover:ring hover:ring-inset;
         border: 1px solid var(--btn-colors-main);
         line-height: calc(var(--btn-height) - 2px) !important;
         color: var(--btn-colors-main);
+        background-color: transparent;
+
+        &:hover, &:active {
+            background-color: transparent;
+        }
 
         &.destructive {
             --btn-colors-main: var(--destructive);
@@ -104,7 +109,7 @@
 
     &--icon {
         --btn-height: calc(var(--spacing) * 10);
-        @apply h-10 w-10 rounded-full;
+        @apply h-10 w-10 flex items-center justify-center;
     }
 
     &--sq {

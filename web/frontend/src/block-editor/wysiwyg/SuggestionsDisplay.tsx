@@ -5,20 +5,24 @@ import { RefObject, render } from 'preact'
 import { computePosition, flip, offset } from '@floating-ui/react'
 import { useEffect, useLayoutEffect, useRef } from 'preact/hooks'
 import { wrapVirtualElement } from '@/lib/iframe'
-import { EditorElements } from './EditorElements'
 import { getNextElement, getPrevElement } from '@/lib/html-elements'
 import { Editor } from '@tiptap/core'
 
+export interface SuggestionsElements {
+  iframe: HTMLIFrameElement
+  contentWrapper: HTMLElement
+}
+
 export class SuggestionsDisplay implements SlashCommandDisplayAdapter {
   private readonly root: HTMLElement
-  private readonly elements: EditorElements
+  private readonly elements: SuggestionsElements
   private readonly props = new Subject<
     SuggestionProps<SlashCommandItem, SlashCommandItem> | undefined
   >(undefined)
   private readonly getEditor: () => Editor
   private readonly focusCallbackRef: RefObject<(arrowUp: boolean) => void> = { current: null }
 
-  constructor(elements: EditorElements, getEditor: () => Editor) {
+  constructor(elements: SuggestionsElements, getEditor: () => Editor) {
     this.elements = elements
     this.getEditor = getEditor
     this.root = document.createElement('div')
@@ -55,7 +59,7 @@ function Suggestions({
   getEditor,
 }: {
   props: Subject<SuggestionProps<SlashCommandItem, SlashCommandItem> | undefined>
-  elements: EditorElements
+  elements: SuggestionsElements
   focusCallbackRef: RefObject<(arrowUp: boolean) => void>
   getEditor: () => Editor
 }) {

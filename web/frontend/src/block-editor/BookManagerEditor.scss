@@ -88,7 +88,7 @@
 
 .be-chapter-name-input {
     @apply
-        focus:outline-primary focus:outline-2 focus:bg-card
+        focus:rounded-xl focus:bg-highlight focus:outline-none
         text-3xl font-title w-full block p-4 -mx-4;
 }
 

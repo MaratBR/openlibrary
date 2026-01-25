@@ -9,7 +9,7 @@ export default function EditorBubbleMenu({
   appendTo,
 }: {
   editor: ChapterContentEditor
-  appendTo: HTMLElement
+  appendTo?: HTMLElement
 }) {
   const { bold, italic, strikethrough, textAlign } = useEditorToolbarState(editor)
 

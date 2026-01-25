@@ -18,6 +18,6 @@
 }
 
 .chapter-content {
-    @apply font-book;
+    @apply font-book relative;
     font-size: var(--book-font-size, inherit);
 }

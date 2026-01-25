@@ -1,8 +1,14 @@
 import { animate } from 'popmotion'
 import { cloneElement, forwardRef, JSX, useCallback, useLayoutEffect, useRef } from 'preact/compat'
 
+export type SetShowOptions = {
+  duration?: number
+  force?: boolean
+  onComplete?: (cancelled: boolean) => void
+}
+
 export interface AnimationController {
-  setShow(show: boolean, duration?: number): void
+  setShow(show: boolean, options?: SetShowOptions): void
   dispose(): void
 }
 
@@ -25,12 +31,12 @@ export class ShowAnimation implements AnimationController {
     this.duration = duration
   }
 
-  setShow(show: boolean, duration?: number, onComplete?: (cancelled: boolean) => void) {
-    if (this.progress === (show ? 1 : 0)) {
+  setShow(show: boolean, options?: SetShowOptions) {
+    const { duration = this.duration, onComplete, force = false } = options ?? {}
+
+    if (this.progress === (show ? 1 : 0) && !force) {
       return
     }
-
-    duration ??= this.duration
 
     if (duration <= 0) {
       // instantly transition to desired state
@@ -139,7 +145,10 @@ export const AnimationWrapper = forwardRef(({ animation, children, show }: Anima
     if (!(element instanceof HTMLElement)) return
 
     const animationInstance = animation(element)
-    animationInstance.setShow(show, 0)
+    animationInstance.setShow(show, {
+      duration: 0,
+      force: true,
+    })
     animationInstanceRef.current = animationInstance
     return () => {
       animationInstance.dispose()

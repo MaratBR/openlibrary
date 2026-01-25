@@ -1,8 +1,7 @@
 import { create } from 'zustand/react'
-import { useWYSIWYG } from './wysiwyg'
 import { httpUpdateAndPublishDraft, httpUpdateDraft, httpUpdateDraftChapterName } from '@/api/bm'
 import { DraftDto } from './contracts'
-import { useWYSIWYGHasChanges } from './wysiwyg/state'
+import { useWYSIWYG, useWYSIWYGHasChanges } from './wysiwyg/state'
 
 export type BEState = {
   saving: boolean
@@ -37,9 +36,6 @@ export const useBEState = create<BEState>((set, get) => ({
       draft,
       chapterName: draft.chapterName,
     })
-
-    const wysiwyg = useWYSIWYG.getState()
-    wysiwyg.setInitialContent(draft.content)
   },
 
   setChapterName(name) {

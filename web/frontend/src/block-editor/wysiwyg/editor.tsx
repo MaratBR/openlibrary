@@ -9,15 +9,10 @@ import Heading from '@tiptap/extension-heading'
 import { BulletList, OrderedList } from '@tiptap/extension-list'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
-import { EditorContent } from '@tiptap/react'
-import EditorFloatingMenu from './EditorFloatingMenu'
-import EditorBubbleMenu from './EditorBubbleMenu'
 import { Subject, useSubject } from '@/common/rx'
-import { createPortal } from 'preact/compat'
 import { SlashCommand } from './Suggestions'
 import { slashCommands } from './slashCommands'
 import { SuggestionsDisplay } from './SuggestionsDisplay'
-import { EditorElements } from './EditorElements'
 import { createEvent } from '@/lib/event'
 
 export type EditorToolbarState = {
@@ -42,14 +37,18 @@ const DEFAULT_STATE: EditorToolbarState = {
   textAlign: 'left',
 }
 
+export type ChapterContentEditorOptions = {
+  contentElement: HTMLElement
+  contentWrapperElement: HTMLElement
+  iframe: HTMLIFrameElement
+}
+
 export class ChapterContentEditor extends Editor {
   private _placeholder = ''
-  private elements: EditorElements
 
   public readonly firstChange = createEvent<void>()
-  public readonly wasChangedFirstTime = new Subject<boolean | null>(null)
 
-  constructor(elements: EditorElements) {
+  constructor({ iframe, contentElement, contentWrapperElement }: ChapterContentEditorOptions) {
     super({
       content: '',
       extensions: [
@@ -84,13 +83,17 @@ export class ChapterContentEditor extends Editor {
         SlashCommand.configure({
           suggestionClass: 'be-suggestion',
           commands: slashCommands(),
-          displayAdapter: new SuggestionsDisplay(elements, () => this),
+          displayAdapter: new SuggestionsDisplay(
+            {
+              iframe,
+              contentWrapper: contentWrapperElement,
+            },
+            () => this,
+          ),
         }),
       ],
+      element: contentElement,
     })
-
-    this.elements = elements
-
     const onTransaction = () => {
       this.toolbarState.set(this.getCurrentToolbarState())
     }
@@ -98,18 +101,9 @@ export class ChapterContentEditor extends Editor {
 
     this.on('transaction', onTransaction)
 
-    const onUpdate = () => {
-      if (this.wasChangedFirstTime.get() !== false) {
-        return
-      }
-      this.wasChangedFirstTime.set(true)
-    }
-    this.on('update', onUpdate)
-
     const onDestroy = () => {
       this.off('transaction', onTransaction)
       this.off('destroy', onDestroy)
-      this.off('update', onUpdate)
     }
     this.on('destroy', onDestroy)
   }
@@ -120,7 +114,6 @@ export class ChapterContentEditor extends Editor {
 
   public setContentAndClearHistory(content: Content) {
     this.chain().setMeta('addToHistory', false).insertContent(content).run()
-    this.wasChangedFirstTime.set(false)
   }
 
   public getCurrentToolbarState(): EditorToolbarState {
@@ -167,21 +160,6 @@ export class ChapterContentEditor extends Editor {
   }
 
   toolbarState = new Subject<EditorToolbarState>(DEFAULT_STATE)
-
-  public getContentElement() {
-    return (
-      <>
-        {createPortal(
-          <>
-            <EditorFloatingMenu editor={this} />
-            <EditorContent editor={this} />
-          </>,
-          this.elements.content,
-        )}
-        <EditorBubbleMenu editor={this} appendTo={this.elements.contentWrapper} />
-      </>
-    )
-  }
 }
 
 export function useEditorToolbarState(editor: ChapterContentEditor) {
