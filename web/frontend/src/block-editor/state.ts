@@ -11,7 +11,6 @@ export type BEState = {
   error: unknown | null
 
   chapterNameWasChanged(): boolean
-
   init(draft: DraftDto): void
   setChapterName(name: string): void
   saveDraft(): Promise<void>
@@ -56,7 +55,7 @@ export const useBEState = create<BEState>((set, get) => ({
       if (chapterNameWasChanged()) {
         const response = await httpUpdateDraftChapterName(
           draft.book.id,
-          draft.chapterId,
+          draft.chapter.id,
           draft.id,
           chapterName,
         )
@@ -65,11 +64,11 @@ export const useBEState = create<BEState>((set, get) => ({
 
       const wysiwyg = useWYSIWYG.getState()
       const content = wysiwyg.getContent()
-      const response = await httpUpdateDraft(draft.book.id, draft.chapterId, draft.id, content)
+      const response = await httpUpdateDraft(draft.book.id, draft.chapter.id, draft.id, content)
       response.throwIfError()
       wysiwyg.markContentAsFresh()
 
-      set({ saving: false })
+      set({ saving: false, draft: response.data })
     } catch (error: unknown) {
       set({
         error,
@@ -90,7 +89,7 @@ export const useBEState = create<BEState>((set, get) => ({
       if (chapterNameWasChanged()) {
         const response = await httpUpdateDraftChapterName(
           draft.book.id,
-          draft.chapterId,
+          draft.chapter.id,
           draft.id,
           chapterName,
         )
@@ -101,7 +100,7 @@ export const useBEState = create<BEState>((set, get) => ({
       const content = wysiwyg.getContent()
       const response = await httpUpdateAndPublishDraft(
         draft.book.id,
-        draft.chapterId,
+        draft.chapter.id,
         draft.id,
         content,
         makePublic,
@@ -109,7 +108,7 @@ export const useBEState = create<BEState>((set, get) => ({
       response.throwIfError()
       wysiwyg.markContentAsFresh()
 
-      set({ saving: false })
+      set({ saving: false, draft: response.data })
     } catch (error: unknown) {
       set({
         error,
@@ -121,8 +120,16 @@ export const useBEState = create<BEState>((set, get) => ({
 
 export function useDraftHasChanges() {
   const contentWasChanged = useWYSIWYGHasChanges()
-  const nameChanged = useBEState((s) => s.chapterNameWasChanged())
-  return nameChanged || contentWasChanged
+  const chapterNameChanged = useBEState((s) => s.chapterNameWasChanged())
+  return chapterNameChanged || contentWasChanged
+}
+
+export function useDraftHasPendingChanges() {
+  return useBEState((s) => {
+    const draft = s.draft
+    if (!draft) return false
+    return new Date(draft.updatedAt ?? draft.createdAt) > new Date(draft.chapter.contentUpdatedAt)
+  })
 }
 
 export function useDraftHasNewerRevision() {

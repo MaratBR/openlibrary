@@ -311,6 +311,45 @@ func (q *Queries) Book_UnTrash(ctx context.Context, arg Book_UnTrashParams) erro
 	return err
 }
 
+const chapter_Update = `-- name: Chapter_Update :one
+update book_chapters
+set 
+    name = $2, 
+    content = $3, 
+    words = $4, 
+    summary = $5, 
+    is_publicly_visible = $6,
+    content_updated_at = $7,
+    updated_at = now()
+where id = $1
+returning book_chapters.book_id
+`
+
+type Chapter_UpdateParams struct {
+	ID                int64
+	Name              string
+	Content           string
+	Words             int32
+	Summary           string
+	IsPubliclyVisible bool
+	ContentUpdatedAt  pgtype.Timestamptz
+}
+
+func (q *Queries) Chapter_Update(ctx context.Context, arg Chapter_UpdateParams) (int64, error) {
+	row := q.db.QueryRow(ctx, chapter_Update,
+		arg.ID,
+		arg.Name,
+		arg.Content,
+		arg.Words,
+		arg.Summary,
+		arg.IsPubliclyVisible,
+		arg.ContentUpdatedAt,
+	)
+	var book_id int64
+	err := row.Scan(&book_id)
+	return book_id, err
+}
+
 const getChaptersOrder = `-- name: GetChaptersOrder :many
 select id
 from book_chapters
@@ -377,34 +416,4 @@ func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
 		arg.IsPubliclyVisible,
 	)
 	return err
-}
-
-const updateBookChapter = `-- name: UpdateBookChapter :one
-update book_chapters
-set name = $2, content = $3, words = $4, summary = $5, is_publicly_visible = $6, updated_at = now()
-where id = $1
-returning book_chapters.book_id
-`
-
-type UpdateBookChapterParams struct {
-	ID                int64
-	Name              string
-	Content           string
-	Words             int32
-	Summary           string
-	IsPubliclyVisible bool
-}
-
-func (q *Queries) UpdateBookChapter(ctx context.Context, arg UpdateBookChapterParams) (int64, error) {
-	row := q.db.QueryRow(ctx, updateBookChapter,
-		arg.ID,
-		arg.Name,
-		arg.Content,
-		arg.Words,
-		arg.Summary,
-		arg.IsPubliclyVisible,
-	)
-	var book_id int64
-	err := row.Scan(&book_id)
-	return book_id, err
 }

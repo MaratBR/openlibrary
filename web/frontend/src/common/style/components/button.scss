@@ -76,13 +76,19 @@
 
     &--outline {
         --btn-colors-main: var(--foreground);
+        --btn-colors-border: color-mix(in srgb, var(--foreground), transparent 70%);
         box-shadow: none;
 
-        @apply transition-all hover:ring hover:ring-inset;
-        border: 1px solid var(--btn-colors-main);
+        @apply transition-all;
+        border: 1px solid var(--btn-colors-border);
         line-height: calc(var(--btn-height) - 2px) !important;
         color: var(--btn-colors-main);
         background-color: transparent;
+
+        &:hover {
+            --btn-colors-border: var(--btn-colors-main);
+            @apply ring ring-inset;
+        }
 
         &:hover, &:active {
             background-color: transparent;
@@ -156,4 +162,20 @@
     & > li > .btn {
         @apply block w-full text-start !rounded-none;
     }
+}
+
+.circular-indicator {
+    --indicator-color: var(--primary);
+    @apply size-2 absolute -top-1 -right-1 rounded-full;
+    background-color: var(--indicator-color);
+    animation: circular-indicator-glow 1.5s ease-out infinite;
+}
+
+@keyframes circular-indicator-glow {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--indicator-color), transparent 30%);
+  }
+  100% {
+    box-shadow: 0 0 0 12px color-mix(in srgb, var(--indicator-color), transparent 100%);
+  }
 }

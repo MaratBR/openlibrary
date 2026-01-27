@@ -194,7 +194,18 @@ func (c *apiControllerBookManager) updateDraftContent(w http.ResponseWriter, r *
 		return
 	}
 
-	apiWriteOK(w)
+	draft, err := c.service.GetDraft(r.Context(), app.GetDraftQuery{
+		DraftID:   draftID,
+		ChapterID: chapterID,
+		BookID:    bookID,
+		UserID:    session.UserID,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+
+	olhttp.NewAPIResponse(draft).Write(w)
 }
 
 func (c *apiControllerBookManager) updateDraftChapterName(w http.ResponseWriter, r *http.Request) {
@@ -297,7 +308,18 @@ func (c *apiControllerBookManager) updateDraftContentAndPublish(w http.ResponseW
 		apiWriteApplicationError(w, err)
 	}
 
-	apiWriteOK(w)
+	draft, err := c.service.GetDraft(r.Context(), app.GetDraftQuery{
+		DraftID:   draftID,
+		ChapterID: chapterID,
+		BookID:    bookID,
+		UserID:    session.UserID,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+
+	olhttp.NewAPIResponse(draft).Write(w)
 }
 
 type requestCreateChapter struct {

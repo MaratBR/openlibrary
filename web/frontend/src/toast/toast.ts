@@ -1,3 +1,5 @@
+import { getErrorMessage } from '@/common/error'
+
 export type ToastOptions = {
   render: (element: HTMLElement, controller: ToastController) => () => void
   duration: number
@@ -22,6 +24,7 @@ export type ToastFunction = {
     customContent?: (element: HTMLElement) => undefined | (() => void)
   }): void
   impl: ToastImplementation
+  error(err: unknown): void
 }
 
 declare global {
@@ -113,9 +116,17 @@ window.toast = function (
 window.toast.impl = (options) => {
   toasts.push(options)
 }
+window.toast.error = errorToast
 window.toast = window.toast.bind(window.toast)
 
 import('./toastImplementation').then((m) => {
   window.toast.impl = m.toastImplementation
   toasts.forEach(m.toastImplementation)
 })
+
+function errorToast(err: unknown) {
+  window.toast({
+    title: window._('common.error'),
+    text: getErrorMessage(err),
+  })
+}

@@ -1,6 +1,7 @@
 import { httpClient, OLAPIResponse } from '@/http-client'
 import { z } from 'zod'
 import { definedTagDtoSchema } from './search'
+import { DraftDtoSchema } from '@/block-editor/contracts'
 
 export function httpUpdateDraft(
   bookId: string,
@@ -15,7 +16,7 @@ export function httpUpdateDraft(
         'Content-Type': 'text/plain',
       },
     })
-    .then((r) => OLAPIResponse.createNoBody(r))
+    .then((r) => OLAPIResponse.create(r, DraftDtoSchema))
 }
 
 export function httpUpdateAndPublishDraft(
@@ -35,7 +36,7 @@ export function httpUpdateAndPublishDraft(
         makePublic,
       },
     })
-    .then((r) => OLAPIResponse.createNoBody(r))
+    .then((r) => OLAPIResponse.create(r, DraftDtoSchema))
 }
 
 export function httpUpdateDraftChapterName(

@@ -76,9 +76,16 @@ insert into book_chapters
 (id, name, book_id, content, "order", created_at, words, summary, is_publicly_visible)
 values ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 
--- name: UpdateBookChapter :one
+-- name: Chapter_Update :one
 update book_chapters
-set name = $2, content = $3, words = $4, summary = $5, is_publicly_visible = $6, updated_at = now()
+set 
+    name = $2, 
+    content = $3, 
+    words = $4, 
+    summary = $5, 
+    is_publicly_visible = $6,
+    content_updated_at = $7,
+    updated_at = now()
 where id = $1
 returning book_chapters.book_id;
 

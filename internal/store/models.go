@@ -402,6 +402,7 @@ type BookChapter struct {
 	Name              string
 	BookID            int64
 	Content           string
+	ContentUpdatedAt  pgtype.Timestamptz
 	Order             int32
 	CreatedAt         pgtype.Timestamptz
 	UpdatedAt         pgtype.Timestamptz

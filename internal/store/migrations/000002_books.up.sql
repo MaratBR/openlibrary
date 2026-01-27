@@ -43,6 +43,7 @@ create table book_chapters (
     name varchar(255) not null,
     book_id int8 not null references books(id),
     content text not null,
+    content_updated_at timestamptz not null default now(),
     "order" int4 not null,
     created_at timestamptz not null default now(),
     updated_at timestamptz,

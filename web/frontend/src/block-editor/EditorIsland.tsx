@@ -38,7 +38,7 @@ export default function EditorIslandComponent({ data }: PreactIslandProps) {
       <div class="be-layout__body">
         <div class="be-layout__left">Left</div>
         <div class="be-layout__center">
-          <EditorIframe />
+          <EditorIframe initialContent={draft.content} />
         </div>
         <div class="be-layout__right">Right</div>
       </div>

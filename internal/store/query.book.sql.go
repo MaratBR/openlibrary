@@ -178,7 +178,7 @@ func (q *Queries) Book_GetPubliclyVisibleChapters(ctx context.Context, bookID in
 }
 
 const getAllBookChapters = `-- name: GetAllBookChapters :many
-select c.id, c.name, c.book_id, c.content, c."order", c.created_at, c.updated_at, c.words, c.is_adult_override, c.summary, c.is_publicly_visible, 
+select c.id, c.name, c.book_id, c.content, c.content_updated_at, c."order", c.created_at, c.updated_at, c.words, c.is_adult_override, c.summary, c.is_publicly_visible, 
   cast(coalesce((select id from drafts where drafts.chapter_id = c.id order by created_at desc limit 1), 0) as int8) as latest_draft_id
 from book_chapters c
 where book_id = $1
@@ -190,6 +190,7 @@ type GetAllBookChaptersRow struct {
 	Name              string
 	BookID            int64
 	Content           string
+	ContentUpdatedAt  pgtype.Timestamptz
 	Order             int32
 	CreatedAt         pgtype.Timestamptz
 	UpdatedAt         pgtype.Timestamptz
@@ -214,6 +215,7 @@ func (q *Queries) GetAllBookChapters(ctx context.Context, bookID int64) ([]GetAl
 			&i.Name,
 			&i.BookID,
 			&i.Content,
+			&i.ContentUpdatedAt,
 			&i.Order,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -361,7 +363,7 @@ func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
 
 const getBookChapterWithDetails = `-- name: GetBookChapterWithDetails :one
 select 
-    bc.id, bc.name, bc.book_id, bc.content, bc."order", bc.created_at, bc.updated_at, bc.words, bc.is_adult_override, bc.summary, bc.is_publicly_visible,
+    bc.id, bc.name, bc.book_id, bc.content, bc.content_updated_at, bc."order", bc.created_at, bc.updated_at, bc.words, bc.is_adult_override, bc.summary, bc.is_publicly_visible,
     coalesce(prev_chapter.id, 0) as prev_chapter_id,
     coalesce(prev_chapter.name, '') as prev_chapter_name,
     coalesce(next_chapter.id, 0) as next_chapter_id,
@@ -399,6 +401,7 @@ type GetBookChapterWithDetailsRow struct {
 	Name              string
 	BookID            int64
 	Content           string
+	ContentUpdatedAt  pgtype.Timestamptz
 	Order             int32
 	CreatedAt         pgtype.Timestamptz
 	UpdatedAt         pgtype.Timestamptz
@@ -420,6 +423,7 @@ func (q *Queries) GetBookChapterWithDetails(ctx context.Context, arg GetBookChap
 		&i.Name,
 		&i.BookID,
 		&i.Content,
+		&i.ContentUpdatedAt,
 		&i.Order,
 		&i.CreatedAt,
 		&i.UpdatedAt,

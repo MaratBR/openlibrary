@@ -29,6 +29,7 @@ reply = "Reply"
 replyPlaceholder = "Write your reply here..."
 loadMore = "Load more"
 commentsCount = "{{.Count}} comments"
+error = "Error"
 
 [uiTheme]
 dark = "Dark"

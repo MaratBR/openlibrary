@@ -183,12 +183,11 @@ type GetDraftQuery struct {
 }
 
 type DraftDto struct {
-	ID          int64     `json:"id,string"`
-	ChapterName string    `json:"chapterName"`
-	Content     string    `json:"content"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	ChapterID   int64     `json:"chapterId,string"`
+	ID          int64               `json:"id,string"`
+	ChapterName string              `json:"chapterName"`
+	Content     string              `json:"content"`
+	CreatedAt   time.Time           `json:"createdAt"`
+	UpdatedAt   Nullable[time.Time] `json:"updatedAt"`
 	CreatedBy   struct {
 		ID   uuid.UUID `json:"id"`
 		Name string    `json:"name"`
@@ -197,6 +196,10 @@ type DraftDto struct {
 		ID   int64  `json:"id,string"`
 		Name string `json:"name"`
 	} `json:"book"`
+	Chapter struct {
+		ID               int64     `json:"id,string"`
+		ContentUpdatedAt time.Time `json:"contentUpdatedAt"`
+	} `json:"chapter"`
 	IsChapterPubliclyAvailable bool `json:"isChapterPubliclyAvailable"`
 }
 

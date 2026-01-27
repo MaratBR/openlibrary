@@ -11,24 +11,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deleteDraft = `-- name: DeleteDraft :exec
+const draft_Delete = `-- name: Draft_Delete :exec
 delete from drafts where id = $1
 `
 
-func (q *Queries) DeleteDraft(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, deleteDraft, id)
+func (q *Queries) Draft_Delete(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, draft_Delete, id)
 	return err
 }
 
-const getDraftById = `-- name: GetDraftById :one
-select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.is_adult_override, drafts.updated_at, drafts.created_at, drafts.published_at, books.id as book_id, books.name as book_name, bc.is_publicly_visible as is_chapter_publicly_visible
+const draft_GetById = `-- name: Draft_GetById :one
+select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.is_adult_override, drafts.updated_at, drafts.created_at, drafts.published_at, 
+    books.id as book_id, books.name as book_name, 
+    bc.is_publicly_visible as is_chapter_publicly_visible,
+    bc.content_updated_at as chapter_content_updated_at
 from drafts
 join book_chapters bc on bc.id = drafts.chapter_id
 join books on books.id = bc.book_id
 where drafts.id = $1
 `
 
-type GetDraftByIdRow struct {
+type Draft_GetByIdRow struct {
 	ID                       int64
 	CreatedBy                pgtype.UUID
 	ChapterID                int64
@@ -43,11 +46,12 @@ type GetDraftByIdRow struct {
 	BookID                   int64
 	BookName                 string
 	IsChapterPubliclyVisible bool
+	ChapterContentUpdatedAt  pgtype.Timestamptz
 }
 
-func (q *Queries) GetDraftById(ctx context.Context, id int64) (GetDraftByIdRow, error) {
-	row := q.db.QueryRow(ctx, getDraftById, id)
-	var i GetDraftByIdRow
+func (q *Queries) Draft_GetById(ctx context.Context, id int64) (Draft_GetByIdRow, error) {
+	row := q.db.QueryRow(ctx, draft_GetById, id)
+	var i Draft_GetByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedBy,
@@ -63,11 +67,12 @@ func (q *Queries) GetDraftById(ctx context.Context, id int64) (GetDraftByIdRow, 
 		&i.BookID,
 		&i.BookName,
 		&i.IsChapterPubliclyVisible,
+		&i.ChapterContentUpdatedAt,
 	)
 	return i, err
 }
 
-const getLatestDraftID = `-- name: GetLatestDraftID :one
+const draft_GetLatestID = `-- name: Draft_GetLatestID :one
 select id
 from drafts
 where chapter_id = $1
@@ -75,20 +80,20 @@ order by coalesce(updated_at, created_at) desc
 limit 1
 `
 
-func (q *Queries) GetLatestDraftID(ctx context.Context, chapterID int64) (int64, error) {
-	row := q.db.QueryRow(ctx, getLatestDraftID, chapterID)
+func (q *Queries) Draft_GetLatestID(ctx context.Context, chapterID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, draft_GetLatestID, chapterID)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
 
-const insertDraft = `-- name: InsertDraft :exec
+const draft_Insert = `-- name: Draft_Insert :exec
 insert into drafts (
     id, created_by, chapter_id, chapter_name, content, updated_at, created_at)
 values ($1, $2, $3, $4, $5, $6, $7)
 `
 
-type InsertDraftParams struct {
+type Draft_InsertParams struct {
 	ID          int64
 	CreatedBy   pgtype.UUID
 	ChapterID   int64
@@ -98,8 +103,8 @@ type InsertDraftParams struct {
 	CreatedAt   pgtype.Timestamptz
 }
 
-func (q *Queries) InsertDraft(ctx context.Context, arg InsertDraftParams) error {
-	_, err := q.db.Exec(ctx, insertDraft,
+func (q *Queries) Draft_Insert(ctx context.Context, arg Draft_InsertParams) error {
+	_, err := q.db.Exec(ctx, draft_Insert,
 		arg.ID,
 		arg.CreatedBy,
 		arg.ChapterID,
@@ -111,24 +116,24 @@ func (q *Queries) InsertDraft(ctx context.Context, arg InsertDraftParams) error 
 	return err
 }
 
-const markDraftAsPublished = `-- name: MarkDraftAsPublished :exec
+const draft_MarkAsPublished = `-- name: Draft_MarkAsPublished :exec
 update drafts
 set published_at = now()
 where id = $1
 `
 
-func (q *Queries) MarkDraftAsPublished(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, markDraftAsPublished, id)
+func (q *Queries) Draft_MarkAsPublished(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, draft_MarkAsPublished, id)
 	return err
 }
 
-const updateDraft = `-- name: UpdateDraft :exec
+const draft_Update = `-- name: Draft_Update :exec
 update drafts
 set chapter_name = $2, is_adult_override = $3, words = $4, content = $5, summary = $6, updated_at = now()
 where id = $1
 `
 
-type UpdateDraftParams struct {
+type Draft_UpdateParams struct {
 	ID              int64
 	ChapterName     string
 	IsAdultOverride bool
@@ -137,8 +142,8 @@ type UpdateDraftParams struct {
 	Summary         string
 }
 
-func (q *Queries) UpdateDraft(ctx context.Context, arg UpdateDraftParams) error {
-	_, err := q.db.Exec(ctx, updateDraft,
+func (q *Queries) Draft_Update(ctx context.Context, arg Draft_UpdateParams) error {
+	_, err := q.db.Exec(ctx, draft_Update,
 		arg.ID,
 		arg.ChapterName,
 		arg.IsAdultOverride,
@@ -149,35 +154,35 @@ func (q *Queries) UpdateDraft(ctx context.Context, arg UpdateDraftParams) error 
 	return err
 }
 
-const updateDraftChapterName = `-- name: UpdateDraftChapterName :exec
+const draft_UpdateChapterName = `-- name: Draft_UpdateChapterName :exec
 update drafts
 set chapter_name = $2, updated_at = now()
 where id = $1
 `
 
-type UpdateDraftChapterNameParams struct {
+type Draft_UpdateChapterNameParams struct {
 	ID          int64
 	ChapterName string
 }
 
-func (q *Queries) UpdateDraftChapterName(ctx context.Context, arg UpdateDraftChapterNameParams) error {
-	_, err := q.db.Exec(ctx, updateDraftChapterName, arg.ID, arg.ChapterName)
+func (q *Queries) Draft_UpdateChapterName(ctx context.Context, arg Draft_UpdateChapterNameParams) error {
+	_, err := q.db.Exec(ctx, draft_UpdateChapterName, arg.ID, arg.ChapterName)
 	return err
 }
 
-const updateDraftContent = `-- name: UpdateDraftContent :exec
+const draft_UpdateContent = `-- name: Draft_UpdateContent :exec
 update drafts
 set content = $2, words = $3, updated_at = now()
 where id = $1
 `
 
-type UpdateDraftContentParams struct {
+type Draft_UpdateContentParams struct {
 	ID      int64
 	Content string
 	Words   int32
 }
 
-func (q *Queries) UpdateDraftContent(ctx context.Context, arg UpdateDraftContentParams) error {
-	_, err := q.db.Exec(ctx, updateDraftContent, arg.ID, arg.Content, arg.Words)
+func (q *Queries) Draft_UpdateContent(ctx context.Context, arg Draft_UpdateContentParams) error {
+	_, err := q.db.Exec(ctx, draft_UpdateContent, arg.ID, arg.Content, arg.Words)
 	return err
 }

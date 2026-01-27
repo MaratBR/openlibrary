@@ -38,6 +38,7 @@ const DEFAULT_STATE: EditorToolbarState = {
 }
 
 export type ChapterContentEditorOptions = {
+  initialContent: string
   contentElement: HTMLElement
   contentWrapperElement: HTMLElement
   iframe: HTMLIFrameElement
@@ -48,9 +49,14 @@ export class ChapterContentEditor extends Editor {
 
   public readonly firstChange = createEvent<void>()
 
-  constructor({ iframe, contentElement, contentWrapperElement }: ChapterContentEditorOptions) {
+  constructor({
+    iframe,
+    contentElement,
+    contentWrapperElement,
+    initialContent,
+  }: ChapterContentEditorOptions) {
     super({
-      content: '',
+      content: initialContent,
       extensions: [
         StarterKit.configure({
           horizontalRule: false,

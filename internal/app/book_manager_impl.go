@@ -609,7 +609,7 @@ func (s *bookManagerService) GetChapter(ctx context.Context, query ManagerGetCha
 
 // GetDraft implements BookManagerService.
 func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) (DraftDto, error) {
-	draft, err := s.queries.GetDraftById(ctx, query.DraftID)
+	draft, err := s.queries.Draft_GetById(ctx, query.DraftID)
 	if err != nil {
 		if err == store.ErrNoRows {
 			return DraftDto{}, ErrDraftNotFound
@@ -627,8 +627,14 @@ func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) 
 		ChapterName: draft.ChapterName,
 		Content:     draft.Content,
 		CreatedAt:   draft.CreatedAt.Time,
-		UpdatedAt:   draft.UpdatedAt.Time,
-		ChapterID:   draft.ChapterID,
+		UpdatedAt:   timeNullableDbToDomain(draft.UpdatedAt),
+		Chapter: struct {
+			ID               int64     "json:\"id,string\""
+			ContentUpdatedAt time.Time "json:\"contentUpdatedAt\""
+		}{
+			ID:               draft.ChapterID,
+			ContentUpdatedAt: timeDbToDomain(draft.ChapterContentUpdatedAt),
+		},
 		CreatedBy: struct {
 			ID   uuid.UUID `json:"id"`
 			Name string    `json:"name"`
@@ -656,7 +662,7 @@ func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCom
 		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
 	}
 
-	err = s.queries.UpdateDraft(ctx, store.UpdateDraftParams{
+	err = s.queries.Draft_Update(ctx, store.Draft_UpdateParams{
 		ID:              cmd.DraftID,
 		Content:         content.Sanitized,
 		ChapterName:     cmd.Name,
@@ -677,7 +683,7 @@ func (s *bookManagerService) DeleteDraft(ctx context.Context, cmd DeleteDraftCom
 		return err
 	}
 
-	err = s.queries.DeleteDraft(ctx, cmd.DraftID)
+	err = s.queries.Draft_Delete(ctx, cmd.DraftID)
 	if err != nil {
 		return err
 	}
@@ -692,7 +698,7 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 	)
 
 	// get the draft and update the chapter
-	draft, err := s.queries.GetDraftById(ctx, cmd.DraftID)
+	draft, err := s.queries.Draft_GetById(ctx, cmd.DraftID)
 	if err != nil {
 		if err == store.ErrNoRows {
 			return ErrDraftNotFound
@@ -719,11 +725,12 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 		isChapterPublic = true
 	}
 
-	bookID, err = queries.UpdateBookChapter(ctx, store.UpdateBookChapterParams{
+	bookID, err = queries.Chapter_Update(ctx, store.Chapter_UpdateParams{
 		ID:                draft.ChapterID,
 		Name:              draft.ChapterName,
 		Summary:           draft.Summary,
 		Content:           draft.Content,
+		ContentUpdatedAt:  draft.UpdatedAt,
 		Words:             draft.Words,
 		IsPubliclyVisible: isChapterPublic,
 	})
@@ -732,7 +739,7 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
-	err = queries.MarkDraftAsPublished(ctx, cmd.DraftID)
+	err = queries.Draft_MarkAsPublished(ctx, cmd.DraftID)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
@@ -758,7 +765,7 @@ func (s *bookManagerService) recalculateBookStats(ctx context.Context, bookID in
 
 // GetLatestDraft implements BookManagerService.
 func (s *bookManagerService) GetLatestDraft(ctx context.Context, cmd GetLatestDraftQuery) (Nullable[int64], error) {
-	draftID, err := s.queries.GetLatestDraftID(ctx, cmd.ChapterID)
+	draftID, err := s.queries.Draft_GetLatestID(ctx, cmd.ChapterID)
 	if err != nil {
 		if err == store.ErrNoRows {
 			return Null[int64](), nil
@@ -791,7 +798,7 @@ func (s *bookManagerService) CreateDraft(ctx context.Context, cmd CreateDraftCom
 
 	id := GenID()
 
-	err = s.queries.InsertDraft(ctx, store.InsertDraftParams{
+	err = s.queries.Draft_Insert(ctx, store.Draft_InsertParams{
 		ID:          id,
 		CreatedBy:   uuidDomainToDb(cmd.UserID),
 		ChapterID:   cmd.ChapterID,
@@ -815,7 +822,7 @@ func (s *bookManagerService) UpdateDraftChapterName(ctx context.Context, cmd Upd
 		return err
 	}
 
-	err = s.queries.UpdateDraftChapterName(ctx, store.UpdateDraftChapterNameParams{
+	err = s.queries.Draft_UpdateChapterName(ctx, store.Draft_UpdateChapterNameParams{
 		ID:          cmd.DraftID,
 		ChapterName: cmd.ChapterName,
 	})
@@ -841,7 +848,7 @@ func (s *bookManagerService) UpdateDraftContent(ctx context.Context, cmd UpdateD
 		return err
 	}
 
-	err = s.queries.UpdateDraftContent(ctx, store.UpdateDraftContentParams{
+	err = s.queries.Draft_UpdateContent(ctx, store.Draft_UpdateContentParams{
 		ID:      cmd.DraftID,
 		Content: data.Sanitized,
 		Words:   data.Words,

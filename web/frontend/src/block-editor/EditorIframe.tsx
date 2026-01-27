@@ -6,7 +6,7 @@ import { ChapterNameInput } from './ChapterNameInput'
 
 // loads and iframe inside of which we will have the content of the
 // chapter
-export function EditorIframe() {
+export function EditorIframe({ initialContent }: { initialContent: string }) {
   const [loading, setLoading] = useState(true)
   const [elements, setElements] = useState<EditorElements | null>(null)
 
@@ -28,6 +28,7 @@ export function EditorIframe() {
           {createPortal(
             <WYSIWYGEditor
               editorOptions={{
+                initialContent,
                 contentElement: elements.content,
                 contentWrapperElement: elements.contentWrapper,
                 iframe: elements.iframe,
