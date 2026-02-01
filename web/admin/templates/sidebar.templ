@@ -6,43 +6,43 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ sidebar() {
     {{ l := i18n.GetLocalizer(ctx) }}
-		<aside class="dashboard-sidebar">
-            <div class="flex justify-center my-4">
-                <img class="h-20" src="/_/embed-assets/logo.svg" />
-            </div>
-            <a href="/?ol.from=admin" class="dashboard-sidebar-ghost-btn inline-block text-sm w-full">
-                <i class="fa-solid fa-arrow-left"></i>
-                { l.T("admin.goBackToSite") }
-            </a>
-            <hr class="dashboard-sidebar-hr my-3" />
-			<ul class="dashboard-sidebar-list">
-                @sidebarItem("/admin", "fa-solid fa-house") {
-                    <span>{ l.T("admin.sidebar.home") }</span>
-                }
-                @sidebarItem("/admin/users", "fa-regular fa-user") {
-                    <span>{ l.T("admin.sidebar.users") }</span>
-                }
-                @sidebarItem("/admin/books", "fa-solid fa-book") {
-                    <span>{ l.T("admin.sidebar.books") }</span>
-                }
-                @sidebarItem("/admin/tags", "fa-solid fa-tags") {
-                    <span>{ l.T("admin.sidebar.tags") }</span>
-                }
-                @sidebarItem("/admin/site-settings", "fa-solid fa-gears") {
-                    <span>{ l.T("admin.sidebar.siteSettings") }</span>
-                }
-                @sidebarItem("/admin/debug", "fa-solid fa-bug") {
-                    <span>{ l.T("admin.sidebar.debugActions") }</span>
-                }
-            </ul>
+    <aside class="dashboard-sidebar">
+        <div class="flex justify-center my-4">
+            <img class="h-20" src="/_/embed-assets/logo.svg" />
+        </div>
+        <a href="/?ol.from=admin" class="dashboard-sidebar-ghost-btn inline-block text-sm w-full">
+            <i class="fa-solid fa-arrow-left"></i>
+            { l.T("admin.goBackToSite") }
+        </a>
+        <hr class="dashboard-sidebar-hr my-3" />
+        <ul class="dashboard-sidebar-list">
+            @sidebarItem("/admin", "fa-solid fa-house") {
+                <span>{ l.T("admin.sidebar.home") }</span>
+            }
+            @sidebarItem("/admin/users", "fa-regular fa-user") {
+                <span>{ l.T("admin.sidebar.users") }</span>
+            }
+            @sidebarItem("/admin/books", "fa-solid fa-book") {
+                <span>{ l.T("admin.sidebar.books") }</span>
+            }
+            @sidebarItem("/admin/tags", "fa-solid fa-tags") {
+                <span>{ l.T("admin.sidebar.tags") }</span>
+            }
+            @sidebarItem("/admin/site-settings", "fa-solid fa-gears") {
+                <span>{ l.T("admin.sidebar.siteSettings") }</span>
+            }
+            @sidebarItem("/admin/debug", "fa-solid fa-bug") {
+                <span>{ l.T("admin.sidebar.debugActions") }</span>
+            }
+        </ul>
 
-            <div class="absolute bottom-0 left-0 right-0">
-                <a href="/logout" class="transition-colors flex gap-1 items-center hover:bg-white/10 hover:text-cyan-300 p-4">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>{ l.T("admin.sidebar.logout") }</span>
-                </a>
-            </div>
-        </aside>
+        <div class="absolute bottom-0 left-0 right-0">
+            <a href="/logout" class="transition-colors flex gap-1 items-center hover:bg-white/10 hover:text-cyan-300 p-4">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>{ l.T("admin.sidebar.logout") }</span>
+            </a>
+        </div>
+    </aside>
 }
 
 templ sidebarItem(href, icon string) {

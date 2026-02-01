@@ -14,7 +14,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     }}
 
     @dashboardLayout(pageTitle) {
-        <div class="admin-page-content">
+        <div class="dashboard-content">
             // <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
             //     <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ l.T("common.search") } />
             //     <button type="submit" :disabled="q.trim()===''" class="btn btn--secondary">
@@ -55,14 +55,13 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
             })
 
             <div class="mt-4">
-
                 {{
                     pagination := olhttp.Pagination(resp.Page, uint32(resp.TotalPages), 9)
                 }}
 
                 @pagination
                 
-                <table class="table my-2">
+                <table class="table table--inside-dashboard-content my-2">
                     <thead>
                         <tr>
                             <th>{ l.T("admin.users.name") }</th>
@@ -131,7 +130,7 @@ templ User(user *app.UserDetailsDto) {
     }}
 
     @dashboardLayout(user.Name) {
-        <div class="admin-page-content">
+        <div class="dashboard-content">
             <header class="page-header-container">
                 <h1 class="page-header">
                     <a href="/admin/users" class="link">{ l.T("admin.users.title") }</a>

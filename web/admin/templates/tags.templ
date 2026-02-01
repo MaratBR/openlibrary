@@ -24,7 +24,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
 
 
     @dashboardLayout("Tags") {
-        <div class="admin-page-content">
+        <div class="dashboard-content">
             <header class="page-header-container">
                 <h1 class="page-header">Tags</h1>
                 <p>View list of tags and create new tags or edit existing ones.</p>
@@ -41,7 +41,7 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
 
                 @pagination
 
-                <table id="slot-tags-table" class="my-4 table">
+                <table id="slot-tags-table" class="my-4 table table--inside-dashboard-content">
                     <thead>
                         <tr>
                             <th>{ l.T("admin.tags.name") }</th>
@@ -161,7 +161,7 @@ templ Tag(tag app.TagDetailsItemDto) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
     @dashboardLayout("Admin - " + tag.Name) {
-        <div class="admin-page-content">
+        <div class="dashboard-content">
             <header class="page-header-container">
                 <h1 class="page-header">
                     { tag.Name }
@@ -202,7 +202,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
     @dashboardLayout("Admin - " + tag.Name) {
-        <div class="admin-page-content">
+        <div class="dashboard-content">
             <form method="post">
                 @csrf.CSRFInputTempl(ctx)
 

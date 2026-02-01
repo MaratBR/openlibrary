@@ -28,7 +28,9 @@ templ dashboardLayout(title string) {
         @flashes()
         @sidebar()
 		<div class="dashboard-sidebar-body">
-            { children... }
+            <div class="dashboard-sidebar-body__content">
+                { children... }
+            </div>
         </div>
     }
 }
