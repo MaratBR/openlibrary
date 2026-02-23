@@ -7,6 +7,7 @@ import { useBEState } from './state'
 import { EditorIframe } from './EditorIframe'
 import { SaveButton } from './SaveButton'
 import { CenterHeader } from './CenterHeader'
+import { WidgetsMenu, WidgetsService } from './widgets'
 
 const dataSchema = z.object({
   bookId: z.string(),
@@ -36,7 +37,9 @@ export default function EditorIslandComponent({ data }: PreactIslandProps) {
         </header>
       </div>
       <div class="be-layout__body">
-        <div class="be-layout__left">Left</div>
+        <div class="be-layout__left">
+          <WidgetsMenu service={WidgetsService.instance()} />
+        </div>
         <div class="be-layout__center">
           <EditorIframe initialContent={draft.content} />
         </div>

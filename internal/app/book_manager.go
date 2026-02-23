@@ -5,6 +5,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 	"github.com/joomcode/errorx"
@@ -59,30 +60,37 @@ type ManagerBookDetailsDto struct {
 	Cover             string                  `json:"cover"`
 }
 
-type ManagerGetBookResult struct {
+type ManagerGetBookQuery_Result struct {
 	Book ManagerBookDetailsDto
 }
 
-type ManagerAuthorBookDto struct {
-	ID                int64               `json:"id,string"`
-	Slug              string              `json:"slug"`
-	Name              string              `json:"name"`
-	CreatedAt         time.Time           `json:"createdAt"`
-	AgeRating         AgeRating           `json:"ageRating"`
-	Tags              []DefinedTagDto     `json:"tags"`
-	Words             int                 `json:"words"`
-	WordsPerChapter   int                 `json:"wordsPerChapter"`
-	Chapters          int                 `json:"chapters"`
-	Collections       []BookCollectionDto `json:"collections"`
-	IsPubliclyVisible bool                `json:"isPubliclyVisible"`
-	IsBanned          bool                `json:"isBanned"`
-	IsTrashed         bool                `json:"isTrashed"`
-	Summary           string              `json:"summary"`
-	Cover             string              `json:"cover"`
+type ManagerBookDto_Stats struct {
+	Views   analytics.Views `json:"views"`
+	Reviews int32           `json:"reviews"`
+	Ratings int32           `json:"reviews"`
 }
 
-type GetUserBooksResult struct {
-	Books      []ManagerAuthorBookDto
+type ManagerBookDto struct {
+	ID                int64                `json:"id,string"`
+	Slug              string               `json:"slug"`
+	Name              string               `json:"name"`
+	CreatedAt         time.Time            `json:"createdAt"`
+	AgeRating         AgeRating            `json:"ageRating"`
+	Tags              []DefinedTagDto      `json:"tags"`
+	Words             int                  `json:"words"`
+	WordsPerChapter   int                  `json:"wordsPerChapter"`
+	Chapters          int                  `json:"chapters"`
+	Collections       []BookCollectionDto  `json:"collections"`
+	IsPubliclyVisible bool                 `json:"isPubliclyVisible"`
+	IsBanned          bool                 `json:"isBanned"`
+	IsTrashed         bool                 `json:"isTrashed"`
+	Summary           string               `json:"summary"`
+	Cover             string               `json:"cover"`
+	Stats             ManagerBookDto_Stats `json:"stats"`
+}
+
+type ManagerGetUserBooksQuery_Result struct {
+	Books      []ManagerBookDto
 	TotalPages uint32
 	PageSize   uint32
 	Page       uint32
@@ -98,7 +106,7 @@ type CreateBookChapterCommand struct {
 	IsPubliclyVisible bool
 }
 
-type CreateBookChapterResult struct {
+type CreateBookChapterCommand_Result struct {
 	ID int64
 }
 
@@ -125,7 +133,7 @@ type ManagerGetBookChaptersQuery struct {
 	UserID uuid.UUID
 }
 
-type ManagerGetBookChapterResult struct {
+type ManagerGetBookChaptersQuery_Result struct {
 	Chapters []ManagerBookChapterDto
 }
 
@@ -147,7 +155,7 @@ type ManagerBookChapterDetailsDto struct {
 	IsPubliclyVisible bool      `json:"isPubliclyVisible"`
 }
 
-type ManagerGetChapterResult struct {
+type ManagerGetChapterQuery_Result struct {
 	Chapter ManagerBookChapterDetailsDto
 }
 
@@ -157,7 +165,7 @@ type UploadBookCoverCommand struct {
 	File   io.Reader
 }
 
-type UploadBookCoverResult struct {
+type UploadBookCoverCommand_Result struct {
 	URL string
 }
 
@@ -171,7 +179,7 @@ type ChapterOrderModification struct {
 	NewPositionIndex int
 }
 
-type UpdateBookChapterOrdersResult struct {
+type UpdateBookChapterOrdersCommand_Result struct {
 	ModifiedPositions map[int64]int
 }
 
@@ -266,22 +274,21 @@ type UntrashBookCommand struct {
 }
 
 type BookManagerService interface {
-	GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error)
-	GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error)
+	GetUserBooks(ctx context.Context, input ManagerGetUserBooksQuery) (ManagerGetUserBooksQuery_Result, error)
+	GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookQuery_Result, error)
 	CreateBook(ctx context.Context, input CreateBookCommand) (int64, error)
 	UpdateBook(ctx context.Context, input UpdateBookCommand) error
-	UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (UploadBookCoverResult, error)
+	UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (UploadBookCoverCommand_Result, error)
 	TrashBook(ctx context.Context, input TrashBookCommand) error
 	UntrashBook(ctx context.Context, input UntrashBookCommand) error
 
-	UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChapterOrdersCommand) (UpdateBookChapterOrdersResult, error)
-	CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterResult, error)
+	UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChapterOrdersCommand) (UpdateBookChapterOrdersCommand_Result, error)
+	CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterCommand_Result, error)
 	ReorderChapters(ctx context.Context, input ReorderChaptersCommand) error
-	GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChapterResult, error)
-	GetChapter(ctx context.Context, query ManagerGetChapterQuery) (ManagerGetChapterResult, error)
+	GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChaptersQuery_Result, error)
+	GetChapter(ctx context.Context, query ManagerGetChapterQuery) (ManagerGetChapterQuery_Result, error)
 
 	GetDraft(ctx context.Context, query GetDraftQuery) (DraftDto, error)
-	// GetBookDrafts(ctx context.Context, query GetBookDraftsQuery)
 	UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error
 	UpdateDraftChapterName(ctx context.Context, cmd UpdateDraftChapterNameCommand) error
 	UpdateDraftContent(ctx context.Context, cmd UpdateDraftContentCommand) error

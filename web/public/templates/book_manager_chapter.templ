@@ -19,7 +19,7 @@ templ ChapterEditor(bookID int64, draft app.DraftDto) {
         })
     }}
     @i18nExtractKeysByPrefix(l, "editor")
-    @bmLayoutBase(draft.ChapterName, false) {
+    @bmLayout(draft.ChapterName) {
         @webcomponents.Island(webcomponents.IslandProps{
             Name: "ChapterEditor",
             Src: "/_/assets/block-editor.js",

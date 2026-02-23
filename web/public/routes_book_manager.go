@@ -48,7 +48,7 @@ func (c *bookManagerController) Register(r chi.Router) {
 }
 
 func (c *bookManagerController) index(w http.ResponseWriter, r *http.Request) {
-	templates.BookManager().Render(r.Context(), w)
+	templates.BM_Home().Render(r.Context(), w)
 }
 
 func (c *bookManagerController) yourBooks(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +60,7 @@ func (c *bookManagerController) yourBooks(w http.ResponseWriter, r *http.Request
 	} else if page > 10000 {
 		page = 10000
 	}
-	books, err := c.service.GetUserBooks(r.Context(), app.GetUserBooksQuery{
+	_, err := c.service.GetUserBooks(r.Context(), app.ManagerGetUserBooksQuery{
 		UserID:      session.UserID,
 		PageSize:    20,
 		Page:        uint32(page),
@@ -71,7 +71,7 @@ func (c *bookManagerController) yourBooks(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	templates.BookManagerBooks(books).Render(r.Context(), w)
+	// templates.BM_Books(books).Render(r.Context(), w)
 
 }
 
@@ -133,7 +133,7 @@ func (c *bookManagerController) collections(w http.ResponseWriter, r *http.Reque
 
 	page := olhttp.GetPage(r.URL.Query(), "page")
 	pageSize := olhttp.GetPageSize(r.URL.Query(), "pageSize", 1, 100, 15)
-	result, err := c.collectionService.GetUserCollections(r.Context(), app.GetUserCollectionsQuery{
+	_, err := c.collectionService.GetUserCollections(r.Context(), app.GetUserCollectionsQuery{
 		UserID:   session.UserID,
 		Page:     int32(page),
 		PageSize: int32(pageSize),
@@ -143,7 +143,7 @@ func (c *bookManagerController) collections(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	templates.BookManagerCollections(result.Collections).Render(r.Context(), w)
+	// templates.BM_Collections(result.Collections).Render(r.Context(), w)
 }
 
 func (c *bookManagerController) chapter(w http.ResponseWriter, r *http.Request) {

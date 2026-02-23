@@ -25,12 +25,12 @@ type AnalyticsPeriods struct {
 }
 
 type Views struct {
-	Total int64
-	Year  int64
-	Month int64
-	Week  int64
-	Day   int64
-	Hour  int64
+	Total int64 `json:"total"`
+	Year  int64 `json:"year"`
+	Month int64 `json:"month"`
+	Week  int64 `json:"week"`
+	Day   int64 `json:"day"`
+	Hour  int64 `json:"hour"`
 }
 
 func CurrentAnalyticsPeriods(now time.Time) AnalyticsPeriods {
@@ -82,6 +82,7 @@ type ViewsService interface {
 	IncrBookView(ctx context.Context, bookID int64, meta ViewMetadata) error
 	IncrChapterView(ctx context.Context, bookID, chapterID int64, meta ViewMetadata) error
 	GetBookViews(ctx context.Context, bookID int64) (Views, error)
+	GetBooksViews(ctx context.Context, bookIDs []int64) (map[int64]Views, error)
 	GetMostViewedBooks(ctx context.Context, period AnalyticsPeriod) ([]BookViewEntry, error)
 	CommitPendingViewsToDB(ctx context.Context)
 }
@@ -155,7 +156,7 @@ forLoop:
 		}
 
 		select {
-		case <-time.After(time.Minute):
+		case <-time.After(time.Second):
 		case <-s.stopCh:
 			break forLoop
 		}
@@ -187,6 +188,6 @@ func (s *AnalyticsBackgroundService) itIsTime() bool {
 
 func (s *AnalyticsBackgroundService) calculateNextLaunchTime() time.Time {
 	now := time.Now().UTC()
-	nextHourStart := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, time.UTC).Add(time.Hour)
+	nextHourStart := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, time.UTC).Add(time.Second * 2)
 	return nextHourStart
 }

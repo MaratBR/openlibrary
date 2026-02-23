@@ -3,7 +3,6 @@ package analytics
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"strconv"
 	"sync"
 	"time"
@@ -23,11 +22,21 @@ type analyticsViewsService struct {
 
 // GetBookViews implements AnalyticsViewsService.
 func (a *analyticsViewsService) GetBookViews(ctx context.Context, bookID int64) (Views, error) {
+	viewMapping, err := a.GetBooksViews(ctx, []int64{bookID})
+	if err != nil {
+		return Views{}, err
+	}
+	views, _ := viewMapping[bookID]
+	return views, nil
+}
+
+func (a *analyticsViewsService) GetBooksViews(ctx context.Context, bookIDs []int64) (map[int64]Views, error) {
 	periods := CurrentAnalyticsPeriods(time.Now())
 	queries := store.New(a.db)
-	var views Views
-	rows, _ := queries.Analytics_GetViews(ctx, store.Analytics_GetViewsParams{
-		BookID:      bookID,
+
+	viewsMapping := make(map[int64]Views)
+	rows, _ := queries.Analytics_GetViews_Multiple(ctx, store.Analytics_GetViews_MultipleParams{
+		BookID:      bookIDs,
 		YearPeriod:  int32(periods.Year),
 		MonthPeriod: int32(periods.Month),
 		WeekPeriod:  int32(periods.Week),
@@ -36,6 +45,7 @@ func (a *analyticsViewsService) GetBookViews(ctx context.Context, bookID int64) 
 	})
 
 	for _, row := range rows {
+		views, _ := viewsMapping[row.BookID]
 		if row.Period == int32(periods.Year) {
 			views.Year = row.ViewCount
 		} else if row.Period == int32(periods.Month) {
@@ -49,21 +59,26 @@ func (a *analyticsViewsService) GetBookViews(ctx context.Context, bookID int64) 
 		} else if row.Period == int32(ANALYTICS_PERIOD_TOTAL) {
 			views.Total = row.ViewCount
 		}
+		viewsMapping[row.BookID] = views
 	}
 
-	pendingViews, err := a.counterBooks.Get(ctx, fmt.Sprintf("%d", bookID))
-	if err != nil {
-		slog.Error("failed to get views count from redis", "err", err, "bookID", bookID)
-	} else if pendingViews > 0 {
-		views.Hour += pendingViews
-		views.Day += pendingViews
-		views.Week += pendingViews
-		views.Month += pendingViews
-		views.Year += pendingViews
-		views.Total += pendingViews
+	for _, bookID := range bookIDs {
+		views, _ := viewsMapping[bookID]
+		pendingViews, err := a.counterBooks.Get(ctx, fmt.Sprintf("%d", bookID))
+		if err != nil {
+			a.log.Errorw("failed to get views count from redis", "err", err, "bookID", bookID)
+		} else if pendingViews > 0 {
+			views.Hour += pendingViews
+			views.Day += pendingViews
+			views.Week += pendingViews
+			views.Month += pendingViews
+			views.Year += pendingViews
+			views.Total += pendingViews
+		}
+		viewsMapping[bookID] = views
 	}
 
-	return views, nil
+	return viewsMapping, nil
 }
 
 // IncrBookView implements AnalyticsViewsService.
@@ -87,7 +102,7 @@ func (a *analyticsViewsService) CommitPendingViewsToDB(ctx context.Context) {
 
 	views, err := a.counterBooks.PullPendingCounters(ctx, true)
 	if err != nil {
-		slog.Error("could not find pending counters", "err", err)
+		a.log.Errorw("could not find pending counters", "err", err)
 		return
 	}
 
@@ -95,7 +110,7 @@ func (a *analyticsViewsService) CommitPendingViewsToDB(ctx context.Context) {
 		return
 	}
 
-	slog.Warn("found pending counters", "count", len(views))
+	a.log.Warnw("found pending counters", "count", len(views))
 
 	for key, count := range views {
 		if count <= 0 {

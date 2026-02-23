@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/email"
 	mockeddata "github.com/MaratBR/openlibrary/internal/app/mocked_data"
 	"github.com/knadh/koanf/v2"
@@ -18,7 +19,7 @@ func mainPopulate(config *koanf.Koanf) {
 	tagsService := app.NewTagsService(db)
 	uploadService := app.NewUploadServiceFromApplicationConfig(config)
 	userService := app.NewUserService(db)
-	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService, userService, app.NewDummyBookReindexService())
+	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService, userService, app.NewDummyBookReindexService(), analytics.NewAnalyticsDummyViewsService())
 	reviewsService := app.NewReviewsService(db, userService, app.NewDummyBookBackgroundService())
 	signUpService := app.NewSignUpService(db, config, siteConfig, email.NewBlackhole())
 

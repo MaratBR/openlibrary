@@ -56,7 +56,8 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
     }
   },
 
-  _error(_err: unknown) {
+  _error(err: unknown) {
+    console.error('Error in island', err)
     this._mounted?.dispose()
     this._mounted = null
   },

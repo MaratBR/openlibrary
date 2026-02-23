@@ -6,6 +6,8 @@ Islands.register('bookmanager/book/BookChaptersIsland', () =>
   import('@/islands/bookmanager/book').then((m) => m.BookChaptersIsland),
 )
 
+Islands.register('bookmanager/BM', () => import('@/islands/bookmanager').then((r) => r.BMIsland))
+
 Islands.register('search/filters', () => Promise.resolve(SearchFiltersIsland))
 
 Islands.register('book-card-preview', () => Promise.resolve(BookCardPreviewIsland))

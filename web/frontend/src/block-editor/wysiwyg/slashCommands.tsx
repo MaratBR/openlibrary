@@ -4,7 +4,6 @@ export const slashCommands: () => SlashCommandItem[] = () => [
   {
     name: window._('editor.h2'),
     icon: <i class="fa-solid fa-heading" />,
-
     command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
   },
   {

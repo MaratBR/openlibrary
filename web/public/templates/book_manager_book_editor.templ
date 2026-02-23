@@ -1,38 +1,24 @@
 package templates
 
-import "github.com/MaratBR/openlibrary/internal/i18n"
-import "github.com/MaratBR/openlibrary/internal/app"
-import "fmt"
-
-templ BookManagerNewBook() {
+templ BM_NewBook() {
     {{
-        l := i18n.GetLocalizer(ctx)
+        // l := i18n.GetLocalizer(ctx)
     }}
 
-	@bmLayoutBase(l.T("bookManager.newBook.title"), false) {
-        @i18nExtractKeysByPrefix(l, "bookManager.newBook")
-        for _, ageRating := range app.AllRatings {
-            @i18nExtractKeys(l, []string{
-                fmt.Sprintf("ageRating.%s.rating", ageRating),
-                fmt.Sprintf("ageRating.%s.ratingDescription", ageRating),
-                fmt.Sprintf("ageRating.%s.examples", ageRating),
-                fmt.Sprintf("ageRating.%s.targetAudience", ageRating),
-                fmt.Sprintf("ageRating.%s.parentalGuidance", ageRating),
-            })
-        }
-        <div class="h-screen bg-card p-16">
-            <ol-island active="true" src="/_/assets/islands/bookmanager.js" name="NewBook" />
-        </div>
-    }
+	// @bmLayoutBase(l.T("bookManager.newBook.title"), false) {
+    //     @i18nExtractKeysByPrefix(l, "bookManager.newBook")
+    //     for _, ageRating := range app.AllRatings {
+    //         @i18nExtractKeys(l, []string{
+    //             fmt.Sprintf("ageRating.%s.rating", ageRating),
+    //             fmt.Sprintf("ageRating.%s.ratingDescription", ageRating),
+    //             fmt.Sprintf("ageRating.%s.examples", ageRating),
+    //             fmt.Sprintf("ageRating.%s.targetAudience", ageRating),
+    //             fmt.Sprintf("ageRating.%s.parentalGuidance", ageRating),
+    //         })
+    //     }
+    //     <div class="h-screen bg-card p-16">
+    //         <ol-island active="true" src="/_/assets/islands/bookmanager.js" name="NewBook" />
+    //     </div>
+    // }
 }
 
-templ collapsibleText(text string) {
-    <div x-data="{open:false}">
-        <div @click="open=!open" role="button" class="rounded-md p-2 cursor-pointer font-medium hover:underline hover:bg-highlight">
-            {text}
-        </div>
-        <div x-show="open" x-collapse>
-            { children... }
-        </div>
-    </div>
-}

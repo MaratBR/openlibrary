@@ -97,7 +97,7 @@ type BookListDto struct {
 	IsPinned        bool      `json:"isPinned"`
 }
 
-type GetUserBooksQuery struct {
+type ManagerGetUserBooksQuery struct {
 	UserID      uuid.UUID
 	ActorUserID Nullable[uuid.UUID]
 	Page        uint32

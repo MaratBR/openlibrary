@@ -26,6 +26,6 @@ strong, b {
     @apply font-[600];
 }
 
-@view-transition {
+/* @view-transition {
   navigation: auto;
-}
+} */

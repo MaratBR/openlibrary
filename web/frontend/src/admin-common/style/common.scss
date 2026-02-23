@@ -6,10 +6,6 @@
     @apply text-sm bg-secondary rounded-sm p-1;
 }
 
-.dashboard-content {
-    @apply p-4;
-}
-
 .admin-page-breadcrumb {
     @apply border-b bg-card p-2 flex gap-2 items-center flex-wrap sticky top-0 z-10 pl-4;
 }

@@ -15,7 +15,7 @@ import (
 )
 
 func (c *bookManagerController) bookNew(w http.ResponseWriter, r *http.Request) {
-	templates.BookManagerNewBook().Render(r.Context(), w)
+	templates.BM_NewBook().Render(r.Context(), w)
 }
 
 type createBookRequest struct {
@@ -78,7 +78,7 @@ func (c *bookManagerController) bookEditorPage(bookID int64, w http.ResponseWrit
 		return
 	}
 
-	templates.BookManagerBook(&book.Book).Render(r.Context(), w)
+	templates.BM_Book(&book.Book).Render(r.Context(), w)
 }
 
 func (c *bookManagerController) bookUpdateGeneralInformation(w http.ResponseWriter, r *http.Request) {

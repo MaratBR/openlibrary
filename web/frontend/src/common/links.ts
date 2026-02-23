@@ -18,11 +18,8 @@ function initActiveLinks() {
     }
   }
 
-  for (const { link, activeType } of activeLinks) {
-    link.dataset.linkActive = 'true'
-    if (activeType === 'full') {
-      link.dataset.linkActiveFull = 'true'
-    }
+  for (const { link } of activeLinks) {
+    link.classList.toggle('active', true)
   }
 }
 

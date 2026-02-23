@@ -117,7 +117,7 @@ templ BookPage(
                     </div>
                     @bookRating(&book, views)
 
-                    <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) }>
+                    <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) } class="mt-4">
                         <header role="tablist" class="flex gap-4 items-baseline">
                             <span role="tab"
                                 @click.prevent="tab='reviews'"

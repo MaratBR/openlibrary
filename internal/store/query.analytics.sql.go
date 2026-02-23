@@ -171,11 +171,67 @@ func (q *Queries) Analytics_GetViews(ctx context.Context, arg Analytics_GetViews
 	return items, nil
 }
 
+const analytics_GetViews_Multiple = `-- name: Analytics_GetViews_Multiple :many
+select "period", view_count, book_id
+from ol_analytics.view_counter
+where 
+    book_id = ANY($1::int8[]) and entity_type = 0 and (
+        "period" = 0 or
+        "period" = $2 or
+        "period" = $3 or
+        "period" = $4 or
+        "period" = $5 or
+        "period" = $6
+    )
+`
+
+type Analytics_GetViews_MultipleParams struct {
+	BookID      []int64
+	YearPeriod  int32
+	MonthPeriod int32
+	WeekPeriod  int32
+	DayPeriod   int32
+	HourPeriod  int32
+}
+
+type Analytics_GetViews_MultipleRow struct {
+	Period    int32
+	ViewCount int64
+	BookID    int64
+}
+
+func (q *Queries) Analytics_GetViews_Multiple(ctx context.Context, arg Analytics_GetViews_MultipleParams) ([]Analytics_GetViews_MultipleRow, error) {
+	rows, err := q.db.Query(ctx, analytics_GetViews_Multiple,
+		arg.BookID,
+		arg.YearPeriod,
+		arg.MonthPeriod,
+		arg.WeekPeriod,
+		arg.DayPeriod,
+		arg.HourPeriod,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Analytics_GetViews_MultipleRow
+	for rows.Next() {
+		var i Analytics_GetViews_MultipleRow
+		if err := rows.Scan(&i.Period, &i.ViewCount, &i.BookID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const analytics_IncrView = `-- name: Analytics_IncrView :exec
 insert into ol_analytics.view_counter ("period", book_id, view_count, entity_type, entity_id)
 values ($1, $2, $3, $4, $5)
 on conflict (period, entity_type, entity_id)
-do update set view_count = EXCLUDED.view_count + ol_analytics.view_bucket.view_count
+do update set view_count = EXCLUDED.view_count + ol_analytics.view_counter.view_count
 `
 
 type Analytics_IncrViewParams struct {

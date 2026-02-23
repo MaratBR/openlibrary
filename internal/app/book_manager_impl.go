@@ -11,6 +11,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -25,13 +26,14 @@ type bookManagerService struct {
 	usersService       UserService
 	uploadService      *UploadService
 	bookReindexService BookReindexService
+	viewsService       analytics.ViewsService
 }
 
 const (
 	BOOK_COVER_DIRECTORY = "book-covers"
 )
 
-func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBooksQuery) (GetUserBooksResult, error) {
+func (s *bookManagerService) GetUserBooks(ctx context.Context, input ManagerGetUserBooksQuery) (ManagerGetUserBooksQuery_Result, error) {
 	var (
 		limit  int32
 		offset int32
@@ -50,12 +52,12 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 		Search:       input.SearchQuery,
 	})
 	if err != nil {
-		return GetUserBooksResult{}, apperror.WrapUnexpectedDBError(err)
+		return ManagerGetUserBooksQuery_Result{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	userBooks, err := s.aggregateUserBooks(ctx, books)
 	if err != nil {
-		return GetUserBooksResult{}, err
+		return ManagerGetUserBooksQuery_Result{}, err
 	}
 
 	count, err := s.queries.Book_Book_ManagerGetUserBooksCount(ctx, store.Book_Book_ManagerGetUserBooksCountParams{
@@ -66,21 +68,37 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input GetUserBook
 	totalPages := uint32(math.Ceil(float64(count) / float64(input.PageSize)))
 
 	if err != nil {
-		return GetUserBooksResult{}, apperror.WrapUnexpectedDBError(err)
+		return ManagerGetUserBooksQuery_Result{}, apperror.WrapUnexpectedDBError(err)
 	}
 
-	return GetUserBooksResult{Books: userBooks, PageSize: input.PageSize, TotalPages: totalPages, Page: input.Page}, nil
+	// load views
+	bookIDs := MapSlice(userBooks, func(b ManagerBookDto) int64 { return b.ID })
+	viewMappings, err := s.viewsService.GetBooksViews(ctx, bookIDs)
+	if err != nil {
+		return ManagerGetUserBooksQuery_Result{}, err
+	}
+
+	for i := range userBooks {
+		dto := userBooks[i]
+		views, ok := viewMappings[dto.ID]
+		if ok {
+			dto.Stats.Views = views
+			userBooks[i] = dto
+		}
+	}
+
+	return ManagerGetUserBooksQuery_Result{Books: userBooks, PageSize: input.PageSize, TotalPages: totalPages, Page: input.Page}, nil
 }
 
-func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookResult, error) {
+func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookQuery_Result, error) {
 	book, err := s.queries.GetBook(ctx, query.BookID)
 	if err != nil {
-		return ManagerGetBookResult{}, err
+		return ManagerGetBookQuery_Result{}, err
 	}
 
 	tags, err := s.tagsService.GetTagsByIds(ctx, book.TagIds)
 	if err != nil {
-		return ManagerGetBookResult{}, err
+		return ManagerGetBookQuery_Result{}, err
 	}
 
 	ageRating := ageRatingFromDbValue(book.AgeRating)
@@ -110,7 +128,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 	{
 		chapters, err := s.queries.GetAllBookChapters(ctx, query.BookID)
 		if err != nil {
-			return ManagerGetBookResult{}, err
+			return ManagerGetBookQuery_Result{}, err
 		}
 		bookDto.Chapters = MapSlice(chapters, func(chapter store.GetAllBookChaptersRow) ManagerBookChapterDto {
 			var draftID Nullable[Int64String]
@@ -136,7 +154,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 	{
 		collections, err := s.queries.GetBookCollectionData(ctx, query.BookID)
 		if err != nil {
-			return ManagerGetBookResult{}, err
+			return ManagerGetBookQuery_Result{}, err
 		}
 		bookDto.Collections = MapSlice(collections, func(collection store.GetBookCollectionDataRow) BookCollectionDto {
 			return BookCollectionDto{
@@ -148,7 +166,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		})
 	}
 
-	return ManagerGetBookResult{
+	return ManagerGetBookQuery_Result{
 		Book: bookDto,
 	}, nil
 }
@@ -231,7 +249,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 }
 
 // UploadBookCover implements BookManagerService.
-func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (result UploadBookCoverResult, err error) {
+func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (result UploadBookCoverCommand_Result, err error) {
 	file, err := io.ReadAll(input.File)
 	if err != nil {
 		return
@@ -298,15 +316,15 @@ func (s *bookManagerService) UntrashBook(ctx context.Context, input UntrashBookC
 }
 
 // UpdateBookChaptersOrder updates the order of chapters in a book.
-func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChapterOrdersCommand) (UpdateBookChapterOrdersResult, error) {
+func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input UpdateBookChapterOrdersCommand) (UpdateBookChapterOrdersCommand_Result, error) {
 	// no modification is considered correct - just do nothing
 	if len(input.Modifications) == 0 {
-		return UpdateBookChapterOrdersResult{}, nil
+		return UpdateBookChapterOrdersCommand_Result{}, nil
 	}
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return UpdateBookChapterOrdersResult{}, err
+		return UpdateBookChapterOrdersCommand_Result{}, err
 	}
 
 	queries := s.queries.WithTx(tx)
@@ -314,7 +332,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 	oldOrder, err := queries.GetChaptersOrder(ctx, input.BookID)
 	if err != nil {
 		rollbackTx(ctx, tx)
-		return UpdateBookChapterOrdersResult{}, err
+		return UpdateBookChapterOrdersCommand_Result{}, err
 	}
 	oldIndices := make(map[int64]int)
 	newOrder := make([]int64, len(oldOrder))
@@ -349,16 +367,16 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 		})
 		if err != nil {
 			rollbackTx(ctx, tx)
-			return UpdateBookChapterOrdersResult{}, err
+			return UpdateBookChapterOrdersCommand_Result{}, err
 		}
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return UpdateBookChapterOrdersResult{}, err
+		return UpdateBookChapterOrdersCommand_Result{}, err
 	}
 
-	return UpdateBookChapterOrdersResult{
+	return UpdateBookChapterOrdersCommand_Result{
 		ModifiedPositions: modifiedPositions,
 	}, nil
 }
@@ -384,10 +402,10 @@ func MoveItem[T comparable](arr []T, item T, newPositionIndex int) (int, bool) {
 	return newPositionIndex, true
 }
 
-func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []store.Book_ManagerGetUserBooksRow) ([]ManagerAuthorBookDto, error) {
+func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []store.Book_ManagerGetUserBooksRow) ([]ManagerBookDto, error) {
 	var (
-		books   []ManagerAuthorBookDto = []ManagerAuthorBookDto{}
-		book    ManagerAuthorBookDto
+		books   []ManagerBookDto = []ManagerBookDto{}
+		book    ManagerBookDto
 		tagsAgg = newTagsAggregator(s.tagsService)
 	)
 
@@ -399,7 +417,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 
 			tagsAgg.Add(book.ID, row.TagIds)
 
-			book = ManagerAuthorBookDto{
+			book = ManagerBookDto{
 				ID:                row.ID,
 				Slug:              row.Slug,
 				Name:              row.Name,
@@ -415,6 +433,10 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 				IsBanned:          row.IsBanned,
 				IsTrashed:         row.IsTrashed,
 				Cover:             getBookCoverURL(s.uploadService, row.Cover),
+				Stats: ManagerBookDto_Stats{
+					Ratings: row.TotalReviews,
+					Reviews: row.TotalReviews,
+				},
 			}
 		}
 
@@ -435,7 +457,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 
 	tags, err := tagsAgg.Fetch(ctx)
 	if err != nil {
-		return []ManagerAuthorBookDto{}, err
+		return []ManagerBookDto{}, err
 	}
 
 	for i := 0; i < len(books); i++ {
@@ -452,16 +474,16 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 	return books, nil
 }
 
-func (s *bookManagerService) CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterResult, error) {
+func (s *bookManagerService) CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterCommand_Result, error) {
 	lastOrder, err := s.queries.Book_GetLastChapterOrder(ctx, input.BookID)
 	if err != nil {
-		return CreateBookChapterResult{}, err
+		return CreateBookChapterCommand_Result{}, err
 	}
 
 	id := GenID()
 	content, err := ProcessContent(input.Content)
 	if err != nil {
-		return CreateBookChapterResult{}, ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
+		return CreateBookChapterCommand_Result{}, ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
 	}
 	err = s.queries.Book_InsertChapter(ctx, store.Book_InsertChapterParams{
 		ID:                id,
@@ -475,14 +497,14 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 		IsPubliclyVisible: input.IsPubliclyVisible,
 	})
 	if err != nil {
-		return CreateBookChapterResult{}, err
+		return CreateBookChapterCommand_Result{}, err
 	}
 	err = s.queries.RecalculateBookStats(ctx, input.BookID)
 	if err != nil {
-		return CreateBookChapterResult{}, err
+		return CreateBookChapterCommand_Result{}, err
 	}
 	s.bookReindexService.ScheduleReindex(ctx, input.BookID)
-	return CreateBookChapterResult{ID: id}, nil
+	return CreateBookChapterCommand_Result{ID: id}, nil
 }
 
 func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderChaptersCommand) error {
@@ -556,10 +578,10 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 	return err
 }
 
-func (s *bookManagerService) GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChapterResult, error) {
+func (s *bookManagerService) GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChaptersQuery_Result, error) {
 	rows, err := s.queries.GetAllBookChapters(ctx, query.BookID)
 	if err != nil {
-		return ManagerGetBookChapterResult{}, err
+		return ManagerGetBookChaptersQuery_Result{}, err
 	}
 
 	var (
@@ -578,21 +600,21 @@ func (s *bookManagerService) GetBookChapters(ctx context.Context, query ManagerG
 		}
 	}
 
-	return ManagerGetBookChapterResult{
+	return ManagerGetBookChaptersQuery_Result{
 		Chapters: chapters,
 	}, nil
 }
 
-func (s *bookManagerService) GetChapter(ctx context.Context, query ManagerGetChapterQuery) (ManagerGetChapterResult, error) {
+func (s *bookManagerService) GetChapter(ctx context.Context, query ManagerGetChapterQuery) (ManagerGetChapterQuery_Result, error) {
 	chapter, err := s.queries.GetBookChapterWithDetails(ctx, store.GetBookChapterWithDetailsParams{
 		ID:     query.ChapterID,
 		BookID: query.BookID,
 	})
 	if err != nil {
-		return ManagerGetChapterResult{}, err
+		return ManagerGetChapterQuery_Result{}, err
 	}
 
-	return ManagerGetChapterResult{
+	return ManagerGetChapterQuery_Result{
 		Chapter: ManagerBookChapterDetailsDto{
 			ID:                chapter.ID,
 			Name:              chapter.Name,
@@ -879,7 +901,7 @@ func (s *bookManagerService) authorizeDraftCreate(userID uuid.UUID, chapterID in
 	return nil
 }
 
-func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService, bookReindexService BookReindexService) BookManagerService {
+func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService, bookReindexService BookReindexService, viewsService analytics.ViewsService) BookManagerService {
 	return &bookManagerService{
 		queries:            store.New(db),
 		tagsService:        tagsService,
@@ -887,5 +909,6 @@ func NewBookManagerService(db DB, tagsService TagsService, uploadService *Upload
 		uploadService:      uploadService,
 		usersService:       usersService,
 		bookReindexService: bookReindexService,
+		viewsService:       viewsService,
 	}
 }

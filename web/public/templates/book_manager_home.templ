@@ -3,18 +3,13 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/web/frontend"
-import "github.com/MaratBR/openlibrary/internal/app"
-import "fmt"
-import "github.com/MaratBR/openlibrary/internal/csrf"
-import "net/url"
-import "strings"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
-templ bmLayoutBase(title string, sidebar bool) {
+templ bmLayout(title string) {
 	@olhttp.Doc(olhttp.DocProps{
 		Title:        title,
-		Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js", "/_/assets/bookmanager-common.js"},
-		CSS:          []string{"/_/assets/common.css", "/_/assets/bookmanager-common.css"},
+		Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js"},
+		CSS:          []string{"/_/assets/common.css"},
 		InstantClick: false,
 		AppendToHead: templ.Join(
 			frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
@@ -24,294 +19,269 @@ templ bmLayoutBase(title string, sidebar bool) {
 			l := i18n.GetLocalizer(ctx)
 		}}
 		@i18nExtractKeysByPrefix(l, "common")
-
-		if sidebar {
-			<aside class="dashboard-sidebar">
-				@bmSidebar([]bmSidebarItem{
-					{ Icon: "fa-solid fa-house", URL: "/books-manager", Text: l.T("bookManager.home") },
-					{ Icon: "fa-solid fa-book", URL: "/books-manager/books", Text: l.T("bookManager.books.title") },
-					{ Icon: "fa-solid fa-rectangle-list", URL: "/books-manager/collections", Text: l.T("bookManager.collections") },
-				})
-			</aside>
-			<div class="dashboard-sidebar-body">
-				<div class="dashboard-sidebar-body__content" id="BMContent">
-					@flashes()
-					{ children... }
-				</div>
-			</div>
-		} else {
-			{ children... }
-		}
-	}
-}
-
-type bmSidebarItem struct {
-	Icon string
-	URL string
-	Text string
-}
-
-templ bmSidebar(items []bmSidebarItem) {
-	{{
-		r := olhttp.GetRequest(ctx)
-	}}
-
-	<ul class="dashboard-sidebar-list">
-		for _, item := range items {
-			{{
-				active := r.URL.Path == item.URL
-			}}
-			<li
-				if active {
-					class="dashboard-sidebar-item dashboard-sidebar-item--active"
-				} else {
-					class="dashboard-sidebar-item"
-				}
-				>
-				<a href={ item.URL }>
-					<div class="dashboard-sidebar-item__icon">
-						<i class={ item.Icon }></i>
-					</div>
-					<div class="dashboard-sidebar-item__label">
-						{ item.Text }
-					</div>
-				</a>
-			</li>
-
-		}
-	</ul>
-}
-
-templ bmLayout(title string) {
-	@bmLayoutBase(title, true) {
+		@i18nExtractKeysByPrefix(l, "bookManager")
 		{ children... }
 	}
 }
 
-templ bmLayoutNoSidebar(title string) {
-	@bmLayoutBase(title, false) {
-		{ children... }
-	}
-}
+// type bmSidebarItem struct {
+// 	Icon string
+// 	URL string
+// 	Text string
+// }
 
-templ BookManager() {
-	@bmMainPage("bookManager.home") {
-		Home page
-	}
-}
+// templ bmSidebar(items []bmSidebarItem) {
+// 	{{
+// 		r := olhttp.GetRequest(ctx)
+// 	}}
 
-templ BookManagerBooks(books app.GetUserBooksResult) {
+// 	<ul class="dashboard-sidebar-list">
+// 		for _, item := range items {
+// 			{{
+// 				active := r.URL.Path == item.URL
+// 			}}
+// 			<li
+// 				if active {
+// 					class="dashboard-sidebar-item dashboard-sidebar-item--active"
+// 				} else {
+// 					class="dashboard-sidebar-item"
+// 				}
+// 				>
+// 				<a href={ item.URL }>
+// 					<div class="dashboard-sidebar-item__icon">
+// 						<i class={ item.Icon }></i>
+// 					</div>
+// 					<div class="dashboard-sidebar-item__label">
+// 						{ item.Text }
+// 					</div>
+// 				</a>
+// 			</li>
+
+// 		}
+// 	</ul>
+// }
+
+
+templ BM_Home() {
 	{{
 		l := i18n.GetLocalizer(ctx)
 	}}
-	@bmMainPage("bookManager.books.title") {
-		<section class="dashboard-content">
-			<header class="page-header-container">
-				<h1 class="page-header">
-					{ l.T("bookManager.books.title") }
-				</h1>
-				<div class="page-header__after">
-					<a class="btn btn--sm btn--outline primary2 rounded-md" href="/books-manager/new?ol.from=books-manager">
-						<i class="fa-solid fa-pencil"></i>
-						{ l.T("bookManager.createNewBook") }
-					</a>
-				</div>
-				<div class="page-header-container__right">
-					@webcomponents.SimpleSearchForm(webcomponents.SimpleSearchFormProps{
-						ParamName: "q",
-					})
-				</div>
-			</header>
-			@olhttp.Pagination(books.Page, books.TotalPages, 10)
-			@webcomponents.Island2(webcomponents.Island2Props{
-				Name: "book-card-preview",
-				Data: map[string]string{"selector": "#books-manager-books"},
-			})
-
-			<section class="my-4 space-y-2" id="books-manager-books" x-data="{
-				deleteBookId: '',
-				restoreBookId: '',
-				submitted: false,
-				openDelete($event, bookId) {
-					this.deleteBookId = bookId;
-					this._updatePopupPosition($event, 'deletePopup');
-				},
-				openRestore($event, bookId) {
-					this.restoreBookId = bookId;
-					this._updatePopupPosition($event, 'restorePopup');
-				},
-				_updatePopupPosition($event, popupRef) {
-					const $popup = this.$refs[popupRef];
-					if ($popup) {
-						console.log($event);
-						const rec = $event.target.getBoundingClientRect();
-						$popup.style.left = rec.left+'px';
-						$popup.style.top = (rec.top + rec.height)+'px';
-					}
-				},
-				closeDelete() {
-					this.deleteBookId = '';
-				},
-				closeRestore() {
-					this.restoreBookId = '';
-				}
-			}">
-				{{
-					r := olhttp.GetRequest(ctx)
-				}}
-				<div class="card fixed max-w-128" x-ref="deletePopup" x-cloak x-show="!!deleteBookId" aria-hidden="true" :aria-hidden="!deleteBookId" @click.outside="closeDelete()">
-					<strong>
-						{ l.T("bookManager.books.trashBook.title") }
-					</strong>
-					<p>
-						{ l.T("bookManager.books.trashBook.description") }
-					</p>
-					<form @submit="submitted=true" method="post" action={fmt.Sprintf("/books-manager/books?act=trash&next=%s", url.QueryEscape(r.URL.String()))}>
-						<input aria-hidden="true" class="hidden" name="id" required x-model="deleteBookId" />
-						@csrf.CSRFInputTempl(ctx)
-						<button type="submit" class="btn btn--sm destructive mt-2">
-							<span x-show="submitted" class="loader" />
-							<span x-show="!submitted">
-								{ l.T("common.trash") }
-							</span>
-						</button>
-					</form>
-				</div>
-				<div class="card fixed max-w-128" x-ref="restorePopup" x-cloak x-show="!!restoreBookId" aria-hidden="true" :aria-hidden="!restoreBookId" @click.outside="closeRestore()">
-					<strong>
-						{ l.T("bookManager.books.restoreBook.title") }
-					</strong>
-					<p>
-						{ l.T("bookManager.books.restoreBook.description") }
-					</p>
-					<form @submit="submitted=true" method="post" action={fmt.Sprintf("/books-manager/books?act=untrash&next=%s", url.QueryEscape(r.URL.String()))}>
-						<input aria-hidden="true" class="hidden" name="id" required x-model="restoreBookId" />
-						@csrf.CSRFInputTempl(ctx)
-						<button type="submit" class="btn btn--sm mt-2">
-							<span x-show="submitted" class="loader" />
-							<span x-show="!submitted">
-								{ l.T("common.untrash") }
-							</span>
-						</button>
-					</form>
-				</div>
-				<div class="-mx-8">
-					<table class="table">
-						<thead>
-							<tr>
-								<th width="80" />
-								<th>
-									{ l.T("bookManager.books.name") }
-								</th>
-								<th>
-									{ l.T("bookManager.books.stats") }
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							for _, book := range books.Books {
-								<tr>
-									<td>
-										@bookCover(book.Cover, book.Name, 100)
-									</td>
-									<td>
-										<span>{ book.Name }</span>
-										{{
-											var additionalText []string
-											if book.IsBanned {
-												additionalText = append(additionalText, l.T("bookManager.books.banned"))
-											} 
-											if !book.IsPubliclyVisible {
-												additionalText = append(additionalText, l.T("bookManager.books.notPublic"))
-											} 
-											if book.IsTrashed {
-												additionalText = append(additionalText, l.T("bookManager.books.trashed"))
-											} 
-										}}
-										if len(additionalText) > 0 {
-											&nbsp;&mdash;&nbsp;<span class="font-semibold text-muted-foreground">
-												{ strings.Join(additionalText, ", ") }
-											</span>
-										}
-										<div>
-											<a class="link" href={ fmt.Sprintf("/books-manager/book/%d", book.ID) }>{ l.T("common.edit") }</a> | 
-											if book.IsTrashed {
-												<button 
-													@click={fmt.Sprintf("openRestore($event,'%d')", book.ID)}
-													class="link">{ l.T("common.untrash") }</button> |
-											} else {
-												<button 
-													@click={fmt.Sprintf("openDelete($event,'%d')", book.ID)}
-													class="link">{ l.T("common.trash") }</button> |
-											}
-											<a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>{ l.T("common.view") }</a>
-										</div>
-									</td>
-									<td>
-									</td>
-								</tr>
-								// @bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
-							}
-							if len(books.Books) == 0 {
-								<tr>
-									<td />
-									<td colspan="2">
-										<p class="max-w-128">
-											{ l.T("bookManager.noBooks") }
-										</p>
-									</td>
-								</tr>
-							}
-						</tbody>
-					</table>
-				</div>
-			</section>
-			@olhttp.Pagination(books.Page, books.TotalPages, 10)
-		</section>
+	@bmLayout(l.T("bookManager.home")) {
+		@webcomponents.Island2(webcomponents.Island2Props{
+			Name: "bookmanager/BM",
+		})
 	}
 }
 
-templ bookManagerYourBooksBookCard(bookID int64, name, cover, summary string) {
-	{{
-		l := i18n.GetLocalizer(ctx)
-	}}
+// templ BM_Books(books app.ManagerGetUserBooksQuery_Result) {
+// 	{{
+// 		l := i18n.GetLocalizer(ctx)
+// 	}}
+// 	@bmMainPage("bookManager.books.title") {
+// 		<section class="dashboard-content">
+// 			<header class="page-header-container">
+// 				<h1 class="page-header">
+// 					{ l.T("bookManager.books.title") }
+// 				</h1>
+// 				<div class="page-header__after">
+// 					<a class="btn btn--sm btn--outline primary2 rounded-md" href="/books-manager/new?ol.from=books-manager">
+// 						<i class="fa-solid fa-pencil"></i>
+// 						{ l.T("bookManager.createNewBook") }
+// 					</a>
+// 				</div>
+// 				<div class="page-header-container__right">
+// 					@webcomponents.SimpleSearchForm(webcomponents.SimpleSearchFormProps{
+// 						ParamName: "q",
+// 					})
+// 				</div>
+// 			</header>
+// 			@olhttp.Pagination(books.Page, books.TotalPages, 10)
+// 			@webcomponents.Island2(webcomponents.Island2Props{
+// 				Name: "book-card-preview",
+// 				Data: map[string]string{"selector": "#books-manager-books"},
+// 			})
 
-	<div
-		class="profile-book-card"
-	>
-		<div class="profile-books-card__cover" data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
-			@bookCover(cover, name, 150)
-		</div>
-		<div class="profile-books-card__content">
-			<a class="profile-book-card__title" href={ templ.SafeURL(fmt.Sprintf("/books-manager/book/%d", bookID)) }>
-				{ name }
-			</a>
-			<div class="profile-book-card__summary">
-				if summary == "" {
-					<p class="text-muted-foreground"><em>{ l.T("bookManager.emptyBookSummary") }</em></p>
-				} else {
-					@webcomponents.Collapsible(140, true) {
-						@templ.Raw(summary)
-					}
-				}
-			</div>
-		</div>
-	</div>
-}
+// 			<section class="my-4 space-y-2" id="books-manager-books" x-data="{
+// 				deleteBookId: '',
+// 				restoreBookId: '',
+// 				submitted: false,
+// 				openDelete($event, bookId) {
+// 					this.deleteBookId = bookId;
+// 					this._updatePopupPosition($event, 'deletePopup');
+// 				},
+// 				openRestore($event, bookId) {
+// 					this.restoreBookId = bookId;
+// 					this._updatePopupPosition($event, 'restorePopup');
+// 				},
+// 				_updatePopupPosition($event, popupRef) {
+// 					const $popup = this.$refs[popupRef];
+// 					if ($popup) {
+// 						console.log($event);
+// 						const rec = $event.target.getBoundingClientRect();
+// 						$popup.style.left = rec.left+'px';
+// 						$popup.style.top = (rec.top + rec.height)+'px';
+// 					}
+// 				},
+// 				closeDelete() {
+// 					this.deleteBookId = '';
+// 				},
+// 				closeRestore() {
+// 					this.restoreBookId = '';
+// 				}
+// 			}">
+// 				{{
+// 					r := olhttp.GetRequest(ctx)
+// 				}}
+// 				<div class="card fixed max-w-128" x-ref="deletePopup" x-cloak x-show="!!deleteBookId" aria-hidden="true" :aria-hidden="!deleteBookId" @click.outside="closeDelete()">
+// 					<strong>
+// 						{ l.T("bookManager.books.trashBook.title") }
+// 					</strong>
+// 					<p>
+// 						{ l.T("bookManager.books.trashBook.description") }
+// 					</p>
+// 					<form @submit="submitted=true" method="post" action={fmt.Sprintf("/books-manager/books?act=trash&next=%s", url.QueryEscape(r.URL.String()))}>
+// 						<input aria-hidden="true" class="hidden" name="id" required x-model="deleteBookId" />
+// 						@csrf.CSRFInputTempl(ctx)
+// 						<button type="submit" class="btn btn--sm destructive mt-2">
+// 							<span x-show="submitted" class="loader" />
+// 							<span x-show="!submitted">
+// 								{ l.T("common.trash") }
+// 							</span>
+// 						</button>
+// 					</form>
+// 				</div>
+// 				<div class="card fixed max-w-128" x-ref="restorePopup" x-cloak x-show="!!restoreBookId" aria-hidden="true" :aria-hidden="!restoreBookId" @click.outside="closeRestore()">
+// 					<strong>
+// 						{ l.T("bookManager.books.restoreBook.title") }
+// 					</strong>
+// 					<p>
+// 						{ l.T("bookManager.books.restoreBook.description") }
+// 					</p>
+// 					<form @submit="submitted=true" method="post" action={fmt.Sprintf("/books-manager/books?act=untrash&next=%s", url.QueryEscape(r.URL.String()))}>
+// 						<input aria-hidden="true" class="hidden" name="id" required x-model="restoreBookId" />
+// 						@csrf.CSRFInputTempl(ctx)
+// 						<button type="submit" class="btn btn--sm mt-2">
+// 							<span x-show="submitted" class="loader" />
+// 							<span x-show="!submitted">
+// 								{ l.T("common.untrash") }
+// 							</span>
+// 						</button>
+// 					</form>
+// 				</div>
+// 				<div class="-mx-8">
+// 					<table class="table">
+// 						<thead>
+// 							<tr>
+// 								<th width="80" />
+// 								<th>
+// 									{ l.T("bookManager.books.name") }
+// 								</th>
+// 								<th>
+// 									{ l.T("bookManager.books.stats") }
+// 								</th>
+// 							</tr>
+// 						</thead>
+// 						<tbody>
+// 							for _, book := range books.Books {
+// 								<tr>
+// 									<td>
+// 										@bookCover(book.Cover, book.Name, 100)
+// 									</td>
+// 									<td>
+// 										<span>{ book.Name }</span>
+// 										{{
+// 											var additionalText []string
+// 											if book.IsBanned {
+// 												additionalText = append(additionalText, l.T("bookManager.books.banned"))
+// 											} 
+// 											if !book.IsPubliclyVisible {
+// 												additionalText = append(additionalText, l.T("bookManager.books.notPublic"))
+// 											} 
+// 											if book.IsTrashed {
+// 												additionalText = append(additionalText, l.T("bookManager.books.trashed"))
+// 											} 
+// 										}}
+// 										if len(additionalText) > 0 {
+// 											&nbsp;&mdash;&nbsp;<span class="font-semibold text-muted-foreground">
+// 												{ strings.Join(additionalText, ", ") }
+// 											</span>
+// 										}
+// 										<div>
+// 											<a class="link" href={ fmt.Sprintf("/books-manager/book/%d", book.ID) }>{ l.T("common.edit") }</a> | 
+// 											if book.IsTrashed {
+// 												<button 
+// 													@click={fmt.Sprintf("openRestore($event,'%d')", book.ID)}
+// 													class="link">{ l.T("common.untrash") }</button> |
+// 											} else {
+// 												<button 
+// 													@click={fmt.Sprintf("openDelete($event,'%d')", book.ID)}
+// 													class="link">{ l.T("common.trash") }</button> |
+// 											}
+// 											<a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>{ l.T("common.view") }</a>
+// 										</div>
+// 									</td>
+// 									<td>
+// 										<div class="align-middle text-sm text-muted-foreground">
+// 											<i class="fa-solid fa-square-poll-vertical"></i> { formatInt32(book.Stats.Ratings) }&nbsp;&nbsp;
+// 											<i class="fa-solid fa-comment"></i> { formatInt32(book.Stats.Reviews) }&nbsp;&nbsp;
+// 											<i class="fa-solid fa-eye"></i> { formatInt32(int32(book.Stats.Views.Total)) }
+// 										</div>
+// 									</td>
+// 								</tr>
+// 								// @bookManagerYourBooksBookCard(book.ID, book.Name, book.Cover, book.Summary)
+// 							}
+// 							if len(books.Books) == 0 {
+// 								<tr>
+// 									<td />
+// 									<td colspan="2">
+// 										<p class="max-w-128">
+// 											{ l.T("bookManager.noBooks") }
+// 										</p>
+// 									</td>
+// 								</tr>
+// 							}
+// 						</tbody>
+// 					</table>
+// 				</div>
+// 			</section>
+// 			@olhttp.Pagination(books.Page, books.TotalPages, 10)
+// 		</section>
+// 	}
+// }
 
-templ BookManagerCollections(collections []app.CollectionDto) {
-	@bmMainPage("bookManager.collections") {
-		for _, col := range collections {
-			{ col.Name }
-		}
-	}
-}
+// templ bookManagerYourBooksBookCard(bookID int64, name, cover, summary string) {
+// 	{{
+// 		l := i18n.GetLocalizer(ctx)
+// 	}}
 
-templ bmMainPage(tab string) {
-	{{
-		l := i18n.GetLocalizer(ctx)
-	}}
-	@bmLayout(l.T(tab)) {
-		{ children... }
-	}
-}
+// 	<div
+// 		class="profile-book-card"
+// 	>
+// 		<div class="profile-books-card__cover" data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
+// 			@bookCover(cover, name, 150)
+// 		</div>
+// 		<div class="profile-books-card__content">
+// 			<a class="profile-book-card__title" href={ templ.SafeURL(fmt.Sprintf("/books-manager/book/%d", bookID)) }>
+// 				{ name }
+// 			</a>
+// 			<div class="profile-book-card__summary">
+// 				if summary == "" {
+// 					<p class="text-muted-foreground"><em>{ l.T("bookManager.emptyBookSummary") }</em></p>
+// 				} else {
+// 					@webcomponents.Collapsible(140, true) {
+// 						@templ.Raw(summary)
+// 					}
+// 				}
+// 			</div>
+// 		</div>
+// 	</div>
+// }
+
+// templ BM_Collections(collections []app.CollectionDto) {
+// 	@bmMainPage("bookManager.collections") {
+// 		for _, col := range collections {
+// 			{ col.Name }
+// 		}
+// 	}
+// }
+

@@ -166,7 +166,6 @@ const ENTRIES = [
   'book-reader',
 
   // bookmanager stuff
-  'bookmanager-common',
 
   // islands
   'islands/public', // all islands available in public pages
