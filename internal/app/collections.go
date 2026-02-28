@@ -95,7 +95,7 @@ type GetBookCollectionsQuery struct {
 type CollectionBookDto struct {
 	ID    int64
 	Name  string
-	Cover string
+	Cover BookCover
 }
 
 type CollectionBook2Dto struct {
@@ -105,7 +105,7 @@ type CollectionBook2Dto struct {
 	Summary    string
 	AuthorName string
 	AuthorID   uuid.UUID
-	Cover      string
+	Cover      BookCover
 	Tags       []DefinedTagDto
 }
 

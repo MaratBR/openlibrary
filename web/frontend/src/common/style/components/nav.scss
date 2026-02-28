@@ -99,19 +99,26 @@
 }
 
 :root {
-    --dashboard-sidebar-width: 220px;
+    --dashboard-layout__sidebar-width: 220px;
     --dashboard-sidebar-item-height: 38px;
     --dashboard-sidebar-item-icon-width: 38px;
-    --dashboard-sidebar-indicator-size: 16px;
+    --dashboard-layout__sidebar-indicator-size: 16px;
 }
 
-.dashboard-sidebar {
-    @apply fixed h-full bg-card rounded-lg border;
-    width: calc(var(--dashboard-sidebar-width) - 8px);
-    height: calc(100% - 8px);
-    left: 4px;
-    top: 4px;
-    z-index: 1;
+.dashboard-layout {
+    margin-left: var(--dashboard-layout__sidebar-width);
+
+    &__sidebar {
+        @apply h-full fixed bg-card/70 backdrop-blur-3xl rounded-lg border;
+        width: calc(var(--dashboard-layout__sidebar-width) - 8px);
+        height: calc(100% - 8px);
+        left: 4px;
+        top: 4px;
+    }
+
+    &__body {
+        @apply px-16;
+    }
 }
 
 .dashboard-sidebar-ghost-btn {
@@ -142,8 +149,8 @@
             content: ' ';
             @apply block -left-1 bg-primary absolute;
             width: 4px;
-            top: calc((var(--dashboard-sidebar-item-height) - var(--dashboard-sidebar-indicator-size)) / 2);
-            height: var(--dashboard-sidebar-indicator-size);
+            top: calc((var(--dashboard-sidebar-item-height) - var(--dashboard-layout__sidebar-indicator-size)) / 2);
+            height: var(--dashboard-layout__sidebar-indicator-size);
             border-radius: 0 10px 10px 0;
         }
     }
@@ -168,16 +175,12 @@
         line-height: var(--dashboard-sidebar-item-height);
     }
 }
-
-.dashboard-sidebar-body {
-    margin-left: var(--dashboard-sidebar-width);
-    @apply pl-2;
-
-    &__content {
-        @apply float-left w-full py-1 pr-4;
-    }
-}
-
 .dashboard-content {
-    @apply bg-card rounded-2xl p-4 border;
+    @apply bg-card relative;
+
+    &__sticky-header {
+        @apply sticky top-0 p-4 backdrop-blur-sm z-1;
+        background-image: linear-gradient(color-mix(in srgb, var(--card), transparent 70%),color-mix(in srgb, var(--card), transparent 70%),transparent);
+        mask: linear-gradient(black, black, transparent);
+    }
 }

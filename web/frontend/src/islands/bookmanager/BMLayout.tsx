@@ -1,10 +1,10 @@
 import { ComponentChild, JSX } from 'preact'
 import { NavLink, To } from 'react-router'
 
-export default function BMSidebar({ children }: { children: ComponentChild }) {
+export default function BMLayout({ children }: { children: ComponentChild }) {
   return (
-    <>
-      <aside class="dashboard-sidebar">
+    <div class="dashboard-layout">
+      <aside class="dashboard-layout__sidebar">
         <Logo />
         <hr class="dashboard-sidebar-hr my-3" />
         <ul class="dashboard-sidebar-list">
@@ -16,10 +16,8 @@ export default function BMSidebar({ children }: { children: ComponentChild }) {
         </ul>
       </aside>
 
-      <div class="dashboard-sidebar-body">
-        <div class="dashboard-sidebar-body__content">{children}</div>
-      </div>
-    </>
+      <div class="dashboard-layout__body">{children}</div>
+    </div>
   )
 }
 

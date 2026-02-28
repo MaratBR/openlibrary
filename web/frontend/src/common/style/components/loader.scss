@@ -52,3 +52,23 @@
       box-shadow: 32px 0 var(--loader-color), -32px 0 color-mix(in srgb, var(--loader-color), transparent 50%);
     }
 }
+
+.circle-loader {
+  width: 1.2em;
+  height: 1.2em;
+  border: max(3px, calc(1em / 7.5)) solid currentColor;
+  border-bottom-color: color-mix(in srgb, currentColor 50%, transparent);
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} 

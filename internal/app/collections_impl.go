@@ -267,7 +267,7 @@ func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCol
 			Name:       row.Name,
 			Slug:       row.Slug,
 			Summary:    row.Summary,
-			Cover:      getBookCoverURL(c.uploadService, row.Cover),
+			Cover:      getBookCover(c.uploadService, row.Cover, row.ID),
 			AuthorID:   uuidDbToDomain(row.AuthorUserID),
 			AuthorName: row.AuthorName,
 			Tags:       nil,
@@ -319,7 +319,7 @@ func (c *collectionService) getCollectionBooksList(ctx context.Context, collecti
 		return CollectionBookDto{
 			ID:    row.ID,
 			Name:  row.Name,
-			Cover: getBookCoverURL(c.uploadService, row.Cover),
+			Cover: getBookCover(c.uploadService, row.Cover, row.ID),
 		}
 	})
 

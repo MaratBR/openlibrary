@@ -45,15 +45,15 @@ class BookCardPreviewIsland implements OLIsland {
       ;($el as { _bookCardPreviewReady?: boolean })._bookCardPreviewReady = true
 
       const onMouseOver = debounce(() => {
-        popover.animation.setShow(false, 0)
+        popover.animation.setState(false, 0)
         popover.loadBookContent(bookId, $el).then(() => {
-          popover.animation.setShow(true)
+          popover.animation.setState(true)
         })
       }, 200)
 
       const onMouseLeave = () => {
         onMouseOver.cancel()
-        popover.animation.setShow(false)
+        popover.animation.setState(false)
       }
 
       $el.addEventListener('mouseover', onMouseOver)

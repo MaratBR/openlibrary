@@ -57,7 +57,7 @@ type ManagerBookDetailsDto struct {
 	Summary           string                  `json:"summary"`
 	IsPubliclyVisible bool                    `json:"isPubliclyVisible"`
 	IsBanned          bool                    `json:"isBanned"`
-	Cover             string                  `json:"cover"`
+	Cover             BookCover               `json:"cover"`
 }
 
 type ManagerGetBookQuery_Result struct {
@@ -67,7 +67,7 @@ type ManagerGetBookQuery_Result struct {
 type ManagerBookDto_Stats struct {
 	Views   analytics.Views `json:"views"`
 	Reviews int32           `json:"reviews"`
-	Ratings int32           `json:"reviews"`
+	Ratings int32           `json:"ratings"`
 }
 
 type ManagerBookDto struct {
@@ -85,7 +85,7 @@ type ManagerBookDto struct {
 	IsBanned          bool                 `json:"isBanned"`
 	IsTrashed         bool                 `json:"isTrashed"`
 	Summary           string               `json:"summary"`
-	Cover             string               `json:"cover"`
+	Cover             BookCover            `json:"cover"`
 	Stats             ManagerBookDto_Stats `json:"stats"`
 }
 
@@ -166,7 +166,7 @@ type UploadBookCoverCommand struct {
 }
 
 type UploadBookCoverCommand_Result struct {
-	URL string
+	URL BookCover
 }
 
 type UpdateBookChapterOrdersCommand struct {

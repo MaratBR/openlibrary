@@ -9,7 +9,7 @@ templ flashes() {
     }}
 
     if len(arr) > 0 {
-        <div style="left: var(--dashboard-sidebar-width);" class="fixed top-0 right-0 p-1 z-20">
+        <div style="left: var(--dashboard-layout__sidebar-width);" class="fixed top-0 right-0 p-1 z-20">
             for _, f := range arr {
                 <div x-data="{}" class="bg-emerald-400 border-emerald-800 border p-2 relative min-h-10">
                     @f
@@ -27,10 +27,8 @@ templ dashboardLayout(title string) {
     @baseLayout(title) {
         @flashes()
         @sidebar()
-		<div class="dashboard-sidebar-body">
-            <div class="dashboard-sidebar-body__content">
-                { children... }
-            </div>
+		<div class="dashboard-layout__body">
+            { children... }
         </div>
     }
 }

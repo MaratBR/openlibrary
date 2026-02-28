@@ -88,7 +88,7 @@ type BookSearchItem struct {
 	Chapters        int                  `json:"chapters"`
 	Summary         string               `json:"summary"`
 	Author          BookDetailsAuthorDto `json:"author"`
-	Cover           string               `json:"cover"`
+	Cover           BookCover            `json:"cover"`
 	Tags            []Int64String        `json:"tags"`
 	Collections     []BookCollectionDto  `json:"collections"`
 }

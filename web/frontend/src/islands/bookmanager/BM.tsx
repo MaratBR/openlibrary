@@ -1,17 +1,28 @@
 import { PreactIslandProps } from '../common/preact-island'
 import { createHashRouter, Outlet } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
-import BMSidebar from './BMSidebar'
+import BMLayout from './BMLayout'
+import { Books, booksRouteLoader } from './books'
 
 const router = createHashRouter([
   {
     path: '/',
     element: (
-      <BMSidebar>
+      <BMLayout>
         <Outlet />
-      </BMSidebar>
+      </BMLayout>
     ),
-    children: [{ path: '*', element: <div>404</div> }],
+    children: [
+      {
+        path: '/books',
+        element: <Books />,
+        loader: booksRouteLoader,
+      },
+      {
+        path: '*',
+        element: <div>404</div>,
+      },
+    ],
   },
 ])
 

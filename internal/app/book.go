@@ -27,7 +27,7 @@ type BookDetailsDto struct {
 	Permissions         BookUserPermissions   `json:"permissions"`
 	Summary             string                `json:"summary"`
 	Notifications       []GenericNotification `json:"notifications,omitempty"`
-	Cover               string                `json:"cover"`
+	Cover               BookCover             `json:"cover"`
 	Rating              Nullable[float64]     `json:"rating"`
 	Votes               int32                 `json:"votes"`
 	Reviews             int32                 `json:"reviews"`
@@ -93,7 +93,7 @@ type BookListDto struct {
 	Words           int       `json:"words"`
 	WordsPerChapter int       `json:"wordsPerChapter"`
 	Chapters        int       `json:"chapters"`
-	Cover           string    `json:"cover"`
+	Cover           BookCover `json:"cover"`
 	IsPinned        bool      `json:"isPinned"`
 }
 

@@ -20,6 +20,8 @@ templ bmLayout(title string) {
 		}}
 		@i18nExtractKeysByPrefix(l, "common")
 		@i18nExtractKeysByPrefix(l, "bookManager")
+		// TODO optimize?
+		@i18nExtractKeysByPrefix(l, "book")
 		{ children... }
 	}
 }

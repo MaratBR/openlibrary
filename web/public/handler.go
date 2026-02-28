@@ -65,7 +65,7 @@ func newHandler(
 
 	apiControllerTags *apiControllerTags,
 	apiControllerBook *apiControllerBook,
-	apiControllerBookManager *apiControllerBookManager,
+	apiControllerBookManager *apiControllerBM,
 	apiControllerCollection *apiControllerCollection,
 	apiControllerReadingList *apiControllerReadingList,
 	apiControllerComments *apiControllerComments,

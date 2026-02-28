@@ -11,16 +11,16 @@ export function httpLikeComment(commentId: string, like: boolean) {
   })
 }
 
-export const commentUserDto = z.object({
+export const CommentUserDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
   avatar: z.string(),
 })
 
-export const commentDtoSchema = z.object({
+export const CommentDtoSchema = z.object({
   id: z.string(),
   content: z.string(),
-  user: commentUserDto,
+  user: CommentUserDtoSchema,
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
   likedAt: z.string().nullable(),
@@ -29,7 +29,7 @@ export const commentDtoSchema = z.object({
   subcomments: z.number(),
 })
 
-export type CommentDto = z.infer<typeof commentDtoSchema>
+export type CommentDto = z.infer<typeof CommentDtoSchema>
 
 export function httpGetCommentReplies(commentId: string, cursor: number) {
   return httpClient
@@ -45,7 +45,7 @@ export function httpGetCommentReplies(commentId: string, cursor: number) {
         z.object({
           cursor: z.number(),
           nextCursor: z.number(),
-          comments: commentDtoSchema.array(),
+          comments: CommentDtoSchema.array(),
         }),
       ),
     )

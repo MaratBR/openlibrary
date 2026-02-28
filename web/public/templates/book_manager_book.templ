@@ -142,7 +142,7 @@ templ bookCoverUploadForm(book *app.ManagerBookDetailsDto) {
         @webcomponents.ImageUploader(webcomponents.ImageUploaderProps{
             CropWidth: 200,
             CropHeight: 300,
-            SelectedImage: book.Cover,
+            SelectedImage: book.Cover.URL,
             JSCallbackFunction: "window.__uploadBookCover",
         })
     </div>

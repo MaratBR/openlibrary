@@ -39,7 +39,7 @@ func (s *readingListService) GetReadingListBooks(ctx context.Context, query GetR
 		return BookLibraryDto{
 			ID:          r.ID,
 			Name:        r.Name,
-			Cover:       getBookCoverURL(s.uploadService, r.Cover),
+			Cover:       getBookCover(s.uploadService, r.Cover, r.ID),
 			AgeRating:   ageRatingFromDbValue(r.AgeRating),
 			LastChapter: lastChapter,
 		}

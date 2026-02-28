@@ -4,40 +4,40 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'preact/hooks'
 import { z } from 'zod'
 
-const tagCategorySchema = z.enum(['other', 'warning', 'fandom', 'rel', 'reltype', 'unknown'])
+const TagCategorySchema = z.enum(['other', 'warning', 'fandom', 'rel', 'reltype', 'unknown'])
 
-export type TagsCategory = z.infer<typeof tagCategorySchema>
+export type TagsCategory = z.infer<typeof TagCategorySchema>
 
-export const definedTagDtoSchema = z.object({
+export const DefinedTagDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
   desc: z.string(),
   adult: z.boolean(),
   spoiler: z.boolean(),
-  cat: tagCategorySchema,
+  cat: TagCategorySchema,
 })
 
-export type DefinedTagDto = z.infer<typeof definedTagDtoSchema>
+export type DefinedTagDto = z.infer<typeof DefinedTagDtoSchema>
 
-const userDtoSchema = z.object({
+const UserDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
   avatar: z.string(),
 })
 
-const numberRangeSchema = z.object({
+const NumberRangeSchema = z.object({
   min: z.number().int().nullable(),
   max: z.number().int().nullable(),
 })
 
 export const detailedBookSearchQuerySchema = z.object({
-  words: numberRangeSchema,
-  chapters: numberRangeSchema,
-  wordsPerChapter: numberRangeSchema,
-  includeTags: z.array(definedTagDtoSchema),
-  excludeTags: z.array(definedTagDtoSchema),
-  includeUsers: z.array(userDtoSchema),
-  excludeUsers: z.array(userDtoSchema),
+  words: NumberRangeSchema,
+  chapters: NumberRangeSchema,
+  wordsPerChapter: NumberRangeSchema,
+  includeTags: z.array(DefinedTagDtoSchema),
+  excludeTags: z.array(DefinedTagDtoSchema),
+  includeUsers: z.array(UserDtoSchema),
+  excludeUsers: z.array(UserDtoSchema),
   includeBanned: z.boolean(),
   includeHidden: z.boolean(),
   includeEmpty: z.boolean(),
@@ -88,7 +88,7 @@ export async function searchTags(query: string): Promise<DefinedTagDto[]> {
   const response = await httpClient.get('/_api/tags', { searchParams: { q: query } })
   const json = await response.json()
 
-  return z.array(definedTagDtoSchema).parse(json)
+  return z.array(DefinedTagDtoSchema).parse(json)
 }
 
 export type TagsSearchOptions = {

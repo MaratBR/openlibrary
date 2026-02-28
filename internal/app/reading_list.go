@@ -37,7 +37,7 @@ type BookReadingListDto struct {
 type BookLibraryDto struct {
 	ID          int64                                       `json:"id,string"`
 	Name        string                                      `json:"name"`
-	Cover       string                                      `json:"cover"`
+	Cover       BookCover                                   `json:"cover"`
 	AgeRating   AgeRating                                   `json:"ageRating"`
 	LastChapter Nullable[BookReadingListItemLastChapterDto] `json:"lastChapter"`
 }

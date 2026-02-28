@@ -122,7 +122,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		Summary:           book.Summary,
 		IsPubliclyVisible: book.IsPubliclyVisible,
 		IsBanned:          book.IsBanned,
-		Cover:             getBookCoverURL(s.uploadService, book.Cover),
+		Cover:             getBookCover(s.uploadService, book.Cover, book.ID),
 	}
 
 	{
@@ -287,7 +287,7 @@ func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBo
 		return
 	}
 
-	result.URL = getBookCoverURL(s.uploadService, cover)
+	result.URL = getBookCover(s.uploadService, cover, input.BookID)
 
 	return
 }
@@ -432,7 +432,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 				IsPubliclyVisible: row.IsPubliclyVisible,
 				IsBanned:          row.IsBanned,
 				IsTrashed:         row.IsTrashed,
-				Cover:             getBookCoverURL(s.uploadService, row.Cover),
+				Cover:             getBookCover(s.uploadService, row.Cover, row.ID),
 				Stats: ManagerBookDto_Stats{
 					Ratings: row.TotalReviews,
 					Reviews: row.TotalReviews,

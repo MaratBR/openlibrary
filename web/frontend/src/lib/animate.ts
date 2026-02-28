@@ -1,5 +1,14 @@
 import { animate } from 'popmotion'
-import { cloneElement, forwardRef, JSX, useCallback, useLayoutEffect, useRef } from 'preact/compat'
+import {
+  cloneElement,
+  forwardRef,
+  JSX,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from 'preact/compat'
+import { createEvent, Unsubscribe } from './event'
 
 export type SetShowOptions = {
   duration?: number
@@ -7,31 +16,33 @@ export type SetShowOptions = {
   onComplete?: (cancelled: boolean) => void
 }
 
-export interface AnimationController {
-  setShow(show: boolean, options?: SetShowOptions): void
-  dispose(): void
+export type AnimationEvent = {
+  stage: 'entering' | 'entered' | 'exiting' | 'exited'
 }
 
-export type AnimationCallbacks = {
+type AnimationCallback = (stage: AnimationEvent) => void
+
+export type AnimationDefinition = {
   onUpdate: (element: HTMLElement, latest: number) => void
-  onBeforeAnimationm: (element: HTMLElement, show: boolean) => void
+  onBeforeAnimation: (element: HTMLElement, show: boolean) => void
   onAfterAnimation: (Elementlement: HTMLElement, show: boolean) => void
 }
 
-export class ShowAnimation implements AnimationController {
+export class BinaryAnimation {
   private readonly element: HTMLElement
   private progress = 0
   private _stop: (() => void) | undefined = undefined
-  private readonly callbacks: AnimationCallbacks
+  private readonly callbacks: AnimationDefinition
   private readonly duration: number
+  private readonly _event = createEvent<AnimationEvent>()
 
-  constructor(element: HTMLElement, duration: number, callbacks: AnimationCallbacks) {
+  constructor(element: HTMLElement, duration: number, callbacks: AnimationDefinition) {
     this.element = element
     this.callbacks = callbacks
     this.duration = duration
   }
 
-  setShow(show: boolean, options?: SetShowOptions) {
+  setState(show: boolean, options?: SetShowOptions) {
     const { duration = this.duration, onComplete, force = false } = options ?? {}
 
     if (this.progress === (show ? 1 : 0) && !force) {
@@ -40,9 +51,11 @@ export class ShowAnimation implements AnimationController {
 
     if (duration <= 0) {
       // instantly transition to desired state
-      this.callbacks.onBeforeAnimationm(this.element, show)
+      this.callbacks.onBeforeAnimation(this.element, show)
       this.callbacks.onUpdate(this.element, show ? 1 : 0)
       this.callbacks.onAfterAnimation(this.element, show)
+
+      this._event.fire({ stage: show ? 'entered' : 'exited' })
 
       return
     }
@@ -54,6 +67,7 @@ export class ShowAnimation implements AnimationController {
 
     let callbackFired = false
 
+    this._event.fire({ stage: show ? 'entering' : 'exiting' })
     this._stop = animate({
       duration: duration * (show ? 1 - this.progress : this.progress),
       from: this.progress,
@@ -65,7 +79,7 @@ export class ShowAnimation implements AnimationController {
         }
       },
       onPlay: () => {
-        this.callbacks.onBeforeAnimationm(this.element, show)
+        this.callbacks.onBeforeAnimation(this.element, show)
       },
       onComplete: () => {
         this._stop = undefined
@@ -75,6 +89,8 @@ export class ShowAnimation implements AnimationController {
           callbackFired = true
           onComplete(false)
         }
+
+        this._event.fire({ stage: show ? 'entered' : 'exited' })
       },
       onUpdate: (latest) => {
         this.progress = latest
@@ -93,9 +109,13 @@ export class ShowAnimation implements AnimationController {
   dispose() {
     this.stop()
   }
+
+  subscribe(callback: AnimationCallback): Unsubscribe {
+    return this._event.subscribe(callback)
+  }
 }
 
-export class ModalAnimation extends ShowAnimation {
+export class ModalAnimation extends BinaryAnimation {
   constructor(element: HTMLElement, duration: number) {
     super(element, duration, {
       onUpdate(element, latest) {
@@ -107,7 +127,7 @@ export class ModalAnimation extends ShowAnimation {
           element.style.display = 'none'
         }
       },
-      onBeforeAnimationm(element, show) {
+      onBeforeAnimation(element, show) {
         if (show) {
           element.style.removeProperty('display')
         }
@@ -117,46 +137,57 @@ export class ModalAnimation extends ShowAnimation {
 
   static factory = (duration: number) => (element: HTMLElement) =>
     new ModalAnimation(element, duration)
+
+  static default = this.factory(150)
 }
 
 export type AnimationProps = {
-  animation: (element: HTMLElement) => AnimationController
+  animation: (element: HTMLElement) => BinaryAnimation
   children: JSX.Element
   show: boolean
+  onAnimation?: AnimationCallback
 }
 
 // this feeels clunky somehow but will do for now
-export const AnimationWrapper = forwardRef(({ animation, children, show }: AnimationProps, ref) => {
-  const animationInstanceRef = useRef<AnimationController | null>(null)
+export const AnimationWrapper = forwardRef(
+  ({ animation, children, show, onAnimation }: AnimationProps, ref) => {
+    const animationInstanceRef = useRef<BinaryAnimation | null>(null)
 
-  useLayoutEffect(() => {
-    const { current: instance } = animationInstanceRef
-    if (!instance) return
-    instance.setShow(show)
-  }, [show])
+    useLayoutEffect(() => {
+      const { current: instance } = animationInstanceRef
+      if (!instance) return
+      instance.setState(show)
+    }, [show])
 
-  const initAnimation = useCallback((element: unknown) => {
-    if (typeof ref === 'function') {
-      ref(element)
-    } else if (ref) {
-      ref.current = element
-    }
+    useEffect(() => {
+      const { current: instance } = animationInstanceRef
+      if (!instance || !onAnimation) return
+      return instance.subscribe(onAnimation)
+    }, [onAnimation])
 
-    if (!(element instanceof HTMLElement)) return
+    const initAnimation = useCallback((element: unknown) => {
+      if (typeof ref === 'function') {
+        ref(element)
+      } else if (ref) {
+        ref.current = element
+      }
 
-    const animationInstance = animation(element)
-    animationInstance.setShow(show, {
-      duration: 0,
-      force: true,
+      if (!(element instanceof HTMLElement)) return
+
+      const animationInstance = animation(element)
+      animationInstance.setState(show, {
+        duration: 0,
+        force: true,
+      })
+      animationInstanceRef.current = animationInstance
+      return () => {
+        animationInstance.dispose()
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    return cloneElement(children, {
+      ref: initAnimation,
     })
-    animationInstanceRef.current = animationInstance
-    return () => {
-      animationInstance.dispose()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  return cloneElement(children, {
-    ref: initAnimation,
-  })
-})
+  },
+)

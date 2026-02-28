@@ -1,7 +1,8 @@
 import { httpClient, OLAPIResponse } from '@/http-client'
 import { z } from 'zod'
-import { definedTagDtoSchema } from './search'
+import { DefinedTagDtoSchema } from '@/api/search'
 import { DraftDtoSchema } from '@/block-editor/contracts'
+import { BookCoverSchema } from '../common'
 
 export function httpUpdateDraft(
   bookId: string,
@@ -97,7 +98,7 @@ export const managerBookDetailsSchema = z.object({
   name: z.string(),
   ageRating: z.string(),
   adult: z.boolean(),
-  tags: z.array(definedTagDtoSchema),
+  tags: z.array(DefinedTagDtoSchema),
   words: z.number(),
   wordsPerChapter: z.number(),
   collections: z.array(bookCollectionDtoSchema),
@@ -110,7 +111,7 @@ export const managerBookDetailsSchema = z.object({
   summary: z.string(),
   isPubliclyVisible: z.boolean(),
   isBanned: z.boolean(),
-  cover: z.string(),
+  cover: BookCoverSchema,
 })
 
 export type ManagerBookDetailsDto = z.infer<typeof managerBookDetailsSchema>

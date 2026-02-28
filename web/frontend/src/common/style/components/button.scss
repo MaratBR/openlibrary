@@ -8,7 +8,7 @@
 
 .btn {
     @apply 
-        inline-block v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition rounded-lg cursor-pointer relative
+        inline-flex items-center v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition rounded-full cursor-pointer relative
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
         disabled:pointer-events-none disabled:opacity-50 leading-[2.4];
     height: var(--btn-height);
@@ -18,7 +18,7 @@
     --btn-height: calc(var(--spacing) * 9);
     --btn-tint-frac: 15%;
     --btn-bg-opacity: 0%;
-    --btn-colors-main: var(--background);
+    --btn-colors-main: color-mix(in srgb, var(--background), transparent 80%);
 
     & > i.fa-solid:first-child:not(:last-child) {
         @apply mr-2;
@@ -30,7 +30,7 @@
         color: var(--btn-colors-text);
         --btn-colors-shadow: var(--foreground);
         --btn-shadow-transparency: 70%;
-        --btn-shadow-params: 0 1px 5px -2px;
+        --btn-shadow-params: 0 1px 5px -3px;
         box-shadow: var(--btn-shadow-params) color-mix(in srgb, var(--btn-colors-shadow), transparent var(--btn-shadow-transparency));
 
         &:hover {

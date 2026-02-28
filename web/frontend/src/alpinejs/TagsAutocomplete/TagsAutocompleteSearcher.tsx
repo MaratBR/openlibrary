@@ -1,4 +1,4 @@
-import { DefinedTagDto, definedTagDtoSchema } from '@/api/search'
+import { DefinedTagDto, DefinedTagDtoSchema } from '@/api/search'
 import TagsInput from '@/components/TagsInput'
 import Wrapper from '@/preact/wrapper'
 import { hydrate, render } from 'preact'
@@ -29,7 +29,7 @@ function TagsAutocompleteSearcher({ initialTagsValue }: { initialTagsValue: Defi
   )
 }
 
-const definedTagDtoArraySchema = z.array(definedTagDtoSchema)
+const definedTagDtoArraySchema = z.array(DefinedTagDtoSchema)
 
 function parseTagsValue(str: string | undefined): DefinedTagDto[] {
   if (!str) return []

@@ -222,7 +222,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 			Chapters:        int(book.Chapters),
 			WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
 			Summary:         book.Description,
-			Cover:           getBookCoverURL(s.uploadService, bookData.Cover),
+			Cover:           getBookCover(s.uploadService, bookData.Cover, book.ID),
 			Tags:            arrInt64ToInt64String(book.Tags),
 		}
 	}

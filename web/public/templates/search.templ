@@ -127,11 +127,11 @@ templ SearchResultFragment(
     </main>
 }
 
-templ bookSearchCard(id int64, name, slug, summary, cover, authorName string, authorID uuid.UUID, tags []app.DefinedTagDto) {
+templ bookSearchCard(id int64, name, slug, summary string, cover app.BookCover, authorName string, authorID uuid.UUID, tags []app.DefinedTagDto) {
     <li role="listitem" id={ fmt.Sprintf("book-%d", id) } class="book-search-card">
         <div class="book-search-card__left">
             <a class="book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", id)) }>
-                @bookCover(cover, name, 200)
+                @bookCover(cover.URL, name, 200)
             </a>
         </div>
         

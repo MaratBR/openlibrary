@@ -5,7 +5,6 @@ import "github.com/MaratBR/openlibrary/internal/app/analytics"
 import "fmt"
 import "encoding/json"
 import "github.com/MaratBR/openlibrary/internal/i18n"
-import "crypto/md5"
 import "github.com/MaratBR/openlibrary/internal/auth"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
@@ -77,7 +76,7 @@ templ BookPage(
                 "bookId": fmt.Sprintf("%d", book.ID),
             })
             <div class="book-page__left">
-                @bookCover(book.Cover, book.Name, 300)
+                @bookCover(book.Cover.URL, book.Name, 300)
                 @bookReadingList(&book, readingListStatus)
 
                 if isAuthenticated {
@@ -186,25 +185,6 @@ func convertBookDetailsToAlpineState(book *app.BookDetailsDto, readingList app.N
     return string(bytes)
 }
 
-func getBookCoverURL(name string, height int) string {
-    h := md5.New()
-    h.Write([]byte(name))
-    hash := h.Sum(nil)
-    
-
-    id := (hash[2] % 5) + 1
-
-    if height <= 200 {
-        return fmt.Sprintf("/_/embed-assets/cover/%d.h200.webp", id)
-    }
-
-    if height <= 300 {
-        return fmt.Sprintf("/_/embed-assets/cover/%d.h300.webp", id)
-    }
-
-    return fmt.Sprintf("/_/embed-assets/cover/%d.jpg", id)
-}
-
 templ bookRating(book *app.BookDetailsDto, views analytics.Views) {
     <div id="rating-card" class="book-page__rating-card mt-4">
         @starRating(book.Rating.Value, 0.4)
@@ -219,12 +199,6 @@ templ bookRating(book *app.BookDetailsDto, views analytics.Views) {
 
 
 templ bookCover(cover, bookName string, height int) {
-    {{
-        if cover == "" {
-            cover = getBookCoverURL(bookName, height)
-        }
-    }}
-
     <div class="book-cover" { templ.Attributes{
             "style": fmt.Sprintf("height:%dpx;width:%fpx", height, float64(height)*2/3),
         }... }>

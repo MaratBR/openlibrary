@@ -24,7 +24,7 @@ export function PublishChapterPopup({ onClose, open }: { onClose: () => void; op
             element.innerText = 'ERROR: no draft in state, cannot display toast message'
           } else {
             render(
-              <a class="link" href={`/book/${draft.book.id}/chapters/${draft.chapterId}`}>
+              <a class="link" href={`/book/${draft.book.id}/chapters/${draft.chapter.id}`}>
                 {window._('editor.viewChapter')}
                 &nbsp;
                 <i class="fa-solid fa-arrow-up-right-from-square" />

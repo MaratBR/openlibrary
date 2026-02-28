@@ -76,12 +76,12 @@ templ librarySection(label string, books []app.BookLibraryDto) {
     </section>
 }
 
-templ libraryBookCard(bookID int64, name, cover string) {
+templ libraryBookCard(bookID int64, name string, cover app.BookCover) {
     <a 
         href={ templ.SafeURL(fmt.Sprintf("/book/%d?ol.from=library", bookID)) } 
         class="profile-book-card-sm" 
         data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
-        @bookCover(cover, name, 300)
+        @bookCover(cover.URL, name, 300)
         <div class="profile-book-card-sm__title">
             { name }
         </div>
@@ -242,15 +242,9 @@ templ libraryCollectionCard(collection app.CollectionDto, books []app.Collection
         if len(books) > 0 {
             <ul class="flex gap-1">
                 for _, book := range books {
-                    {{
-                        cover := book.Cover
-                        if cover == "" {
-                            cover = getBookCoverURL(book.Name, 100)
-                        }
-                    }}
                     <li>
                         <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
-                            <img src={ cover } class="rounded-r-md" style="height: 90px;" />
+                            <img src={ book.Cover.URL } class="rounded-r-md" style="height: 90px;" />
                         </a>
                     </li>
                 }

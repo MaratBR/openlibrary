@@ -9,17 +9,6 @@ import (
 	"github.com/MaratBR/openlibrary/internal/store"
 )
 
-func getBookCoverURL(
-	uploadService *UploadService,
-	cover string,
-) string {
-	if cover == "" {
-		return ""
-	}
-
-	return uploadService.GetPublicURL(fmt.Sprintf("%s/%s.jpeg", BOOK_COVER_DIRECTORY, cover))
-}
-
 type bookService struct {
 	queries            *store.Queries
 	tagsService        TagsService
@@ -117,7 +106,7 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (B
 			Name: book.AuthorName,
 		},
 		Permissions:         BookUserPermissions{CanEdit: query.ActorUserID.Valid && authorID == query.ActorUserID.UUID},
-		Cover:               getBookCoverURL(s.uploadService, book.Cover),
+		Cover:               getBookCover(s.uploadService, book.Cover, book.ID),
 		Rating:              float64ToNullable(book.Rating),
 		Reviews:             book.TotalReviews,
 		Votes:               book.TotalRatings,
@@ -251,7 +240,7 @@ func (s *bookService) GetPinnedBooks(ctx context.Context, input GetPinnedUserBoo
 				int(rows[i].Words),
 				int(rows[i].Chapters)),
 			Chapters: int(rows[i].Chapters),
-			Cover:    getBookCoverURL(s.uploadService, rows[i].Cover),
+			Cover:    getBookCover(s.uploadService, rows[i].Cover, rows[i].ID),
 			IsPinned: rows[i].IsPinned,
 		})
 	}
@@ -280,7 +269,7 @@ func (s *bookService) GetBooksById(ctx context.Context, ids []int64) ([]BookList
 				int(rows[i].Words),
 				int(rows[i].Chapters)),
 			Chapters: int(rows[i].Chapters),
-			Cover:    getBookCoverURL(s.uploadService, rows[i].Cover),
+			Cover:    getBookCover(s.uploadService, rows[i].Cover, rows[i].ID),
 			IsPinned: rows[i].IsPinned,
 		})
 	}
