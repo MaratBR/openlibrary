@@ -3,8 +3,8 @@
 
     &__item {
         @apply 
-            rounded-md flex items-center justify-center font-semibold
-            size-10 min-w-10 bg-muted-2/40 transition-colors
+            rounded-full flex items-center justify-center font-semibold
+            size-10 min-w-10 bg-muted-2/50 transition-colors
             hover:bg-muted-2
             active:bg-secondary;
 

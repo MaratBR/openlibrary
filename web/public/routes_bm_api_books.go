@@ -18,6 +18,7 @@ type apiPayloadGetBooks struct {
 type apiResponseGetBooks struct {
 	Books      []app.ManagerBookDto `json:"books"`
 	TotalPages uint32               `json:"totalPages"`
+	Page       uint32               `json:"page"`
 }
 
 func (c *apiControllerBM) getBooks(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +40,7 @@ func (c *apiControllerBM) getBooks(w http.ResponseWriter, r *http.Request) {
 	resp := apiResponseGetBooks{
 		Books:      booksResult.Books,
 		TotalPages: booksResult.TotalPages,
+		Page:       booksResult.Page,
 	}
 
 	olhttp.NewAPIResponse(resp).Write(w)

@@ -45,6 +45,7 @@ export type ManagerBookDto = z.infer<typeof ManagerBookDtoSchema>
 export const ApiResponseGetBooksSchema = z.object({
   books: ManagerBookDtoSchema.array(),
   totalPages: z.number().int(),
+  page: z.number().int(),
 })
 
 export type ApiResponseGetBooks = z.infer<typeof ApiResponseGetBooksSchema>

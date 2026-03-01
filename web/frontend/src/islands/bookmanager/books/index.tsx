@@ -2,17 +2,19 @@ import { httpBmGetBooks, httpBmTrashBook, ManagerBookDto } from '@/api/bm/book'
 import { BookCover } from '@/components/BookCover'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import Modal from '@/components/Modal'
+import { Pagination } from '@/components/Pagination'
+import { getPage } from '@/lib/url'
 import { formatNumberK } from '@/util/fmt'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'preact/hooks'
 import { LoaderFunctionArgs, NavLink, useLoaderData } from 'react-router'
 
-export const booksRouteLoader = async ({ params }: LoaderFunctionArgs) => {
-  console.log(params)
+export const booksRouteLoader = async ({ params, request }: LoaderFunctionArgs) => {
+  const page = getPage(request.url)
 
   const resp = await httpBmGetBooks({
     size: 20,
-    page: 1,
+    page,
     search: '',
   })
 
@@ -27,6 +29,15 @@ export function Books() {
   return (
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('bookManager.books.title')} />
+
+      <div class="my-2 ml-4">
+        <Pagination.Facade
+          page={booksResponse.data.page}
+          size={10}
+          totalPages={booksResponse.data.totalPages}
+        />
+      </div>
+
       <table class="table">
         <tbody>
           {booksResponse.data.books.map((book) => (
@@ -119,15 +130,7 @@ function TrashBookButton({
       >
         {trashed ? window._('common.untrash') : window._('common.trash')}
       </button>
-      <Modal
-        slotProps={{
-          content: {
-            class: 'bg-red-50/60',
-          },
-        }}
-        onClose={() => setOpenTrashModal(false)}
-        open={openTrashModal}
-      >
+      <Modal onClose={() => setOpenTrashModal(false)} open={openTrashModal}>
         <div class="max-w-128">
           <h2 class="text-lg font-semibold">{window._('bookManager.books.trashBook.title')}</h2>
           <p class="my-2">{window._('bookManager.books.trashBook.description')}</p>
@@ -142,15 +145,7 @@ function TrashBookButton({
           </div>
         </div>
       </Modal>
-      <Modal
-        slotProps={{
-          content: {
-            class: 'bg-red-50/60',
-          },
-        }}
-        onClose={() => setOpenUntrashModal(false)}
-        open={openUntrashModal}
-      >
+      <Modal onClose={() => setOpenUntrashModal(false)} open={openUntrashModal}>
         <div class="max-w-128">
           <h2 class="text-lg font-semibold">{window._('bookManager.books.restoreBook.title')}</h2>
           <p class="my-2">{window._('bookManager.books.restoreBook.description')}</p>

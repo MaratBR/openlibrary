@@ -4,11 +4,18 @@ function DashboardContent_Root({ children }: { children: ComponentChild }) {
   return <section class="dashboard-content">{children}</section>
 }
 
-function DashboardContent_StickyHeader({ title }: { title: string }) {
+function DashboardContent_StickyHeader({
+  title,
+  children,
+}: {
+  title: string
+  children?: ComponentChild
+}) {
   return (
     <div class="dashboard-content__sticky-header">
       <header class="page-header-container">
         <h1 class="page-header">{title}</h1>
+        {children}
       </header>
     </div>
   )

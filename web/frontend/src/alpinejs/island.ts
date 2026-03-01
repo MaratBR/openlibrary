@@ -41,7 +41,11 @@ Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
 
   _mount(island: OLIsland) {
     this._unmount()
-    this._mounted = island.mount(this.$root, data)
+    try {
+      this._mounted = island.mount(this.$root, data)
+    } catch (err: unknown) {
+      this._error(err)
+    }
     this.$el.dispatchEvent(new CustomEvent('island:mount'))
   },
 
