@@ -1,5 +1,6 @@
 import { httpBmGetBooks, httpBmTrashBook, ManagerBookDto } from '@/api/bm/book'
 import { BookCover } from '@/components/BookCover'
+import { DashboardContent } from '@/components/dashboard-layout-components'
 import Modal from '@/components/Modal'
 import { formatNumberK } from '@/util/fmt'
 import { useMutation } from '@tanstack/react-query'
@@ -24,13 +25,8 @@ export function Books() {
   const { booksResponse } = useLoaderData<Awaited<ReturnType<typeof booksRouteLoader>>>()
 
   return (
-    <section class="dashboard-content">
-      <div class="dashboard-content__sticky-header">
-        <header class="page-header-container">
-          <h1 class="page-header">{window._('bookManager.books.title')}</h1>
-        </header>
-      </div>
-
+    <DashboardContent.Root>
+      <DashboardContent.StickyHeader title={window._('bookManager.books.title')} />
       <table class="table">
         <tbody>
           {booksResponse.data.books.map((book) => (
@@ -38,7 +34,7 @@ export function Books() {
           ))}
         </tbody>
       </table>
-    </section>
+    </DashboardContent.Root>
   )
 }
 
@@ -123,7 +119,15 @@ function TrashBookButton({
       >
         {trashed ? window._('common.untrash') : window._('common.trash')}
       </button>
-      <Modal onClose={() => setOpenTrashModal(false)} open={openTrashModal}>
+      <Modal
+        slotProps={{
+          content: {
+            class: 'bg-red-50/60',
+          },
+        }}
+        onClose={() => setOpenTrashModal(false)}
+        open={openTrashModal}
+      >
         <div class="max-w-128">
           <h2 class="text-lg font-semibold">{window._('bookManager.books.trashBook.title')}</h2>
           <p class="my-2">{window._('bookManager.books.trashBook.description')}</p>
@@ -138,7 +142,15 @@ function TrashBookButton({
           </div>
         </div>
       </Modal>
-      <Modal onClose={() => setOpenUntrashModal(false)} open={openUntrashModal}>
+      <Modal
+        slotProps={{
+          content: {
+            class: 'bg-red-50/60',
+          },
+        }}
+        onClose={() => setOpenUntrashModal(false)}
+        open={openUntrashModal}
+      >
         <div class="max-w-128">
           <h2 class="text-lg font-semibold">{window._('bookManager.books.restoreBook.title')}</h2>
           <p class="my-2">{window._('bookManager.books.restoreBook.description')}</p>

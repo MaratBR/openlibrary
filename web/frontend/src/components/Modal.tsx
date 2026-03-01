@@ -1,13 +1,17 @@
 import { AnimationEvent, AnimationWrapper, ModalAnimation } from '@/lib/animate'
-import { TargetedMouseEvent } from 'preact'
+import clsx from 'clsx'
+import { HTMLAttributes, TargetedMouseEvent } from 'preact'
 import { createPortal, PropsWithChildren, useCallback, useRef, useState } from 'preact/compat'
 
 export type ModalProps = PropsWithChildren<{
   open: boolean
   onClose?: () => void
+  slotProps?: {
+    content?: HTMLAttributes<HTMLDivElement>
+  }
 }>
 
-export default function Modal({ open, children, onClose }: ModalProps) {
+export default function Modal({ open, children, onClose, slotProps = {} }: ModalProps) {
   const ref = useRef<HTMLDivElement | null>(null)
   const handleClick = useCallback(
     (e: TargetedMouseEvent<HTMLDivElement>) => {
@@ -34,7 +38,9 @@ export default function Modal({ open, children, onClose }: ModalProps) {
         show={open}
         animation={ModalAnimation.default}
       >
-        <div class="modal__content">{children}</div>
+        <div {...slotProps.content} class={clsx('modal__content', slotProps.content?.class)}>
+          {children}
+        </div>
       </AnimationWrapper>
     </div>,
     document.body,
