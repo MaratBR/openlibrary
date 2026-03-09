@@ -106,7 +106,7 @@
 }
 
 .dashboard-layout {
-    margin-left: var(--dashboard-layout__sidebar-width);
+    padding-left: var(--dashboard-layout__sidebar-width);
 
     &__sidebar {
         @apply h-full fixed bg-card/70 backdrop-blur-3xl rounded-lg border;
@@ -117,7 +117,7 @@
     }
 
     &__body {
-        @apply px-16;
+        @apply min-h-screen;
     }
 }
 
@@ -175,11 +175,12 @@
         line-height: var(--dashboard-sidebar-item-height);
     }
 }
+
 .dashboard-content {
-    @apply bg-card relative;
+    @apply relative px-16;
 
     &__sticky-header {
-        @apply sticky top-0 p-4 backdrop-blur-sm z-1;
+        @apply sticky top-0 p-4 backdrop-blur-sm z-1 -mx-16 px-16;
         background-image: linear-gradient(color-mix(in srgb, var(--card), transparent 70%),color-mix(in srgb, var(--card), transparent 70%),transparent);
         mask: linear-gradient(black, black, transparent);
     }

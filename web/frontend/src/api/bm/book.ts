@@ -10,7 +10,7 @@ export type ApiPayloadGetBooks = {
   search: string
 }
 
-export const BookCollectionDto = z.object({
+export const BookCollectionDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
   pos: z.number().int(),
@@ -27,7 +27,7 @@ export const ManagerBookDtoSchema = z.object({
   words: z.number().int(),
   wordsPerChapter: z.number().int(),
   chapters: z.number().int(),
-  collections: BookCollectionDto.array(),
+  collections: BookCollectionDtoSchema.array(),
   isPubliclyVisible: z.boolean(),
   isBanned: z.boolean(),
   isTrashed: z.boolean(),
@@ -67,4 +67,47 @@ export function httpBmTrashBook(payload: ApiPayloadTrashBook) {
   return httpClient
     .post('/_api/books-manager/books/trash', { searchParams: payload })
     .then((r) => OLAPIResponse.createNoBody(r))
+}
+
+export const ManagerBookChapterDtoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.string(),
+  words: z.number().int(),
+  summary: z.string(),
+  order: z.number(),
+  isAdultOverride: z.boolean(),
+  isPubliclyVisible: z.boolean(),
+  draftId: z.string().nullable(),
+})
+
+export const BookDetailsAuthorDtoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+})
+
+export const ManagerBookDetailsDtoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  ageRating: AgeRatingSchema,
+  adult: z.boolean(),
+  tags: z.array(DefinedTagDtoSchema),
+  words: z.number().int(),
+  wordsPerChapter: z.number().int(),
+  createdAt: z.string(),
+  collections: z.array(BookCollectionDtoSchema),
+  chapters: z.array(ManagerBookChapterDtoSchema),
+  author: BookDetailsAuthorDtoSchema,
+  summary: z.string(),
+  isPubliclyVisible: z.boolean(),
+  isBanned: z.boolean(),
+  cover: BookCoverSchema,
+})
+
+export type ManagerBookDetailsDto = z.infer<typeof ManagerBookDetailsDtoSchema>
+
+export function httpBmGetBook(id: string) {
+  return httpClient
+    .get(`/_api/books-manager/books/${id}`)
+    .then((r) => OLAPIResponse.create(r, ManagerBookDetailsDtoSchema))
 }

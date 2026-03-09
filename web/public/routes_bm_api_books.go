@@ -46,6 +46,23 @@ func (c *apiControllerBM) getBooks(w http.ResponseWriter, r *http.Request) {
 	olhttp.NewAPIResponse(resp).Write(w)
 }
 
+func (c *apiControllerBM) getBook(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	s := auth.RequireSession(r.Context())
+
+	result, err := c.service.GetBook(r.Context(), app.ManagerGetBookQuery{
+		BookID:      bookID,
+		ActorUserID: s.UserID,
+	})
+
+	olhttp.NewAPIResponse(result.Book).Write(w)
+}
+
 type apiPayloadTrashBook struct {
 	ID    int64 `in:"query=id"`
 	Trash bool  `in:"query=trash"`

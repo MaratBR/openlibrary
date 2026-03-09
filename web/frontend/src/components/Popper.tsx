@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'preact/hooks'
 import { ComponentChild, RefObject } from 'preact'
-import { createPortal, HTMLAttributes } from 'preact/compat'
+import { createPortal, HTMLAttributes, useEffect, useRef } from 'preact/compat'
 import { useFloating, Placement } from '@floating-ui/react'
 
 export type PopperProps = {
@@ -52,10 +51,7 @@ export default function Popper({
       }
     }
 
-    requestAnimationFrame(() => {
-      window.addEventListener('click', onWindowClick)
-    })
-
+    window.addEventListener('click', onWindowClick)
     return () => {
       window.removeEventListener('click', onWindowClick)
     }

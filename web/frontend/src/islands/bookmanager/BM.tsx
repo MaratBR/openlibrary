@@ -1,8 +1,9 @@
 import { PreactIslandProps } from '../common/preact-island'
-import { createHashRouter, Outlet } from 'react-router'
+import { createHashRouter, Navigate, Outlet } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import BMLayout from './BMLayout'
 import { Books, booksRouteLoader } from './books'
+import { Book, bookRouteLoader } from './books/book'
 
 const router = createHashRouter([
   {
@@ -14,9 +15,18 @@ const router = createHashRouter([
     ),
     children: [
       {
+        path: '/',
+        element: <Navigate to="/books" replace />,
+      },
+      {
         path: '/books',
         element: <Books />,
         loader: booksRouteLoader,
+      },
+      {
+        path: '/books/:bookId',
+        element: <Book />,
+        loader: bookRouteLoader,
       },
       {
         path: '*',

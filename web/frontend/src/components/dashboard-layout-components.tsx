@@ -8,7 +8,7 @@ function DashboardContent_StickyHeader({
   title,
   children,
 }: {
-  title: string
+  title: ComponentChild
   children?: ComponentChild
 }) {
   return (

@@ -34,6 +34,7 @@ func (c *apiControllerBM) Register(r chi.Router) {
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/publish", c.updateDraftContentAndPublish)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/chapterName", c.updateDraftChapterName)
 		r.With(httpin.NewInput(&apiPayloadGetBooks{})).Get("/books", c.getBooks)
+		r.Get("/books/{bookID}", c.getBook)
 		r.With(httpin.NewInput(&apiPayloadTrashBook{})).Post("/books/trash", c.trashBook)
 
 	})

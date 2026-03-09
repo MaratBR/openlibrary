@@ -1,4 +1,4 @@
-import { httpCreateChapter } from '@/api/bm'
+import { httpBmCreateChapter } from '@/api/bm'
 import { Collapsible } from '@/components/Collapsible'
 import { useMutation } from '@tanstack/react-query'
 import { useRef, useState } from 'preact/hooks'
@@ -13,7 +13,7 @@ export default function AddChapterButton({ bookId }: { bookId: string }) {
       const normalizedName = name.trim()
       if (name.length === 0 || name.length > 255) return
 
-      const response = await httpCreateChapter(bookId, {
+      const response = await httpBmCreateChapter(bookId, {
         name: normalizedName,
         summary: '',
         isAdultOverride: false,

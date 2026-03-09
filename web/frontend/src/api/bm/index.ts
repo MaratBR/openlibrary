@@ -1,8 +1,6 @@
 import { httpClient, OLAPIResponse } from '@/http-client'
 import { z } from 'zod'
-import { DefinedTagDtoSchema } from '@/api/search'
 import { DraftDtoSchema } from '@/block-editor/contracts'
-import { BookCoverSchema } from '../common'
 
 export function httpUpdateDraft(
   bookId: string,
@@ -56,7 +54,7 @@ export function httpUpdateDraftChapterName(
     .then((r) => OLAPIResponse.createNoBody(r))
 }
 
-export function httpCreateChapter(
+export function httpBmCreateChapter(
   bookId: string,
   request: {
     name: string
@@ -72,13 +70,6 @@ export function httpCreateChapter(
     .then((r) => OLAPIResponse.create(r, z.string()))
 }
 
-const bookCollectionDtoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  position: z.number(),
-  size: z.number(),
-})
-
 const managerBookChapterDtoSchema = z.object({
   id: z.string(),
   order: z.number().min(0).int(),
@@ -92,29 +83,6 @@ const managerBookChapterDtoSchema = z.object({
 })
 
 export type ManagerBookChapterDto = z.infer<typeof managerBookChapterDtoSchema>
-
-export const managerBookDetailsSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  ageRating: z.string(),
-  adult: z.boolean(),
-  tags: z.array(DefinedTagDtoSchema),
-  words: z.number(),
-  wordsPerChapter: z.number(),
-  collections: z.array(bookCollectionDtoSchema),
-  chapters: z.array(managerBookChapterDtoSchema),
-  createdAt: z.string(),
-  author: z.object({
-    id: z.string(),
-    name: z.string(),
-  }),
-  summary: z.string(),
-  isPubliclyVisible: z.boolean(),
-  isBanned: z.boolean(),
-  cover: BookCoverSchema,
-})
-
-export type ManagerBookDetailsDto = z.infer<typeof managerBookDetailsSchema>
 
 export type UploadCoverRequest = {
   file: File

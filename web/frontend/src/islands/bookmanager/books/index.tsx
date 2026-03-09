@@ -30,21 +30,23 @@ export function Books() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('bookManager.books.title')} />
 
-      <div class="my-2 ml-4">
-        <Pagination.Facade
-          page={booksResponse.data.page}
-          size={10}
-          totalPages={booksResponse.data.totalPages}
-        />
-      </div>
+      <div class="card">
+        <div class="my-2 ml-4">
+          <Pagination.Facade
+            page={booksResponse.data.page}
+            size={10}
+            totalPages={booksResponse.data.totalPages}
+          />
+        </div>
 
-      <table class="table">
-        <tbody>
-          {booksResponse.data.books.map((book) => (
-            <BookRow key={book.id} book={book} />
-          ))}
-        </tbody>
-      </table>
+        <table class="table">
+          <tbody>
+            {booksResponse.data.books.map((book) => (
+              <BookRow key={book.id} book={book} />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </DashboardContent.Root>
   )
 }
@@ -74,7 +76,7 @@ function BookRow({ book }: { book: ManagerBookDto }) {
       </td>
       <td>
         <div class="flex gap-2">
-          <NavLink to={`/books/${book.id}`} class="btn btn--lg primary">
+          <NavLink to={`/books/${book.id}`} className="btn btn--lg primary">
             <i class="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </NavLink>

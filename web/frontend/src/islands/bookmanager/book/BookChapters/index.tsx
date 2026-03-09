@@ -6,7 +6,7 @@ import ChaptersList from './ChaptersList'
 import { useBookChaptersState } from './state'
 import { useShallow } from 'zustand/shallow'
 import { ChapterSelectorPopupProvider } from './ChapterSelectorPopup'
-import { httpCreateChapter } from '@/api/bm'
+import { httpBmCreateChapter } from '@/api/bm'
 import { useMutation } from '@tanstack/react-query'
 import AddChapterButton from './AddChapterButton'
 
@@ -58,7 +58,7 @@ function NoChaptersYet() {
   const createChapterMutation = useMutation({
     mutationFn: async () => {
       if (name.trim().length === 0) return
-      const response = await httpCreateChapter(bookId, {
+      const response = await httpBmCreateChapter(bookId, {
         name,
         summary: '',
         isAdultOverride: false,

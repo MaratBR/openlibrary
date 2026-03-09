@@ -8,14 +8,14 @@
 
 .btn {
     @apply 
-        inline-flex items-center v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition rounded-full cursor-pointer relative
+        inline-flex justify-center items-center v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition rounded-full cursor-pointer relative
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
         disabled:pointer-events-none disabled:opacity-50 leading-[2.4];
     height: var(--btn-height);
     line-height: var(--btn-height) !important;
     padding: 0 calc(var(--btn-height) / 3);
     text-align: center;
-    --btn-height: calc(var(--spacing) * 9);
+    --btn-height: calc(var(--spacing) * 10);
     --btn-tint-frac: 15%;
     --btn-bg-opacity: 0%;
     --btn-colors-main: color-mix(in srgb, var(--background), transparent 80%);
@@ -102,6 +102,10 @@
             --btn-colors-main: var(--primary);
         }
     }
+
+    &--icon {
+        @apply size-12 text-initial;
+    }
     
     // SIZES
     &--sm {
@@ -111,11 +115,6 @@
     &--lg {
         --btn-height: calc(var(--spacing) * 11);
         @apply text-lg;
-    }
-
-    &--icon {
-        --btn-height: calc(var(--spacing) * 10);
-        @apply h-10 w-10 flex items-center justify-center;
     }
 
     &--sq {

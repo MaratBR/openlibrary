@@ -74,9 +74,6 @@ templ UIDemo() {
         DisableFooter: true,
         DisableFlashes: true,
     }) {
-        <style>
-            .btn { min-width: 100px; }
-        </style>
         <div class="p-8">
             <h1>Buttons</h1>
             <h2>Regular</h2>
@@ -96,6 +93,13 @@ templ UIDemo() {
                 <button class="btn btn--ghost">btn</button>
                 <button class="btn btn--ghost primary">btn primary</button>
                 <button class="btn btn--ghost destructive">btn destructive</button>
+            </div>
+            <h2>Icons</h2>
+            <div class="flex flex-wrap gap-2">
+                <button class="btn btn--icon">icon</button>
+                <button class="btn btn--icon primary">icon</button>
+                <button class="btn btn--icon destructive">icon</button>
+            
             </div>
         </div>
     }
