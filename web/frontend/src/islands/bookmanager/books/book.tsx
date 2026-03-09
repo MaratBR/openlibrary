@@ -1,4 +1,3 @@
-import { httpBmGetBook } from '@/api/bm/book'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { RenderLazy } from '@/components/RenderLazy'
 import Tabs from '@/components/Tabs'
@@ -7,10 +6,11 @@ import { LoaderFunctionArgs, NavLink, useLoaderData } from 'react-router'
 import z from 'zod'
 import { BookGeneral } from './book-general'
 import { BookChapters } from './book-chapters'
+import { BMBookAPI } from '@/api/bm/book'
 
 export const bookRouteLoader = async ({ params, request }: LoaderFunctionArgs) => {
   const { bookId } = z.object({ bookId: z.string().nonempty() }).parse(params)
-  const resp = await httpBmGetBook(bookId)
+  const resp = await BMBookAPI.getInstance().getBook(bookId)
 
   return {
     bookResponse: resp,

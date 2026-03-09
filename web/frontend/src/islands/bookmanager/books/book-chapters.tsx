@@ -1,10 +1,10 @@
-import { httpBmCreateChapter, ManagerBookChapterDto } from '@/api/bm'
-import { ManagerBookDetailsDto } from '@/api/bm/book'
+import { ManagerBookChapterDto } from '@/api/bm'
+import { BMBookAPI, ManagerBookDetailsDto } from '@/api/bm/book'
 import Popper from '@/components/Popper'
 import { formatNumberK } from '@/util/fmt'
 import { useMutation } from '@tanstack/react-query'
-import { useRef, useState } from 'preact/hooks'
-import { NavLink } from 'react-router'
+import { useMemo, useRef, useState } from 'preact/hooks'
+import { NavLink, useRevalidator } from 'react-router'
 
 export function BookChapters({ book }: { book: ManagerBookDetailsDto }) {
   return (
@@ -82,16 +82,24 @@ function AddChapterButton({ bookId }: { bookId: string }) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
 
+  const revalidator = useRevalidator()
+
+  const valid = useMemo(() => {
+    const { valid } = BMBookAPI.getInstance().normalizeChapterName(name)
+    return valid
+  }, [name])
+
   const createChapter = useMutation({
     mutationFn: async () => {
-      const response = await httpBmCreateChapter(bookId, {
+      await BMBookAPI.getInstance().createChapter(bookId, {
         name,
         summary: '',
         isAdultOverride: false,
         content: '',
       })
 
-      const chapterId = response.data
+      setOpen(false)
+      await revalidator.revalidate()
     },
   })
 
@@ -107,9 +115,13 @@ function AddChapterButton({ bookId }: { bookId: string }) {
             <div class="flex gap-1">
               <input
                 class="input"
+                value={name}
+                onChange={(e) => setName((e.target as HTMLInputElement).value)}
                 placeholder={window._('bookManager.edit.chapterNamePlaceholder')}
               />
-              <button class="btn primary">{window._('bookManager.edit.addChapter')}</button>
+              <button disabled={!valid} class="btn primary">
+                {window._('bookManager.edit.addChapter')}
+              </button>
             </div>
           </form>
         </div>

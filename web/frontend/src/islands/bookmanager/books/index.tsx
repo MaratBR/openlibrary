@@ -1,4 +1,4 @@
-import { httpBmGetBooks, httpBmTrashBook, ManagerBookDto } from '@/api/bm/book'
+import { BMBookAPI, ManagerBookDto } from '@/api/bm/book'
 import { BookCover } from '@/components/BookCover'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import Modal from '@/components/Modal'
@@ -12,7 +12,7 @@ import { LoaderFunctionArgs, NavLink, useLoaderData } from 'react-router'
 export const booksRouteLoader = async ({ params, request }: LoaderFunctionArgs) => {
   const page = getPage(request.url)
 
-  const resp = await httpBmGetBooks({
+  const resp = await BMBookAPI.getInstance().getBooks({
     size: 20,
     page,
     search: '',
@@ -101,7 +101,7 @@ function TrashBookButton({
 
   const trashBookMutation = useMutation({
     mutationFn: async (trash: boolean) => {
-      const response = await httpBmTrashBook({
+      const response = await BMBookAPI.getInstance().trashBook({
         trash,
         id: book.id,
       })

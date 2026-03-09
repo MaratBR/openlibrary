@@ -50,23 +50,9 @@ export const ApiResponseGetBooksSchema = z.object({
 
 export type ApiResponseGetBooks = z.infer<typeof ApiResponseGetBooksSchema>
 
-export function httpBmGetBooks(
-  payload: ApiPayloadGetBooks,
-): Promise<OLAPIResponse<ApiResponseGetBooks>> {
-  return httpClient
-    .get('/_api/books-manager/books', { searchParams: payload })
-    .then((r) => OLAPIResponse.create(r, ApiResponseGetBooksSchema))
-}
-
 export type ApiPayloadTrashBook = {
   id: string
   trash: boolean
-}
-
-export function httpBmTrashBook(payload: ApiPayloadTrashBook) {
-  return httpClient
-    .post('/_api/books-manager/books/trash', { searchParams: payload })
-    .then((r) => OLAPIResponse.createNoBody(r))
 }
 
 export const ManagerBookChapterDtoSchema = z.object({
@@ -106,8 +92,55 @@ export const ManagerBookDetailsDtoSchema = z.object({
 
 export type ManagerBookDetailsDto = z.infer<typeof ManagerBookDetailsDtoSchema>
 
-export function httpBmGetBook(id: string) {
-  return httpClient
-    .get(`/_api/books-manager/books/${id}`)
-    .then((r) => OLAPIResponse.create(r, ManagerBookDetailsDtoSchema))
+export class BMBookAPI {
+  private static _instance = new BMBookAPI()
+
+  public static getInstance() {
+    return this._instance
+  }
+
+  getBook(id: string) {
+    return httpClient
+      .get(`/_api/books-manager/books/${id}`)
+      .then((r) => OLAPIResponse.create(r, ManagerBookDetailsDtoSchema))
+  }
+
+  trashBook(payload: ApiPayloadTrashBook) {
+    return httpClient
+      .post('/_api/books-manager/books/trash', { searchParams: payload })
+      .then((r) => OLAPIResponse.createNoBody(r))
+  }
+
+  getBooks(payload: ApiPayloadGetBooks): Promise<OLAPIResponse<ApiResponseGetBooks>> {
+    return httpClient
+      .get('/_api/books-manager/books', { searchParams: payload })
+      .then((r) => OLAPIResponse.create(r, ApiResponseGetBooksSchema))
+  }
+
+  normalizeChapterName(name: string) {
+    name = name.trim()
+
+    const valid = name.length <= 255 && name.length > 0
+
+    return {
+      value: name,
+      valid,
+    }
+  }
+
+  createChapter(
+    bookId: string,
+    request: {
+      name: string
+      summary: string
+      isAdultOverride: boolean
+      content: string
+    },
+  ) {
+    return httpClient
+      .post(`/_api/books-manager/book/${bookId}/create-chapter`, {
+        body: JSON.stringify(request),
+      })
+      .then((r) => OLAPIResponse.create(r, z.string()))
+  }
 }

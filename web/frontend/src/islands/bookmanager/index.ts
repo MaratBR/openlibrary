@@ -1,4 +1,3 @@
-export * from './book'
 import NewBook from './new-book'
 import BookCollectionsPopup from './BookCollectionsPopup'
 import { PreactIsland } from '../common/preact-island'

@@ -54,22 +54,6 @@ export function httpUpdateDraftChapterName(
     .then((r) => OLAPIResponse.createNoBody(r))
 }
 
-export function httpBmCreateChapter(
-  bookId: string,
-  request: {
-    name: string
-    summary: string
-    isAdultOverride: boolean
-    content: string
-  },
-) {
-  return httpClient
-    .post(`/_api/books-manager/book/${bookId}/create-chapter`, {
-      body: JSON.stringify(request),
-    })
-    .then((r) => OLAPIResponse.create(r, z.string()))
-}
-
 const managerBookChapterDtoSchema = z.object({
   id: z.string(),
   order: z.number().min(0).int(),
