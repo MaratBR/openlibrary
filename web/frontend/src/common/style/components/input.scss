@@ -1,6 +1,6 @@
 .input, .textarea {
     @apply 
-        border-gray-400 dark:border-gray-600 border 
+        border 
         rounded-sm px-3 w-full bg-card
         hover:border-black dark:hover:border-white
         focus:outline focus:outline-primary !focus:border-primary text-foreground
@@ -32,19 +32,14 @@ textarea.input {
 }
 
 .dropdown {
-    @apply 
-        border-gray-400 dark:border-gray-600 border 
-        rounded-sm w-full bg-card relative
-        transition-all;
+    @apply border rounded-sm w-full bg-card relative transition-all;
 
     &__input {
         @apply outline-none w-full h-10 px-3 mb-1 bg-transparent;
     }
 
     &__menu {
-        @apply hidden absolute left-[-1px] right-[-1px] top-full bg-card z-30
-            border-gray-400 dark:border-gray-600 border border-t-0
-            rounded-b-sm;
+        @apply hidden absolute left-[-1px] right-[-1px] top-full bg-card z-30 border border-t-0 rounded-b-sm;
     }
 
     &__chips {
@@ -52,7 +47,11 @@ textarea.input {
     }
 
     &[data-open=true] {
-        @apply rounded-b-none;
+        @apply rounded-b-none shadow-lg;
+    }
+
+    &[data-open=true] &__menu {
+        @apply shadow-lg;
     }
 
     &:not([data-open=true]) {
@@ -61,10 +60,6 @@ textarea.input {
 
     &[data-open=true] &__menu {
         @apply block;
-    }
-
-    &[data-open=true] &__input {
-        @apply bg-secondary rounded-sm;
     }
 }
 

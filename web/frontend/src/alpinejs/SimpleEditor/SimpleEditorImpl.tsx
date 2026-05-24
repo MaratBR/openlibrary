@@ -11,8 +11,8 @@ import Strike from '@tiptap/extension-strike'
 import Underline from '@tiptap/extension-underline'
 import Text from '@tiptap/extension-text'
 import History from '@tiptap/extension-history'
-
 import TextAlign from '@tiptap/extension-text-align'
+
 import { ComponentChildren, render } from 'preact'
 import { Subject, useSubject } from '@/common/rx'
 import { MouseEventHandler } from 'preact/compat'

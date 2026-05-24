@@ -93,7 +93,7 @@ type UserDetailsDto struct {
 		MD string `json:"md"`
 	} `json:"avatar"`
 	JoinedAt       time.Time    `json:"joinedAt"`
-	IsBanned       bool         `json:"isBlocked"`
+	IsBanned       bool         `json:"isBanned"`
 	Role           UserRole     `json:"role"`
 	HasCustomTheme bool         `json:"hasCustomTheme"`
 	About          UserAboutDto `json:"about"`
@@ -120,13 +120,10 @@ type SelfUserDto struct {
 		LG string `json:"lg"`
 		MD string `json:"md"`
 	} `json:"avatar"`
-	JoinedAt          time.Time  `json:"joinedAt"`
-	IsBanned          bool       `json:"isBlocked"`
-	IsEmailVerified   bool       `json:"isEmailVerified"`
-	PreferredTheme    string     `json:"preferredTheme"`
-	ShowAdultContent  bool       `json:"showAdultContent"`
-	BookCensoredTags  []string   `json:"bookCensoredTags"`
-	BookCensoringMode CensorMode `json:"bookCensoringMode"`
+	JoinedAt        time.Time `json:"joinedAt"`
+	IsBanned        bool      `json:"isBanned"`
+	IsEmailVerified bool      `json:"isEmailVerified"`
+	PreferredTheme  string    `json:"preferredTheme"`
 }
 
 type GetUserQuery struct {

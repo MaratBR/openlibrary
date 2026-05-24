@@ -5,9 +5,10 @@ import { DefinedTagDto, useTagsSearch } from '@/api/search'
 export type TagsInputProps = {
   tags?: DefinedTagDto[]
   onInput?: (tags: DefinedTagDto[]) => void
+  id?: string
 }
 
-export default function TagsInput({ tags = [], onInput }: TagsInputProps) {
+export default function TagsInput({ tags = [], onInput, id }: TagsInputProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
   const query = useTagsSearch({
@@ -37,8 +38,10 @@ export default function TagsInput({ tags = [], onInput }: TagsInputProps) {
         beforeInput: (
           <div class="dropdown__chips">
             {tags.map((tag) => (
-              <span key={tag.id} class="chip chip--secondary">
+              <span key={tag.id} class="tag">
                 {tag.name}
+
+                {tag.adult && <span class="tag__adult">&nbsp;18+</span>}
 
                 <button
                   onClick={(e) => {
@@ -58,6 +61,7 @@ export default function TagsInput({ tags = [], onInput }: TagsInputProps) {
       slotProps={{
         input: {
           onInput: (e) => setSearchQuery((e.target as HTMLInputElement).value),
+          id,
         },
         menu: {
           className: 'max-h-[300px] overflow-y-auto',
@@ -65,12 +69,7 @@ export default function TagsInput({ tags = [], onInput }: TagsInputProps) {
             <ul>
               {searchResults.map((tag) =>
                 tags.some((x) => x.id === tag.id) ? null : (
-                  <li
-                    key={tag.id}
-                    onClick={() => add(tag)}
-                    role="button"
-                    class="p-2 cursor-pointer hover:bg-muted hover:text-primary"
-                  >
+                  <li key={tag.id} onClick={() => add(tag)} role="button" class="listitem">
                     {tag.name}
                   </li>
                 ),

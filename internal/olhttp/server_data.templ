@@ -1,6 +1,7 @@
 package olhttp
 
 import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/auth"
 
 script JSServerData(key string, v any) {
     (window.__server__||(window.__server__={}))[key]=v
@@ -8,4 +9,9 @@ script JSServerData(key string, v any) {
 
 templ ServerData() {
     @JSServerData("ageRatings", app.AllRatings)
+
+    {{
+        user, _ := auth.GetUser(ctx)
+    }}
+    @JSServerData("user", user)
 }

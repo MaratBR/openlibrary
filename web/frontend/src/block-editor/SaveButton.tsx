@@ -30,7 +30,7 @@ export function SaveButton() {
       <button
         onClick={handleSaveDraft}
         disabled={!draftHasPendingChanges || saving}
-        class="btn primary btn--lg w-30 flex justify-center items-center"
+        class="btn btn--lg w-30 flex justify-center items-center"
       >
         {saving ? <span class="loader loader--dark" /> : window._('common.save')}
       </button>

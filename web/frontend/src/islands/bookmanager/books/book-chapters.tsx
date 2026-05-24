@@ -100,12 +100,13 @@ function AddChapterButton({ bookId }: { bookId: string }) {
 
       setOpen(false)
       await revalidator.revalidate()
+      setName('')
     },
   })
 
   return (
     <>
-      <button onClick={() => setOpen(true)} ref={ref} class="btn primary btn--outline btn--lg mt-4">
+      <button onClick={() => setOpen(true)} ref={ref} class="btn btn--outline btn--lg mt-4">
         <i class="fa-solid fa-plus mr-2" />
         {window._('bookManager.edit.addChapter')}
       </button>
@@ -119,7 +120,7 @@ function AddChapterButton({ bookId }: { bookId: string }) {
                 onChange={(e) => setName((e.target as HTMLInputElement).value)}
                 placeholder={window._('bookManager.edit.chapterNamePlaceholder')}
               />
-              <button disabled={!valid} class="btn primary">
+              <button disabled={!valid} class="btn">
                 {window._('bookManager.edit.addChapter')}
               </button>
             </div>

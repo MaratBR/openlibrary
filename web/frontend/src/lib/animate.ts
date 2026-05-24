@@ -1,14 +1,7 @@
 import { animate } from 'popmotion'
-import {
-  cloneElement,
-  forwardRef,
-  JSX,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-} from 'preact/compat'
+import { JSX, useCallback, useEffect, useLayoutEffect, useRef } from 'preact/compat'
 import { createEvent, Unsubscribe } from './event'
+import { RefCallback } from 'preact'
 
 export type SetShowOptions = {
   duration?: number
@@ -52,9 +45,9 @@ export class BinaryAnimation {
     if (duration <= 0) {
       // instantly transition to desired state
       this.callbacks.onBeforeAnimation(this.element, show)
-      this.callbacks.onUpdate(this.element, show ? 1 : 0)
+      this.progress = show ? 1 : 0
+      this.callbacks.onUpdate(this.element, this.progress)
       this.callbacks.onAfterAnimation(this.element, show)
-
       this._event.fire({ stage: show ? 'entered' : 'exited' })
 
       return
@@ -138,7 +131,7 @@ export class ModalAnimation extends BinaryAnimation {
   static factory = (duration: number) => (element: HTMLElement) =>
     new ModalAnimation(element, duration)
 
-  static default = this.factory(150)
+  static default = this.factory(100)
 }
 
 export type AnimationProps = {
@@ -148,46 +141,49 @@ export type AnimationProps = {
   onAnimation?: AnimationCallback
 }
 
-// this feeels clunky somehow but will do for now
-export const AnimationWrapper = forwardRef(
-  ({ animation, children, show, onAnimation }: AnimationProps, ref) => {
-    const animationInstanceRef = useRef<BinaryAnimation | null>(null)
+export type UseAnimationProps = {
+  animation: (element: HTMLElement) => BinaryAnimation
+  show: boolean
+  onAnimation?: AnimationCallback
+}
 
-    useLayoutEffect(() => {
-      const { current: instance } = animationInstanceRef
-      if (!instance) return
-      instance.setState(show)
-    }, [show])
+export type UseAnimation = {
+  ref: RefCallback<HTMLElement>
+}
 
-    useEffect(() => {
-      const { current: instance } = animationInstanceRef
-      if (!instance || !onAnimation) return
-      return instance.subscribe(onAnimation)
-    }, [onAnimation])
+export function useAnimation({ show, onAnimation, animation }: UseAnimationProps): UseAnimation {
+  const animationInstanceRef = useRef<BinaryAnimation | null>(null)
 
-    const initAnimation = useCallback((element: unknown) => {
-      if (typeof ref === 'function') {
-        ref(element)
-      } else if (ref) {
-        ref.current = element
-      }
+  useLayoutEffect(() => {
+    const { current: instance } = animationInstanceRef
+    if (!instance) return
+    instance.setState(show)
+  }, [show])
 
-      if (!(element instanceof HTMLElement)) return
+  useEffect(() => {
+    const { current: instance } = animationInstanceRef
+    if (!instance || !onAnimation) return
+    return instance.subscribe(onAnimation)
+  }, [onAnimation])
 
-      const animationInstance = animation(element)
-      animationInstance.setState(show, {
-        duration: 0,
-        force: true,
-      })
-      animationInstanceRef.current = animationInstance
-      return () => {
-        animationInstance.dispose()
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+  const initAnimation = useCallback((element: unknown) => {
+    console.log(element)
 
-    return cloneElement(children, {
-      ref: initAnimation,
+    if (!(element instanceof HTMLElement)) return
+
+    const animationInstance = animation(element)
+    animationInstance.setState(show, {
+      duration: 0,
+      force: true,
     })
-  },
-)
+    animationInstanceRef.current = animationInstance
+    return () => {
+      animationInstance.dispose()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return {
+    ref: initAnimation,
+  }
+}

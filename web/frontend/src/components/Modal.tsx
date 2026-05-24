@@ -1,4 +1,4 @@
-import { AnimationEvent, AnimationWrapper, ModalAnimation } from '@/lib/animate'
+import { AnimationEvent, ModalAnimation, useAnimation } from '@/lib/animate'
 import clsx from 'clsx'
 import { HTMLAttributes, TargetedMouseEvent } from 'preact'
 import { createPortal, PropsWithChildren, useCallback, useRef, useState } from 'preact/compat'
@@ -29,19 +29,23 @@ export default function Modal({ open, children, onClose, slotProps = {} }: Modal
 
   const shouldRender = open || animationInProgress
 
+  const { ref: animationRef } = useAnimation({
+    show: open,
+    animation: ModalAnimation.default,
+    onAnimation: handleAnimation,
+  })
+
   if (!shouldRender) return null
 
   return createPortal(
     <div ref={ref} class="modal" onClick={handleClick}>
-      <AnimationWrapper
-        onAnimation={handleAnimation}
-        show={open}
-        animation={ModalAnimation.default}
+      <div
+        ref={animationRef}
+        {...slotProps.content}
+        class={clsx('modal__content', slotProps.content?.class)}
       >
-        <div {...slotProps.content} class={clsx('modal__content', slotProps.content?.class)}>
-          {children}
-        </div>
-      </AnimationWrapper>
+        {children}
+      </div>
     </div>,
     document.body,
   )

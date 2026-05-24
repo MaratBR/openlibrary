@@ -1,6 +1,7 @@
 type __server__ = {
   ageRatings: string[]
   bookId?: string
+  user?: unknown | null
 }
 
 declare global {

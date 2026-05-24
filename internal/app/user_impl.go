@@ -277,17 +277,14 @@ func (u *userService) GetUserSelfData(ctx context.Context, userID uuid.UUID) (*S
 	}
 
 	details := &SelfUserDto{
-		ID:                uuidDbToDomain(user.ID),
-		Name:              user.Name,
-		Email:             user.Email,
-		JoinedAt:          timeDbToDomain(user.JoinedAt),
-		IsBanned:          false,
-		PreferredTheme:    "dark",
-		Role:              UserRole(user.Role),
-		ShowAdultContent:  user.ShowAdultContent,
-		BookCensoredTags:  user.CensoredTags,
-		BookCensoringMode: CensorMode(user.CensoredTagsMode),
-		IsEmailVerified:   user.EmailVerified,
+		ID:              uuidDbToDomain(user.ID),
+		Name:            user.Name,
+		Email:           user.Email,
+		JoinedAt:        timeDbToDomain(user.JoinedAt),
+		IsBanned:        false,
+		PreferredTheme:  "dark",
+		Role:            UserRole(user.Role),
+		IsEmailVerified: user.EmailVerified,
 	}
 
 	details.Avatar.MD = getUserAvatar(user.Name, 84)

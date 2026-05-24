@@ -1,0 +1,19 @@
+.UserMenu {
+    @apply 
+        rounded-3xl fixed z-20 bg-card shadow-2xl px-4 pb-4
+        lg:top-[calc(var(--header-height)+var(--spacing))] lg:right-[calc((100vw-var(--ol-container-big-width))/2)] lg:w-64;
+
+    & > &__item:not(:last-child),
+    & > hr:not(:last-child) {
+        @apply mb-1;
+    }
+
+    &__items {
+        @apply flex flex-col gap-1;
+    }
+
+    &__item {
+        @apply px-4 py-2 rounded-2xl font-medium bg-secondary min-h-10 flex items-center transition-colors duration-100 w-full
+            hover:bg-muted-2;
+    }
+}

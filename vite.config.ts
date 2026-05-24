@@ -236,7 +236,7 @@ export default defineConfig((env) => ({
   },
 
   build: {
-    minify: 'esbuild',
+    minify: false, // TODO toggle depending on env
     rollupOptions: {
       output: {
         chunkFileNames: 'chunks/[hash].js',

@@ -2,7 +2,7 @@ package templates
 
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/auth"
-import "fmt"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ siteHeader() {
     @siteHeaderLayout() {
@@ -102,43 +102,13 @@ templ siteHeaderLayout() {
 templ navUser() {
     {{
         user := auth.RequireUser(ctx)
-        l := i18n.GetLocalizer(ctx)
     }}
-    <div class="nav-user" x-data="{userMenu:false}">
-        <button @click="userMenu=true" class="nav-user__btn">
+    <div id="nav-user" class="nav-user">
+        <button class="nav-user__btn">
             <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
         </button>
-        <div x-cloak @click.outside="userMenu=false" x-show="userMenu" class="nav-user__menu">
-            <a class="nav-user__menu__item" href="/books-manager">
-                { l.T("account.bookManager") }
-            </a>
-            <a class="nav-user__menu__item" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) }>
-                { l.T("account.profile") }
-            </a>
-            <a class="nav-user__menu__item" href="/account/settings">
-                { l.T("account.settings") }
-            </a>
-            <button x-init @click="OLTheme.toggle()" class="nav-user__menu__item">
-                <div class="ol-theme-only-content" data-theme="dark">
-                    Dark
-                </div>
-                <div class="ol-theme-only-content" data-theme="light">
-                    Light
-                </div>
-                <div class="ol-theme-only-content" data-theme="system">
-                    System
-                </div>
-            </button>
-            <hr />
-            <a class="nav-user__menu__item" href="/logout">
-                { l.T("account.logout") }
-            </a>
-            if user.Role.IsAdmin() {
-                <a class="nav-user__menu__item" href="/admin" target="_blank">
-                    { l.T("account.admin") }
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                </a>
-            }
-        </div>
+        @webcomponents.Island2(webcomponents.Island2Props{
+            Name: "header-user-menu",
+        })
     </div>
 }

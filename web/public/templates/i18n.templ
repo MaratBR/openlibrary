@@ -1,7 +1,18 @@
 package templates
 
+import "fmt"
+import "net/url"
+import "github.com/MaratBR/openlibrary/internal/app"
+
 script i18nKeys(keys map[string]string) {
     window.i18n = window.i18n || {};
     Object.assign(window.i18n, keys);
 }
 
+templ i18nKeysByPrefixAsScript(prefix string) {
+    {{
+        src := fmt.Sprintf("/_api/i18n/t?fmt=js&prefix=%s&ver=%s", url.QueryEscape(prefix), app.AppVersion())
+    }}
+    
+    <script src={ src }></script>
+}

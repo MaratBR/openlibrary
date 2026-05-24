@@ -1,6 +1,9 @@
 import z from 'zod'
 
-export const AgeRatingSchema = z.enum(['?', 'G', 'PG', 'PG-13', 'R', 'NC-17'])
+export const AgeRatingSchema = z.union([
+  z.string(),
+  z.enum(['?', 'G', 'PG', 'PG-13', 'R', 'NC-17']),
+])
 
 export type AgeRating = z.infer<typeof AgeRatingSchema>
 

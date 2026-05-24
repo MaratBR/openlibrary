@@ -17,9 +17,10 @@ func i18nExtractKeys(l *i18n.Localizer, keys []string) templ.ComponentScript {
 	return i18nKeys(m)
 }
 
-func i18nExtractKeysByPrefix(l *i18n.Localizer, prefixPath string) templ.ComponentScript {
-	m := l.TT(prefixPath)
-	return i18nKeys(m)
+func i18nExtractKeysByPrefix(l *i18n.Localizer, prefixPath string) templ.Component {
+	return i18nKeysByPrefixAsScript(prefixPath)
+	// m := l.TT(prefixPath)
+	// return i18nKeys(m)
 }
 
 func _t(l *i18n.Localizer, key string, params ...string) string {

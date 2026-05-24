@@ -31,6 +31,11 @@ loadMore = "Load more"
 commentsCount = "{{.Count}} comments"
 error = "Error"
 operationSuccessful = "Operation successful"
+profile = "Profile"
+settings = "Settings"
+bookManager = "Book manager"
+adminDashboard = "Admin dashboard"
+logout = "Logout"
 
 [uiTheme]
 dark = "Dark"
@@ -85,13 +90,6 @@ mustHaveSymbol = "Must have at least one symbol"
 mustHaveCases = "Must have at least one capital letter and one lowercase"
 mustHaveDigits = "Must have at least one digit"
 minLength = "Must be at least {{.characters}} characters long"
-
-[account]
-profile = "Profile"
-settings = "Settings"
-bookManager = "Book manager"
-admin = "Admin dashboard"
-logout = "Logout"
 
 [gender]
 m = "Male"

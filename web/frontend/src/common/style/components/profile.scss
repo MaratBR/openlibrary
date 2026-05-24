@@ -28,6 +28,6 @@
     @apply w-[200px];
 
     &__title {
-        @apply w-[200px];
+        @apply w-[200px] text-sm font-medium;
     }
 }

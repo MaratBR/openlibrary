@@ -1,4 +1,4 @@
-import { AnimationController, ModalAnimation } from '@/lib/animate'
+import { BinaryAnimation, ModalAnimation } from '@/lib/animate'
 import { computePosition, ComputePositionConfig } from '@floating-ui/react'
 import Alpine from 'alpinejs'
 
@@ -6,7 +6,7 @@ Alpine.data(
   'Popover',
   (params: { duration?: number; options?: Partial<ComputePositionConfig> }) => ({
     $anchorEl: null as null | HTMLElement,
-    animation: null as AnimationController | null,
+    animation: null as BinaryAnimation | null,
     isOpen: false,
 
     open(element: HTMLElement) {
@@ -20,11 +20,11 @@ Alpine.data(
     init() {
       const { duration = 150, options } = params ?? {}
       this.animation = new ModalAnimation(this.$el, duration)
-      this.animation.setShow(false, 0)
+      this.animation.setState(false, { duration: 0, force: true })
 
       this.$watch('$anchorEl', (newAnchor, oldValue) => {
         if (!!newAnchor === false) {
-          this.animation?.setShow(false)
+          this.animation?.setState(false)
           requestAnimationFrame(() => {
             this.isOpen = false
           })
@@ -38,7 +38,7 @@ Alpine.data(
             this.$el.style.top = `${pos.y}px`
 
             if (!!oldValue === false) {
-              this.animation?.setShow(true)
+              this.animation?.setState(true)
             }
 
             requestAnimationFrame(() => {

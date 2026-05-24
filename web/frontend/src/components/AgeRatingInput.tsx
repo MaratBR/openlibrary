@@ -1,8 +1,9 @@
+import { AgeRating } from '@/api/common'
 import { Fragment } from 'preact/jsx-runtime'
 
 export type AgeRatingProps = {
   name?: string
-  value: string | null
+  value: AgeRating | null
 
   onChange: (rating: string) => void
 }

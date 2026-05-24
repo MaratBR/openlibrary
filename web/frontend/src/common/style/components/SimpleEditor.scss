@@ -5,10 +5,6 @@
         @apply bg-card rounded-lg m-2 p-2 shadow-sm flex items-center gap-1 h-12;
     }
 
-    &__toolbarWrapper {
-        @apply contents;
-    }
-
     &__btn {
         @apply 
             size-8 bg-card rounded-md flex items-center justify-center

@@ -74,30 +74,34 @@ templ UIDemo() {
         DisableFooter: true,
         DisableFlashes: true,
     }) {
+        <button onclick="javascript:OLTheme.toggle()">
+            Toggle dark mode
+        </button>
+
         <div class="p-8">
             <h1>Buttons</h1>
             <h2>Regular</h2>
             <div class="flex flex-wrap gap-2">
                 <button class="btn">btn</button>
-                <button class="btn primary">btn primary</button>
+                <button class="btn secondary">btn secondary</button>
                 <button class="btn destructive">btn destructive</button>
             </div>
             <h2>Outline</h2>
             <div class="flex flex-wrap gap-2">
                 <button class="btn btn--outline">btn</button>
-                <button class="btn btn--outline primary">btn primary</button>
+                <button class="btn btn--outline secondary">btn secondary</button>
                 <button class="btn btn--outline destructive">btn destructive</button>
             </div>
             <h2>Ghost</h2>
             <div class="flex flex-wrap gap-2">
                 <button class="btn btn--ghost">btn</button>
-                <button class="btn btn--ghost primary">btn primary</button>
+                <button class="btn btn--ghost secondary">btn secondary</button>
                 <button class="btn btn--ghost destructive">btn destructive</button>
             </div>
             <h2>Icons</h2>
             <div class="flex flex-wrap gap-2">
                 <button class="btn btn--icon">icon</button>
-                <button class="btn btn--icon primary">icon</button>
+                <button class="btn btn--icon secondary">icon secondary</button>
                 <button class="btn btn--icon destructive">icon</button>
             
             </div>

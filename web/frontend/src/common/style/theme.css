@@ -18,8 +18,6 @@ html:has(body.dark) {
   --foreground: hsl(222 0 20);
   --card: hsl(0 0 100);
   --card-foreground: hsl(222.2 84 4.9);
-  --popover: hsl(0 0 100);
-  --popover-foreground: hsl(222.2 84 4.9);
   --primary: hsl(221.2 83.2 53.3);
   --primary-foreground: hsl(210 40 98);
   --secondary: hsl(210 40 96.1);
@@ -47,23 +45,21 @@ html:has(body.dark) {
 .dark {
   --background: hsl(20 0 12.1);
   --foreground: hsl(0 0 95);
-  --card: hsl(0 0 14);
+  --card: hsl(0 0 15);
   --card-foreground: hsl(210 40 98);
-  --popover: hsl(222.2 84 4.9);
-  --popover-foreground: hsl(210 40 98);
   --primary: hsl(217.2 91.2 76);
   --primary-foreground: hsl(222.2 47.4 11.2);
-  --secondary: hsl(240 3.7 15.9);
+  --secondary: hsl(240 3.7 25.9);
   --secondary-foreground: hsl(0 0 98);
-  --muted: hsl(0 0 15);
+  --muted: hsl(0 0 25);
   --muted-foreground: hsl(240 5 64.9);
   --muted-2: hsl(217.2 32.6 30.5);
   --muted-2-foreground: hsl(215 20.2 55.1);
   --accent: hsl(217.2 32.6 17.5);
   --accent-foreground: hsl(210 40 98);
-  --destructive: hsl(0 62.8 30.6);
+  --destructive: hsl(0 62.8 60.6);
   --destructive-foreground: hsl(210 40 98);
-  --border: hsl(217.2 1.6 17.5);
+  --border: hsl(217.2 1.6 26.5);
   --input: hsl(217.2 32.6 17.5);
   --ring: hsl(224.3 76.3 48);
   --chart-1: hsl(220 70 50);

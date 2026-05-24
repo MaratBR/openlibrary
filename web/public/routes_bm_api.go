@@ -25,6 +25,7 @@ func newAPIBookManagerController(service app.BookManagerService, fileValidator u
 
 func (c *apiControllerBM) Register(r chi.Router) {
 	r.Route("/books-manager", func(r chi.Router) {
+		r.With(httpin.NewInput(&apiPayloadBookDirectUpdate{})).Post("/book/{bookID}/direct-update", c.bookDirectUpdate)
 		r.With(httpin.NewInput(&apiPayloadUploadCover{})).Post("/book/{bookID}/cover", c.uploadCover)
 		r.With(httpin.NewInput(&apiPayloadChangeChaptersOrder{})).Post("/book/{bookID}/chapters-order", c.changeChaptersOrder)
 		r.With(httpin.NewInput(&apiPayloadCreateChapter{})).Post("/book/{bookID}/create-chapter", c.createChapter)
@@ -38,6 +39,53 @@ func (c *apiControllerBM) Register(r chi.Router) {
 		r.With(httpin.NewInput(&apiPayloadTrashBook{})).Post("/books/trash", c.trashBook)
 
 	})
+}
+
+type apiPayloadBookDirectUpdate struct {
+	Body struct {
+		Name              string            `json:"name"`
+		AgeRating         app.AgeRating     `json:"ageRating"`
+		Summary           string            `json:"summary"`
+		IsAdult           bool              `json:"isAdult"`
+		IsPubliclyVisible bool              `json:"isPubliclyVisible"`
+		Tags              []app.Int64String `json:"tags"`
+	} `in:"body=json"`
+}
+
+func (c *apiControllerBM) bookDirectUpdate(w http.ResponseWriter, r *http.Request) {
+	input := r.Context().Value(httpin.Input).(*apiPayloadBookDirectUpdate)
+
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	s := auth.RequireSession(r.Context())
+
+	err = c.service.UpdateBook(r.Context(), app.UpdateBookCommand{
+		UserID:            s.UserID,
+		BookID:            bookID,
+		Name:              input.Body.Name,
+		AgeRating:         input.Body.AgeRating,
+		Tags:              app.ArrInt64StringToInt64(input.Body.Tags),
+		Summary:           input.Body.Summary,
+		IsPubliclyVisible: input.Body.IsPubliclyVisible,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+
+	bookResult, err := c.service.GetBook(r.Context(), app.ManagerGetBookQuery{
+		ActorUserID: s.UserID,
+		BookID:      bookID,
+	})
+	if err != nil {
+		apiWriteUnexpectedApplicationError(w, err)
+		return
+	}
+
+	olhttp.NewAPIResponse(bookResult.Book).Write(w)
 }
 
 type apiPayloadUploadCover struct {

@@ -24,7 +24,8 @@ export default function BMLayout({ children }: { children: ComponentChild }) {
 function Logo() {
   return (
     <div class="flex justify-center my-4">
-      <img class="h-20" src="/_/embed-assets/logo.svg" />
+      <img class="h-20 dark:hidden" src="/_/embed-assets/logo.svg" />
+      <img class="h-20 hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
     </div>
   )
 }

@@ -85,7 +85,7 @@ export default function SearchFilters({ data }: PreactIslandProps) {
         />
       </div>
 
-      <button type="submit" class="btn btn--lg primary">
+      <button type="submit" class="btn btn--lg">
         {window._('search.doSearch')}
       </button>
     </form>

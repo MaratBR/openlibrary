@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router/dom'
 import BMLayout from './BMLayout'
 import { Books, booksRouteLoader } from './books'
 import { Book, bookRouteLoader } from './books/book'
+import BookEdit from './books/book-edit'
 
 const router = createHashRouter([
   {
@@ -26,6 +27,11 @@ const router = createHashRouter([
       {
         path: '/books/:bookId',
         element: <Book />,
+        loader: bookRouteLoader,
+      },
+      {
+        path: '/books/:bookId/edit',
+        element: <BookEdit />,
         loader: bookRouteLoader,
       },
       {

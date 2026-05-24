@@ -1,6 +1,6 @@
 import { DefinedTagDto, DefinedTagDtoSchema } from '@/api/search'
 import TagsInput from '@/components/TagsInput'
-import Wrapper from '@/preact/wrapper'
+import { Wrapper } from '@/preact'
 import { hydrate, render } from 'preact'
 import { useMemo, useRef, useState } from 'preact/hooks'
 import z from 'zod'

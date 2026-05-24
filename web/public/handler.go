@@ -42,6 +42,7 @@ var FXModule = fx.Module("public_ui_handler",
 		newAPIBookManagerController,
 		newAPICollectionController,
 		newAPICommentsController,
+		newApiControllerI18N,
 		webinfra.AsMountableHandler(newHandler),
 	))
 
@@ -69,6 +70,7 @@ func newHandler(
 	apiControllerCollection *apiControllerCollection,
 	apiControllerReadingList *apiControllerReadingList,
 	apiControllerComments *apiControllerComments,
+	apiControllerI18N *apiControllerI18N,
 
 	flashMiddleware flash.Middleware,
 ) webinfra.MountableHandler {
@@ -113,6 +115,7 @@ func newHandler(
 		apiControllerReadingList.Register(r)
 		apiControllerTags.Register(r)
 		apiControllerComments.Register(r)
+		apiControllerI18N.Register(r)
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)

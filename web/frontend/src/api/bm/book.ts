@@ -1,5 +1,5 @@
 import z from 'zod'
-import { AgeRatingSchema, BookCoverSchema } from '@/api/common'
+import { AgeRating, AgeRatingSchema, BookCoverSchema } from '@/api/common'
 import { DefinedTagDtoSchema } from '../search'
 import { ViewsSchema } from '../analytics'
 import { httpClient, OLAPIResponse } from '@/http-client'
@@ -92,6 +92,15 @@ export const ManagerBookDetailsDtoSchema = z.object({
 
 export type ManagerBookDetailsDto = z.infer<typeof ManagerBookDetailsDtoSchema>
 
+export type ApiPayloadBookDirectUpdate = {
+  name: string
+  ageRating: AgeRating
+  summary: string
+  isAdult: boolean
+  isPubliclyVisible: boolean
+  tags: string[]
+}
+
 export class BMBookAPI {
   private static _instance = new BMBookAPI()
 
@@ -142,5 +151,11 @@ export class BMBookAPI {
         body: JSON.stringify(request),
       })
       .then((r) => OLAPIResponse.create(r, z.string()))
+  }
+
+  updateBook(bookId: string, body: ApiPayloadBookDirectUpdate) {
+    return httpClient
+      .post(`/_api/books-manager/book/${bookId}/direct-update`, { json: body })
+      .then((r) => OLAPIResponse.create(r, ManagerBookDetailsDtoSchema))
   }
 }

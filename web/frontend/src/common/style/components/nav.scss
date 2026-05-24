@@ -2,7 +2,8 @@
     @apply z-40 w-full bg-card sticky top-0 h-[var(--header-height)] border-b;
 
     &__inner {
-        @apply max-w-[120ch] mx-auto h-full flex flex-nowrap;
+        max-width: var(--ol-container-big-width);
+        @apply mx-auto h-full flex flex-nowrap;
 
         @apply lg:items-stretch;
     }
@@ -83,18 +84,6 @@
 
     &__btn {
         @apply lg:h-full;
-    }
-
-    &__menu {
-        @apply 
-            bg-secondary rounded-lg mr-4 mb-4
-            lg:bg-card lg:rounded-xl lg:absolute lg:top-full lg:right-0 lg:p-1 lg:space-y-1 lg:min-w-48 lg:flex lg:flex-col lg:shadow-md;
-
-        &__item {
-            @apply px-2 py-2 min-h-10 flex items-center rounded-md transition-all duration-100 w-full
-                hover:bg-muted
-                active:bg-muted-2;
-        }
     }
 }
 

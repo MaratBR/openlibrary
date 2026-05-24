@@ -76,7 +76,7 @@ function BookRow({ book }: { book: ManagerBookDto }) {
       </td>
       <td>
         <div class="flex gap-2">
-          <NavLink to={`/books/${book.id}`} className="btn btn--lg primary">
+          <NavLink to={`/books/${book.id}`} className="btn btn--lg">
             <i class="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </NavLink>

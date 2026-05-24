@@ -2,8 +2,6 @@ package public
 
 import (
 	"net/http"
-
-	"github.com/MaratBR/openlibrary/internal/auth"
 )
 
 const canViewAdultContentCookieName string = "view_adult"
@@ -14,10 +12,11 @@ func canViewAdultContent(r *http.Request) bool {
 		return true
 	}
 
-	user, ok := auth.GetUser(r.Context())
-	if ok && user.ShowAdultContent {
-		return true
-	}
+	// TODO return this eventually
+	// user, ok := auth.GetUser(r.Context())
+	// if ok && user.ShowAdultContent {
+	// 	return true
+	// }
 
 	return false
 }

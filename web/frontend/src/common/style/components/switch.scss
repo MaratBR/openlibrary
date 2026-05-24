@@ -1,11 +1,11 @@
 /* The switch itself */
 .switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    min-width: 60px;
-    height: 34px;
-  }
+  position: relative;
+  display: inline-block;
+  width: 70px;
+  min-width: 60px;
+  height: 34px;
+}
   
 .switch input {
   opacity: 0;
@@ -31,12 +31,13 @@
   position: absolute;
   content: "";
   height: 26px;
-  width: 26px;
-  border-radius: 50%;
+  width: 40px;
+  border-radius: 13px;
   left: 4px;
   bottom: 4px;
   background-color: white;
   transition: 0.1s;
+  transform: scale(var(--scale, 1));
 }
 
 /* When the switch is checked (turned on) */
@@ -44,6 +45,14 @@ input:checked + .switch__slider {
   @apply bg-primary;
 }
 
+input:disabled + .switch__slider {
+  @apply bg-gray-400 dark:bg-zinc-700;
+}
+
 input:checked + .switch__slider:before {
-  transform: translateX(26px);
+  transform: translateX(22px) scale(var(--scale, 1));
+}
+
+.switch:hover .switch__slider:before {
+  --scale: 0.9;
 }

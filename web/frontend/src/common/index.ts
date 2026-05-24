@@ -1,3 +1,6 @@
+// TODO conditionally remove from PROD build
+import 'preact/debug'
+
 import '../lib/island'
 import '../lib/ScrollBlocker'
 import '../toast'

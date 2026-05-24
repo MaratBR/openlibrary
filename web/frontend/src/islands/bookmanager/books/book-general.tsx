@@ -1,5 +1,7 @@
 import { ManagerBookDetailsDto } from '@/api/bm/book'
+import SanitizeHTML from '@/common/SanitizeHTML'
 import { formatNumber, formatNumberK } from '@/util/fmt'
+import { NavLink } from 'react-router'
 
 export function BookGeneral({ book }: { book: ManagerBookDetailsDto }) {
   return (
@@ -17,6 +19,23 @@ export function BookGeneral({ book }: { book: ManagerBookDetailsDto }) {
             <div>{window._('book.chapters', { count: formatNumber(book.chapters.length) })}</div>
           </div>
         </div>
+
+        <div class="flex gap-1 my-4">
+          <NavLink className="btn btn--outline" to={`/books/${book.id}/edit`}>
+            <i class="fa-solid fa-pen mr-2" />
+            {window._('common.edit')}
+          </NavLink>
+        </div>
+
+        <dl className="dl">
+          <dt className="dt">{window._('bookManager.edit.name')}</dt>
+          <dd className="dd">{book.name}</dd>
+
+          <dt className="dt">{window._('bookManager.edit.summary')}</dt>
+          <dd className="dd">
+            <SanitizeHTML value={book.summary} />
+          </dd>
+        </dl>
       </div>
     </>
   )
