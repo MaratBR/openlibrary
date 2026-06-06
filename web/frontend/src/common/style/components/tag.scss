@@ -1,6 +1,6 @@
 .tag {
     @apply 
-        inline-block overflow-hidden rounded-lg px-1 !shadow-none bg-secondary border border-secondary transition-colors
+        inline-block overflow-hidden rounded-lg px-1 !shadow-none bg-surface border transition-colors
         hover:border-slate-300 
         active:bg-slate-200 active:ring-2 ring-offset-2 dark:active:bg-slate-900;
     height: 1.7em;

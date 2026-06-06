@@ -62,7 +62,7 @@ templ BookPage(
 
         if !book.IsPubliclyAvailable && isAuthenticated && user.ID == book.Author.ID {
             <div class="ol-container ol-container--big p-4 bg-yellow-300 text-black border-yellow-600 border-2">
-                {l.T("book.notPubliclyAvailableNotice")} <br /> <a class="link" href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))}>{l.T("book.goToBookManager")}</a>
+                {l.T("book.notPubliclyAvailableNotice")} <br /> <a class="link" href={templ.URL(fmt.Sprintf("/books-manager#/books/%d", book.ID))}>{l.T("book.goToBookManager")}</a>
             </div>
         }
 
@@ -88,7 +88,7 @@ templ BookPage(
                     </div>
 
                     if user.ID == book.Author.ID {
-                        <a href={templ.URL(fmt.Sprintf("/books-manager/book/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] ">
+                        <a href={templ.URL(fmt.Sprintf("/books-manager#/books/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] ">
                             Book manager
                         </a>
                     }
@@ -217,7 +217,7 @@ templ bookAdultWarning() {
             setTimeout(() => $root.remove(), 150);
         }
     }">
-        <div x-ref="card" class="w-128 bg-card px-8 py-12 rounded-lg shadow-md transition">
+        <div x-ref="card" class="w-128 bg-surface px-8 py-12 rounded-lg shadow-md transition">
             <h1 class="text-4xl mb-8 font-bold">
                 Potential adult content
             </h1>

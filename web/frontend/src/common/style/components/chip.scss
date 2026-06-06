@@ -1,14 +1,14 @@
 .chip {
     @apply leading-6 rounded-full px-2 inline-flex items-center gap-1 text-foreground font-medium;
 
-    @apply bg-card border text-card-foreground;
+    @apply bg-surface border text-card-foreground;
 
     &--primary {
         @apply bg-primary border-primary text-primary-foreground;
     }
 
     &--secondary {
-        @apply bg-secondary;
+        @apply bg-surface;
     }
 
     &--destructive {

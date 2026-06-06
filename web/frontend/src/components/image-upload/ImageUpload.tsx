@@ -25,7 +25,7 @@ export function ImageUpload({ onFileSelected, file, displayedFile }: ImageUpload
 
   return (
     <div class="flex">
-      <label class="bg-secondary rounded-r-2xl h-[200px] w-[133px] relative block cursor-pointer group overflow-hidden">
+      <label class="bg-surface rounded-r-2xl h-[200px] w-[133px] relative block cursor-pointer group overflow-hidden">
         <input
           ref={ref}
           onChange={handleChange}

@@ -1,7 +1,7 @@
 .table {
     width: 100%;
     table-layout: fixed;
-    @apply bg-card;
+    @apply bg-surface;
 
     td, th {
         @apply p-2 text-start font-normal;

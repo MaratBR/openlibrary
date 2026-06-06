@@ -28,7 +28,7 @@
             &::after {
                 content: ' ';
                 z-index: -1;
-                @apply opacity-0 pointer-events-none inset-0 relative block bg-secondary rounded-2xl absolute transition;
+                @apply opacity-0 pointer-events-none inset-0 relative block bg-surface rounded-2xl absolute transition;
             }
 
             &:hover::after,

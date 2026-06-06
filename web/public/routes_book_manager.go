@@ -29,19 +29,10 @@ func (c *bookManagerController) Register(r chi.Router) {
 		r.Use(requiresAuthorizationMiddleware)
 
 		r.Get("/", c.index)
-
-		r.Get("/collections", c.collections)
-
-		r.Get("/books", c.yourBooks)
-		r.Post("/books", c.booksPost)
-
 		r.Get("/new", c.bookNew)
-		r.Get("/book/{bookID}", c.book)
-		r.Post("/book/{bookID}/general-information", c.bookUpdateGeneralInformation)
 		r.With(httpin.NewInput(&createBookRequest{})).Post("/new", c.bookCreate)
 
 		r.Get("/book/{bookID}/chapter/{chapterID}", c.chapter)
-
 		r.Get("/__fragment/chapter-content-iframe", c.chapterLayoutIframe)
 
 	})
@@ -49,30 +40,6 @@ func (c *bookManagerController) Register(r chi.Router) {
 
 func (c *bookManagerController) index(w http.ResponseWriter, r *http.Request) {
 	templates.BM_Home().Render(r.Context(), w)
-}
-
-func (c *bookManagerController) yourBooks(w http.ResponseWriter, r *http.Request) {
-	session := auth.RequireSession(r.Context())
-	page, _ := olhttp.URLQueryParamInt64(r, "p")
-	search := r.URL.Query().Get("q")
-	if page < 1 {
-		page = 1
-	} else if page > 10000 {
-		page = 10000
-	}
-	_, err := c.service.GetUserBooks(r.Context(), app.ManagerGetUserBooksQuery{
-		UserID:      session.UserID,
-		PageSize:    20,
-		Page:        uint32(page),
-		SearchQuery: search,
-	})
-	if err != nil {
-		writeApplicationError(w, r, err)
-		return
-	}
-
-	// templates.BM_Books(books).Render(r.Context(), w)
-
 }
 
 func (c *bookManagerController) booksPost(w http.ResponseWriter, r *http.Request) {

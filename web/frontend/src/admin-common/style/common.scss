@@ -1,11 +1,11 @@
 .admin-card {
-    @apply bg-card border-border border;
+    @apply bg-surface border-border border;
 }
 
 .admin-id {
-    @apply text-sm bg-secondary rounded-sm p-1;
+    @apply text-sm bg-surface rounded-sm p-1;
 }
 
 .admin-page-breadcrumb {
-    @apply border-b bg-card p-2 flex gap-2 items-center flex-wrap sticky top-0 z-10 pl-4;
+    @apply border-b bg-surface p-2 flex gap-2 items-center flex-wrap sticky top-0 z-10 pl-4;
 }

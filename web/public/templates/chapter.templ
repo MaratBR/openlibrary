@@ -47,7 +47,7 @@ templ Chapter(
             <div class="relative pb-10">
                 <aside class="z-10 absolute top-0 bottom-0 right-0">
                     <div class="flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2">
-                        <button x-bind="toggleButton" class="btn btn--icon secondary z-20">
+                        <button x-bind="toggleButton" class="btn btn--icon z-20">
                             <i class="fa-solid fa-gear"></i>
                         </button>
                     </div>
@@ -55,7 +55,7 @@ templ Chapter(
                 <div class="book-reader__chapter relative">
                     @ChapterContentSection(&chapter, uiSettings, options)
 
-                    <section class="grid grid-cols-2 mt-4 bg-card shadow-md rounded-lg overflow-hidden">
+                    <section class="grid grid-cols-2 mt-4 bg-surface shadow-md rounded-lg overflow-hidden">
                         if chapter.PrevChapter.Valid {
                             <a class="text-lg p-4 flex items-center gap-4 active:outline active:bg-primary active:text-primary-foreground justify-end"
                                 href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.PrevChapter.Value.ID)) }>
@@ -99,13 +99,13 @@ templ Chapter(
                         <section>
                             <span>Font size</span>
                             <div class="max-w-[250px] grid grid-cols-3 border border-border rounded-sm h-16">
-                                <button x-bind="decreaseFont" class="flex items-center justify-center hover:bg-secondary rounded-sm m-2">
+                                <button x-bind="decreaseFont" class="flex items-center justify-center hover:bg-surface rounded-sm m-2">
                                     <i class="fa-solid fa-minus"></i>
                                 </button>
                                 <div x-text="fontSize" class="flex items-center justify-center text-xl">
                                     { strconv.Itoa(uiSettings.FontSize) }
                                 </div>
-                                <button x-bind="increaseFont" class="flex items-center justify-center hover:bg-secondary rounded-sm m-2">
+                                <button x-bind="increaseFont" class="flex items-center justify-center hover:bg-surface rounded-sm m-2">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>

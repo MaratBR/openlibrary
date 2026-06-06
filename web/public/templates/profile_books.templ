@@ -27,7 +27,7 @@ templ ProfileBooks(
         },
     }) {
         <div class="sticky top-[calc(var(--header-height)+10px)] z-20">
-            <nav class="ol-container shadow-md bg-card rounded-full">
+            <nav class="ol-container shadow-md bg-surface rounded-full">
                 <ul class="tabs tabs--primary-b px-6">
                     <li role="button" class="tab tab--active">
                         <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ l.T("profile.books") }</a>
@@ -67,7 +67,7 @@ templ ProfileCollections(
         },
     }) {
         <div class="sticky top-[calc(var(--header-height)+10px)] z-20">
-            <nav class="ol-container shadow-md bg-card rounded-full">
+            <nav class="ol-container shadow-md bg-surface rounded-full">
                 <ul class="tabs tabs--primary-b px-6">
                     <li role="button" class="tab">
                         <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ l.T("profile.books") }</a>

@@ -5,33 +5,25 @@ import { formatNumberK } from '@/util/fmt'
 import { useMutation } from '@tanstack/react-query'
 import { useMemo, useRef, useState } from 'preact/hooks'
 import { NavLink, useRevalidator } from 'react-router'
+import { CHAPTER_SLIDE_OUT_PARAMETER_NAME, ChapterSlidePanel } from './chapter-page'
 
 export function BookChapters({ book }: { book: ManagerBookDetailsDto }) {
   return (
     <>
       <AddChapterButton bookId={book.id} />
 
-      <div class="card mt-4 px-0">
-        <table class="table">
-          <thead>
-            <tr>
-              <th class="w-8 text-muted-foreground">#</th>
-              <th>{''}</th>
-              <th>{''}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {book.chapters.map((chapter, index) => (
-              <ChapterRow key={chapter.id} index={index} book={book} chapter={chapter} />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <section class="space-y-4 mt-4">
+        {book.chapters.map((chapter, index) => (
+          <Chapter key={chapter.id} index={index} book={book} chapter={chapter} />
+        ))}
+      </section>
+
+      <ChapterSlidePanel />
     </>
   )
 }
 
-function ChapterRow({
+function Chapter({
   book,
   chapter,
   index,
@@ -41,26 +33,28 @@ function ChapterRow({
   index: number
 }) {
   return (
-    <tr>
-      <td class="text-muted-foreground text-sm">{index + 1}</td>
-      <td>
+    <div data-testid="BookChapters_Chapter" class="card rounded-lg grid cols-2">
+      <div>
         <span class="text-xl font-medium">{chapter.name}</span>
-
         <div class="flex gap-2 mt-2">
-          <NavLink to={`/books/${book.id}/chapters/${chapter.id}`} class="btn btn--lg">
+          <NavLink
+            to={`/books/${book.id}?t=chapters&${CHAPTER_SLIDE_OUT_PARAMETER_NAME}=${chapter.id}`}
+            className="btn btn--lg"
+          >
             <i class="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </NavLink>
         </div>
-      </td>
-      <td>
+      </div>
+
+      <div>
         <div class="flex gap-1">
           {chapter.isAdultOverride && <AdultChip />}
           {chapter.isPubliclyVisible && <HiddenChip />}
           <div class="chip">{window._('book.words', { count: formatNumberK(chapter.words) })}</div>
         </div>
-      </td>
-    </tr>
+      </div>
+    </div>
   )
 }
 

@@ -16,9 +16,9 @@ export type AnimationEvent = {
 type AnimationCallback = (stage: AnimationEvent) => void
 
 export type AnimationDefinition = {
-  onUpdate: (element: HTMLElement, latest: number) => void
-  onBeforeAnimation: (element: HTMLElement, show: boolean) => void
-  onAfterAnimation: (Elementlement: HTMLElement, show: boolean) => void
+  onUpdate: (element: HTMLElement, latest: number) => void | Promise<void>
+  onBeforeAnimation: (element: HTMLElement, show: boolean) => void | Promise<void>
+  onAfterAnimation: (element: HTMLElement, show: boolean) => void | Promise<void>
 }
 
 export class BinaryAnimation {
@@ -167,8 +167,6 @@ export function useAnimation({ show, onAnimation, animation }: UseAnimationProps
   }, [onAnimation])
 
   const initAnimation = useCallback((element: unknown) => {
-    console.log(element)
-
     if (!(element instanceof HTMLElement)) return
 
     const animationInstance = animation(element)
@@ -177,6 +175,7 @@ export function useAnimation({ show, onAnimation, animation }: UseAnimationProps
       force: true,
     })
     animationInstanceRef.current = animationInstance
+
     return () => {
       animationInstance.dispose()
     }

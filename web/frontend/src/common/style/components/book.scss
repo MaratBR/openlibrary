@@ -15,7 +15,7 @@
     }
 
     &__rating-card {
-        @apply text-md text-muted-foreground ml-2 inline-block bg-secondary rounded-xl py-2 px-4;
+        @apply text-md text-muted-foreground ml-2 inline-block bg-surface rounded-xl py-2 px-4;
     }
 }
 
@@ -35,8 +35,8 @@
 
     &__item {
         @apply 
-            p-2 text-lg grid grid-cols-[48px_auto] rounded-lg bg-card border h-full
-            hover:bg-secondary hover:shadow-sm hover:outline hover:outline-2;
+            p-2 text-lg grid grid-cols-[48px_auto] rounded-lg bg-surface border h-full
+            hover:bg-surface hover:shadow-sm hover:outline hover:outline-2;
 
         &--readingNow {
             @apply border-primary outline-primary outline outline-2;
@@ -58,7 +58,7 @@
 //                   //
 // ----------------- //
 .book-search-results {
-    @apply md:bg-card md:shadow-md;
+    @apply md:bg-surface md:shadow-md;
 }
 
 .book-search-card {
@@ -67,7 +67,7 @@
         md:grid md:grid-cols-[165px_1fr] md:border-b md:pb-2 md:pt-4;
 
     &__left {
-        @apply bg-secondary md:bg-transparent py-2 mb-4 md:mb-0 flex flex-col items-center justify-start;
+        @apply bg-surface md:bg-transparent py-2 mb-4 md:mb-0 flex flex-col items-center justify-start;
     }
 
     &__right {

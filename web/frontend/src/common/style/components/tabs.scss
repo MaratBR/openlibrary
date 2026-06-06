@@ -10,10 +10,8 @@
     }
 
     &--primary {
-        @apply p-1 bg-card rounded-2xl;
-
         .tab {
-            @apply font-medium relative border-transparent text-muted-foreground transition px-2 rounded-xl;
+            @apply font-medium relative border-transparent text-muted-foreground transition rounded-xl mr-2 last:mr-0;
             padding-bottom: 3px;
 
             &:hover:not(&--active) {
@@ -27,7 +25,11 @@
             }
 
             &--active {
-                @apply border-primary text-foreground text-primary bg-primary/10;
+                @apply text-primary font-semibold;
+
+                &::after {
+                    @apply bg-primary;
+                }
             }
         }
     }

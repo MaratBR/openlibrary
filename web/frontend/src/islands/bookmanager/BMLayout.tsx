@@ -6,7 +6,6 @@ export default function BMLayout({ children }: { children: ComponentChild }) {
     <div class="dashboard-layout">
       <aside class="dashboard-layout__sidebar">
         <Logo />
-        <hr class="dashboard-sidebar-hr my-3" />
         <ul class="dashboard-sidebar-list">
           <SidebarItem
             icon={<i class="fa-solid fa-book" />}

@@ -1,13 +1,13 @@
 .SimpleEditor {
-    @apply bg-card rounded-xl border;
+    @apply bg-surface rounded-xl border;
 
     &__toolbar {
-        @apply bg-card rounded-lg m-2 p-2 shadow-sm flex items-center gap-1 h-12;
+        @apply bg-surface rounded-lg m-2 p-2 shadow-sm flex items-center gap-1 h-12;
     }
 
     &__btn {
         @apply 
-            size-8 bg-card rounded-md flex items-center justify-center
+            size-8 bg-surface rounded-md flex items-center justify-center
             hover:bg-primary hover:text-primary-foreground;
         
 

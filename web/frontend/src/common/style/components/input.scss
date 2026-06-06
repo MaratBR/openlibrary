@@ -1,7 +1,7 @@
 .input, .textarea {
     @apply 
         border 
-        rounded-sm px-3 w-full bg-card
+        rounded-sm px-3 w-full bg-surface
         hover:border-black dark:hover:border-white
         focus:outline focus:outline-primary !focus:border-primary text-foreground
         disabled:opacity-80 disabled:pointer-events-none;
@@ -32,14 +32,14 @@ textarea.input {
 }
 
 .dropdown {
-    @apply border rounded-sm w-full bg-card relative transition-all;
+    @apply border rounded-sm w-full bg-surface relative transition-all;
 
     &__input {
         @apply outline-none w-full h-10 px-3 mb-1 bg-transparent;
     }
 
     &__menu {
-        @apply hidden absolute left-[-1px] right-[-1px] top-full bg-card z-30 border border-t-0 rounded-b-sm;
+        @apply hidden absolute left-[-1px] right-[-1px] top-full bg-surface z-30 border border-t-0 rounded-b-sm;
     }
 
     &__chips {

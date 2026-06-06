@@ -1,5 +1,5 @@
 .site-header {
-    @apply z-40 w-full bg-card sticky top-0 h-[var(--header-height)] border-b;
+    @apply z-40 w-full bg-surface sticky top-0 h-[var(--header-height)] border-b;
 
     &__inner {
         max-width: var(--ol-container-big-width);
@@ -10,7 +10,7 @@
 
     &__logo {
         // main site logo
-        @apply px-2 inline-block focus:outline focus:outline-2 outline-offset-[-2px] lg:mr-4 active:bg-secondary;
+        @apply px-2 inline-block focus:outline focus:outline-2 outline-offset-[-2px] lg:mr-4 active:bg-surface;
     }
 
     &__mobile-open {
@@ -20,7 +20,7 @@
 
 .site-nav {
     top: var(--header-height);
-    @apply flex flex-col gap-2 fixed z-50 w-screen shadow-lg invisible transition-all opacity-0 bg-card;
+    @apply flex flex-col gap-2 fixed z-50 w-screen shadow-lg invisible transition-all opacity-0 bg-surface;
     transform: translateY(-20px);
 
     @apply lg:visible lg:static lg:shadow-none lg:flex-row lg:bg-transparent lg:transition-none lg:transform-none lg:opacity-100; 
@@ -98,11 +98,11 @@
     padding-left: var(--dashboard-layout__sidebar-width);
 
     &__sidebar {
-        @apply h-full fixed bg-card/70 backdrop-blur-3xl rounded-lg border;
-        width: calc(var(--dashboard-layout__sidebar-width) - 8px);
-        height: calc(100% - 8px);
-        left: 4px;
-        top: 4px;
+        @apply h-full fixed bg-surface;
+        width: var(--dashboard-layout__sidebar-width);
+        height: 100%;
+        left: 0px;
+        top: 0px;
     }
 
     &__body {
@@ -114,9 +114,6 @@
     @apply rounded-md p-2 mx-1 transition-colors text-md hover:bg-black/10 hover:text-foreground text-muted-foreground;
 }
 
-.dashboard-sidebar-hr {
-    @apply border-t;
-}
 
 .dashboard-sidebar-list {
     & > .dashboard-sidebar-item {
@@ -132,16 +129,7 @@
     }
 
     &--active, &:has(>a.active) {
-        @apply font-semibold text-foreground;
-
-        &::before {
-            content: ' ';
-            @apply block -left-1 bg-primary absolute;
-            width: 4px;
-            top: calc((var(--dashboard-sidebar-item-height) - var(--dashboard-layout__sidebar-indicator-size)) / 2);
-            height: var(--dashboard-layout__sidebar-indicator-size);
-            border-radius: 0 10px 10px 0;
-        }
+        @apply font-semibold text-foreground bg-highlight;
     }
     
     &:hover:not(&--active) {
@@ -170,7 +158,7 @@
 
     &__sticky-header {
         @apply sticky top-0 p-4 backdrop-blur-sm z-1 -mx-16 px-16;
-        background-image: linear-gradient(color-mix(in srgb, var(--card), transparent 70%),color-mix(in srgb, var(--card), transparent 70%),transparent);
+        background-image: linear-gradient(color-mix(in srgb, var(--surface), transparent 70%),color-mix(in srgb, var(--surface), transparent 70%),transparent);
         mask: linear-gradient(black, black, transparent);
     }
 }

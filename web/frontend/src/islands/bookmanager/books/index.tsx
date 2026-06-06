@@ -30,7 +30,7 @@ export function Books() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('bookManager.books.title')} />
 
-      <div class="card">
+      <DashboardContent.Card>
         <div class="my-2 ml-4">
           <Pagination.Facade
             page={booksResponse.data.page}
@@ -46,7 +46,7 @@ export function Books() {
             ))}
           </tbody>
         </table>
-      </div>
+      </DashboardContent.Card>
     </DashboardContent.Root>
   )
 }

@@ -93,5 +93,6 @@
         "**/bower_components": true,
         "**/*.code-search": true,
         "./fontawesome-free-7.0.1-web": true
-    }
+    },
+    "js/ts.tsdk.path": "node_modules/typescript/lib"
 }

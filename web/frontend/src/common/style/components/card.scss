@@ -1,7 +1,7 @@
 .card {
-    @apply p-4 rounded-3xl bg-card text-foreground;
+    @apply p-4 border bg-surface text-foreground;
 
     &--elevated {
-        @apply shadow-md;
+        @apply shadow-sm;
     }
 }

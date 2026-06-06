@@ -38,9 +38,9 @@ export default defineConfig({
     colors: {
       background: 'var(--background)',
       foreground: 'var(--foreground)',
-      card: {
-        DEFAULT: 'var(--card)',
-        foreground: 'var(--card-foreground)',
+      surface: {
+        DEFAULT: 'var(--surface)',
+        foreground: 'var(--surface-foreground)',
       },
       primary: {
         DEFAULT: 'var(--primary)',

@@ -16,12 +16,12 @@ html:has(body.dark) {
 .theme-default {
   --background: hsl(0 0 98);
   --foreground: hsl(222 0 20);
-  --card: hsl(0 0 100);
-  --card-foreground: hsl(222.2 84 4.9);
+  --surface: hsl(0 0 100);
+  --surface-foreground: hsl(222.2 84 4.9);
   --primary: hsl(221.2 83.2 53.3);
   --primary-foreground: hsl(210 40 98);
-  --secondary: hsl(210 40 96.1);
-  --secondary-foreground: hsl(222.2 47.4 11.2);
+  --secondary: #ebad25;
+  --secondary-foreground: hsl(0, 0%, 0%);
   --muted: hsl(210 40 96.1);
   --muted-foreground: hsl(215.4 16.3 46.9);
   --muted-2: hsl(210 40 92.1);
@@ -45,12 +45,12 @@ html:has(body.dark) {
 .dark {
   --background: hsl(20 0 12.1);
   --foreground: hsl(0 0 95);
-  --card: hsl(0 0 15);
-  --card-foreground: hsl(210 40 98);
+  --surface: hsl(0 0 15);
+  --surface-foreground: hsl(210 40 98);
   --primary: hsl(217.2 91.2 76);
   --primary-foreground: hsl(222.2 47.4 11.2);
-  --secondary: hsl(240 3.7 25.9);
-  --secondary-foreground: hsl(0 0 98);
+  --secondary: #ebad25;
+  --secondary-foreground: black;
   --muted: hsl(0 0 25);
   --muted-foreground: hsl(240 5 64.9);
   --muted-2: hsl(217.2 32.6 30.5);

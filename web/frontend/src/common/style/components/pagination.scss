@@ -6,7 +6,7 @@
             rounded-full flex items-center justify-center font-semibold
             size-10 min-w-10 bg-muted-2/50 transition-colors
             hover:bg-muted-2
-            active:bg-secondary;
+            active:bg-surface;
 
         &--active {
             @apply bg-primary text-primary-foreground border-primary hover:bg-primary;

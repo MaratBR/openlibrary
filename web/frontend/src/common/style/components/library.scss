@@ -31,7 +31,7 @@
 }
 
 .library-user-collection {
-    @apply bg-card p-3 -mx-3 rounded-xl;
+    @apply bg-surface p-3 -mx-3 rounded-xl;
 
     &__header {
         @apply py-2 px-3 -mx-3 block rounded-lg active:bg-highlight;
