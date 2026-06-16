@@ -67,6 +67,8 @@ export const ManagerBookChapterDtoSchema = z.object({
   draftId: z.string().nullable(),
 })
 
+export type ManagerBookChapterDto = z.infer<typeof ManagerBookChapterDtoSchema>
+
 export const BookDetailsAuthorDtoSchema = z.object({
   id: z.string(),
   name: z.string(),

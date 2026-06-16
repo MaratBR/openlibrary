@@ -16,11 +16,7 @@ function DashboardContent_Card({
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={clsx('card shadow-sm', clazz, className)}
-      data-testid="DashboardContent_Card"
-      {...props}
-    >
+    <div className={clsx('card', clazz, className)} data-testid="DashboardContent_Card" {...props}>
       {children}
     </div>
   )

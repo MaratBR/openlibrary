@@ -4,8 +4,8 @@ import Tabs from '@/components/Tabs'
 import { createEnumParameter } from '@/lib/parameters'
 import { LoaderFunctionArgs, NavLink, useLoaderData } from 'react-router'
 import z from 'zod'
-import { BookGeneral } from './book-general'
-import { BookChapters } from './book-chapters'
+import { BookGeneral } from './BookGeneral'
+import { BookChapters } from './BookChapters'
 import { BMBookAPI } from '@/api/bm/book'
 
 export const bookRouteLoader = async ({ params, request }: LoaderFunctionArgs) => {

@@ -4,21 +4,23 @@ import Popper from '@/components/Popper'
 import { formatNumberK } from '@/util/fmt'
 import { useMutation } from '@tanstack/react-query'
 import { useMemo, useRef, useState } from 'preact/hooks'
-import { NavLink, useRevalidator } from 'react-router'
-import { CHAPTER_SLIDE_OUT_PARAMETER_NAME, ChapterSlidePanel } from './chapter-page'
+import { useRevalidator } from 'react-router'
+import { ChapterSlidePanel } from './ChapterSlidePanel'
 
 export function BookChapters({ book }: { book: ManagerBookDetailsDto }) {
+  const [chapter, setChapter] = useState<ManagerBookChapterDto | null>(null)
+
   return (
     <>
       <AddChapterButton bookId={book.id} />
 
       <section class="space-y-4 mt-4">
         {book.chapters.map((chapter, index) => (
-          <Chapter key={chapter.id} index={index} book={book} chapter={chapter} />
+          <Chapter key={chapter.id} book={book} chapter={chapter} onOpenChapter={setChapter} />
         ))}
       </section>
 
-      <ChapterSlidePanel />
+      <ChapterSlidePanel chapter={chapter} onClose={() => setChapter(null)} />
     </>
   )
 }
@@ -26,24 +28,21 @@ export function BookChapters({ book }: { book: ManagerBookDetailsDto }) {
 function Chapter({
   book,
   chapter,
-  index,
+  onOpenChapter,
 }: {
   book: ManagerBookDetailsDto
   chapter: ManagerBookChapterDto
-  index: number
+  onOpenChapter: (chapter: ManagerBookChapterDto) => void
 }) {
   return (
     <div data-testid="BookChapters_Chapter" class="card rounded-lg grid cols-2">
       <div>
         <span class="text-xl font-medium">{chapter.name}</span>
         <div class="flex gap-2 mt-2">
-          <NavLink
-            to={`/books/${book.id}?t=chapters&${CHAPTER_SLIDE_OUT_PARAMETER_NAME}=${chapter.id}`}
-            className="btn btn--lg"
-          >
+          <button onClick={() => onOpenChapter(chapter)} className="btn btn--lg">
             <i class="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
-          </NavLink>
+          </button>
         </div>
       </div>
 

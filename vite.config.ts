@@ -181,6 +181,7 @@ const ENTRIES = [
 ]
 
 export default defineConfig((env) => ({
+  cacheDir: '.vite',
   define: {
     'process.env.NODE_ENV': JSON.stringify(env.mode),
   },

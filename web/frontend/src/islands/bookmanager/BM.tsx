@@ -3,8 +3,8 @@ import { createHashRouter, Navigate, Outlet } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import BMLayout from './BMLayout'
 import { Books, booksRouteLoader } from './books'
-import { Book, bookRouteLoader } from './books/book'
-import BookEdit from './books/book-edit'
+import { Book, bookRouteLoader } from './books/Book'
+import BookEdit from './books/BookEdit'
 
 const router = createHashRouter([
   {

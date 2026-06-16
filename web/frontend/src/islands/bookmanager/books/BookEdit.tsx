@@ -1,5 +1,5 @@
 import { NavLink, useLoaderData } from 'react-router'
-import { bookRouteLoader } from './book'
+import { bookRouteLoader } from './Book'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { useState } from 'preact/hooks'
 import { RichTextInput } from '@/components/rte'
