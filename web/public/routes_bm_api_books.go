@@ -9,20 +9,20 @@ import (
 	"github.com/ggicci/httpin"
 )
 
-type apiPayloadGetBooks struct {
+type ApiPayloadGetBooks struct {
 	Page   uint32 `in:"query=page"`
 	Size   uint32 `in:"query=size"`
 	Search string `in:"query=search"`
 }
 
-type apiResponseGetBooks struct {
+type ApiResponseGetBooks struct {
 	Books      []app.ManagerBookDto `json:"books"`
 	TotalPages uint32               `json:"totalPages"`
 	Page       uint32               `json:"page"`
 }
 
 func (c *apiControllerBM) getBooks(w http.ResponseWriter, r *http.Request) {
-	input := r.Context().Value(httpin.Input).(*apiPayloadGetBooks)
+	input := r.Context().Value(httpin.Input).(*ApiPayloadGetBooks)
 
 	s := auth.RequireSession(r.Context())
 	booksResult, err := c.service.GetUserBooks(r.Context(), app.ManagerGetUserBooksQuery{
@@ -37,7 +37,7 @@ func (c *apiControllerBM) getBooks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := apiResponseGetBooks{
+	resp := ApiResponseGetBooks{
 		Books:      booksResult.Books,
 		TotalPages: booksResult.TotalPages,
 		Page:       booksResult.Page,

@@ -311,6 +311,35 @@ func (q *Queries) Book_UnTrash(ctx context.Context, arg Book_UnTrashParams) erro
 	return err
 }
 
+const book_Update = `-- name: Book_Update :exec
+update books
+set name = $2, age_rating = $3, tag_ids = $4, cached_parent_tag_ids = $5, summary = $6, is_publicly_visible = $7
+where id = $1
+`
+
+type Book_UpdateParams struct {
+	ID                 int64
+	Name               string
+	AgeRating          AgeRating
+	TagIds             []int64
+	CachedParentTagIds []int64
+	Summary            string
+	IsPubliclyVisible  bool
+}
+
+func (q *Queries) Book_Update(ctx context.Context, arg Book_UpdateParams) error {
+	_, err := q.db.Exec(ctx, book_Update,
+		arg.ID,
+		arg.Name,
+		arg.AgeRating,
+		arg.TagIds,
+		arg.CachedParentTagIds,
+		arg.Summary,
+		arg.IsPubliclyVisible,
+	)
+	return err
+}
+
 const chapter_Update = `-- name: Chapter_Update :one
 update book_chapters
 set 
@@ -386,34 +415,5 @@ where books.id = $1
 
 func (q *Queries) RecalculateBookStats(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, recalculateBookStats, id)
-	return err
-}
-
-const updateBook = `-- name: UpdateBook :exec
-update books
-set name = $2, age_rating = $3, tag_ids = $4, cached_parent_tag_ids = $5, summary = $6, is_publicly_visible = $7
-where id = $1
-`
-
-type UpdateBookParams struct {
-	ID                 int64
-	Name               string
-	AgeRating          AgeRating
-	TagIds             []int64
-	CachedParentTagIds []int64
-	Summary            string
-	IsPubliclyVisible  bool
-}
-
-func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
-	_, err := q.db.Exec(ctx, updateBook,
-		arg.ID,
-		arg.Name,
-		arg.AgeRating,
-		arg.TagIds,
-		arg.CachedParentTagIds,
-		arg.Summary,
-		arg.IsPubliclyVisible,
-	)
 	return err
 }

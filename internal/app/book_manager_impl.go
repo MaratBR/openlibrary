@@ -230,7 +230,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return err
 	}
 
-	err = s.queries.UpdateBook(ctx, store.UpdateBookParams{
+	err = s.queries.Book_Update(ctx, store.Book_UpdateParams{
 		ID:                 input.BookID,
 		Name:               input.Name,
 		TagIds:             tags.TagIds,

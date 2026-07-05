@@ -1,3 +1,5 @@
+//go:generate go run ../guts-maniac -output ../../web/frontend/src/api/generated.ts
+
 package main
 
 import (

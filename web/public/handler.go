@@ -18,12 +18,11 @@ import (
 	"go.uber.org/fx"
 )
 
-type Handler struct {
+type handler struct {
 	r chi.Router
 }
 
 var FXModule = fx.Module("public_ui_handler",
-
 	fx.Provide(
 		newHomeController,
 		newAuthController,
@@ -74,7 +73,7 @@ func newHandler(
 
 	flashMiddleware flash.Middleware,
 ) webinfra.MountableHandler {
-	h := &Handler{}
+	h := &handler{}
 
 	h.r = chi.NewRouter()
 	h.r.Use(gziphandler.GzipHandler)
@@ -126,11 +125,11 @@ func newHandler(
 	return h
 }
 
-func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.r.ServeHTTP(w, r)
 }
 
-func (h *Handler) MountAt() string {
+func (h *handler) MountAt() string {
 	return "/"
 }
 
