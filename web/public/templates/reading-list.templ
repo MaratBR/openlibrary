@@ -36,7 +36,7 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                     x-cloak
                 }
                 x-show="rl !== null" 
-                class="btn btn--outline btn--fg w-full"
+                class="btn btn--outline btn--lg w-full"
                 @click="open=true">
                 <i class="fa-solid fa-pencil"></i> 
                 <span x-text="rl ? (i18n['readingList.' + rl.status] ?? rl.status) : ''">
@@ -49,8 +49,9 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                 if readingListStatus.Valid {
                     x-cloak
                 }
-                @click="status('want_to_read')" x-show="rl === null" class="btn btn--lg  w-full nojs-hidden">
-                {l.T("readingList.want_to_read")}
+                @click="status('want_to_read')" x-show="rl === null" class="btn btn--outline btn--lg  w-full nojs-hidden">
+                <i class="fa-solid fa-pencil"></i>
+                <span>{l.T("readingList.want_to_read")}</span>
             </button>
 
             <ul x-cloak x-show="open" class="card rounded-xl shadow-lg flex flex-col gap-2 absolute left-0 right-0 top-12 z-10" @click.outside="open=false">
@@ -89,7 +90,7 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                     }
                 }}
                 <a href={templ.URL(fmt.Sprintf("/book/%d/chapters/%d%s", book.ID, book.FirstChapterID.Value, chapterQuery))} 
-                    class="btn btn--secondary w-full mt-2">
+                    class="btn btn--outline w-full mt-2">
                     {l.T("book.startReading")}&nbsp;<i class="fa-solid fa-arrow-right"></i>
                 </a>
             }
