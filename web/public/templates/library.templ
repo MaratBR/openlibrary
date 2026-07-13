@@ -187,7 +187,7 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
                                 class="w-full block text-3xl px-6 h-18 font-medium !outline-none bg-transparent" 
                                 placeholder={l.T("collection.namePlaceholder")} />
                             <div x-collapse x-cloak x-show="name.trim().length>0">
-                                <button type="submit" class="my-4 btn btn--outline btn--lg">
+                                <button type="submit" class="btn btn--outline btn--lg btn--primary my-4">
                                     {l.T("collection.createCollection")}
                                 </button>
                             </div>

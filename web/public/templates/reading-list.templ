@@ -36,7 +36,7 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                     x-cloak
                 }
                 x-show="rl !== null" 
-                class="btn btn--outline btn--lg w-full"
+                class="btn btn--outline btn--lg btn--primary w-full"
                 @click="open=true">
                 <i class="fa-solid fa-pencil"></i> 
                 <span x-text="rl ? (i18n['readingList.' + rl.status] ?? rl.status) : ''">
@@ -49,7 +49,7 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                 if readingListStatus.Valid {
                     x-cloak
                 }
-                @click="status('want_to_read')" x-show="rl === null" class="btn btn--outline btn--lg  w-full nojs-hidden">
+                @click="status('want_to_read')" x-show="rl === null" class="btn btn--outline btn--lg btn--primary w-full nojs-hidden">
                 <i class="fa-solid fa-pencil"></i>
                 <span>{l.T("readingList.want_to_read")}</span>
             </button>
@@ -61,12 +61,12 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                             :disabled={ fmt.Sprintf("rl !== null && rl.status === '%s'", status) }
                             @click={ fmt.Sprintf("status('%s')", status) }
                             x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }
-                            class="btn btn--outline btn--fg  w-full border border-border" />
+                            class="btn btn--outline btn--fg btn--primary w-full border border-border" />
                     </li>
                 }
             </ul>
         } else {
-            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="btn btn--lg  w-full">
+            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="btn btn--lg btn--solid btn--primary w-full">
                 {l.T("readingList.want_to_read")}
             </a>
         }
@@ -90,7 +90,7 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                     }
                 }}
                 <a href={templ.URL(fmt.Sprintf("/book/%d/chapters/%d%s", book.ID, book.FirstChapterID.Value, chapterQuery))} 
-                    class="btn btn--outline w-full mt-2">
+                    class="btn btn--outline btn--primary w-full mt-2">
                     {l.T("book.startReading")}&nbsp;<i class="fa-solid fa-arrow-right"></i>
                 </a>
             }

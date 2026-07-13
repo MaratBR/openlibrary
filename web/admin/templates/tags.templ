@@ -186,11 +186,11 @@ templ Tag(tag app.TagDetailsItemDto) {
             </div>
 
             <div class="flex gap-2 mt-10">
-                <a href={templ.URL(fmt.Sprintf("/admin/tags/tag-details/%d/edit", tag.ID))} class="btn btn--lg btn--outline" x-init>
+                <a href={templ.URL(fmt.Sprintf("/admin/tags/tag-details/%d/edit", tag.ID))} class="btn btn--lg btn--outline btn--primary" x-init>
                     { l.T("common.edit") }
                 </a>
 
-                <button class="btn btn--lg destructive" x-init @click="alert('not implemented')">
+                <button class="btn btn--lg btn--destructive btn--solid" x-init @click="alert('not implemented')">
                     { l.T("common.delete") }
                 </button>
             </div>
@@ -247,7 +247,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                                     {tag.SynonymOf.Value.Name}
                                 </span>
                             </span><br />
-                            <button type="button" class="btn btn--sm btn--secondary" @click="open=true">
+                            <button type="button" class="btn btn--sm btn--secondary btn--solid" @click="open=true">
                                 {l.T("common.change")}
                             </button>
                             <ol-island 
@@ -314,7 +314,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                 </div>
 
                 <div class="flex gap-2 mt-10">
-                    <button class="btn btn--lg" type="submit">
+                    <button class="btn btn--lg btn--solid btn--primary" type="submit">
                         { l.T("common.save") }
                     </button>
                 </div>

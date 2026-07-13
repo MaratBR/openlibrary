@@ -82,13 +82,13 @@ templ BookPage(
                 if isAuthenticated {
                     <div class="flex gap-1 mt-4">
                         <ol-island src="bookmanager" name="BookCollectionsPopup" active="true" data={ fmt.Sprintf("{\"bookId\": \"%d\"}", book.ID) } />
-                        <button class="btn btn--ghost relative" id="BookCollectionsPopup:target">
+                        <button class="btn btn--ghost btn--primary relative" id="BookCollectionsPopup:target">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>
 
                     if user.ID == book.Author.ID {
-                        <a href={templ.URL(fmt.Sprintf("/books-manager#/books/%d", book.ID))} class="btn btn--secondary mt-4 w-[80%] ">
+                        <a href={templ.URL(fmt.Sprintf("/books-manager#/books/%d", book.ID))} class="btn btn--secondary btn--solid mt-4 w-[80%]">
                             Book manager
                         </a>
                     }
@@ -229,7 +229,7 @@ templ bookAdultWarning() {
             </p>
 
             <div class="flex gap-2 mt-6">
-                <button @click="close()" class="btn destructive">
+                <button @click="close()" class="btn btn--destructive btn--solid">
                     Proceed
                 </button>
             </div>

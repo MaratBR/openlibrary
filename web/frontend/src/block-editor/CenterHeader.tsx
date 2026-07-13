@@ -7,7 +7,7 @@ export function CenterHeader({ draft }: { draft: DraftDto }) {
         <a
           href={`/book/${draft.book.id}/chapters/${draft.chapter.id}`}
           target="_blank"
-          class="btn btn--icon"
+          class="btn btn--icon btn--primary"
           rel="noreferrer"
         >
           <i class="fa-solid fa-up-right-from-square" />

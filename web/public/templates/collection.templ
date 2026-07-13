@@ -33,11 +33,11 @@ templ Collection(
                 <div class="mt-2">
                     if canEdit {
                         <div class="btn-group">
-                            <a class="btn btn--ghost btn--sm" href="/library/collections">
+                            <a class="btn btn--ghost btn--sm btn--primary" href="/library/collections">
                                 <i class="fa-solid fa-arrow-left"></i>&nbsp;
                                 { l.T("collection.backToLibrary") }
                             </a>
-                            <a class="btn btn--ghost btn--sm" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", collection.ID)) }>
+                            <a class="btn btn--ghost btn--sm btn--primary" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", collection.ID)) }>
                                 <i class="fa-solid fa-table-list"></i>&nbsp;
                                 { l.T("collection.manage") }
                             </a>
@@ -76,7 +76,7 @@ templ Collection(
                         <form :action={fmt.Sprintf("`/_api/collections/removeBook/%d/${bookId}`", collection.ID)} method="post">
                             @csrf.CSRFInputTempl(ctx)
                             <button 
-                                class="btn destructive btn--outline text-lg mt-2"
+                                class="btn btn--outline btn--destructive text-lg mt-2"
                                 type="submit">
                                 //              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                 //              Dispatch this event to the button and corresponding form.
@@ -92,7 +92,7 @@ templ Collection(
                                     <div class="absolute top-1 right-1">
                                         <button l
                                             @click.prevent={fmt.Sprintf("bookId='%d';Alpine.$data(document.getElementById('DeleteBookPopover')).open($el)", book.ID)}
-                                            class="btn btn--ghost destructive">
+                                            class="btn btn--ghost btn--destructive">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </div>
@@ -186,11 +186,11 @@ templ CollectionManage(
                 <hr class="my-4" />
 
                 <div class="flex gap-1">
-                    <button type="submit" class="btn">
+                    <button type="submit" class="btn btn--solid btn--primary">
                         { l.T("common.save") }
                     </button>
 
-                    <button @click.prevent="deleting=true" class="btn destructive">
+                    <button @click.prevent="deleting=true" class="btn btn--destructive btn--solid">
                         { l.T("common.delete") }
                     </button>
                 </div>
@@ -202,7 +202,7 @@ templ CollectionManage(
                 <button type="submit"
                     disabled 
                     :disabled={ fmt.Sprintf("confirmationPhrase!==%q", collection.Name) } 
-                    class="btn destructive mt-2">
+                    class="btn btn--destructive btn--solid mt-2">
                     { l.T("common.delete") }
                 </button>
                 @csrf.CSRFInputTempl(ctx)

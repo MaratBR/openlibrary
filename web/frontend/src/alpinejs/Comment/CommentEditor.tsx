@@ -36,7 +36,7 @@ function Editor() {
         value={text}
         onChange={(e) => setText((e.target as HTMLTextAreaElement).value)}
       />
-      <button disabled={!valid} class="chapter-comment-reply__reply btn btn--secondary btn--sm">
+      <button disabled={!valid} class="btn btn--secondary btn--sm btn--solid chapter-comment-reply__reply">
         {window._('common.reply')}
       </button>
     </>

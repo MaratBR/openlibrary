@@ -22,7 +22,7 @@ export function BookGeneral({ book }: { book: ManagerBookDetailsDto }) {
         </div>
 
         <div class="flex gap-1 my-4">
-          <NavLink className="btn btn--outline" to={`/books/${book.id}/edit`}>
+          <NavLink className="btn btn--outline btn--primary" to={`/books/${book.id}/edit`}>
             <i class="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </NavLink>

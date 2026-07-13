@@ -127,7 +127,7 @@ function BookCollectionsPopup({ data }: PreactIslandProps) {
   return (
     <Popper anchorEl={target} class="z-20">
       <div class="card card--elevated p-0 min-h-32 w-64 relative">
-        <button class="btn btn--ghost absolute right-1 top-1" onClick={handleClose}>
+        <button class="btn btn--ghost btn--primary absolute right-1 top-1" onClick={handleClose}>
           <i class="fa-solid fa-xmark" />
         </button>
 
@@ -178,13 +178,13 @@ function BookCollectionsPopup({ data }: PreactIslandProps) {
               <div class="btn-group">
                 <button
                   disabled={collectionName.trim().length === 0}
-                  class="btn btn--ghost btn--sm"
+                  class="btn btn--ghost btn--sm btn--primary"
                   onClick={handleCreateCollection}
                 >
                   <i class="fa-solid fa-check" />
                 </button>
                 <button
-                  class="btn btn--ghost btn--sm"
+                  class="btn btn--ghost btn--sm btn--primary"
                   onClick={() => setShowCollectionNameInput(false)}
                 >
                   <i class="fa-solid fa-xmark" />
@@ -200,7 +200,7 @@ function BookCollectionsPopup({ data }: PreactIslandProps) {
         </ul>
         {hasChanges && (
           <button
-            class="btn m-2"
+            class="btn btn--solid btn--primary m-2"
             disabled={addToCollections.isPending}
             onClick={() => addToCollections.mutate()}
           >

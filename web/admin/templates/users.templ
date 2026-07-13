@@ -17,7 +17,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
         <div class="dashboard-content">
             // <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
             //     <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ l.T("common.search") } />
-            //     <button type="submit" :disabled="q.trim()===''" class="btn btn--secondary">
+            //     <button type="submit" :disabled="q.trim()===''" class="btn btn--secondary btn--solid">
             //         <i class="fa-solid fa-search"></i>
             //     </button>
             // </form>
@@ -237,7 +237,7 @@ templ User(user *app.UserDetailsDto) {
 
                     @userFormSection("user-account-management", l.T("admin.users.accountManagement")) {
                         <div x-data="{open:false,pwd:''}">
-                            <div role="button" @click="open=true;$refs.pwdInput.dispatchEvent(new CustomEvent('island:custom:generate-password'))" class="btn btn--outline select-none">
+                            <div role="button" @click="open=true;$refs.pwdInput.dispatchEvent(new CustomEvent('island:custom:generate-password'))" class="btn btn--outline btn--primary select-none">
                                 { l.T("admin.users.resetPassword") }
                             </div>
 
@@ -254,7 +254,7 @@ templ User(user *app.UserDetailsDto) {
                         </div>   
                     }
 
-                    <button type="submit" class="btn btn--lg  mt-6">
+                    <button type="submit" class="btn btn--lg btn--solid btn--primary mt-6">
                         { l.T("common.save") }
                     </button>
                 </form>

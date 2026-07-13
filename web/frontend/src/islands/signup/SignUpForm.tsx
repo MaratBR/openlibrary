@@ -149,7 +149,7 @@ export default function SignUpForm({ data: dataParam }: PreactIslandProps) {
           onClick={() => {
             setSubmitting(true)
           }}
-          class="btn btn--lg"
+          class="btn btn--lg btn--solid btn--primary"
         >
           {submitting ? <span class="loader" /> : window._('signup.signup')}
         </button>

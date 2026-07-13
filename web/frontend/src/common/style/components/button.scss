@@ -19,16 +19,10 @@
     --btn-tint-frac: 15%;
     --btn-bg-opacity: 0%;
 
-    & > i.fa-solid:first-child:not(:last-child) {
-        @apply mr-2;
-    }
-
     --btn-colors-main: color-mix(in srgb, var(--surface) 92%, var(--btn-tint));
     --btn-colors-shadow: var(--surface);
     --btn-colors-text: var(--surface-foreground);
 
-    background-color: var(--btn-colors-main);
-    color: var(--btn-colors-text);
     --btn-colors-shadow: var(--foreground);
     --btn-shadow-transparency: 70%;
     --btn-shadow-params: 0 1px 5px -3px;
@@ -42,22 +36,10 @@
         background-color: color-mix(in srgb, var(--btn-colors-main), var(--btn-tint) var(--btn-tint-frac));
     }
 
-    &.primary {
-        --btn-colors-main: var(--primary);
-        --btn-colors-shadow: var(--primary);
-        --btn-colors-text: var(--primary-foreground);
-    }
-
-    &.destructive {
-        --btn-colors-main: var(--destructive);
-        --btn-colors-shadow: var(--destructive);
-        --btn-colors-text: var(--destructive-foreground);
-    }
-
-    &.secondary {
-        --btn-colors-main: var(--secondary);
-        --btn-colors-shadow: var(--secondary);
-        --btn-colors-text: var(--secondary-foreground);
+    // TYPES
+    &--solid {
+        background-color: var(--btn-colors-main);
+        color: var(--btn-colors-text);
     }
 
     &--ghost {
@@ -68,14 +50,6 @@
 
         &:hover, &:active {
             background-color: color-mix(in srgb, var(--btn-colors-main) 13%, transparent);
-        }
-
-        &.destructive {
-            --btn-colors-main: var(--destructive);
-        }
-
-        &.primary {
-            --btn-colors-main: var(--primary);
         }
     }
 
@@ -110,6 +84,25 @@
 
     &--icon {
         @apply size-12;
+    }
+
+    // COLORS
+    &--primary {
+        --btn-colors-main: var(--primary);
+        --btn-colors-shadow: var(--primary);
+        --btn-colors-text: var(--primary-foreground);
+    }
+
+    &--destructive {
+        --btn-colors-main: var(--destructive);
+        --btn-colors-shadow: var(--destructive);
+        --btn-colors-text: var(--destructive-foreground);
+    }
+
+    &--secondary {
+        --btn-colors-main: var(--secondary);
+        --btn-colors-shadow: var(--secondary);
+        --btn-colors-text: var(--secondary-foreground);
     }
     
     // SIZES

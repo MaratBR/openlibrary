@@ -66,14 +66,14 @@ export function PublishChapterPopup({ onClose, open }: { onClose: () => void; op
       <div class="mt-4 flex gap-1">
         <button
           disabled={publishMutation.isPending}
-          class="btn btn--outline w-32"
+          class="btn btn--outline btn--primary w-32"
           onClick={() => publishMutation.mutate()}
         >
           {publishMutation.isPending ? <span class="loader" /> : window._('editor.publishDraft')}
         </button>
         <button
           disabled={publishMutation.isPending}
-          class="btn btn--ghost"
+          class="btn btn--ghost btn--primary"
           onClick={() => onClose()}
         >
           {window._('common.cancel')}

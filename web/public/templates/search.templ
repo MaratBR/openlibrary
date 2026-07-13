@@ -71,7 +71,7 @@ templ SearchResultFragment(
         </form>
 
         <div class="flex gap-2 my-4">
-            <button @click="openFilters=!openFilters" class="btn btn--ghost btn--fg px-0 rounded-md">
+            <button @click="openFilters=!openFilters" class="btn btn--ghost btn--fg btn--primary px-0 rounded-md">
                 <i class="fa-solid fa-filter"></i>
                 {l.T("search.filters")}
                 if activeFilters > 0 {
@@ -188,10 +188,10 @@ templ SimpleSearch() {
             <form method="get" action="/search">
                 <input placeholder={l.T("search.search")} class="w-96 input rounded-full text-lg p-6" name="q" />
                 <div class="flex gap-2 justify-center mt-8">
-                    <a href="/random" class="btn btn--secondary ">
+                    <a href="/random" class="btn btn--secondary btn--solid">
                         {l.T("search.feelingLucky")}
                     </a>
-                    <button type="submit" class="btn btn--secondary ">
+                    <button type="submit" class="btn btn--secondary btn--solid">
                         {l.T("search.doSearch")}
                     </button>
                 </div>

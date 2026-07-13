@@ -1,0 +1,1 @@
+- Frequent CSRF token HMAC signature mismatch errors in a few pages for some reason 

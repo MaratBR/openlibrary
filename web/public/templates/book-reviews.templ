@@ -66,7 +66,7 @@ templ bookReview(
         </div>
 
         <div class="text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2">
-            <button class="btn btn--icon">
+            <button class="btn btn--icon btn--primary">
                 <i class="fa-solid fa-flag"></i>
             </button>
         </div>
@@ -118,7 +118,7 @@ templ BookMyReview(
                             @starRatingControllable(float64(review.Rating), 0.5, templ.Attributes{
                                 "id": "current-review-rating",
                             })
-                            <button @click="requestEditing()" class="btn btn--lg btn--outline ">
+                            <button @click="requestEditing()" class="btn btn--lg btn--outline btn--primary">
                                 <i class="fa-solid fa-pencil"></i>
                                 { l.T("reviews.editReview") }
                             </button>
@@ -189,7 +189,7 @@ templ BookMyReview(
                                     { text }
                                 </span>
                             </div>
-                            <button class="btn btn--outline btn--lg " @click="requestEditing()">
+                            <button class="btn btn--outline btn--lg btn--primary" @click="requestEditing()">
                                 <span x-show="!loading">
                                     { l.T("book.writeReview") }
                                 </span>
@@ -207,7 +207,7 @@ templ BookMyReview(
                         }
                         href := "/login?" + query.Encode()
                     }}
-                    <a class="btn btn--outline btn--lg mt-4" href={templ.URL(href)}>
+                    <a class="btn btn--outline btn--lg btn--primary mt-4" href={templ.URL(href)}>
                         { l.T("book.writeReviewLogin") }
                     </a>
                 }

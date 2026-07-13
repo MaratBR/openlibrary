@@ -76,7 +76,7 @@ function BookRow({ book }: { book: ManagerBookDto }) {
       </td>
       <td>
         <div class="flex gap-2">
-          <NavLink to={`/books/${book.id}`} className="btn btn--lg">
+          <NavLink to={`/books/${book.id}`} className="btn btn--lg btn--solid btn--primary">
             <i class="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </NavLink>
@@ -128,7 +128,7 @@ function TrashBookButton({
             setOpenTrashModal(true)
           }
         }}
-        class="btn btn--lg btn--outline destructive"
+        class="btn btn--lg btn--outline btn--destructive"
       >
         {trashed ? window._('common.untrash') : window._('common.trash')}
       </button>
@@ -137,10 +137,10 @@ function TrashBookButton({
           <h2 class="text-lg font-semibold">{window._('bookManager.books.trashBook.title')}</h2>
           <p class="my-2">{window._('bookManager.books.trashBook.description')}</p>
           <div class="flex gap-2 mt-4">
-            <button onClick={() => setOpenTrashModal(false)} class="btn">
+            <button onClick={() => setOpenTrashModal(false)} class="btn btn--solid btn--primary">
               {window._('common.cancel')}
             </button>
-            <button class="btn destructive" onClick={() => trashBookMutation.mutate(true)}>
+            <button class="btn btn--destructive btn--solid" onClick={() => trashBookMutation.mutate(true)}>
               {trashBookMutation.isPending && <span class="circle-loader mr-1" />}
               {window._('common.trash')}
             </button>
@@ -152,10 +152,10 @@ function TrashBookButton({
           <h2 class="text-lg font-semibold">{window._('bookManager.books.restoreBook.title')}</h2>
           <p class="my-2">{window._('bookManager.books.restoreBook.description')}</p>
           <div class="flex gap-2 mt-4">
-            <button onClick={() => setOpenUntrashModal(false)} class="btn">
+            <button onClick={() => setOpenUntrashModal(false)} class="btn btn--solid btn--primary">
               {window._('common.cancel')}
             </button>
-            <button class="btn destructive" onClick={() => trashBookMutation.mutate(false)}>
+            <button class="btn btn--destructive btn--solid" onClick={() => trashBookMutation.mutate(false)}>
               {trashBookMutation.isPending && <span class="circle-loader mr-1" />}
               {window._('common.untrash')}
             </button>

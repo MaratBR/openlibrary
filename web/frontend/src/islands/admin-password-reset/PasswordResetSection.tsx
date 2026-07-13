@@ -47,7 +47,7 @@ export default function PasswordReset({ rootElement }: PreactIslandProps) {
           {window._(`passwordStrength.${pwdEval.strength}`)}
         </div>
       </div>
-      <button onClick={handleCancel} class="btn btn--secondary btn-sm">
+      <button onClick={handleCancel} class="btn btn--secondary btn--solid btn-sm">
         {window._('common.cancel')}
       </button>
     </div>

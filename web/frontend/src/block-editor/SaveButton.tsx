@@ -22,7 +22,7 @@ export function SaveButton() {
       <button
         onClick={() => setOpenPublishPopup(true)}
         disabled={(!draftHasPendingChanges && !hasNewerRevision) || saving}
-        class="btn btn--outline btn--lg flex justify-center items-center"
+        class="btn btn--outline btn--lg btn--primary flex justify-center items-center"
       >
         <DraftPendingChangesIndicator />
         {saving ? <span class="loader loader--dark" /> : window._('editor.publishDraft')}
@@ -30,7 +30,7 @@ export function SaveButton() {
       <button
         onClick={handleSaveDraft}
         disabled={!draftHasPendingChanges || saving}
-        class="btn btn--lg w-30 flex justify-center items-center"
+        class="btn btn--lg btn--solid btn--primary w-30 flex justify-center items-center"
       >
         {saving ? <span class="loader loader--dark" /> : window._('common.save')}
       </button>

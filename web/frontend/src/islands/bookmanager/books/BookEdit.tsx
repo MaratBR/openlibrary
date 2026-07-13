@@ -43,7 +43,7 @@ export default function BookEdit() {
       <DashboardContent.StickyHeader
         title={
           <div class="flex items-center">
-            <NavLink className="btn btn--icon mr-4" to={`/books/${bookResponse.data.id}`}>
+            <NavLink className="btn btn--icon btn--primary mr-4" to={`/books/${bookResponse.data.id}`}>
               <i class="fa-solid fa-arrow-left" />
             </NavLink>
             {bookResponse.data.name}
@@ -86,7 +86,7 @@ export default function BookEdit() {
           </FormControl>
 
           <div class="mt-4 flex">
-            <button class="btn" onClick={() => saveMutation.mutate()}>
+            <button class="btn btn--solid btn--primary" onClick={() => saveMutation.mutate()}>
               {window._('common.save')}
             </button>
           </div>
@@ -95,7 +95,7 @@ export default function BookEdit() {
 
       <div className="card mb-4">
         <a
-          class="btn btn--outline"
+          class="btn btn--outline btn--primary"
           href={`/book/${bookResponse.data.id}`}
           target="_blank"
           rel="noreferrer"

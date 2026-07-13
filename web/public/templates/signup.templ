@@ -140,7 +140,7 @@ templ SignUpEmailVerification(email string, status app.EmailVerificationStatus) 
                         <span class="loader mt-4" x-show="resending"></span>
                         <p class="error mt-2" x-text="error" x-show="!resending && error"></p>
                     </div>
-                    <button disabled :disabled="code.length !== 6" class="mt-4 btn btn--lg">
+                    <button disabled :disabled="code.length !== 6" class="btn btn--lg btn--solid btn--primary mt-4">
                         { l.T("signup.emailVerification.verify") }
                     </button>
                 </form>

@@ -39,7 +39,7 @@ function Chapter({
       <div>
         <span class="text-xl font-medium">{chapter.name}</span>
         <div class="flex gap-2 mt-2">
-          <button onClick={() => onOpenChapter(chapter)} className="btn btn--lg">
+          <button onClick={() => onOpenChapter(chapter)} className="btn btn--lg btn--solid btn--primary">
             <i class="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </button>
@@ -99,7 +99,7 @@ function AddChapterButton({ bookId }: { bookId: string }) {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} ref={ref} class="btn btn--outline btn--lg mt-4">
+      <button onClick={() => setOpen(true)} ref={ref} class="btn btn--outline btn--lg btn--primary mt-4">
         <i class="fa-solid fa-plus mr-2" />
         {window._('bookManager.edit.addChapter')}
       </button>
@@ -113,7 +113,7 @@ function AddChapterButton({ bookId }: { bookId: string }) {
                 onChange={(e) => setName((e.target as HTMLInputElement).value)}
                 placeholder={window._('bookManager.edit.chapterNamePlaceholder')}
               />
-              <button disabled={!valid} class="btn">
+              <button disabled={!valid} class="btn btn--solid btn--primary">
                 {window._('bookManager.edit.addChapter')}
               </button>
             </div>

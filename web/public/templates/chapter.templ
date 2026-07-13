@@ -47,7 +47,7 @@ templ Chapter(
             <div class="relative pb-10">
                 <aside class="z-10 absolute top-0 bottom-0 right-0">
                     <div class="flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2">
-                        <button x-bind="toggleButton" class="btn btn--icon z-20">
+                        <button x-bind="toggleButton" class="btn btn--icon btn--primary z-20">
                             <i class="fa-solid fa-gear"></i>
                         </button>
                     </div>
@@ -78,7 +78,7 @@ templ Chapter(
                     </section>
 
                     <div class="mt-8">
-                        <a class="btn btn--ghost btn--lg" href={ fmt.Sprintf("/book/%d/chapters/%d/comments", chapter.BookID, chapter.ID) }>
+                        <a class="btn btn--ghost btn--lg btn--primary" href={ fmt.Sprintf("/book/%d/chapters/%d/comments", chapter.BookID, chapter.ID) }>
                             <i class="fa-solid fa-comments"></i>
                             { l.TData("common.commentsCount", map[string]int64{
                                 "Count": chapter.CommentsCount,
@@ -91,7 +91,7 @@ templ Chapter(
             <div class="book-reader__settings" x-cloak x-bind="settings">
                 <div class="sticky top-[var(--header-height)] h-[100%-var(--header-height)]">
                     <div class="p-4">
-                        <button x-bind="closeButton" class="btn btn--lg btn--secondary w-full lg:hidden">Close</button>
+                        <button x-bind="closeButton" class="btn btn--lg btn--secondary btn--solid w-full lg:hidden">Close</button>
                     </div>
 
                     
@@ -181,7 +181,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings, opti
                 </p>
                 <div>
                     <button
-                        class="btn btn--secondary relative" 
+                        class="btn btn--secondary btn--solid relative" 
                         :disabled="status==1"
                         @click="if (status != 0) return; status = 1; window.__markChapterAsRead().then(() => {status=2;})">
                         <div :style="`opacity:${status==1 ? 0 : 1}`">
@@ -291,7 +291,7 @@ templ ChapterCommentsFragment(
                                 x-cloak
                             }
                             x-bind="openRepliesBtn" 
-                            class="btn btn--ghost comment-replies__open">
+                            class="btn btn--ghost btn--primary comment-replies__open">
                             <i class="fa-solid fa-caret-down"></i>
                             { comment.Subcomments } replies
                         </button>
@@ -305,7 +305,7 @@ templ ChapterCommentsFragment(
                 x-init 
                 @click={fmt.Sprintf("$ajax(%q, {target:'ChapterCommentsList ChapterCommentNext'})", url.String())} 
                 id="ChapterCommentNext" 
-                class="btn btn--ghost btn--lg mt-4">
+                class="btn btn--ghost btn--lg btn--primary mt-4">
                 { l.T("common.loadMore") }
             </button>
         }
