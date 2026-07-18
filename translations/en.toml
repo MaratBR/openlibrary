@@ -141,6 +141,9 @@ many = "following"
 
 [readingList]
 want_to_read = "Want to read"
+startReading = "Start reading"
+continueReading = "Continue reading"
+currentChapter = "Current chapter"
 reading = "Reading"
 read = "Read"
 paused = "Paused"

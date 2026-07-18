@@ -7,24 +7,71 @@ import "github.com/MaratBR/openlibrary/internal/auth"
 import "net/url"
 
 templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[app.BookReadingListDto]) {
-    {{ 
+    {{
         _, isAuthorized := auth.GetSession(ctx)
-        l := i18n.GetLocalizer(ctx) 
+        l := i18n.GetLocalizer(ctx)
     }}
-        
+
     <section
         if isAuthorized {
-            x-data="{ 
+            x-data="{
                 open: false,
-                toggle() { this.open = !this.open },
-                status(s) { OL.api.book.updateReadingListStatus(bookId, s).then(r => { this.rl = r; this.open = false; }) }
+                busy: false,
+                async status(s) {
+                    if (this.busy) return;
+                    this.busy = true;
+                    try {
+                        this.rl = await OL.api.book.updateReadingListStatus(bookId, s);
+                        this.open = false;
+                    } finally {
+                        this.busy = false;
+                    }
+                },
+                chapterUrl(paused = false) {
+                    if (!this.rl?.chapterId) return null;
+                    return `/book/${bookId}/chapters/${this.rl.chapterId}${paused ? '?paused=1' : ''}`;
+                },
+                primaryLabel() {
+                    if (!this.rl) return i18n['readingList.want_to_read'];
+                    if (this.rl.status === 'want_to_read') return i18n['readingList.startReading'];
+                    if (this.rl.status === 'reading' || this.rl.status === 'paused') return i18n['readingList.continueReading'];
+                    return i18n['readingList.' + this.rl.status] ?? this.rl.status;
+                },
+                primaryIcon() {
+                    if (!this.rl) return 'fa-bookmark';
+                    if (this.rl.status === 'want_to_read') return 'fa-play';
+                    if (this.rl.status === 'reading' || this.rl.status === 'paused') return 'fa-book-open';
+                    if (this.rl.status === 'read') return 'fa-circle-check';
+                    if (this.rl.status === 'dnf') return 'fa-circle-xmark';
+                    return 'fa-pause';
+                },
+                primaryDisabled() {
+                    return this.busy ||
+                        (this.rl?.status === 'want_to_read' && !firstChapterId) ||
+                        ((this.rl?.status === 'reading' || this.rl?.status === 'paused') && !this.rl.chapterId) ||
+                        (this.rl && !['want_to_read', 'reading', 'paused'].includes(this.rl.status));
+                },
+                async primaryAction() {
+                    if (this.primaryDisabled()) return;
+                    if (!this.rl) return this.status('want_to_read');
+                    if (this.rl.status === 'want_to_read') {
+                        window.location.assign(`/book/${bookId}/chapters/${firstChapterId}?rl=1`);
+                    } else if (this.rl.status === 'reading') {
+                        window.location.assign(this.chapterUrl());
+                    } else if (this.rl.status === 'paused') {
+                        window.location.assign(this.chapterUrl(true));
+                    }
+                }
             }"
         }
-        id="reading-list" 
-        class="w-[80%] mt-4 relative">
+        id="reading-list"
+        class="w-full mt-4 relative">
         if isAuthorized {
             @i18nExtractKeys(l, []string {
                 "readingList.want_to_read",
+                "readingList.startReading",
+                "readingList.continueReading",
+                "readingList.currentChapter",
                 "readingList.reading",
                 "readingList.read",
                 "readingList.paused",
@@ -33,50 +80,66 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
 
             <div class="btn-group w-full">
                 <button
-                    if !readingListStatus.Valid {
-                        x-cloak
-                    }
-                    x-show="rl !== null" 
-                    class="btn btn--outline flex-[1]"
-                    @click="open=true">
-                    <div class="btn__icon btn__icon--left">
-                        <i class="fa-solid fa-pencil"></i>
-                    </div> 
-                    <span x-text="rl ? (i18n['readingList.' + rl.status] ?? rl.status) : ''">
-                        if readingListStatus.Valid {
-                            {l.T(fmt.Sprintf("readingList.%s", readingListStatus.Value.Status))}
-                        }
-                    </span>
+                    type="button"
+                    @click="primaryAction()"
+                    :disabled="primaryDisabled()"
+                    :aria-busy="busy"
+                    class="btn btn--default flex-1">
+                    <i class="btn__icon btn__icon--left fa-solid" :class="busy ? 'fa-spinner fa-spin' : primaryIcon()"></i>
+                    <span class="px-1" x-text="primaryLabel()">{readingListPrimaryLabel(l, readingListStatus)}</span>
                 </button>
 
-                <button class="btn btn--outline">
-                    <div class="btn__icon">
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
+                <button
+                    type="button"
+                    @click="open = !open"
+                    :aria-expanded="open"
+                    aria-haspopup="menu"
+                    aria-label="Change reading status"
+                    class="btn btn--default w-12 shrink-0 px-0">
+                    <i class="fa-solid fa-chevron-down text-sm transition-transform duration-200" :class="open && 'rotate-180'"></i>
                 </button>
             </div>
-            <button
-                if readingListStatus.Valid {
-                    x-cloak
-                }
-                @click="status('want_to_read')" x-show="rl === null" class="btn btn--outline btn--lg w-full nojs-hidden">
-                <i class="fa-solid fa-pencil"></i>
-                <span>{l.T("readingList.want_to_read")}</span>
-            </button>
 
-            <ul x-cloak x-show="open" class="card card--elevated flex flex-col gap-2 absolute left-0 right-0 top-12 z-10" @click.outside="open=false">
-                for _, status := range displayableReadingListStatuses() {
-                    <li>
-                        <button 
-                            :disabled={ fmt.Sprintf("rl !== null && rl.status === '%s'", status) }
-                            @click={ fmt.Sprintf("status('%s')", status) }
-                            x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }
-                            class="btn btn--outline w-full" />
-                    </li>
-                }
-            </ul>
+            <div
+                x-cloak
+                x-show="open"
+                x-transition.origin.top
+                @click.outside="open = false"
+                @keydown.escape.window="open = false"
+                role="menu"
+                class="card card--elevated absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden">
+                <a
+                    x-show="rl?.status === 'reading' && rl?.chapterId"
+                    :href="chapterUrl()"
+                    role="menuitem"
+                    class="mb-2 flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 font-medium text-primary transition hover:bg-primary/15">
+                    <i class="fa-solid fa-book-open w-5 text-center"></i>
+                    <span class="min-w-0">
+                        <span class="block" x-text="i18n['readingList.currentChapter']"></span>
+                        <span class="block truncate text-xs font-normal text-muted-foreground" x-text="rl?.chapterName"></span>
+                    </span>
+                </a>
+                <ul class="flex flex-col gap-1" role="none">
+                    for _, status := range displayableReadingListStatuses() {
+                        <li role="none">
+                            <button
+                                type="button"
+                                role="menuitemradio"
+                                :aria-checked={ fmt.Sprintf("rl?.status === '%s'", status) }
+                                :disabled="busy"
+                                @click={ fmt.Sprintf("status('%s')", status) }
+                                class="btn btn--ghost w-full justify-start">
+                                <i class={ "btn__icon btn__icon--left fa-solid w-5 text-center text-muted-foreground " + readingListStatusIcon(status) }></i>
+                                <span class="flex-1" x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }></span>
+                                <i class="fa-solid fa-check text-primary opacity-0" :class={ fmt.Sprintf("rl?.status === '%s' && 'opacity-100'", status) }></i>
+                            </button>
+                        </li>
+                    }
+                </ul>
+            </div>
         } else {
             <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="btn btn--lg btn--default w-full">
+                <i class="btn__icon btn__icon--left fa-solid fa-bookmark"></i>
                 {l.T("readingList.want_to_read")}
             </a>
         }
@@ -84,11 +147,41 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
 }
 
 func displayableReadingListStatuses() []app.ReadingListStatus {
-    return []app.ReadingListStatus{ 
+    return []app.ReadingListStatus{
         app.ReadingListStatusWantToRead,
         app.ReadingListStatusReading,
-        app.ReadingListStatusRead,
         app.ReadingListStatusPaused,
+        app.ReadingListStatusRead,
         app.ReadingListStatusDnf,
+    }
+}
+
+func readingListStatusIcon(status app.ReadingListStatus) string {
+    switch status {
+    case app.ReadingListStatusWantToRead:
+        return "fa-bookmark"
+    case app.ReadingListStatusReading:
+        return "fa-book-open"
+    case app.ReadingListStatusPaused:
+        return "fa-pause"
+    case app.ReadingListStatusRead:
+        return "fa-circle-check"
+    default:
+        return "fa-circle-xmark"
+    }
+}
+
+func readingListPrimaryLabel(l *i18n.Localizer, readingListStatus app.Nullable[app.BookReadingListDto]) string {
+    if !readingListStatus.Valid {
+        return l.T("readingList.want_to_read")
+    }
+
+    switch readingListStatus.Value.Status {
+    case app.ReadingListStatusWantToRead:
+        return l.T("readingList.startReading")
+    case app.ReadingListStatusReading, app.ReadingListStatusPaused:
+        return l.T("readingList.continueReading")
+    default:
+        return l.T(fmt.Sprintf("readingList.%s", readingListStatus.Value.Status))
     }
 }

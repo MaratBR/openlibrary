@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { Attributes, Component, ReactNode } from 'react'
+import { Component, ReactNode } from 'react'
 import { preactQueryCache } from './queryCache'
 import React from 'react'
 import { ErrorDisplay } from '@/components/error'

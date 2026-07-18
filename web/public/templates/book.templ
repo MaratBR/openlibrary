@@ -163,9 +163,11 @@ func convertBookDetailsToAlpineState(book *app.BookDetailsDto, readingList app.N
     var state struct {
         ReadingList app.Nullable[app.BookReadingListDto] `json:"rl"`
         BookID int64 `json:"bookId,string"`
+        FirstChapterID app.Nullable[int64] `json:"firstChapterId"`
     }
     state.ReadingList = readingList
     state.BookID = book.ID
+    state.FirstChapterID = book.FirstChapterID
     bytes, _ := json.Marshal(state)
     return string(bytes)
 }

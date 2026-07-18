@@ -8,6 +8,8 @@ export type ReadingListStatus = z.infer<typeof readingListStatusSchema>
 export const readingListDtoSchema = z.object({
   lastUpdatedAt: z.string(),
   chapterId: z.string().nullable(),
+  chapterName: z.string(),
+  chapterOrder: z.number(),
   status: readingListStatusSchema,
 })
 
