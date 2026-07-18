@@ -1,4 +1,4 @@
-import { PreactIsland } from '@/islands/common/preact-island'
+import { ReactIsland } from '@/islands/common/react-island'
 import EditorIslandComponent from './EditorIsland'
 
-export const ChapterEditor = new PreactIsland(EditorIslandComponent)
+export const ChapterEditor = new ReactIsland(EditorIslandComponent)

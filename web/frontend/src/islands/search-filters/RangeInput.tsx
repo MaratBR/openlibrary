@@ -1,3 +1,5 @@
+import { InputEvent, KeyboardEvent } from "react";
+
 type NumberRange = {
   max: number | null
   min: number | null
@@ -68,16 +70,16 @@ export default function RangeInput({ value, onInput, disableNegative = false }: 
   }
 
   return (
-    <div class="grid grid-cols-2 max-w-80">
+    <div className="grid grid-cols-2 max-w-80">
       <input
-        class="input rounded-r-none border-r-0 hover:border-primary hover:ring-1 hover:ring-primary !outline-none transition-all"
+        className="input rounded-r-none border-r-0 hover:border-primary hover:ring-1 hover:ring-primary !outline-none transition-all"
         type="number"
         value={value.min ?? ''}
         onInput={handleMinChange}
         onKeyDown={handleKeyDown}
       />
       <input
-        class="input rounded-l-none hover:border-primary hover:ring-1 hover:ring-primary !outline-none transition-all"
+        className="input rounded-l-none hover:border-primary hover:ring-1 hover:ring-primary !outline-none transition-all"
         type="number"
         value={value.max ?? ''}
         onInput={handleMaxChange}

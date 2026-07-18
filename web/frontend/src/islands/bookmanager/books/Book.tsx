@@ -8,7 +8,7 @@ import { BookGeneral } from './BookGeneral'
 import { BookChapters } from './BookChapters'
 import { BMBookAPI } from '@/api/bm/book'
 
-export const bookRouteLoader = async ({ params, request }: LoaderFunctionArgs) => {
+export const bookRouteLoader = async ({ params }: LoaderFunctionArgs) => {
   const { bookId } = z.object({ bookId: z.string().nonempty() }).parse(params)
   const resp = await BMBookAPI.getInstance().getBook(bookId)
 
@@ -29,9 +29,9 @@ export function Book() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader
         title={
-          <div class="flex items-center">
+          <div className="flex items-center">
             <NavLink className="btn btn--icon btn--primary mr-4" to="/books">
-              <i class="fa-solid fa-arrow-left" />
+              <i className="fa-solid fa-arrow-left" />
             </NavLink>
             {bookResponse.data.name}
           </div>

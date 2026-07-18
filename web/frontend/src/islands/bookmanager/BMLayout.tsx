@@ -1,40 +1,40 @@
-import { ComponentChild, JSX } from 'preact'
+import { JSX, ReactNode } from 'react'
 import { NavLink, To } from 'react-router'
 
-export default function BMLayout({ children }: { children: ComponentChild }) {
+export default function BMLayout({ children }: { children: ReactNode }) {
   return (
-    <div class="dashboard-layout">
-      <aside class="dashboard-layout__sidebar">
+    <div className="dashboard-layout">
+      <aside className="dashboard-layout__sidebar">
         <Logo />
-        <ul class="dashboard-sidebar-list">
+        <ul className="dashboard-sidebar-list">
           <SidebarItem
-            icon={<i class="fa-solid fa-book" />}
+            icon={<i className="fa-solid fa-book" />}
             label={window._('bookManager.books.title')}
             to="/books"
           />
         </ul>
       </aside>
 
-      <div class="dashboard-layout__body">{children}</div>
+      <div className="dashboard-layout__body">{children}</div>
     </div>
   )
 }
 
 function Logo() {
   return (
-    <div class="flex justify-center my-4">
-      <img class="h-20 dark:hidden" src="/_/embed-assets/logo.svg" />
-      <img class="h-20 hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
+    <div className="flex justify-center my-4">
+      <img className="h-20 dark:hidden" src="/_/embed-assets/logo.svg" />
+      <img className="h-20 hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
     </div>
   )
 }
 
 function SidebarItem({ icon, label, to }: { icon?: JSX.Element; label: string; to: To }) {
   return (
-    <li class="dashboard-sidebar-item">
+    <li className="dashboard-sidebar-item">
       <NavLink to={to}>
-        <div class="dashboard-sidebar-item__icon">{icon}</div>
-        <div class="dashboard-sidebar-item__label">{label}</div>
+        <div className="dashboard-sidebar-item__icon">{icon}</div>
+        <div className="dashboard-sidebar-item__label">{label}</div>
       </NavLink>
     </li>
   )

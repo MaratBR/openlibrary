@@ -1,15 +1,15 @@
 import clsx from 'clsx'
-import { ComponentChildren, ComponentType, HTMLAttributes, JSX } from 'preact'
-import React, { ForwardedRef, forwardRef, useMemo } from 'preact/compat'
+import {  ComponentProps, ComponentType, HTMLAttributes, JSX, ReactNode } from 'react'
+import React, { ForwardedRef, forwardRef, useMemo } from 'react'
 import { NavLink } from 'react-router'
 
 const Pagination_Root = forwardRef(
   (
-    { children, class: class_, className, ...props }: HTMLAttributes<HTMLElement>,
+    { children, className, ...props }: HTMLAttributes<HTMLElement>,
     ref: React.ForwardedRef<HTMLElement>,
   ) => {
     return (
-      <nav ref={ref} role="listbox" class={clsx('pagination', class_, className)} {...props}>
+      <nav ref={ref} role="listbox" className={clsx('pagination', className)} {...props}>
         {children}
       </nav>
     )
@@ -19,21 +19,16 @@ const Pagination_Root = forwardRef(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ElementType = keyof JSX.IntrinsicElements | ComponentType<any>
 
-type PropsOf<T extends ElementType> = T extends keyof JSX.IntrinsicElements
-  ? JSX.IntrinsicElements[T]
-  : T extends ComponentType<infer P>
-    ? P
-    : never
-
 type PaginationItemProps<T extends ElementType> = {
   as?: T
-  children?: ComponentChildren
+  children?: ReactNode
   active?: boolean
-} & Omit<PropsOf<T>, 'class' | 'role' | 'ref'>
+  disabled?: boolean
+} & Omit<ComponentProps<T>, 'class' | 'role' | 'ref' | 'disabled'>
 
 const Pagination_Item = forwardRef(
   <T extends ElementType = 'button'>(
-    { as, children, active = false, ...rest }: PaginationItemProps<T>,
+    { as, children, active = false, disabled = false, ...rest }: PaginationItemProps<T>,
     ref: ForwardedRef<T>,
   ) => {
     const Component = (as || 'button') as ElementType
@@ -45,6 +40,7 @@ const Pagination_Item = forwardRef(
         className={clsx('pagination__item', {
           'pagination__item--active': active,
         })}
+        aria-disabled={disabled?'true':'false'}
         {...rest}
       >
         {children}
@@ -67,11 +63,11 @@ function Pagination_Facade({ page, totalPages, size, disabled = false }: Paginat
     <Pagination.Root>
       {order.map((p) =>
         p === page ? (
-          <Pagination.Item key={`${page}_current`} active as="button">
+          <Pagination.Item key={`${page}_current`} active as="button" disabled={disabled}>
             {p}
           </Pagination.Item>
         ) : (
-          <Pagination.Item to={{ search: `?page=${p}` }} key={`${page}_current`} as={NavLink}>
+          <Pagination.Item to={{ search: `?page=${p}` }} key={`${page}_current`} as={NavLink} disabled={disabled}>
             {p}
           </Pagination.Item>
         ),

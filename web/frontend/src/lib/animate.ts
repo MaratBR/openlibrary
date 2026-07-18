@@ -1,7 +1,7 @@
 import { animate } from 'popmotion'
-import { JSX, useCallback, useEffect, useLayoutEffect, useRef } from 'preact/compat'
+import { JSX, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { createEvent, Unsubscribe } from './event'
-import { RefCallback } from 'preact'
+import { RefCallback } from 'react'
 
 export type SetShowOptions = {
   duration?: number

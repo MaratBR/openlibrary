@@ -6,8 +6,8 @@ export type ErrorDisplayProps = {
 
 export function ErrorDisplay({ error }: ErrorDisplayProps) {
   return (
-    <div class="error">
-      <p class="error__message">{getErrorMessage(error)}</p>
+    <div className="error">
+      <p className="error__message">{getErrorMessage(error)}</p>
     </div>
   )
 }

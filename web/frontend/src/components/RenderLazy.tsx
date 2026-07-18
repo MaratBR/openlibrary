@@ -1,7 +1,6 @@
-import { ComponentChildren } from 'preact'
-import { useRef } from 'preact/hooks'
+import { ReactNode, useRef } from 'react'
 
-export function RenderLazy({ show, children }: { show: boolean; children: ComponentChildren }) {
+export function RenderLazy({ show, children }: { show: boolean; children: ReactNode }) {
   const shown = useRef(false)
 
   if (show) {

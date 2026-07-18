@@ -1,4 +1,4 @@
-import { useMemo } from 'preact/hooks'
+import { useMemo } from 'react'
 import z from 'zod'
 
 export const UserRoleSchema = z.enum(['user', 'admin', 'system', 'moderator'])

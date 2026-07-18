@@ -1,5 +1,5 @@
-import { useLayoutEffect, useMemo } from 'preact/hooks'
-import { PreactIslandProps } from '@/islands/common/preact-island'
+import { useLayoutEffect, useMemo } from 'react'
+import { ReactIslandProps } from '@/islands/common/react-island'
 import { z } from 'zod'
 import './BookManagerEditor.scss'
 import { DraftDtoSchema } from './contracts'
@@ -14,7 +14,7 @@ const dataSchema = z.object({
   draft: DraftDtoSchema,
 })
 
-export default function EditorIslandComponent({ data }: PreactIslandProps) {
+export default function EditorIslandComponent({ data }: ReactIslandProps) {
   const { draft } = useMemo(() => dataSchema.parse(data), [data])
 
   useLayoutEffect(() => {
@@ -22,28 +22,28 @@ export default function EditorIslandComponent({ data }: PreactIslandProps) {
   }, [draft])
 
   return (
-    <div class="be-layout">
-      <div class="be-layout__header">
-        <header class="be-header">
+    <div className="be-layout">
+      <div className="be-layout__header">
+        <header className="be-header">
           <div />
-          <div class="be-header__left">Left</div>
-          <div class="be-header__center">
+          <div className="be-header__left">Left</div>
+          <div className="be-header__center">
             <CenterHeader draft={draft} />
           </div>
-          <div class="be-header__right">
+          <div className="be-header__right">
             <SaveButton />
           </div>
           <div />
         </header>
       </div>
-      <div class="be-layout__body">
-        <div class="be-layout__left">
+      <div className="be-layout__body">
+        <div className="be-layout__left">
           <WidgetsMenu service={WidgetsService.instance()} />
         </div>
-        <div class="be-layout__center">
+        <div className="be-layout__center">
           <EditorIframe initialContent={draft.content} />
         </div>
-        <div class="be-layout__right">Right</div>
+        <div className="be-layout__right">Right</div>
       </div>
     </div>
   )

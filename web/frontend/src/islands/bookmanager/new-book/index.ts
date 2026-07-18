@@ -1,6 +1,6 @@
-import { PreactIsland } from '@/islands/common/preact-island'
+import { ReactIsland } from '@/islands/common/react-island'
 import NewBookForm from './NewBookForm'
 
-const NewBook = new PreactIsland(NewBookForm)
+const NewBook = new ReactIsland(NewBookForm)
 
 export default NewBook

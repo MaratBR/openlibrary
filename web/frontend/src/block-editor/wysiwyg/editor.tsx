@@ -89,6 +89,7 @@ export class ChapterContentEditor extends Editor {
         SlashCommand.configure({
           suggestionClass: 'be-suggestion',
           commands: slashCommands(),
+          // TODO proper disposal of this
           displayAdapter: new SuggestionsDisplay(
             {
               iframe,

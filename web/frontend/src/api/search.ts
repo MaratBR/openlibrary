@@ -1,7 +1,7 @@
 import { DEFAULT_SEARCH_DEBOUNCE } from '@/config'
 import { httpClient } from '@/http-client'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 const TagCategorySchema = z.enum(['other', 'warning', 'fandom', 'rel', 'reltype', 'unknown'])

@@ -6,10 +6,10 @@ import { Pagination } from '@/components/Pagination'
 import { getPage } from '@/lib/url'
 import { formatNumberK } from '@/util/fmt'
 import { useMutation } from '@tanstack/react-query'
-import { useState } from 'preact/hooks'
+import { useState } from 'react'
 import { LoaderFunctionArgs, NavLink, useLoaderData } from 'react-router'
 
-export const booksRouteLoader = async ({ params, request }: LoaderFunctionArgs) => {
+export const booksRouteLoader = async ({ params: _, request }: LoaderFunctionArgs) => {
   const page = getPage(request.url)
 
   const resp = await BMBookAPI.getInstance().getBooks({
@@ -31,7 +31,7 @@ export function Books() {
       <DashboardContent.StickyHeader title={window._('bookManager.books.title')} />
 
       <DashboardContent.Card>
-        <div class="my-2 ml-4">
+        <div className="my-2 ml-4">
           <Pagination.Facade
             page={booksResponse.data.page}
             size={10}
@@ -39,7 +39,7 @@ export function Books() {
           />
         </div>
 
-        <table class="table">
+        <table className="table">
           <tbody>
             {booksResponse.data.books.map((book) => (
               <BookRow key={book.id} book={book} />
@@ -61,23 +61,23 @@ function BookRow({ book }: { book: ManagerBookDto }) {
       </td>
       <td>
         <div>
-          <span class="text-lg font-medium">{book.name}</span>
+          <span className="text-lg font-medium">{book.name}</span>
         </div>
 
-        <div class="flex gap-1">
-          <div class="chip chip--secondary chip--lg">
+        <div className="flex gap-1">
+          <div className="chip chip--secondary chip--lg">
             {window._('book.chapters', { count: formatNumberK(book.chapters) })}
           </div>
 
-          <div class="chip chip--secondary chip--lg">
+          <div className="chip chip--secondary chip--lg">
             {window._('book.words', { count: formatNumberK(book.words) })}
           </div>
         </div>
       </td>
       <td>
-        <div class="flex gap-2">
-          <NavLink to={`/books/${book.id}`} className="btn btn--lg btn--solid btn--primary">
-            <i class="fa-solid fa-pen mr-2" />
+        <div className="flex gap-2">
+          <NavLink to={`/books/${book.id}`} className="btn btn--lg btn--default">
+            <i className="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </NavLink>
           <TrashBookButton book={book} trashed={trashed} onTrashedChanged={setTrashed} />
@@ -128,35 +128,35 @@ function TrashBookButton({
             setOpenTrashModal(true)
           }
         }}
-        class="btn btn--lg btn--outline btn--destructive"
+        className="btn btn--lg btn--outline btn--destructive"
       >
         {trashed ? window._('common.untrash') : window._('common.trash')}
       </button>
       <Modal onClose={() => setOpenTrashModal(false)} open={openTrashModal}>
-        <div class="max-w-128">
-          <h2 class="text-lg font-semibold">{window._('bookManager.books.trashBook.title')}</h2>
-          <p class="my-2">{window._('bookManager.books.trashBook.description')}</p>
-          <div class="flex gap-2 mt-4">
-            <button onClick={() => setOpenTrashModal(false)} class="btn btn--solid btn--primary">
+        <div className="max-w-128">
+          <h2 className="text-lg font-semibold">{window._('bookManager.books.trashBook.title')}</h2>
+          <p className="my-2">{window._('bookManager.books.trashBook.description')}</p>
+          <div className="flex gap-2 mt-4">
+            <button onClick={() => setOpenTrashModal(false)} className="btn btn--default">
               {window._('common.cancel')}
             </button>
-            <button class="btn btn--destructive btn--solid" onClick={() => trashBookMutation.mutate(true)}>
-              {trashBookMutation.isPending && <span class="circle-loader mr-1" />}
+            <button className="btn btn--destructive" onClick={() => trashBookMutation.mutate(true)}>
+              {trashBookMutation.isPending && <span className="circle-loader mr-1" />}
               {window._('common.trash')}
             </button>
           </div>
         </div>
       </Modal>
       <Modal onClose={() => setOpenUntrashModal(false)} open={openUntrashModal}>
-        <div class="max-w-128">
-          <h2 class="text-lg font-semibold">{window._('bookManager.books.restoreBook.title')}</h2>
-          <p class="my-2">{window._('bookManager.books.restoreBook.description')}</p>
-          <div class="flex gap-2 mt-4">
-            <button onClick={() => setOpenUntrashModal(false)} class="btn btn--solid btn--primary">
+        <div className="max-w-128">
+          <h2 className="text-lg font-semibold">{window._('bookManager.books.restoreBook.title')}</h2>
+          <p className="my-2">{window._('bookManager.books.restoreBook.description')}</p>
+          <div className="flex gap-2 mt-4">
+            <button onClick={() => setOpenUntrashModal(false)} className="btn btn--default">
               {window._('common.cancel')}
             </button>
-            <button class="btn btn--destructive btn--solid" onClick={() => trashBookMutation.mutate(false)}>
-              {trashBookMutation.isPending && <span class="circle-loader mr-1" />}
+            <button className="btn btn--destructive" onClick={() => trashBookMutation.mutate(false)}>
+              {trashBookMutation.isPending && <span className="circle-loader mr-1" />}
               {window._('common.untrash')}
             </button>
           </div>

@@ -15,7 +15,7 @@ export default function EditorBubbleMenu({
 
   return (
     <BubbleMenu
-      class="be-bubble-menu"
+      className="be-bubble-menu"
       // getReferencedVirtualElement={() => {
       //   const textElement = getSelectedTextElement(editor)
       //   return textElement
@@ -26,48 +26,48 @@ export default function EditorBubbleMenu({
       editor={editor}
       appendTo={appendTo}
     >
-      <div class="be-toggle-group">
+      <div className="be-toggle-group">
         <EditorToggleButton active={bold} onClick={() => editor.chain().focus().toggleBold().run()}>
-          <i class="fa-solid fa-bold" />
+          <i className="fa-solid fa-bold" />
         </EditorToggleButton>
         <EditorToggleButton
           active={italic}
           onClick={() => editor.chain().focus().toggleItalic().run()}
         >
-          <i class="fa-solid fa-italic" />
+          <i className="fa-solid fa-italic" />
         </EditorToggleButton>
         <EditorToggleButton
           active={strikethrough}
           onClick={() => editor.chain().focus().toggleStrike().run()}
         >
-          <i class="fa-solid fa-strikethrough" />
+          <i className="fa-solid fa-strikethrough" />
         </EditorToggleButton>
       </div>
-      <div class="be-bubble-menu__delimiter" />
-      <div class="be-toggle-group">
+      <div className="be-bubble-menu__delimiter" />
+      <div className="be-toggle-group">
         <EditorToggleButton
           active={textAlign === 'left'}
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
         >
-          <i class="fa-solid fa-align-left" />
+          <i className="fa-solid fa-align-left" />
         </EditorToggleButton>
         <EditorToggleButton
           active={textAlign === 'center'}
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
         >
-          <i class="fa-solid fa-align-center" />
+          <i className="fa-solid fa-align-center" />
         </EditorToggleButton>
         <EditorToggleButton
           active={textAlign === 'right'}
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
         >
-          <i class="fa-solid fa-align-right" />
+          <i className="fa-solid fa-align-right" />
         </EditorToggleButton>
         <EditorToggleButton
           active={textAlign === 'justify'}
           onClick={() => editor.chain().focus().setTextAlign('justify').run()}
         >
-          <i class="fa-solid fa-align-justify" />
+          <i className="fa-solid fa-align-justify" />
         </EditorToggleButton>
       </div>
     </BubbleMenu>

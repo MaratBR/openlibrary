@@ -1,7 +1,7 @@
 import { CommentDto, httpGetCommentReplies, httpLikeComment } from '@/api/comments'
 import UserContent from '@/components/UserContent'
-import { render } from 'preact'
-import { useEffect, useRef, useState } from 'preact/hooks'
+
+import { useEffect, useRef, useState } from 'react'
 
 export type CommentRepliesController = {
   close(): void
@@ -11,13 +11,15 @@ export function initCommentReplies(
   $root: HTMLElement,
   commentId: string,
 ): CommentRepliesController {
-  render(<Replies commentId={commentId} />, $root)
+  alert('Comments are not finished')
+  throw new Error('not implemented')
+  // render(<Replies commentId={commentId} />, $root)
 
-  return {
-    close() {
-      render(null, $root)
-    },
-  }
+  // return {
+  //   close() {
+  //     render(null, $root)
+  //   },
+  // }
 }
 
 function Replies({ commentId }: { commentId: string }) {
@@ -34,7 +36,7 @@ function Replies({ commentId }: { commentId: string }) {
   useEffect(load, [commentId])
 
   return (
-    <div class="mt-4 border-b pb-2">
+    <div className="mt-4 border-b pb-2">
       {replies.map((reply) => {
         return <Reply key={reply.id} reply={reply} />
       })}
@@ -63,19 +65,19 @@ function Reply({ reply }: { reply: CommentDto }) {
   }
 
   return (
-    <div class="chapter-comment chapter-comment--reply">
-      <header class="chapter-comment__header">
-        <img class="avatar border size-12" src={reply.user.avatar} />
+    <div className="chapter-comment chapter-comment--reply">
+      <header className="chapter-comment__header">
+        <img className="avatar border size-12" src={reply.user.avatar} />
         <strong>{reply.user.name}</strong>
       </header>
 
-      <div class="chapter-comment__content">
+      <div className="chapter-comment__content">
         <UserContent value={reply.content} />
       </div>
 
-      <div class="chapter-comment__actions">
+      <div className="chapter-comment__actions">
         <button onClick={handleLike} data-set={`${liked}`}>
-          <i class="fa-solid fa-thumbs-up" />
+          <i className="fa-solid fa-thumbs-up" />
           {likes > 0 && `${likes}`}
         </button>
       </div>

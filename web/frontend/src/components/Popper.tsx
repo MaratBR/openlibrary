@@ -1,10 +1,11 @@
-import { ComponentChild, RefObject } from 'preact'
-import { createPortal, HTMLAttributes, useEffect, useRef } from 'preact/compat'
+import {  ReactNode, RefObject } from 'react'
+import { HTMLAttributes, useEffect, useRef } from 'react'
 import { useFloating, Placement } from '@floating-ui/react'
+import { createPortal } from 'react-dom';
 
 export type PopperProps = {
   anchorEl?: HTMLElement | RefObject<HTMLElement | null> | null
-  children?: ComponentChild
+  children?: ReactNode
   open?: boolean
   onClose?: () => void
   placement?: Placement
@@ -60,7 +61,7 @@ export default function Popper({
   if (!open) return null
 
   return createPortal(
-    <div class="contents" style={{ visibility: open ? 'visible' : 'hidden' }}>
+    <div className="contents" style={{ visibility: open ? 'visible' : 'hidden' }}>
       <div ref={refs.setFloating} {...props} style={floatingStyles} data-open={open}>
         {children}
       </div>

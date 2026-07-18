@@ -1,5 +1,5 @@
 import Modal from '@/components/Modal'
-import { useEffect, useRef, useState } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'react'
 import { cropImage, loadImageAsElement, resizeImage } from './image-util'
 import { initDraggable, ResizableImageBounds } from './draggable'
 
@@ -130,27 +130,27 @@ export function ImageResizer({
   return (
     <Modal open>
       <div
-        class="relative overflow-hidden flex items-center justify-center"
+        className="relative overflow-hidden flex items-center justify-center"
         style={{ height, width }}
       >
         <button
-          class="z-10 size-10 flex items-center justify-center absolute top-1 right-1 hover:bg-white/20"
+          className="z-10 size-10 flex items-center justify-center absolute top-1 right-1 hover:bg-white/20"
           onClick={() => onClose()}
         >
-          <i class="fa-solid fa-xmark text-white" />
+          <i className="fa-solid fa-xmark text-white" />
         </button>
 
         <Canvas cutoutHeight={expectedHeight} cutoutWidth={expectedWidth} />
         <div
-          class="box-content overflow-hidden bg-background"
+          className="box-content overflow-hidden bg-background"
           style={{ width: expectedWidth, height: expectedHeight }}
         >
-          <img class="max-w-none max-h-none select-none" ref={imgRef} src={src} style={size} />
+          <img className="max-w-none max-h-none select-none" ref={imgRef} src={src} style={size} />
         </div>
 
-        <div class="absolute right-4 bottom-4 flex z-10">
-          <button class="btn btn--secondary btn--solid" onClick={handleResizeAndCrop}>
-            {loading ? <span class="loader" /> : window._('common.crop')}
+        <div className="absolute right-4 bottom-4 flex z-10">
+          <button className="btn btn--secondary" onClick={handleResizeAndCrop}>
+            {loading ? <span className="loader" /> : window._('common.crop')}
           </button>
         </div>
       </div>
@@ -193,7 +193,7 @@ function Canvas({ cutoutHeight, cutoutWidth }: { cutoutHeight: number; cutoutWid
   return (
     <canvas
       style={{ zIndex: 1 }}
-      class="w-full h-full absolute inset-0 pointer-events-none"
+      className="w-full h-full absolute inset-0 pointer-events-none"
       ref={canvasRef}
     />
   )

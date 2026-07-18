@@ -1,6 +1,8 @@
 import { Wrapper } from '@/preact'
-import { ComponentChildren } from 'preact'
+import { ReactNode, StrictMode, useEffect } from 'react';
 
-export function PreactIslandSetup({ children }: { children?: ComponentChildren }) {
-  return <Wrapper>{children}</Wrapper>
+export function ReactIslandSetup({ children }: { children?: ReactNode }) {
+  return <StrictMode>
+    <Wrapper>{children}</Wrapper>
+  </StrictMode>
 }

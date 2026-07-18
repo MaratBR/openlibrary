@@ -33,11 +33,11 @@ templ Collection(
                 <div class="mt-2">
                     if canEdit {
                         <div class="btn-group">
-                            <a class="btn btn--ghost btn--sm btn--primary" href="/library/collections">
+                            <a class="btn btn--outline btn--sm" href="/library/collections">
                                 <i class="fa-solid fa-arrow-left"></i>&nbsp;
                                 { l.T("collection.backToLibrary") }
                             </a>
-                            <a class="btn btn--ghost btn--sm btn--primary" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", collection.ID)) }>
+                            <a class="btn btn--outline btn--sm" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", collection.ID)) }>
                                 <i class="fa-solid fa-table-list"></i>&nbsp;
                                 { l.T("collection.manage") }
                             </a>
@@ -186,11 +186,11 @@ templ CollectionManage(
                 <hr class="my-4" />
 
                 <div class="flex gap-1">
-                    <button type="submit" class="btn btn--solid btn--primary">
+                    <button type="submit" class="btn btn--default">
                         { l.T("common.save") }
                     </button>
 
-                    <button @click.prevent="deleting=true" class="btn btn--destructive btn--solid">
+                    <button @click.prevent="deleting=true" class="btn btn--destructive">
                         { l.T("common.delete") }
                     </button>
                 </div>
@@ -202,7 +202,7 @@ templ CollectionManage(
                 <button type="submit"
                     disabled 
                     :disabled={ fmt.Sprintf("confirmationPhrase!==%q", collection.Name) } 
-                    class="btn btn--destructive btn--solid mt-2">
+                    class="btn btn--destructive mt-2">
                     { l.T("common.delete") }
                 </button>
                 @csrf.CSRFInputTempl(ctx)

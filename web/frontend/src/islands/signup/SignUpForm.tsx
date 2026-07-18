@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { PreactIslandProps } from '../common/preact-island'
+import { ReactIslandProps } from '../common/react-island'
 import { passwordRequirementsSchema, validatePassword } from '@/common/password'
-import { useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PasswordInput } from './PasswordInput'
 import { animate } from 'popmotion'
 
@@ -23,7 +23,7 @@ function normalizeUsername(value: string): string {
   return value.replace(/[^0-9a-zA-Z_]/g, '')
 }
 
-export default function SignUpForm({ data: dataParam }: PreactIslandProps) {
+export default function SignUpForm({ data: dataParam }: ReactIslandProps) {
   const { PasswordRequirements } = useMemo(() => signUpFormDataSchema.parse(dataParam), [dataParam])
 
   const [username, setUsername] = useState('')
@@ -67,19 +67,19 @@ export default function SignUpForm({ data: dataParam }: PreactIslandProps) {
   }, [])
 
   return (
-    <div ref={rootElementRef} class="overflow-auto" style={{ scrollbarWidth: 'thin' }}>
-      <div class="form-control">
-        <div class="form-control__label">
-          <label for="username" class="label">
+    <div ref={rootElementRef} className="overflow-auto" style={{ scrollbarWidth: 'thin' }}>
+      <div className="form-control">
+        <div className="form-control__label">
+          <label htmlFor="username" className="label">
             {window._('login.username')}
           </label>
         </div>
-        <div class="form-control__value">
+        <div className="form-control__value">
           <input
             required
             name="username"
             id="username"
-            class="input"
+            className="input"
             type="text"
             value={username}
             onChange={(e) => setUsername(normalizeUsername((e.target as HTMLInputElement).value))}
@@ -87,18 +87,18 @@ export default function SignUpForm({ data: dataParam }: PreactIslandProps) {
         </div>
       </div>
 
-      <div class="form-control">
-        <div class="form-control__label">
-          <label for="email" class="label">
+      <div className="form-control">
+        <div className="form-control__label">
+          <label htmlFor="email" className="label">
             {window._('login.email')}
           </label>
         </div>
-        <div class="form-control__value">
+        <div className="form-control__value">
           <input
             required
             name="email"
             id="email"
-            class="input"
+            className="input"
             type="email"
             value={email}
             onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
@@ -106,13 +106,13 @@ export default function SignUpForm({ data: dataParam }: PreactIslandProps) {
         </div>
       </div>
 
-      <div class="form-control">
-        <div class="form-control__label">
-          <label for="password" class="label">
+      <div className="form-control">
+        <div className="form-control__label">
+          <label htmlFor="password" className="label">
             {window._('login.password')}
           </label>
         </div>
-        <div class="form-control__value">
+        <div className="form-control__value">
           <PasswordInput
             id="password"
             name="password"
@@ -123,35 +123,35 @@ export default function SignUpForm({ data: dataParam }: PreactIslandProps) {
         </div>
       </div>
 
-      <div class="form-control">
-        <div class="form-control__label">
-          <label for="repeatPassword" class="label">
+      <div className="form-control">
+        <div className="form-control__label">
+          <label htmlFor="repeatPassword" className="label">
             {window._('signup.repeatPassword')}
           </label>
         </div>
-        <div class="form-control__value">
+        <div className="form-control__value">
           <input
             required
             onChange={(e) => setRepeatPassword((e.target as HTMLInputElement).value)}
             name="repeatPassword"
             id="repeatPassword"
-            class="input"
+            className="input"
             type="password"
             value={repeatPassword}
           />
         </div>
       </div>
 
-      <div class="flex gap-2 justify-center">
+      <div className="flex gap-2 justify-center">
         <button
           disabled={!isValid}
           type="submit"
           onClick={() => {
             setSubmitting(true)
           }}
-          class="btn btn--lg btn--solid btn--primary"
+          className="btn btn--lg btn--default"
         >
-          {submitting ? <span class="loader" /> : window._('signup.signup')}
+          {submitting ? <span className="loader" /> : window._('signup.signup')}
         </button>
       </div>
     </div>

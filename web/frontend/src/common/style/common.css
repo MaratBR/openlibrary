@@ -1,7 +1,7 @@
 @import "./theme.css";
 
 button, [role=button] {
-    cursor: pointer;
+    cursor: default;
 }
 
 * {

@@ -1,4 +1,4 @@
-import { HTMLAttributes } from 'preact'
+import { HTMLAttributes } from 'react'
 
 export type EditorToggleButtonProps = {
   active: boolean
@@ -6,6 +6,6 @@ export type EditorToggleButtonProps = {
 
 export default function EditorToggleButton({ active, ...props }: EditorToggleButtonProps) {
   return (
-    <button class="be-listitem be-toggle" aria-selected={active ? 'true' : 'false'} {...props} />
+    <button className="be-listitem be-toggle" aria-selected={active ? 'true' : 'false'} {...props} />
   )
 }

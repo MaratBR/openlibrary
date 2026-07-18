@@ -1,4 +1,4 @@
-import { PreactIslandProps } from '../common/preact-island'
+import { ReactIslandProps } from '../common/react-island'
 import { createHashRouter, Navigate, Outlet } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import BMLayout from './BMLayout'
@@ -42,6 +42,6 @@ const router = createHashRouter([
   },
 ])
 
-export default function BM(_props: PreactIslandProps) {
+export default function BM(_props: ReactIslandProps) {
   return <RouterProvider router={router} />
 }

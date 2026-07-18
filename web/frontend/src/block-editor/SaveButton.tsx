@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks'
+import { useState } from 'react'
 import {
   useBEState,
   useDraftHasChanges,
@@ -18,21 +18,21 @@ export function SaveButton() {
   }
 
   return (
-    <div class="flex gap-4">
+    <div className="flex gap-4">
       <button
         onClick={() => setOpenPublishPopup(true)}
         disabled={(!draftHasPendingChanges && !hasNewerRevision) || saving}
-        class="btn btn--outline btn--lg btn--primary flex justify-center items-center"
+        className="btn btn--outline btn--lg flex justify-center items-center"
       >
         <DraftPendingChangesIndicator />
-        {saving ? <span class="loader loader--dark" /> : window._('editor.publishDraft')}
+        {saving ? <span className="loader loader--dark" /> : window._('editor.publishDraft')}
       </button>
       <button
         onClick={handleSaveDraft}
         disabled={!draftHasPendingChanges || saving}
-        class="btn btn--lg btn--solid btn--primary w-30 flex justify-center items-center"
+        className="btn btn--lg btn--default w-30 flex justify-center items-center"
       >
-        {saving ? <span class="loader loader--dark" /> : window._('common.save')}
+        {saving ? <span className="loader loader--dark" /> : window._('common.save')}
       </button>
 
       <PublishChapterPopup open={openPublishPopup} onClose={() => setOpenPublishPopup(false)} />
@@ -47,7 +47,7 @@ function DraftPendingChangesIndicator() {
       style={{
         transform: `scale(${hasPendingChanges ? 1 : 0})`,
       }}
-      class="circular-indicator"
+      className="circular-indicator"
     />
   )
 }

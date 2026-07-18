@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { HTMLAttributes } from 'preact'
+import { HTMLAttributes } from 'react'
 import {
   createContext,
   ForwardedRef,
@@ -7,7 +7,7 @@ import {
   PropsWithChildren,
   useContext,
   useRef,
-} from 'preact/compat'
+} from 'react'
 
 export type TabsProps = PropsWithChildren<{
   value?: string
@@ -42,7 +42,7 @@ function TabsTab({ value, children }: TabProps) {
   return (
     <li
       role="tab"
-      class={clsx('tab', {
+      className={clsx('tab', {
         'tab--active': value === activeValue,
       })}
       onClick={(e) => {
@@ -50,30 +50,30 @@ function TabsTab({ value, children }: TabProps) {
         onChangeRef.current(value)
       }}
     >
-      <span class="tabs__tab__title">{children}</span>
+      <span className="tabs__tab__title">{children}</span>
     </li>
   )
 }
 
 const TabsBody = forwardRef(
   (
-    { class: class_, className, ...props }: HTMLAttributes<HTMLDivElement>,
+    { className, ...props }: HTMLAttributes<HTMLDivElement>,
     ref: ForwardedRef<HTMLDivElement>,
   ) => {
-    return <div ref={ref} class={clsx('tabs__body', className || class_)} {...props} />
+    return <div ref={ref} className={clsx('tabs__body', className)} {...props} />
   },
 )
 
 const TabsMenu = forwardRef(
   (
-    { class: class_, className, children, ...props }: HTMLAttributes<HTMLUListElement>,
+    { className, children, ...props }: HTMLAttributes<HTMLUListElement>,
     ref: ForwardedRef<HTMLUListElement>,
   ) => {
     return (
       <ul
         ref={ref}
         role="tablist"
-        class={clsx('tabs tabs--primary', className || class_)}
+        className={clsx('tabs tabs--primary', className)}
         {...props}
       >
         {children}

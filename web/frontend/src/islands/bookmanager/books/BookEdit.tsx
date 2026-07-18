@@ -1,7 +1,7 @@
 import { NavLink, useLoaderData } from 'react-router'
 import { bookRouteLoader } from './Book'
 import { DashboardContent } from '@/components/dashboard-layout-components'
-import { useState } from 'preact/hooks'
+import { useState } from 'react'
 import { RichTextInput } from '@/components/rte'
 import { useOLEditor } from '@/components/rte/RichTextEditor'
 import { useMutation } from '@tanstack/react-query'
@@ -42,16 +42,16 @@ export default function BookEdit() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader
         title={
-          <div class="flex items-center">
+          <div className="flex items-center">
             <NavLink className="btn btn--icon btn--primary mr-4" to={`/books/${bookResponse.data.id}`}>
-              <i class="fa-solid fa-arrow-left" />
+              <i className="fa-solid fa-arrow-left" />
             </NavLink>
             {bookResponse.data.name}
           </div>
         }
       />
-      <div class="card mb-4">
-        <form class="space-y-2">
+      <div className="card mb-4">
+        <form className="space-y-2">
           <FormControl htmlFor="name-input" label={window._('bookManager.edit.name')}>
             <input
               id="name-input"
@@ -85,8 +85,8 @@ export default function BookEdit() {
             <RichTextInput editor={summaryEditor} />
           </FormControl>
 
-          <div class="mt-4 flex">
-            <button class="btn btn--solid btn--primary" onClick={() => saveMutation.mutate()}>
+          <div className="mt-4 flex">
+            <button className="btn btn--default" onClick={() => saveMutation.mutate()}>
               {window._('common.save')}
             </button>
           </div>
@@ -95,13 +95,13 @@ export default function BookEdit() {
 
       <div className="card mb-4">
         <a
-          class="btn btn--outline btn--primary"
+          className="btn btn--outline"
           href={`/book/${bookResponse.data.id}`}
           target="_blank"
           rel="noreferrer"
         >
           {window._('bookManager.edit.goToPage')}
-          <i class="fa-solid fa-up-right-from-square ml-2" />
+          <i className="fa-solid fa-up-right-from-square ml-2" />
         </a>
       </div>
     </DashboardContent.Root>

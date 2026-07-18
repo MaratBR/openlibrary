@@ -1,5 +1,5 @@
 import { getCsrfToken } from '@/http-client/client'
-import { useMemo } from 'preact/hooks'
+import { useMemo } from 'react'
 
 export default function CSRFInput() {
   const value = useMemo(() => getCsrfToken(), [])

@@ -1,5 +1,5 @@
 import { Editor } from '@tiptap/core'
-import { useLayoutEffect, useRef, useState } from 'preact/hooks'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 type EditorState = {
   bold: boolean

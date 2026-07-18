@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
-import { JSX } from 'preact/jsx-runtime'
+import { HTMLAttributes, JSX, useCallback, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 
-export type DropdownProps = JSX.HTMLAttributes<HTMLDivElement> & {
+export type DropdownProps = HTMLAttributes<HTMLDivElement> & {
   slotProps?: {
-    input?: JSX.HTMLAttributes<HTMLInputElement>
-    menu?: JSX.HTMLAttributes<HTMLDivElement>
+    input?: HTMLAttributes<HTMLInputElement>
+    menu?: HTMLAttributes<HTMLDivElement>
   }
   slots?: {
     beforeInput?: JSX.Element
@@ -46,21 +45,20 @@ export function DropdownCore({ slotProps = {}, slots = {}, ...props }: DropdownP
   const handleInputFocus = useCallback(() => setOpen(true), [])
 
   return (
-    <div ref={rootRef} class="dropdown" data-open={open} {...props}>
+    <div ref={rootRef} className="dropdown" data-open={open} {...props}>
       {slots.beforeInput}
-      <input class="dropdown__input" onFocus={handleInputFocus} {...slotProps.input} />
+      <input className="dropdown__input" onFocus={handleInputFocus} {...slotProps.input} />
 
       <div
         aria-hidden={!open}
         onMouseDown={preventDefault}
         {...slotProps.menu}
-        className={undefined}
-        class={clsx('dropdown__menu', slotProps.menu?.class, slotProps.menu?.className)}
+        className={clsx('dropdown__menu', slotProps.menu?.className, slotProps.menu?.className)}
       />
     </div>
   )
 }
 
-function preventDefault(e: Event) {
+function preventDefault(e: { stopPropagation: () => void }) {
   e.stopPropagation()
 }

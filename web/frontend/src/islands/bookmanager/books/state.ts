@@ -1,4 +1,4 @@
-import { httpBmGetBooks, httpBmTrashBook, ManagerBookDto } from '@/api/bm/book'
+import { BMBookAPI, ManagerBookDto } from '@/api/bm/book'
 import { create } from 'zustand/react'
 
 type BooksState = {
@@ -20,7 +20,7 @@ export const useBooksState = create<BooksState>((set) => ({
   async load(page) {
     set({ loading: true })
     try {
-      const response = await httpBmGetBooks({
+      const response = await BMBookAPI.getInstance().getBooks({
         page,
         search: '',
         size: 20,
@@ -33,7 +33,7 @@ export const useBooksState = create<BooksState>((set) => ({
   },
 
   async trash(bookId, trash) {
-    const response = await httpBmTrashBook({
+    const response = await BMBookAPI.getInstance().trashBook({
       id: bookId,
       trash,
     })

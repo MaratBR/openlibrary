@@ -7,7 +7,7 @@ export type RichTextInputProps = {
 
 export function RichTextInput({ editor }: RichTextInputProps) {
   return (
-    <div class="SimpleEditor">
+    <div className="SimpleEditor">
       <Toolbar editor={editor} />
       <EditorContent editor={editor} className="SimpleEditor__content user-content" />
     </div>

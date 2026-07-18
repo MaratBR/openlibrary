@@ -1,8 +1,7 @@
 import NewBook from './new-book'
-import BookCollectionsPopup from './BookCollectionsPopup'
-import { PreactIsland } from '../common/preact-island'
+import { ReactIsland } from '../common/react-island'
 import BM from './BM'
 
-export { NewBook, BookCollectionsPopup }
+export { NewBook }
 
-export const BMIsland = new PreactIsland(BM)
+export const BMIsland = new ReactIsland(BM)

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'react'
 import { useUserSelfData } from '@/api/auth/user'
 import './UserMenu.scss'
 import { ModalAnimation, useAnimation } from '@/lib/animate'
@@ -48,7 +48,7 @@ export function UserMenu() {
   const finalRef = useForkRef(animationRef, ref)
 
   return (
-    <div class="UserMenu" ref={finalRef}>
+    <div className="UserMenu" ref={finalRef}>
       <UserMenuBody />
     </div>
   )
@@ -59,20 +59,20 @@ function UserMenuBody() {
 
   return (
     <div>
-      <div class="flex justify-center py-4">
-        <img class="avatar size-16 shadow-2xl" src={user.avatar.md} />
+      <div className="flex justify-center py-4">
+        <img className="avatar size-16 shadow-2xl" src={user.avatar.md} />
       </div>
 
-      <ul class="UserMenu__items">
-        <a class="UserMenu__item" role="listitem" href={`/user/${user.id}`}>
+      <ul className="UserMenu__items">
+        <a className="UserMenu__item" role="listitem" href={`/user/${user.id}`}>
           {window._('common.profile')}
         </a>
 
-        <a class="UserMenu__item" role="listitem" href="/profile/settings">
+        <a className="UserMenu__item" role="listitem" href="/profile/settings">
           {window._('common.settings')}
         </a>
 
-        <a class="UserMenu__item" role="listitem" href="/books-manager">
+        <a className="UserMenu__item" role="listitem" href="/books-manager">
           {window._('common.bookManager')}
         </a>
       </ul>

@@ -1,5 +1,5 @@
-import { HTMLAttributes } from 'preact'
-import { useMemo } from 'preact/hooks'
+import { HTMLAttributes } from 'react'
+import { useMemo } from 'react'
 import sanitizeHtml from 'sanitize-html'
 
 export default function SanitizeHTML({

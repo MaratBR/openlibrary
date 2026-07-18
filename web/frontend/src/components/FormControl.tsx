@@ -1,4 +1,4 @@
-import { ComponentChild } from 'preact'
+import { ReactNode } from "react";
 
 export function FormControl({
   label,
@@ -8,21 +8,21 @@ export function FormControl({
 }: {
   label: string
   htmlFor?: string
-  children?: ComponentChild
+  children?: ReactNode
   description?: string
 }) {
   return (
-    <div class="form-control">
-      <div class="form-control__label ">
+    <div className="form-control">
+      <div className="form-control__label ">
         {htmlFor ? (
-          <label class="label" htmlFor={htmlFor}>
+          <label className="label" htmlFor={htmlFor}>
             {label}
           </label>
         ) : (
-          <span class="label">{label}</span>
+          <span className="label">{label}</span>
         )}
 
-        {description && <p class="form-control__hint">{description}</p>}
+        {description && <p className="form-control__hint">{description}</p>}
       </div>
 
       <div className="form-control__value">{children}</div>

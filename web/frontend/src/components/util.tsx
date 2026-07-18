@@ -1,13 +1,13 @@
 import clsx from 'clsx'
-import { ComponentType, HTMLAttributes } from 'preact'
-import { forwardRef } from 'preact/compat'
+import { ComponentType, HTMLAttributes } from 'react'
+import { forwardRef } from 'react'
 
 export function createClassComponent(
   classes: string,
 ): ComponentType<HTMLAttributes<HTMLDivElement>> {
-  return forwardRef(
-    ({ class: class_, className, ...props }: HTMLAttributes<HTMLDivElement>, ref) => (
-      <div class={clsx(classes, className, class_)} {...props} />
+  return forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+    ({ className, ...props }, ref) => (
+      <div className={clsx(classes, className)} {...props} ref={ref} />
     ),
   )
 }

@@ -1,12 +1,13 @@
 import { SuggestionProps } from '@tiptap/suggestion'
 import { SlashCommandDisplayAdapter, SlashCommandItem } from './Suggestions'
 import { Subject, useSubject } from '@/common/rx'
-import { RefObject, render } from 'preact'
+import { KeyboardEvent, RefObject } from 'react'
 import { computePosition, flip, offset } from '@floating-ui/react'
-import { useEffect, useLayoutEffect, useRef } from 'preact/hooks'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { wrapVirtualElement } from '@/lib/iframe'
 import { getNextElement, getPrevElement } from '@/lib/html-elements'
 import { Editor } from '@tiptap/core'
+import { createRoot, Root } from 'react-dom/client';
 
 export interface SuggestionsElements {
   iframe: HTMLIFrameElement
@@ -15,37 +16,38 @@ export interface SuggestionsElements {
 
 export class SuggestionsDisplay implements SlashCommandDisplayAdapter {
   private readonly root: HTMLElement
+  private readonly reactRoot: Root
   private readonly elements: SuggestionsElements
   private readonly props = new Subject<
     SuggestionProps<SlashCommandItem, SlashCommandItem> | undefined
   >(undefined)
   private readonly getEditor: () => Editor
-  private readonly focusCallbackRef: RefObject<(arrowUp: boolean) => void> = { current: null }
+  private readonly focusCallbackRef: RefObject<((arrowUp: boolean) => void) | null> = { current: null }
 
   constructor(elements: SuggestionsElements, getEditor: () => Editor) {
     this.elements = elements
     this.getEditor = getEditor
     this.root = document.createElement('div')
+    this.reactRoot = createRoot(this.root)
     document.body.appendChild(this.root)
   }
 
   show(props: SuggestionProps<SlashCommandItem, SlashCommandItem>): void {
     this.props.set(props)
-    render(
+    this.reactRoot.render(
       <Suggestions
         focusCallbackRef={this.focusCallbackRef}
         props={this.props}
         elements={this.elements}
         getEditor={this.getEditor}
-      />,
-      this.root,
+      />
     )
   }
   update(props: SuggestionProps<SlashCommandItem, SlashCommandItem>): void {
     this.props.set(props)
   }
   hide(): void {
-    render(null, this.root)
+    this.reactRoot.render(null)
   }
   focus(key: 'ArrowUp' | 'ArrowDown'): void {
     this.focusCallbackRef.current?.(key === 'ArrowUp')
@@ -60,7 +62,7 @@ function Suggestions({
 }: {
   props: Subject<SuggestionProps<SlashCommandItem, SlashCommandItem> | undefined>
   elements: SuggestionsElements
-  focusCallbackRef: RefObject<(arrowUp: boolean) => void>
+  focusCallbackRef: RefObject<((arrowUp: boolean) => void) | null>
   getEditor: () => Editor
 }) {
   const propsValue = useSubject(props)
@@ -157,9 +159,9 @@ function Suggestions({
   }
 
   return (
-    <div class="be-suggestions-modal" ref={ref}>
+    <div className="be-suggestions-modal" ref={ref}>
       <ul ref={ulRef}>
-        {items.map((item, index) => (
+        {items.map((item) => (
           <li
             key={item.name}
             tabIndex={0}
@@ -172,13 +174,13 @@ function Suggestions({
             data-command={item.name}
             className="be-suggestion-item"
           >
-            <div class="be-suggestion-item__name">
-              {item.icon && <div class="be-suggestion-item__icon">{item.icon}</div>}
+            <div className="be-suggestion-item__name">
+              {item.icon && <div className="be-suggestion-item__icon">{item.icon}</div>}
               {item.name}
             </div>
 
             {item.description && (
-              <div class="be-suggestion-item__description">{item.description}</div>
+              <div className="be-suggestion-item__description">{item.description}</div>
             )}
           </li>
         ))}
@@ -206,7 +208,7 @@ function computeSuggestionsModalPosition(
         fallbackPlacements: ['top', 'bottom'],
       }),
       offset({
-        mainAxis: clientRect.height * 0,
+        mainAxis: clientRect.height * 0, // TODO what?
       }),
     ],
   })

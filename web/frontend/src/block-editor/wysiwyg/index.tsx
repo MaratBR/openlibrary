@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'preact/hooks'
+import { useLayoutEffect } from 'react'
 import './style.scss'
 import { ChapterContentEditor, ChapterContentEditorOptions } from './editor'
 import { EditorContent } from '@tiptap/react'

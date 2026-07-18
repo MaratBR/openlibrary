@@ -1,5 +1,5 @@
 import { AgeRating } from '@/api/common'
-import { Fragment } from 'preact/jsx-runtime'
+import { Fragment } from 'react';
 
 export type AgeRatingProps = {
   name?: string
@@ -10,7 +10,7 @@ export type AgeRatingProps = {
 
 export default function AgeRatingInput({ value, onChange, name }: AgeRatingProps) {
   return (
-    <div class="flex gap-2 flex-wrap">
+    <div className="flex gap-2 flex-wrap">
       {window.__server__.ageRatings.map((ageRating) => {
         const id = `new-book-${ageRating}`
         return (
@@ -18,14 +18,14 @@ export default function AgeRatingInput({ value, onChange, name }: AgeRatingProps
             <input
               key={ageRating}
               id={id}
-              class="age-rating-input"
+              className="age-rating-input"
               name={name}
               value={ageRating}
               type="radio"
               checked={ageRating === value}
               onChange={() => onChange(ageRating)}
             />
-            <label data-rating={ageRating} class="age-rating" for={id}>
+            <label data-rating={ageRating} className="age-rating" htmlFor={id}>
               {ageRating}
             </label>
           </Fragment>

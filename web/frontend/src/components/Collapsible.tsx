@@ -1,11 +1,11 @@
 import { animate, linear } from 'popmotion'
-import { Component, ComponentChild, ComponentChildren, RenderableProps } from 'preact'
+import { Component, ReactNode } from 'react'
 
 export class Collapsible extends Component<{
   in: boolean
   duration: number
-  children: ComponentChild
-}> {
+  children: ReactNode
+}, {}, never> {
   private $el: HTMLElement | null = null
   private $inner: HTMLElement | null = null
   private animation?: { stop: () => void }
@@ -40,7 +40,8 @@ export class Collapsible extends Component<{
     this.resizeObserver?.disconnect()
   }
 
-  componentDidUpdate(previousProps: Readonly<{ in: boolean; children: ComponentChild }>): void {
+
+  componentDidUpdate_(previousProps, previousState) {
     if (previousProps.in !== this.props.in) {
       this.animation?.stop()
       if (this.props.in) {
@@ -76,22 +77,22 @@ export class Collapsible extends Component<{
     this.expectedHeight = $inner.getBoundingClientRect().height
   }
 
-  render(
-    props?: RenderableProps<{ in: boolean; children: ComponentChild }, unknown> | undefined,
-  ): ComponentChildren {
+
+  render() {
+    const { children } = this.props
     return (
       <div
         ref={(el) => {
           this.$el = el
         }}
-        class="overflow-y-hidden"
+        className="overflow-y-hidden"
       >
         <div
           ref={(el) => {
             this.$inner = el
           }}
         >
-          {props?.children}
+          {children}
         </div>
       </div>
     )

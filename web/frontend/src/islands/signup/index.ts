@@ -1,5 +1,5 @@
-import { PreactIsland } from '../common/preact-island'
+import { ReactIsland } from '../common/react-island'
 
 import SignUpFormComponent from './SignUpForm'
 
-export const SignUpForm = new PreactIsland(SignUpFormComponent)
+export const SignUpForm = new ReactIsland(SignUpFormComponent)

@@ -1,7 +1,8 @@
 import { AnimationEvent, ModalAnimation, useAnimation } from '@/lib/animate'
 import clsx from 'clsx'
-import { HTMLAttributes, TargetedMouseEvent } from 'preact'
-import { createPortal, PropsWithChildren, useCallback, useRef, useState } from 'preact/compat'
+import { HTMLAttributes, MouseEvent } from 'react'
+import { PropsWithChildren, useCallback, useRef, useState } from 'react'
+import { createPortal } from 'react-dom';
 
 export type ModalProps = PropsWithChildren<{
   open: boolean
@@ -14,7 +15,7 @@ export type ModalProps = PropsWithChildren<{
 export default function Modal({ open, children, onClose, slotProps = {} }: ModalProps) {
   const ref = useRef<HTMLDivElement | null>(null)
   const handleClick = useCallback(
-    (e: TargetedMouseEvent<HTMLDivElement>) => {
+    (e: MouseEvent<HTMLDivElement>) => {
       if (!ref.current || e.target !== ref.current) return
       if (onClose) onClose()
     },
@@ -38,11 +39,11 @@ export default function Modal({ open, children, onClose, slotProps = {} }: Modal
   if (!shouldRender) return null
 
   return createPortal(
-    <div ref={ref} class="modal" onClick={handleClick}>
+    <div ref={ref} className="modal" onClick={handleClick}>
       <div
         ref={animationRef}
         {...slotProps.content}
-        class={clsx('modal__content', slotProps.content?.class)}
+        className={clsx('modal__content', slotProps.content?.className)}
       >
         {children}
       </div>

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'preact/hooks'
+import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 
 export type UseQueryParameter = [

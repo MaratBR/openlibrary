@@ -4,12 +4,12 @@ import Typography from '@tiptap/extension-typography'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import { Editor, EditorOptions } from '@tiptap/core'
 import { httpGetReview, httpUpdateReview, ratingSchema, ReviewDto, reviewDtoSchema } from './api'
-import { useEffect, useRef, useState } from 'preact/hooks'
-import { PreactIslandProps } from '../common/preact-island'
+import { MouseEvent, useEffect, useRef, useState } from 'react'
+import { ReactIslandProps } from '../common/react-island'
 
-export default function ReviewEditor({ rootElement }: PreactIslandProps) {
+export default function ReviewEditor({ rootElement }: ReactIslandProps) {
   const rootEl = useRef<HTMLDivElement | null>(null)
-  const editor = useRef<Editor | null>()
+  const editor = useRef<Editor | null>(null)
   const [active, setActive] = useState({ bold: false, italic: false })
   const [rating, setRating] = useState(0)
   const [saving, setSaving] = useState(false)
@@ -62,26 +62,26 @@ export default function ReviewEditor({ rootElement }: PreactIslandProps) {
     <div>
       <RatingInput scale={0.5} value={rating} onInput={setRating} />
 
-      <div class="review-editor__toolbar mt-4">
+      <div className="review-editor__toolbar mt-4">
         <button
-          class={active.bold ? 'active' : ''}
+          className={active.bold ? 'active' : ''}
           onClick={() => editor.current?.chain().focus().toggleBold().run()}
         >
-          <i class="fa-solid fa-bold" />
+          <i className="fa-solid fa-bold" />
         </button>
 
         <button
-          class={active.italic ? 'active' : ''}
+          className={active.italic ? 'active' : ''}
           onClick={() => editor.current?.chain().focus().toggleItalic().run()}
         >
-          <i class="fa-solid fa-italic" />
+          <i className="fa-solid fa-italic" />
         </button>
       </div>
 
-      <div ref={rootEl} class="review-editor__content user-content user-content--editor" />
+      <div ref={rootEl} className="review-editor__content user-content user-content--editor" />
 
       <button
-        class="btn btn--lg btn--solid btn--primary mt-3"
+        className="btn btn--lg btn--default mt-3"
         onClick={() => handleSave()}
         disabled={!formValid}
       >
@@ -124,14 +124,14 @@ function RatingInput({
   return (
     <div
       ref={rootElement}
-      class="relative cursor-pointer"
+      className="relative cursor-pointer"
       onClick={handleClick}
-      style={`width:${540 * scale}px;height:${100 * scale}px`}
+      style={{width: 540 * scale, height: 100*scale}}
     >
-      <div class="star-background h-full w-full opacity-15" />
+      <div className="star-background h-full w-full opacity-15" />
       <div
-        class="absolute left-0 top-0 star-background star-background--filled h-full"
-        style={`width:${calcPerc(value)}%;background-size:auto ${scale * 100}px`}
+        className="absolute left-0 top-0 star-background star-background--filled h-full"
+        style={{width: `${calcPerc(value)}%`, backgroundSize: `auto ${scale * 100}px`}}
       />
     </div>
   )

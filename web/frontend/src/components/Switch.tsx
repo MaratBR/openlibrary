@@ -1,8 +1,8 @@
-import { HTMLAttributes, InputHTMLAttributes } from 'preact/compat'
+import { ChangeEvent, HTMLAttributes, InputHTMLAttributes } from 'react'
 
 export type SwitchProps = {
   value: boolean
-  onChange: (value: boolean, event: Event) => void
+  onChange: (value: boolean, event: ChangeEvent<HTMLInputElement, HTMLInputElement>) => void
   name?: string
   slotProps?: {
     input?: InputHTMLAttributes<HTMLInputElement>
@@ -20,7 +20,7 @@ export default function Switch({
   ...props
 }: SwitchProps) {
   return (
-    <label class="switch" {...props}>
+    <label className="switch" {...props}>
       <input
         disabled={disabled}
         onChange={(e) => {
@@ -32,7 +32,7 @@ export default function Switch({
         type="checkbox"
         {...slotProps.input}
       />
-      <span class="switch__slider" {...slotProps.slider} />
+      <span className="switch__slider" {...slotProps.slider} />
     </label>
   )
 }

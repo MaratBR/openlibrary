@@ -1,5 +1,5 @@
 /* eslint-disable no-redeclare */
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useState } from 'react'
 
 type Callback<T> = (event: T) => void
 

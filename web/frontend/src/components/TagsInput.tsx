@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks'
+import { useState } from 'react'
 import { DropdownCore } from '../islands/search-filters/DropdownCore'
 import { DefinedTagDto, useTagsSearch } from '@/api/search'
 
@@ -36,22 +36,22 @@ export default function TagsInput({ tags = [], onInput, id }: TagsInputProps) {
     <DropdownCore
       slots={{
         beforeInput: (
-          <div class="dropdown__chips">
+          <div className="dropdown__chips">
             {tags.map((tag) => (
-              <span key={tag.id} class="tag">
+              <span key={tag.id} className="tag">
                 {tag.name}
 
-                {tag.adult && <span class="tag__adult">&nbsp;18+</span>}
+                {tag.adult && <span className="tag__adult">&nbsp;18+</span>}
 
                 <button
                   onClick={(e) => {
                     e.preventDefault()
                     remove(tag)
                   }}
-                  class="chip__close"
+                  className="chip__close"
                   aria-label={window._('search.removeTag')}
                 >
-                  <i class="fa-solid fa-xmark !text-[20px]" />
+                  <i className="fa-solid fa-xmark !text-[20px]" />
                 </button>
               </span>
             ))}
@@ -69,7 +69,7 @@ export default function TagsInput({ tags = [], onInput, id }: TagsInputProps) {
             <ul>
               {searchResults.map((tag) =>
                 tags.some((x) => x.id === tag.id) ? null : (
-                  <li key={tag.id} onClick={() => add(tag)} role="button" class="listitem">
+                  <li key={tag.id} onClick={() => add(tag)} role="button" className="listitem">
                     {tag.name}
                   </li>
                 ),

@@ -1,5 +1,5 @@
-import { useState } from 'preact/hooks'
-import { Fragment } from 'preact'
+import { useState } from 'react'
+import { Fragment } from 'react'
 import clsx from 'clsx'
 import CSRFInput from '@/components/CSRFInput'
 import TagsInput from '@/components/TagsInput'
@@ -20,20 +20,20 @@ export default function NewBookForm() {
 
   return (
     <form
-      class="anim-appear space-y-4 md:space-y-0 md:px-0 md:grid md:grid-cols-[150px_1fr] md:gap-2"
+      className="anim-appear space-y-4 md:space-y-0 md:px-0 md:grid md:grid-cols-[150px_1fr] md:gap-2"
       action="/books-manager/new"
       method="post"
     >
       <CSRFInput />
 
-      <ul class="flex flex-col pt-8 gap-2">
+      <ul className="flex flex-col pt-8 gap-2">
         {Array.from({ length: 4 }).map((_v, i) => {
           const canNavigateTo = stage >= i && activeStage !== i
 
           return (
             <li
               onClick={canNavigateTo ? () => setActiveStage(i) : undefined}
-              class={clsx('text-wrap text-muted-foreground', {
+              className={clsx('text-wrap text-muted-foreground', {
                 '!text-foreground hover:underline cursor-pointer': canNavigateTo,
                 'font-[600] !text-foreground': activeStage === i,
               })}
@@ -45,12 +45,12 @@ export default function NewBookForm() {
         })}
       </ul>
       <section>
-        <h1 class="page-header mb-8">
+        <h1 className="page-header mb-8">
           {stage === 0 && <span>{window._('bookManager.newBook.title')}</span>}
           {stage > 0 && name && <span>{name}</span>}
         </h1>
 
-        <fieldset class="w-96" style={activeStage === 0 ? {} : { display: 'none' }}>
+        <fieldset className="w-96" style={activeStage === 0 ? {} : { display: 'none' }}>
           <input
             value={name}
             onInput={(e) => setName((e.target as HTMLInputElement).value)}
@@ -61,10 +61,10 @@ export default function NewBookForm() {
                 setStage(1)
               }
             }}
-            autofocus
+            autoFocus
             placeholder={window._('bookManager.newBook.namePlaceholder')}
             required
-            class="input"
+            className="input"
             name="name"
           />
 
@@ -72,15 +72,15 @@ export default function NewBookForm() {
             disabled={name.trim().length < 2}
             onClick={() => setStage(1)}
             type="button"
-            class="btn btn--lg btn--solid btn--primary mt-8 rounded-full"
+            className="btn btn--lg btn--default mt-8 rounded-full"
           >
             {window._('bookManager.newBook.next')}
           </button>
         </fieldset>
 
-        <fieldset class="w-96" style={activeStage === 1 ? {} : { display: 'none' }}>
-          <p class="my-4">{window._('bookManager.newBook.selectRating')}</p>
-          <fieldset class="flex gap-2">
+        <fieldset className="w-96" style={activeStage === 1 ? {} : { display: 'none' }}>
+          <p className="my-4">{window._('bookManager.newBook.selectRating')}</p>
+          <fieldset className="flex gap-2">
             {window.__server__.ageRatings.map((ageRating) => {
               const id = `new-book-${ageRating}`
               return (
@@ -88,14 +88,14 @@ export default function NewBookForm() {
                   <input
                     key={ageRating}
                     id={id}
-                    class="age-rating-input"
+                    className="age-rating-input"
                     name="ageRating"
                     value={ageRating}
                     type="radio"
                     checked={ageRating === rating}
                     onChange={() => setRating(ageRating)}
                   />
-                  <label data-rating={ageRating} class="age-rating" for={id}>
+                  <label data-rating={ageRating} className="age-rating" htmlFor={id}>
                     {ageRating}
                   </label>
                 </Fragment>
@@ -103,27 +103,27 @@ export default function NewBookForm() {
             })}
           </fieldset>
 
-          <div class="mt-4">
+          <div className="mt-4">
             <button
               disabled={rating === ''}
               onClick={() => setStage(2)}
               type="button"
-              class="btn btn--lg btn--solid btn--primary mt-8 rounded-full"
+              className="btn btn--lg btn--default mt-8 rounded-full"
             >
               {window._('bookManager.newBook.next')}
             </button>
           </div>
         </fieldset>
 
-        <fieldset class="w-[500px]" style={activeStage === 2 ? {} : { display: 'none' }}>
-          <p class="mb-4">{window._('bookManager.newBook.selectTags')}</p>
+        <fieldset className="w-[500px]" style={activeStage === 2 ? {} : { display: 'none' }}>
+          <p className="mb-4">{window._('bookManager.newBook.selectTags')}</p>
           <TagsInput tags={tags} onInput={setTags} />
           <input hidden name="tags" value={tags.map((x) => x.id).join(',')} />
 
           <button
             onClick={() => setStage(3)}
             type="button"
-            class="btn btn--lg btn--solid btn--primary mt-8 rounded-full"
+            className="btn btn--lg btn--default mt-8 rounded-full"
           >
             {window._('bookManager.newBook.next')}
           </button>
@@ -132,15 +132,15 @@ export default function NewBookForm() {
         <div style={activeStage === 3 ? {} : { display: 'none' }}>
           <p>{window._('bookManager.newBook.pleaseReview')}</p>
 
-          <dl class="mt-4 dl">
+          <dl className="mt-4 dl">
             <dt>{window._('bookManager.newBook.bookName')}:</dt>
             <dd>{name}</dd>
             <dt>{window._('bookManager.newBook.ageRating')}:</dt>
             <dd>{rating}</dd>
             <dt>{window._('bookManager.newBook.tags')}:</dt>
-            <dd class="tags items-start flex flex-wrap gap-2">
+            <dd className="tags items-start flex flex-wrap gap-2">
               {tags.map((x) => (
-                <a class="tag" key={x.id} href={`/tags/${x.id}`}>
+                <a className="tag" key={x.id} href={`/tags/${x.id}`}>
                   {x.name}
                 </a>
               ))}
@@ -151,10 +151,10 @@ export default function NewBookForm() {
             onClick={() => {
               setLoading(true)
             }}
-            class="btn btn--lg btn--solid btn--primary mt-8 rounded-full"
+            className="btn btn--lg btn--default mt-8 rounded-full"
           >
             {loading ? (
-              <span class="loader loader--dark" />
+              <span className="loader loader--dark" />
             ) : (
               window._('bookManager.newBook.create')
             )}

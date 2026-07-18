@@ -31,69 +31,54 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                 "readingList.dnf",
             })
 
-            <button
-                if !readingListStatus.Valid {
-                    x-cloak
-                }
-                x-show="rl !== null" 
-                class="btn btn--outline btn--lg btn--primary w-full"
-                @click="open=true">
-                <i class="fa-solid fa-pencil"></i> 
-                <span x-text="rl ? (i18n['readingList.' + rl.status] ?? rl.status) : ''">
-                    if readingListStatus.Valid {
-                        {l.T(fmt.Sprintf("readingList.%s", readingListStatus.Value.Status))}
+            <div class="btn-group w-full">
+                <button
+                    if !readingListStatus.Valid {
+                        x-cloak
                     }
-                </span>
-            </button>
+                    x-show="rl !== null" 
+                    class="btn btn--outline flex-[1]"
+                    @click="open=true">
+                    <div class="btn__icon btn__icon--left">
+                        <i class="fa-solid fa-pencil"></i>
+                    </div> 
+                    <span x-text="rl ? (i18n['readingList.' + rl.status] ?? rl.status) : ''">
+                        if readingListStatus.Valid {
+                            {l.T(fmt.Sprintf("readingList.%s", readingListStatus.Value.Status))}
+                        }
+                    </span>
+                </button>
+
+                <button class="btn btn--outline">
+                    <div class="btn__icon">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </button>
+            </div>
             <button
                 if readingListStatus.Valid {
                     x-cloak
                 }
-                @click="status('want_to_read')" x-show="rl === null" class="btn btn--outline btn--lg btn--primary w-full nojs-hidden">
+                @click="status('want_to_read')" x-show="rl === null" class="btn btn--outline btn--lg w-full nojs-hidden">
                 <i class="fa-solid fa-pencil"></i>
                 <span>{l.T("readingList.want_to_read")}</span>
             </button>
 
-            <ul x-cloak x-show="open" class="card rounded-xl shadow-lg flex flex-col gap-2 absolute left-0 right-0 top-12 z-10" @click.outside="open=false">
+            <ul x-cloak x-show="open" class="card card--elevated flex flex-col gap-2 absolute left-0 right-0 top-12 z-10" @click.outside="open=false">
                 for _, status := range displayableReadingListStatuses() {
                     <li>
                         <button 
                             :disabled={ fmt.Sprintf("rl !== null && rl.status === '%s'", status) }
                             @click={ fmt.Sprintf("status('%s')", status) }
                             x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }
-                            class="btn btn--outline btn--fg btn--primary w-full border border-border" />
+                            class="btn btn--outline w-full" />
                     </li>
                 }
             </ul>
         } else {
-            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="btn btn--lg btn--solid btn--primary w-full">
+            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="btn btn--lg btn--default w-full">
                 {l.T("readingList.want_to_read")}
             </a>
-        }
-        if readingListStatus.Valid {
-            if readingListStatus.Value.ChapterID.Valid && readingListStatus.Value.Status == app.ReadingListStatusReading {
-                <a 
-                    href={templ.URL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, readingListStatus.Value.ChapterID.Value))} 
-                    class="bg-surface p-2 border rounded-lg block w-full mt-4">
-                    <div>{l.T("book.continueReading")}&nbsp;<i class="fa-solid fa-arrow-right"></i></div>
-                    <div class="text-xs">
-                        { readingListStatus.Value.ChapterName }
-                    </div>
-                </a>
-            }
-        } else {
-            if book.FirstChapterID.Valid {
-                {{
-                    var chapterQuery string
-                    if isAuthorized {
-                        chapterQuery = "?rl=1"
-                    }
-                }}
-                <a href={templ.URL(fmt.Sprintf("/book/%d/chapters/%d%s", book.ID, book.FirstChapterID.Value, chapterQuery))} 
-                    class="btn btn--outline btn--primary w-full mt-2">
-                    {l.T("book.startReading")}&nbsp;<i class="fa-solid fa-arrow-right"></i>
-                </a>
-            }
         }
     </section>
 }

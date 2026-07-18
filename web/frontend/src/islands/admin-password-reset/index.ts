@@ -1,4 +1,4 @@
-import { PreactIsland } from '../common/preact-island'
+import { ReactIsland } from '../common/react-island'
 import PasswordReset from './PasswordResetSection'
 
-export default new PreactIsland(PasswordReset)
+export default new ReactIsland(PasswordReset)

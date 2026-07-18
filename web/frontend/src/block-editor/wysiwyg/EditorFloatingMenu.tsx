@@ -11,7 +11,7 @@ export default function EditorFloatingMenu({ editor }: { editor: Editor }) {
         return parent.type.name === 'paragraph' && parent.content.size === 0
       }}
       editor={editor}
-      class="be-floating-menu"
+      className="be-floating-menu"
     >
       {window._('editor.floatingMenu')}
     </FloatingMenu>

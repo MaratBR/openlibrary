@@ -1,7 +1,8 @@
-import { render } from 'preact'
+
 import type { OLNotification } from '@/http-client'
 import SanitizeHTML from './SanitizeHTML'
 import { Subject, useSubject } from './rx'
+import { createRoot } from 'react-dom/client';
 
 class Notifications extends Subject<OLNotification[]> {
   constructor() {
@@ -33,13 +34,13 @@ function FlashesHost() {
       {notifications.map((notif, i) => {
         return (
           // TODO proper key value
-          <div key={i} class="ol-flash" data-type={notif.type}>
+          <div key={i} className="ol-flash" data-type={notif.type}>
             <span>
               <SanitizeHTML value={notif.text} />
             </span>
-            <div class="ol-flash__closeContainer">
-              <button onClick={() => Notifications.instance.remove(notif)} class="ol-flash__close">
-                <i class="fa-solid fa-xmark"></i>
+            <div className="ol-flash__closeContainer">
+              <button onClick={() => Notifications.instance.remove(notif)} className="ol-flash__close">
+                <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
           </div>
@@ -56,7 +57,8 @@ export function initflashes() {
     throw new Error('cannot initialize flash messages: #client-flashes element not found')
   }
 
-  render(<FlashesHost />, element)
+  const root = createRoot(element)
+  root.render(<FlashesHost />)
 }
 
 declare global {

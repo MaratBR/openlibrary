@@ -1,9 +1,9 @@
 import clsx from 'clsx'
-import { ComponentChild, HTMLAttributes, MouseEventHandler, TargetedMouseEvent } from 'preact'
+import { ReactNode, HTMLAttributes, MouseEventHandler, MouseEvent } from 'react'
 import { createClassComponent } from './util'
-import { useRef, useState } from 'preact/hooks'
+import { useRef, useState } from 'react'
 import { BinaryAnimation, useAnimation } from '@/lib/animate'
-import { ForwardedRef, forwardRef } from 'preact/compat'
+import { ForwardedRef, forwardRef } from 'react'
 
 export type SlidePanelRootProps = {
   size?: '1/2' | '3/4' | '5/6'
@@ -14,7 +14,7 @@ const SlidePanel_Root = forwardRef(
     return (
       <div
         ref={ref}
-        class={clsx('slide-panel shadow-2xl', {
+        className={clsx('slide-panel shadow-2xl', {
           'w-1/2': size === '1/2',
           'w-3/4': size === '3/4',
           'w-5/6': size === '5/6',
@@ -30,7 +30,6 @@ const SlidePanel_Content = createClassComponent('p-8')
 function SlidePanel_Overlay({
   children,
   onClickOutside,
-  class: class_,
   className,
   ...props
 }: {
@@ -38,7 +37,7 @@ function SlidePanel_Overlay({
 } & HTMLAttributes<HTMLDivElement>) {
   const ref = useRef<HTMLDivElement | null>(null)
 
-  function handleClick(event: TargetedMouseEvent<HTMLElement>) {
+  function handleClick(event: MouseEvent<HTMLElement>) {
     if (ref.current === event.target) {
       onClickOutside?.(event)
     }
@@ -48,7 +47,7 @@ function SlidePanel_Overlay({
     <div
       ref={ref}
       onClick={handleClick}
-      class={clsx('fixed inset-0 z-10', class_, className)}
+      className={clsx('fixed inset-0 z-10', className)}
       {...props}
     >
       {children}
@@ -85,7 +84,7 @@ function SlidePanel_Facade({
 }: {
   open: boolean
   onClose: () => void
-  children: ComponentChild
+  children: ReactNode
 }) {
   const [render, setRender] = useState(open)
 

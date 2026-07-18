@@ -2,15 +2,15 @@ import { DraftDto } from './contracts'
 
 export function CenterHeader({ draft }: { draft: DraftDto }) {
   return (
-    <div class="flex justify-center items-center h-full">
-      <div class="flex justify-center items-center bg-surface p-1 gap-1 rounded-xl">
+    <div className="flex justify-center items-center h-full">
+      <div className="flex justify-center items-center bg-surface p-1 gap-1 rounded-xl">
         <a
           href={`/book/${draft.book.id}/chapters/${draft.chapter.id}`}
           target="_blank"
-          class="btn btn--icon btn--primary"
+          className="btn btn--icon btn--primary"
           rel="noreferrer"
         >
-          <i class="fa-solid fa-up-right-from-square" />
+          <i className="fa-solid fa-up-right-from-square" />
         </a>
       </div>
     </div>

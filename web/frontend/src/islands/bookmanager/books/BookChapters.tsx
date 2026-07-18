@@ -3,7 +3,7 @@ import { BMBookAPI, ManagerBookDetailsDto } from '@/api/bm/book'
 import Popper from '@/components/Popper'
 import { formatNumberK } from '@/util/fmt'
 import { useMutation } from '@tanstack/react-query'
-import { useMemo, useRef, useState } from 'preact/hooks'
+import { SubmitEvent, useMemo, useRef, useState } from 'react'
 import { useRevalidator } from 'react-router'
 import { ChapterSlidePanel } from './ChapterSlidePanel'
 
@@ -14,9 +14,9 @@ export function BookChapters({ book }: { book: ManagerBookDetailsDto }) {
     <>
       <AddChapterButton bookId={book.id} />
 
-      <section class="space-y-4 mt-4">
-        {book.chapters.map((chapter, index) => (
-          <Chapter key={chapter.id} book={book} chapter={chapter} onOpenChapter={setChapter} />
+      <section className="space-y-4 mt-4">
+        {book.chapters.map((chapter) => (
+          <Chapter key={chapter.id}  chapter={chapter} onOpenChapter={setChapter} />
         ))}
       </section>
 
@@ -26,31 +26,29 @@ export function BookChapters({ book }: { book: ManagerBookDetailsDto }) {
 }
 
 function Chapter({
-  book,
   chapter,
   onOpenChapter,
 }: {
-  book: ManagerBookDetailsDto
   chapter: ManagerBookChapterDto
   onOpenChapter: (chapter: ManagerBookChapterDto) => void
 }) {
   return (
-    <div data-testid="BookChapters_Chapter" class="card rounded-lg grid cols-2">
+    <div data-testid="BookChapters_Chapter" className="card grid cols-2">
       <div>
-        <span class="text-xl font-medium">{chapter.name}</span>
-        <div class="flex gap-2 mt-2">
-          <button onClick={() => onOpenChapter(chapter)} className="btn btn--lg btn--solid btn--primary">
-            <i class="fa-solid fa-pen mr-2" />
+        <span className="text-xl font-medium">{chapter.name}</span>
+        <div className="flex gap-2 mt-2">
+          <button onClick={() => onOpenChapter(chapter)} className="btn btn--lg btn--default">
+            <i className="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </button>
         </div>
       </div>
 
       <div>
-        <div class="flex gap-1">
+        <div className="flex gap-1">
           {chapter.isAdultOverride && <AdultChip />}
           {chapter.isPubliclyVisible && <HiddenChip />}
-          <div class="chip">{window._('book.words', { count: formatNumberK(chapter.words) })}</div>
+          <div className="chip">{window._('book.words', { count: formatNumberK(chapter.words) })}</div>
         </div>
       </div>
     </div>
@@ -58,13 +56,13 @@ function Chapter({
 }
 
 function AdultChip() {
-  return <div class="chip chip--destructive">{window._('common.adult')}</div>
+  return <div className="chip chip--destructive">{window._('common.adult')}</div>
 }
 
 function HiddenChip() {
   return (
-    <div class="chip chip--secondary">
-      <i class="fa-solid fa-eye-slash mr-1" />
+    <div className="chip chip--secondary">
+      <i className="fa-solid fa-eye-slash mr-1" />
       {window._('bookManager.edit.chapterHidden')}
     </div>
   )
@@ -99,21 +97,21 @@ function AddChapterButton({ bookId }: { bookId: string }) {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} ref={ref} class="btn btn--outline btn--lg btn--primary mt-4">
-        <i class="fa-solid fa-plus mr-2" />
+      <button onClick={() => setOpen(true)} ref={ref} className="btn btn--outline btn--lg mt-4">
+        <i className="fa-solid fa-plus mr-2" />
         {window._('bookManager.edit.addChapter')}
       </button>
       <Popper onClose={() => setOpen(false)} open={open} placement="bottom-start" anchorEl={ref}>
-        <div class="card max-w-128 shadow-2xl">
+        <div className="card max-w-128 shadow-2xl">
           <form action="#" onSubmit={handleSubmit}>
-            <div class="flex gap-1">
+            <div className="flex gap-1">
               <input
-                class="input"
+                className="input"
                 value={name}
                 onChange={(e) => setName((e.target as HTMLInputElement).value)}
                 placeholder={window._('bookManager.edit.chapterNamePlaceholder')}
               />
-              <button disabled={!valid} class="btn btn--solid btn--primary">
+              <button disabled={!valid} className="btn btn--default">
                 {window._('bookManager.edit.addChapter')}
               </button>
             </div>

@@ -1,5 +1,6 @@
 /* eslint-disable no-redeclare */
-import { JSX } from 'preact/jsx-runtime'
+
+import { JSX } from "react";
 
 const i18nShowKeys = new URLSearchParams(window.location.search).has('i18n.show-keys')
 

@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'preact/hooks'
-import { PreactIslandProps } from '../common/preact-island'
+import { useEffect, useMemo, useState } from 'react'
+import { ReactIslandProps } from '../common/react-island'
 import { evaluatePasswordStrength, generateStrongPassword } from '@/lib/password'
 
 import clsx from 'clsx'
 
-export default function PasswordReset({ rootElement }: PreactIslandProps) {
+export default function PasswordReset({ rootElement }: ReactIslandProps) {
   const [value, setValue] = useState('')
 
   useEffect(() => {
@@ -28,16 +28,16 @@ export default function PasswordReset({ rootElement }: PreactIslandProps) {
   }
 
   return (
-    <div class="flex">
-      <div class="relative mb-10 mr-2">
+    <div className="flex">
+      <div className="relative mb-10 mr-2">
         <input
           name="password"
-          class="input"
+          className="input"
           onInput={(e) => setValue((e.target as HTMLInputElement).value)}
           value={value}
         />
         <div
-          class={clsx('absolute top-full w-full left-0 py-2 flex justify-center', {
+          className={clsx('absolute top-full w-full left-0 py-2 flex justify-center', {
             'text-red-800 bg-red-200 border-red-600 border': pwdEval.strength === 'Weak',
             'text-green-800 bg-green-200 border-green-600 border':
               pwdEval.strength === 'Strong' || pwdEval.strength === 'VeryStrong',
@@ -47,7 +47,7 @@ export default function PasswordReset({ rootElement }: PreactIslandProps) {
           {window._(`passwordStrength.${pwdEval.strength}`)}
         </div>
       </div>
-      <button onClick={handleCancel} class="btn btn--secondary btn--solid btn-sm">
+      <button onClick={handleCancel} className="btn btn--secondary btn-sm">
         {window._('common.cancel')}
       </button>
     </div>

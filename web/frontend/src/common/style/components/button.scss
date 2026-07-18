@@ -6,6 +6,21 @@
     --btn-tint: #ffffff;
 }
 
+@mixin btnVariantSolid() {
+    background-color: var(--btn-colors-main);
+    color: var(--btn-colors-text);
+
+    &:active {
+        background-color: color-mix(in srgb, var(--btn-colors-main), var(--btn-tint) 15%);
+    }
+}
+
+@mixin btnColorPrimary {
+    --btn-colors-main: var(--primary);
+    --btn-colors-shadow: var(--primary);
+    --btn-colors-text: var(--primary-foreground);
+}
+
 .btn {
     @apply 
         inline-flex justify-center items-center v-middle whitespace-nowrap text-sm font-medium ring-offset-background transition rounded-full cursor-pointer relative
@@ -16,95 +31,74 @@
     padding: 0 calc(var(--btn-height) / 3);
     text-align: center;
     --btn-height: calc(var(--spacing) * 10);
-    --btn-tint-frac: 15%;
-    --btn-bg-opacity: 0%;
-
-    --btn-colors-main: color-mix(in srgb, var(--surface) 92%, var(--btn-tint));
-    --btn-colors-shadow: var(--surface);
-    --btn-colors-text: var(--surface-foreground);
-
-    --btn-colors-shadow: var(--foreground);
-    --btn-shadow-transparency: 70%;
-    --btn-shadow-params: 0 1px 5px -3px;
 
     &:hover {
         --btn-shadow-transparency: 50%;
         --btn-shadow-params: 0 3px 6px -2px;
     }
 
-    &:active {
-        background-color: color-mix(in srgb, var(--btn-colors-main), var(--btn-tint) var(--btn-tint-frac));
+    &--default {
+        @include btnVariantSolid();
+        @include btnColorPrimary();
     }
 
-    // TYPES
-    &--solid {
-        background-color: var(--btn-colors-main);
-        color: var(--btn-colors-text);
+    &--outline {
+        @apply border active:border-foreground;
+
+        background-color: var(--surface);
+
+        &:hover {
+            background-color: color-mix(in oklch, var(--surface), var(--foreground) 5%);
+        }
+
+        &:active {
+            background-color: color-mix(in oklch, var(--surface), var(--foreground) 10%);
+        }
     }
 
     &--ghost {
-        --btn-colors-main: var(--foreground);
-        color: var(--btn-colors-main);
         background-color: transparent;
-        box-shadow: none;
+
+        &:hover {
+            background-color: color-mix(in oklch, transparent, var(--foreground) 5%);
+        }
+
+        &:active {
+            background-color: color-mix(in oklch, transparent, var(--foreground) 10%);
+        }    
+    }
+
+    &--secondary {
+        background-color: var(--secondary);
+
+        &:hover {
+            background-color: color-mix(in oklch, var(--secondary), var(--foreground) 5%);
+        }
+
+        &:active {
+            background-color: color-mix(in oklch, var(--secondary), var(--foreground) 10%);
+        }
+    }
+
+    &--destructive {
+        @apply text-destructive;
+        background-color: color-mix(in oklab, var(--destructive) 10%, transparent);
+        &:hover {
+            background-color: color-mix(in oklab, var(--destructive) 15%, transparent);
+        }
+        &:active {
+            background-color: color-mix(in oklab, var(--destructive) 20%, transparent);
+        }
+    }
+
+    &--icon {
+        @apply size-12;
 
         &:hover, &:active {
             background-color: color-mix(in srgb, var(--btn-colors-main) 13%, transparent);
         }
     }
 
-    &--outline {
-        --btn-colors-main: var(--foreground);
-        --btn-colors-border: color-mix(in srgb, var(--foreground), transparent 70%);
-        box-shadow: none;
-
-        @apply transition-all;
-        border: 1px solid var(--btn-colors-border);
-        line-height: calc(var(--btn-height) - 2px) !important;
-        color: var(--btn-colors-main);
-        background-color: transparent;
-
-        &:hover {
-            --btn-colors-border: var(--btn-colors-main);
-            @apply ring ring-inset;
-        }
-
-        &:hover, &:active {
-            background-color: transparent;
-        }
-
-        &.destructive {
-            --btn-colors-main: var(--destructive);
-        }
-
-        &.primary {
-            --btn-colors-main: var(--primary);
-        }
-    }
-
-    &--icon {
-        @apply size-12;
-    }
-
-    // COLORS
-    &--primary {
-        --btn-colors-main: var(--primary);
-        --btn-colors-shadow: var(--primary);
-        --btn-colors-text: var(--primary-foreground);
-    }
-
-    &--destructive {
-        --btn-colors-main: var(--destructive);
-        --btn-colors-shadow: var(--destructive);
-        --btn-colors-text: var(--destructive-foreground);
-    }
-
-    &--secondary {
-        --btn-colors-main: var(--secondary);
-        --btn-colors-shadow: var(--secondary);
-        --btn-colors-text: var(--secondary-foreground);
-    }
-    
     // SIZES
     &--sm {
         @apply text-sm;
@@ -118,6 +112,13 @@
     &--sq {
         @apply rounded-sm;
     }
+
+    &__icon {
+        &--left {
+            @apply mr-1;
+        }
+
+    }
 }
 
 
@@ -126,6 +127,10 @@
 
     & > .btn:not(:first-child):not(:last-child) {
         @apply rounded-none;
+    }
+
+    & > .btn:not(:first-child) {
+        @apply border-l-0;
     }
 
     & > .btn:not(:last-child) {

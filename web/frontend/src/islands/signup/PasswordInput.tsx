@@ -1,6 +1,6 @@
 import { PasswordRequirements, PasswordValidationResult, validatePassword } from '@/common/password'
-import { ChangeEvent } from 'preact/compat'
-import { useMemo } from 'preact/hooks'
+import { ChangeEvent } from 'react'
+import { useMemo } from 'react'
 
 interface PasswordInputProps {
   passwordRequirements: PasswordRequirements

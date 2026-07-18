@@ -7,7 +7,7 @@ import { readFile } from 'node:fs/promises'
 import glob from 'fast-glob'
 import UnoCSS from 'unocss/vite'
 import chokidar, { FSWatcher } from 'chokidar'
-import preact from '@preact/preset-vite'
+import react from '@vitejs/plugin-react'
 
 const SOURCEMAP = true
 
@@ -197,23 +197,7 @@ export default defineConfig((env) => ({
 
     UnoCSS(),
 
-    preact({
-      devToolsEnabled: true,
-      prefreshEnabled: true,
-      babel: {
-        plugins: [
-          [
-            '@babel/plugin-proposal-decorators',
-            {
-              decoratorsBeforeExport: true,
-              version: '2023-05',
-            },
-          ],
-          '@babel/plugin-transform-class-static-block',
-          '@babel/plugin-transform-class-properties',
-        ],
-      },
-    }),
+    react({}),
     autoInjectCSSAsLinkTagPlugin({
       baseUrl: '/_/assets/',
     }),
@@ -223,9 +207,6 @@ export default defineConfig((env) => ({
   resolve: {
     alias: {
       '@': resolve(__dirname, './web/frontend/src'),
-      react: 'preact/compat',
-      'react-dom': 'preact/compat',
-      'react/jsx-runtime': 'preact/jsx-runtime',
     },
   },
 

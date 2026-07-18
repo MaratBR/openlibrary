@@ -13,10 +13,10 @@ import Text from '@tiptap/extension-text'
 import History from '@tiptap/extension-history'
 import TextAlign from '@tiptap/extension-text-align'
 
-import { ComponentChildren, render } from 'preact'
 import { Subject, useSubject } from '@/common/rx'
-import { MouseEventHandler } from 'preact/compat'
+import { MouseEventHandler, ReactNode } from 'react'
 import { debounce } from '@/common/util/fn'
+import { createRoot, Root } from 'react-dom/client';
 
 export type State = {
   bold: boolean
@@ -45,6 +45,7 @@ export class SimpleEditor extends Editor {
 
   private readonly $toolbarWrapper: HTMLElement
   private readonly $element: HTMLElement
+  private toolbarWrapperReactRoot?: Root 
 
   constructor(element: HTMLElement) {
     const html = element.innerHTML
@@ -85,7 +86,8 @@ export class SimpleEditor extends Editor {
       element.innerHTML = ''
       element.appendChild(this.$toolbarWrapper)
       element.appendChild(contentElement)
-      render(<Toolbar editor={this} />, this.$toolbarWrapper)
+      this.toolbarWrapperReactRoot = createRoot(this.$toolbarWrapper)
+      this.toolbarWrapperReactRoot.render(<Toolbar editor={this} />)
       this._initInputElement()
     })
 
@@ -159,7 +161,7 @@ export class SimpleEditor extends Editor {
 
   destroy(): void {
     super.destroy()
-    render(null, this.$toolbarWrapper)
+    if (this.toolbarWrapperReactRoot) this.toolbarWrapperReactRoot.unmount()
   }
 }
 
@@ -167,43 +169,43 @@ function Toolbar({ editor }: { editor: SimpleEditor }) {
   const { bold, italic, strikethrough, textAlign } = useSubject(editor.tiptapState)
 
   return (
-    <ul class="SimpleEditor__toolbar">
+    <ul className="SimpleEditor__toolbar">
       <ToolbarButton active={bold} onClick={() => editor.chain().toggleBold().focus().run()}>
-        <i class="fa-solid fa-bold" />
+        <i className="fa-solid fa-bold" />
       </ToolbarButton>
       <ToolbarButton active={italic} onClick={() => editor.chain().toggleItalic().focus().run()}>
-        <i class="fa-solid fa-italic" />
+        <i className="fa-solid fa-italic" />
       </ToolbarButton>
       <ToolbarButton
         active={strikethrough}
         onClick={() => editor.chain().toggleStrike().focus().run()}
       >
-        <i class="fa-solid fa-strikethrough" />
+        <i className="fa-solid fa-strikethrough" />
       </ToolbarButton>
-      <li class="SimpleEditor__delimiter" aria-hidden="true" />
+      <li className="SimpleEditor__delimiter" aria-hidden="true" />
       <ToolbarButton
         active={textAlign === 'left'}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
       >
-        <i class="fa-solid fa-align-left" />
+        <i className="fa-solid fa-align-left" />
       </ToolbarButton>
       <ToolbarButton
         active={textAlign === 'center'}
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
       >
-        <i class="fa-solid fa-align-center" />
+        <i className="fa-solid fa-align-center" />
       </ToolbarButton>
       <ToolbarButton
         active={textAlign === 'right'}
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
       >
-        <i class="fa-solid fa-align-right" />
+        <i className="fa-solid fa-align-right" />
       </ToolbarButton>
       <ToolbarButton
         active={textAlign === 'justify'}
         onClick={() => editor.chain().focus().setTextAlign('justify').run()}
       >
-        <i class="fa-solid fa-align-justify" />
+        <i className="fa-solid fa-align-justify" />
       </ToolbarButton>
     </ul>
   )
@@ -216,12 +218,12 @@ function ToolbarButton({
 }: {
   active: boolean
   onClick: MouseEventHandler<HTMLLIElement>
-  children: ComponentChildren
+  children: ReactNode
 }) {
   return (
     <li
       role="button"
-      class={`SimpleEditor__btn ${active ? 'SimpleEditor__btn--active' : ''}`}
+      className={`SimpleEditor__btn ${active ? 'SimpleEditor__btn--active' : ''}`}
       onClick={onClick}
     >
       {children}

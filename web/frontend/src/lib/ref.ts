@@ -1,5 +1,5 @@
-import { Ref, RefCallback } from 'preact'
-import { useCallback, useRef } from 'preact/hooks'
+import { Ref, RefCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 export function useForkRef<T>(...refs: Ref<T>[]): RefCallback<T> {
   const refsRef = useRef(refs)

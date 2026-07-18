@@ -1,5 +1,6 @@
-import { render } from 'preact'
-import { useMemo, useState } from 'preact/hooks'
+
+import { useMemo, useState } from 'react'
+import { createRoot } from 'react-dom/client';
 
 export type CommentEditorController = {
   close: () => void
@@ -8,12 +9,14 @@ export type CommentEditorController = {
 export function initCommentEditor($root: HTMLElement): CommentEditorController {
   const d = document.createElement('div')
   d.classList = 'chapter-comment-reply'
-  render(<Editor />, d)
+
+  const root = createRoot(d)
+  root.render(<Editor />)
   $root.prepend(d)
 
   return {
     close() {
-      render(null, d)
+      root.unmount()
       d.remove()
     },
   }
@@ -32,11 +35,11 @@ function Editor() {
       <textarea
         placeholder={window._('common.replyPlaceholder')}
         name="text"
-        class="chapter-comment-reply__text"
+        className="chapter-comment-reply__text"
         value={text}
         onChange={(e) => setText((e.target as HTMLTextAreaElement).value)}
       />
-      <button disabled={!valid} class="btn btn--secondary btn--sm btn--solid chapter-comment-reply__reply">
+      <button disabled={!valid} className="btn btn--secondary btn--sm chapter-comment-reply__reply">
         {window._('common.reply')}
       </button>
     </>

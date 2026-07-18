@@ -1,7 +1,8 @@
 import { ErrorDisplay } from '@/components/error'
 import { ImageResizer } from '@/components/image-upload'
 import Alpine from 'alpinejs'
-import { render } from 'preact'
+import { createRoot } from 'react-dom/client';
+
 
 // class ImageUploaderFileEvent extends CustomEvent<{ file: File; fileCropped: boolean }> {
 //   fileCropped: boolean
@@ -63,9 +64,10 @@ Alpine.data(
 
       if (errorContainer instanceof HTMLElement) {
         this._disposeErr()
-        render(<ErrorDisplay error={err} />, errorContainer)
+        const root = createRoot(errorContainer)
+        root.render(<ErrorDisplay error={err} />)
         this._disposeErr = () => {
-          render(null, errorContainer)
+          root.unmount()
           this._disposeErr = () => {}
         }
       }
@@ -98,11 +100,12 @@ const RESIZE_IMAGE_ERR_CLOSED = new Error('closed')
 function resizeImage(file: File, width: number, height: number) {
   return new Promise<File>((resolve, reject) => {
     const container = document.createElement('div')
+    const root = createRoot(container)
     container.style.display = 'contents'
 
     const unmount = () =>
       requestAnimationFrame(() => {
-        render(null, container)
+        root.unmount()
         container.remove()
       })
 
@@ -120,7 +123,7 @@ function resizeImage(file: File, width: number, height: number) {
 
     requestAnimationFrame(() => {
       document.body.appendChild(container)
-      render(
+      root.render(
         <ImageResizer
           handleUpload={handleUpload}
           onClose={onClose}
@@ -129,8 +132,7 @@ function resizeImage(file: File, width: number, height: number) {
           expectedWidth={width}
           height={600}
           width={600}
-        />,
-        container,
+        />
       )
     })
   })

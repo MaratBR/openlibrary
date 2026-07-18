@@ -1,8 +1,8 @@
-import { useState } from 'preact/hooks'
+import { EventHandler, SyntheticEvent, useState } from 'react'
 import { EditorElements } from './EditorElements'
-import { createPortal } from 'preact/compat'
 import { WYSIWYGEditor } from './wysiwyg'
 import { ChapterNameInput } from './ChapterNameInput'
+import { createPortal } from 'react-dom';
 
 // loads and iframe inside of which we will have the content of the
 // chapter
@@ -19,8 +19,8 @@ export function EditorIframe({ initialContent }: { initialContent: string }) {
         src="/books-manager/__fragment/chapter-content-iframe"
       />
       {loading && (
-        <div class="absolute inset-0 flex items-center justify-center">
-          <span class="loader" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="loader" />
         </div>
       )}
       {!loading && elements && (
@@ -42,7 +42,7 @@ export function EditorIframe({ initialContent }: { initialContent: string }) {
     </>
   )
 
-  function handleLoad(event: Event) {
+  function handleLoad(event: SyntheticEvent<HTMLIFrameElement>) {
     const iframe = event.target
     if (!(iframe instanceof HTMLIFrameElement)) return
     const elements = new EditorElements(iframe)

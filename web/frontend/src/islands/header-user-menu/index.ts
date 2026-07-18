@@ -1,6 +1,6 @@
-import { PreactIsland } from '@/islands/common/preact-island'
+import { ReactIsland } from '@/islands/common/react-island'
 import { UserMenu } from './UserMenu'
 
-const UserMenuIsland = new PreactIsland(UserMenu)
+const UserMenuIsland = new ReactIsland(UserMenu)
 
 export default UserMenuIsland

@@ -1,5 +1,5 @@
-import { PreactIsland } from '../common/preact-island.tsx'
+import { ReactIsland } from '../common/react-island.tsx'
 import ReviewEditor from './ReviewEditor.tsx'
 import './ReviewEditor.scss'
 
-export default new PreactIsland(ReviewEditor)
+export default new ReactIsland(ReviewEditor)
