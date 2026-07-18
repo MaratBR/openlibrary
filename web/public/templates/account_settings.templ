@@ -1,0 +1,203 @@
+package templates
+
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
+templ AccountSettings(settingsType string, settings any) {
+	{{
+		l := i18n.GetLocalizer(ctx)
+		settingsJSON, _ := templ.JSONString(settings)
+		dataExpression := fmt.Sprintf("accountSettings(%s, %q)", settingsJSON, "/account/settings/"+settingsType)
+	}}
+	@standardPageLayout(standardPageLayoutProps{
+		htmlLayoutProps: htmlLayoutProps{
+			Title: l.T("common.settings"),
+		},
+	}) {
+		<main class="ol-container py-10">
+			<div class="grid items-start gap-6 md:grid-cols-[240px_minmax(0,1fr)]">
+				<aside class="card overflow-hidden p-2">
+					<h1 class="px-3 py-2 font-title text-2xl">{ l.T("common.settings") }</h1>
+					<nav aria-label={ l.T("accountSettings.navigation") }>
+						<ul class="flex flex-col gap-1">
+							@settingsNavigationItem(settingsType, "about", "fa-solid fa-user", l.T("accountSettings.about.title"))
+							@settingsNavigationItem(settingsType, "privacy", "fa-solid fa-lock", l.T("accountSettings.privacy.title"))
+							@settingsNavigationItem(settingsType, "moderation", "fa-solid fa-shield-halved", l.T("accountSettings.moderation.title"))
+							@settingsNavigationItem(settingsType, "customization", "fa-solid fa-palette", l.T("accountSettings.customization.title"))
+						</ul>
+					</nav>
+				</aside>
+
+				<section class="card p-4 md:p-6" x-data={ dataExpression }>
+					<header class="mb-6 flex min-h-10 items-center justify-between gap-4 border-b pb-4">
+						<h2 class="font-title text-3xl">{ settingsTitle(l, settingsType) }</h2>
+						<div class="text-sm text-secondary-foreground" aria-live="polite">
+							<span x-show="saveState === 'saving'">{ l.T("accountSettings.saving") }</span>
+							<span x-show="saveState === 'saved'">{ l.T("accountSettings.saved") }</span>
+							<span x-show="saveState === 'error'" class="text-destructive">{ l.T("accountSettings.saveError") }</span>
+						</div>
+					</header>
+
+					switch settingsType {
+						case "about":
+							@aboutSettingsFields(l)
+						case "privacy":
+							@privacySettingsFields(l)
+						case "moderation":
+							@moderationSettingsFields(l)
+						case "customization":
+							@customizationSettingsFields(l)
+					}
+				</section>
+			</div>
+		</main>
+		<script>
+			function accountSettings(initialSettings, endpoint) {
+				return {
+					settings: initialSettings,
+					saveState: 'idle',
+					dirty: false,
+					inFlight: false,
+					timer: undefined,
+
+					requestSave() {
+						this.dirty = true
+						this.saveState = 'saving'
+						window.clearTimeout(this.timer)
+						this.timer = window.setTimeout(() => this.flushSave(), 500)
+					},
+
+					async flushSave() {
+						if (this.inFlight || !this.dirty) return
+						this.dirty = false
+						this.inFlight = true
+
+						try {
+							const response = await fetch(endpoint, {
+								method: 'PATCH',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify(this.settings),
+							})
+							if (!response.ok) throw new Error(`Settings request failed: ${response.status}`)
+							this.saveState = this.dirty ? 'saving' : 'saved'
+						} catch (error) {
+							console.error(error)
+							this.saveState = 'error'
+						} finally {
+							this.inFlight = false
+							if (this.dirty) this.flushSave()
+						}
+					},
+				}
+			}
+		</script>
+	}
+}
+
+templ settingsNavigationItem(activeType string, itemType string, icon string, label string) {
+	<li>
+		<a
+			href={ templ.SafeURL("/account/settings/" + itemType) }
+			class={ "flex items-center gap-3 rounded-md px-3 py-2 hover:bg-foreground/5", templ.KV("bg-foreground/5 font-semibold text-primary", activeType == itemType) }
+			if activeType == itemType {
+				aria-current="page"
+			}
+		>
+			<i class={ icon, "w-5 text-center" }></i>
+			<span>{ label }</span>
+		</a>
+	</li>
+}
+
+func settingsTitle(l *i18n.Localizer, settingsType string) string {
+	return l.T("accountSettings." + settingsType + ".title")
+}
+
+templ settingsField(label string, description string) {
+	<div class="grid gap-2 border-b py-5 last:border-b-0 md:grid-cols-[minmax(180px,1fr)_minmax(240px,2fr)] md:gap-6">
+		<div>
+			<div class="font-medium">{ label }</div>
+			<p class="mt-1 text-sm text-secondary-foreground">{ description }</p>
+		</div>
+		<div class="md:pt-1">{ children... }</div>
+	</div>
+}
+
+templ settingsSwitch(model string, label string) {
+	<label class="inline-flex items-center gap-3">
+		<span class="switch">
+			<input type="checkbox" x-model={ model } @change="requestSave()"/>
+			<span class="switch__slider"></span>
+		</span>
+		<span>{ label }</span>
+	</label>
+}
+
+templ aboutSettingsFields(l *i18n.Localizer) {
+	<div>
+		@settingsField(l.T("accountSettings.about.biography"), l.T("accountSettings.about.biographyDescription")) {
+			<textarea class="textarea min-h-40" x-model="settings.about" @input="requestSave()"></textarea>
+		}
+		@settingsField(l.T("accountSettings.about.gender"), l.T("accountSettings.about.genderDescription")) {
+			<select class="input" x-model="settings.gender" @change="requestSave()">
+				<option value="">{ l.T("gender.ratherNotSay") }</option>
+				<option value="m">{ l.T("gender.m") }</option>
+				<option value="f">{ l.T("gender.f") }</option>
+				<option value="o">{ l.T("gender.o") }</option>
+			</select>
+		}
+	</div>
+}
+
+templ privacySettingsFields(l *i18n.Localizer) {
+	<div>
+		@settingsField(l.T("accountSettings.privacy.hideStats"), l.T("accountSettings.privacy.hideStatsDescription")) {
+			@settingsSwitch("settings.hideStats", l.T("accountSettings.privacy.hideStats"))
+		}
+		@settingsField(l.T("accountSettings.privacy.hideComments"), l.T("accountSettings.privacy.hideCommentsDescription")) {
+			@settingsSwitch("settings.hideComments", l.T("accountSettings.privacy.hideComments"))
+		}
+		@settingsField(l.T("accountSettings.privacy.hideEmail"), l.T("accountSettings.privacy.hideEmailDescription")) {
+			@settingsSwitch("settings.hideEmail", l.T("accountSettings.privacy.hideEmail"))
+		}
+		@settingsField(l.T("accountSettings.privacy.allowSearching"), l.T("accountSettings.privacy.allowSearchingDescription")) {
+			@settingsSwitch("settings.allowSearching", l.T("accountSettings.privacy.allowSearching"))
+		}
+	</div>
+}
+
+templ moderationSettingsFields(l *i18n.Localizer) {
+	<div>
+		@settingsField(l.T("accountSettings.moderation.showAdultContent"), l.T("accountSettings.moderation.showAdultContentDescription")) {
+			@settingsSwitch("settings.showAdultContent", l.T("accountSettings.moderation.showAdultContent"))
+		}
+		@settingsField(l.T("accountSettings.moderation.censoredTagsMode"), l.T("accountSettings.moderation.censoredTagsModeDescription")) {
+			<select class="input" x-model="settings.censoredTagsMode" @change="requestSave()">
+				<option value="none">{ l.T("accountSettings.moderation.censorModeNone") }</option>
+				<option value="hide">{ l.T("accountSettings.moderation.censorModeHide") }</option>
+				<option value="censor">{ l.T("accountSettings.moderation.censorModeCensor") }</option>
+			</select>
+		}
+		@settingsField(l.T("accountSettings.moderation.censoredTags"), l.T("accountSettings.moderation.censoredTagsDescription")) {
+			<input class="input" disabled placeholder={ l.T("accountSettings.moderation.censoredTagsTodo") }/>
+		}
+	</div>
+}
+
+templ customizationSettingsFields(l *i18n.Localizer) {
+	<div>
+		@settingsField(l.T("accountSettings.customization.defaultTheme"), l.T("accountSettings.customization.defaultThemeDescription")) {
+			<select class="input" x-model="settings.defaultTheme" @change="requestSave()">
+				<option value="">{ l.T("uiTheme.system") }</option>
+				<option value="light">{ l.T("uiTheme.light") }</option>
+				<option value="dark">{ l.T("uiTheme.dark") }</option>
+			</select>
+		}
+		@settingsField(l.T("accountSettings.customization.enableProfileCss"), l.T("accountSettings.customization.enableProfileCssDescription")) {
+			@settingsSwitch("settings.enableProfileCss", l.T("accountSettings.customization.enableProfileCss"))
+		}
+		@settingsField(l.T("accountSettings.customization.profileCss"), l.T("accountSettings.customization.profileCssDescription")) {
+			<textarea class="textarea min-h-64 font-mono" x-model="settings.profileCss" @input="requestSave()" :disabled="!settings.enableProfileCss"></textarea>
+		}
+	</div>
+}

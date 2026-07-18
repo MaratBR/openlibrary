@@ -20,7 +20,7 @@ const (
 var TagsCategoryList = []TagsCategory{TagsCategoryOther, TagsCategoryWarning, TagsCategoryFandom, TagsCategoryRelationship, TagsCategoryRelationshipType}
 
 func (t TagsCategory) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, t.String())), nil
+	return fmt.Appendf(nil, `"%s"`, t.String()), nil
 }
 
 func (t *TagsCategory) UnmarshalJSON(b []byte) error {

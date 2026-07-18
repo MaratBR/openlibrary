@@ -11,6 +11,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/web/public/account"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/MaratBR/openlibrary/web/webinfra"
 	"github.com/NYTimes/gziphandler"
@@ -42,6 +43,7 @@ var FXModule = fx.Module("public_ui_handler",
 		newAPICollectionController,
 		newAPICommentsController,
 		newApiControllerI18N,
+		account.NewSettingsController,
 		webinfra.AsMountableHandler(newHandler),
 	))
 
@@ -62,6 +64,7 @@ func newHandler(
 	profileController *profileController,
 	searchController *searchController,
 	tagsController *tagsController,
+	settingsController *account.SettingsController,
 
 	apiControllerTags *apiControllerTags,
 	apiControllerBook *apiControllerBook,
@@ -99,6 +102,11 @@ func newHandler(
 	profileController.Register(h.r)
 	searchController.Register(h.r)
 	tagsController.Register(h.r)
+
+	h.r.Route("/account", func(r chi.Router) {
+		r.Use(requiresAuthorizationMiddleware)
+		settingsController.Register(r)
+	})
 
 	h.r.Route("/debug", func(r chi.Router) {
 		r.Handle("/500", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

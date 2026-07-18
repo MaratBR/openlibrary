@@ -60,7 +60,7 @@ type PasswordRequirements struct {
 }
 
 var (
-	regexDigits    = regexp.MustCompile("\\d")
+	regexDigits    = regexp.MustCompile(`\d`)
 	regexUppercase = regexp.MustCompile("[A-Z]")
 	regexLowercase = regexp.MustCompile("[a-z]")
 )
@@ -70,7 +70,7 @@ func ValidatePassword(pwd string, r PasswordRequirements) error {
 		return PasswordError.New("password must have digits")
 	}
 	if r.MinLength > 0 && len(pwd) < r.MinLength {
-		return PasswordError.New(fmt.Sprintf("password must be at least %d characters long", r.MinLength))
+		return PasswordError.New("%s", fmt.Sprintf("password must be at least %d characters long", r.MinLength))
 	}
 	if r.DifferentCases && !(regexLowercase.Match([]byte(pwd)) && regexUppercase.Match([]byte(pwd))) {
 		return PasswordError.New("password must contain at least one uppercase and one lowercase letter")

@@ -68,7 +68,7 @@ function UserMenuBody() {
           {window._('common.profile')}
         </a>
 
-        <a className="UserMenu__item" role="listitem" href="/profile/settings">
+        <a className="UserMenu__item" role="listitem" href="/account/settings">
           {window._('common.settings')}
         </a>
 

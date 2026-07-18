@@ -97,6 +97,52 @@ f = "Female"
 ratherNotSay = "Rather not say"
 o = "Other"
 
+[accountSettings]
+navigation = "Settings sections"
+saving = "Saving…"
+saved = "Saved"
+saveError = "Could not save changes"
+
+[accountSettings.about]
+title = "About"
+biography = "Biography"
+biographyDescription = "Tell other readers a little about yourself."
+gender = "Gender"
+genderDescription = "Choose how your gender is shown on your profile."
+
+[accountSettings.privacy]
+title = "Privacy"
+hideStats = "Hide statistics"
+hideStatsDescription = "Hide your reading and profile statistics from other users."
+hideComments = "Hide comments"
+hideCommentsDescription = "Hide your comments from your public profile."
+hideEmail = "Hide email"
+hideEmailDescription = "Do not show your email address to other users."
+allowSearching = "Allow profile search"
+allowSearchingDescription = "Allow other users to find your profile through search."
+
+[accountSettings.moderation]
+title = "Content moderation"
+showAdultContent = "Show adult content"
+showAdultContentDescription = "Allow adult books and other mature content to be displayed."
+censoredTagsMode = "Censored tags behavior"
+censoredTagsModeDescription = "Choose how content with censored tags should be handled."
+censorModeNone = "Do nothing"
+censorModeHide = "Hide matching content"
+censorModeCensor = "Blur matching content"
+censoredTags = "Censored tags"
+censoredTagsDescription = "Choose tags whose content should be filtered."
+censoredTagsTodo = "TODO: tag selection will be added later"
+
+[accountSettings.customization]
+title = "Customization"
+defaultTheme = "Default theme"
+defaultThemeDescription = "Choose the theme used when you sign in."
+enableProfileCss = "Enable custom profile CSS"
+enableProfileCssDescription = "Apply your custom CSS to your public profile."
+profileCss = "Profile CSS"
+profileCssDescription = "Custom CSS applied to your public profile."
+
 [role]
 admin = "Administrator"
 moderator = "Moderator"
