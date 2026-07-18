@@ -2,12 +2,7 @@ import { InputHTMLAttributes } from 'react'
 
 export type CheckboxProps = InputHTMLAttributes<HTMLInputElement>
 
-export default function Checkbox({
-  checked,
-  className = '',
-  children,
-  ...props
-}: CheckboxProps) {
+export default function Checkbox({ checked, className = '', children, ...props }: CheckboxProps) {
   return (
     <label className={`checkbox ${className}`}>
       {checked === false ? (

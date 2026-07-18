@@ -3,7 +3,7 @@
         @apply text-3xl font-medium p-2 rounded-xl;
     
         &:not(&--active) {
-            @apply text-muted-foreground transition-colors duration-75 hover:bg-primary/10 hover:text-primary active:bg-primary/15;
+            @apply text-secondary-foreground transition-colors duration-75 hover:bg-primary/10 hover:text-primary active:bg-primary/15;
         }
 
         &--active {
@@ -22,7 +22,7 @@
     &__header {
         @apply 
             text-2xl font-medium mb-4 whitespace-nowrap
-            2xl:absolute 2xl:right-full 2xl:text-right 2xl:py-2 2xl:px-3 2xl:rounded-full 2xl:bg-muted 2xl:mr-4;
+            2xl:absolute 2xl:right-full 2xl:text-right 2xl:py-2 2xl:px-3 2xl:rounded-full 2xl:bg-secondary 2xl:mr-4;
     }
 
     &__books {

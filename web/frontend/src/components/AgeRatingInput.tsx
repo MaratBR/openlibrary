@@ -1,5 +1,5 @@
 import { AgeRating } from '@/api/common'
-import { Fragment } from 'react';
+import { Fragment } from 'react'
 
 export type AgeRatingProps = {
   name?: string

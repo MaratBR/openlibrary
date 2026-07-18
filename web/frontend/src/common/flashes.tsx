@@ -1,8 +1,7 @@
-
 import type { OLNotification } from '@/http-client'
 import SanitizeHTML from './SanitizeHTML'
 import { Subject, useSubject } from './rx'
-import { createRoot } from 'react-dom/client';
+import { createRoot } from 'react-dom/client'
 
 class Notifications extends Subject<OLNotification[]> {
   constructor() {
@@ -39,7 +38,10 @@ function FlashesHost() {
               <SanitizeHTML value={notif.text} />
             </span>
             <div className="ol-flash__closeContainer">
-              <button onClick={() => Notifications.instance.remove(notif)} className="ol-flash__close">
+              <button
+                onClick={() => Notifications.instance.remove(notif)}
+                className="ol-flash__close"
+              >
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>

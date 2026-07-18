@@ -1,4 +1,4 @@
-import { InputEvent, KeyboardEvent } from "react";
+import { InputEvent, KeyboardEvent } from 'react'
 
 type NumberRange = {
   max: number | null

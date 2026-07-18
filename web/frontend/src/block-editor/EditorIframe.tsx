@@ -1,8 +1,8 @@
-import { EventHandler, SyntheticEvent, useState } from 'react'
+import { SyntheticEvent, useState } from 'react'
 import { EditorElements } from './EditorElements'
 import { WYSIWYGEditor } from './wysiwyg'
 import { ChapterNameInput } from './ChapterNameInput'
-import { createPortal } from 'react-dom';
+import { createPortal } from 'react-dom'
 
 // loads and iframe inside of which we will have the content of the
 // chapter

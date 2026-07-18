@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import {  HTMLAttributes, ReactNode } from 'react'
+import { HTMLAttributes, ReactNode } from 'react'
 
 function DashboardContent_Root({ children }: { children: ReactNode }) {
   return (
@@ -9,11 +9,7 @@ function DashboardContent_Root({ children }: { children: ReactNode }) {
   )
 }
 
-function DashboardContent_Card({
-  children,
-  className,
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
+function DashboardContent_Card({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={clsx('card', className)} data-testid="DashboardContent_Card" {...props}>
       {children}

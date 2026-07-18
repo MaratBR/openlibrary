@@ -11,7 +11,7 @@
 
     &--primary {
         .tab {
-            @apply font-medium relative border-transparent text-muted-foreground transition rounded-xl mr-2 last:mr-0;
+            @apply font-medium relative border-transparent text-secondary-foreground transition rounded-xl mr-2 last:mr-0;
             padding-bottom: 3px;
 
             &:hover:not(&--active) {
@@ -36,7 +36,7 @@
 
     &--primary-b {
         .tab {
-            @apply border-b-2 font-medium border-transparent text-lg text-muted-foreground hover:text-foreground;
+            @apply border-b-2 font-medium border-transparent text-lg text-secondary-foreground hover:text-foreground;
 
             &--active {
                 @apply font-semibold border-current text-foreground;

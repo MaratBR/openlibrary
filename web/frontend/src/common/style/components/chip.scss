@@ -20,7 +20,7 @@
     }
 
     &__close {
-        @apply text-xs text-muted-foreground hover:text-foreground;
+        @apply text-xs text-secondary-foreground hover:text-foreground;
 
         & > i {
             font-size: inherit !important;

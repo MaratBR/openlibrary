@@ -97,7 +97,7 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                         </a>
                                     </div>
                                     if user.IsBanned {
-                                        <div class="text-muted-foreground flex items-center">
+                                        <div class="text-secondary-foreground flex items-center">
                                             <i class="fa-solid fa-flag mr-1"></i>
                                             { l.T("admin.users.userIsBanned") }
                                         </div>
@@ -134,7 +134,7 @@ templ User(user *app.UserDetailsDto) {
             <header class="page-header-container">
                 <h1 class="page-header">
                     <a href="/admin/users" class="link">{ l.T("admin.users.title") }</a>
-                    <span class="mx-2 text-muted-foreground text-[0.8em]">/</span>
+                    <span class="mx-2 text-secondary-foreground text-[0.8em]">/</span>
                     {user.Name}
                 </h1>
             </header>

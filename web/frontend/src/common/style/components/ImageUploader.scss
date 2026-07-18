@@ -25,11 +25,11 @@
     }
 
     &__text {
-        @apply inline-block text-center text-sm font-500 text-muted-foreground;
+        @apply inline-block text-center text-sm font-500 text-secondary-foreground;
     }
 
     &__icon {
-        @apply text-4xl text-muted-foreground;
+        @apply text-4xl text-secondary-foreground;
         display: block !important;
     }
 }

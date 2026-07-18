@@ -2,7 +2,7 @@ import { AnimationEvent, ModalAnimation, useAnimation } from '@/lib/animate'
 import clsx from 'clsx'
 import { HTMLAttributes, MouseEvent } from 'react'
 import { PropsWithChildren, useCallback, useRef, useState } from 'react'
-import { createPortal } from 'react-dom';
+import { createPortal } from 'react-dom'
 
 export type ModalProps = PropsWithChildren<{
   open: boolean

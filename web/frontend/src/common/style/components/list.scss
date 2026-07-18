@@ -1,12 +1,32 @@
-.listitem {
-    @apply p-1;
+.list-item {
+    @apply flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors;
     word-wrap: normal;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    @apply hover:bg-highlight cursor-pointer transition;
+
+    &:not(&--selected):not([aria-disabled="true"]) {
+        @apply cursor-pointer hover:bg-foreground/5;
+    }
+
+    &--selected {
+        @apply cursor-default bg-primary/10 text-primary;
+    }
+
+    &[aria-disabled="true"]:not(&--selected) {
+        @apply cursor-default opacity-50;
+    }
 
     &--lg {
-        @apply p-2;
+        @apply px-3 py-3;
+    }
+
+    &__icon {
+        @apply w-5 shrink-0 text-center text-secondary-foreground;
+    }
+
+    &--selected &__icon {
+        @apply text-primary;
+    }
+
+    &__content {
+        @apply min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap;
     }
 }

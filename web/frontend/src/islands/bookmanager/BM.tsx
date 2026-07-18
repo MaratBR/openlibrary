@@ -5,6 +5,7 @@ import BMLayout from './BMLayout'
 import { Books, booksRouteLoader } from './books'
 import { Book, bookRouteLoader } from './books/Book'
 import BookEdit from './books/BookEdit'
+import NewBookForm from './new-book/NewBookForm'
 
 const router = createHashRouter([
   {
@@ -23,6 +24,10 @@ const router = createHashRouter([
         path: '/books',
         element: <Books />,
         loader: booksRouteLoader,
+      },
+      {
+        path: '/books/new',
+        element: <NewBookForm />,
       },
       {
         path: '/books/:bookId',

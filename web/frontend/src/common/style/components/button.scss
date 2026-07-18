@@ -147,9 +147,9 @@
 
     & > .btn:not(:last-child)::after {
         content: ' ';
-        @apply block border-r-1 absolute border-border;
-        top: 10%;
-        bottom: 10%;
+        @apply block border-r-1 absolute border-current/30;
+        top: 0%;
+        bottom: 0%;
         right: 0;
     }
 

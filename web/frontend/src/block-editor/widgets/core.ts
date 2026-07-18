@@ -1,4 +1,4 @@
-import { JSX } from 'react';
+import { JSX } from 'react'
 import { ChapterContentEditor } from '../wysiwyg/editor'
 
 export interface Widget {

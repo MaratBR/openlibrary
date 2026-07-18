@@ -16,7 +16,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import { Subject, useSubject } from '@/common/rx'
 import { MouseEventHandler, ReactNode } from 'react'
 import { debounce } from '@/common/util/fn'
-import { createRoot, Root } from 'react-dom/client';
+import { createRoot, Root } from 'react-dom/client'
 
 export type State = {
   bold: boolean
@@ -45,7 +45,7 @@ export class SimpleEditor extends Editor {
 
   private readonly $toolbarWrapper: HTMLElement
   private readonly $element: HTMLElement
-  private toolbarWrapperReactRoot?: Root 
+  private toolbarWrapperReactRoot?: Root
 
   constructor(element: HTMLElement) {
     const html = element.innerHTML

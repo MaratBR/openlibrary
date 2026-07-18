@@ -8,8 +8,8 @@ export type CommentRepliesController = {
 }
 
 export function initCommentReplies(
-  $root: HTMLElement,
-  commentId: string,
+  _$root: HTMLElement,
+  _commentId: string,
 ): CommentRepliesController {
   alert('Comments are not finished')
   throw new Error('not implemented')
@@ -22,7 +22,7 @@ export function initCommentReplies(
   // }
 }
 
-function Replies({ commentId }: { commentId: string }) {
+export function Replies({ commentId }: { commentId: string }) {
   const [replies, setReplies] = useState<CommentDto[]>([])
   const cursorRef = useRef(0)
 

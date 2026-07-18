@@ -169,7 +169,7 @@ templ Tag(tag app.TagDetailsItemDto) {
 
                 <article class="admin-card p-4">
                     if tag.Description == "" {
-                        <p class="text-muted-foreground">
+                        <p class="text-secondary-foreground">
                             { l.T("admin.tags.noDescription") }
                         </p>
                     } else {
@@ -278,7 +278,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                     <div class="admin-form-field">
                         <div class="admin-form-field__label">
                             <label for="adult">{l.T("admin.tags.adult")}</label>
-                            <p class="text-muted-foreground">
+                            <p class="text-secondary-foreground">
                                 {l.T("admin.tags.adultDescription")}
                             </p>
                         </div>
@@ -296,7 +296,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                     <div class="admin-form-field">
                         <div class="admin-form-field__label">
                             <label for="spoiler">{l.T("admin.tags.spoiler")}</label>
-                            <p class="text-muted-foreground">
+                            <p class="text-secondary-foreground">
                                 {l.T("admin.tags.spoilerDescription")}
                             </p>
                         </div>

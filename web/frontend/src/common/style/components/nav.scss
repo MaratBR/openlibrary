@@ -111,7 +111,7 @@
 }
 
 .dashboard-sidebar-ghost-btn {
-    @apply rounded-md p-2 mx-1 transition-colors text-md hover:bg-black/10 hover:text-foreground text-muted-foreground;
+    @apply rounded-md p-2 mx-1 transition-colors text-md hover:bg-black/10 hover:text-foreground text-secondary-foreground;
 }
 
 
@@ -122,7 +122,7 @@
 }
 
 .dashboard-sidebar-item {
-    @apply cursor-pointer text-md text-muted-foreground transition relative mx-1 rounded-md;
+    @apply cursor-pointer text-md text-secondary-foreground transition relative mx-1 rounded-md;
 
     & > a {
         display: block;

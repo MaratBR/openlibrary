@@ -16,7 +16,7 @@
     @apply grid grid-cols-[100px_auto] gap-2;
 
     &__title {
-        @apply cursor-pointer font-medium font-title text-2xl whitespace-break-spaces text-muted-foreground hover:underline hover:text-foreground;
+        @apply cursor-pointer font-medium font-title text-2xl whitespace-break-spaces text-secondary-foreground hover:underline hover:text-foreground;
     }
 
     &__cover {

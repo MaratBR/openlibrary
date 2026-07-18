@@ -126,12 +126,12 @@ function RatingInput({
       ref={rootElement}
       className="relative cursor-pointer"
       onClick={handleClick}
-      style={{width: 540 * scale, height: 100*scale}}
+      style={{ width: 540 * scale, height: 100 * scale }}
     >
       <div className="star-background h-full w-full opacity-15" />
       <div
         className="absolute left-0 top-0 star-background star-background--filled h-full"
-        style={{width: `${calcPerc(value)}%`, backgroundSize: `auto ${scale * 100}px`}}
+        style={{ width: `${calcPerc(value)}%`, backgroundSize: `auto ${scale * 100}px` }}
       />
     </div>
   )

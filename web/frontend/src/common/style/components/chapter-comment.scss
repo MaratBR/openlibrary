@@ -17,7 +17,7 @@
 
         & > button {
             @apply 
-                flex items-center justify-center h-8 min-w-8 text-muted-foreground transition relative 
+                flex items-center justify-center h-8 min-w-8 text-secondary-foreground transition relative
                 hover:text-primary;
             z-index: 1;
 

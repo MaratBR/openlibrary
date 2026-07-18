@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 
 import { ModalAnimation, useAnimation } from '@/lib/animate'
 import Switch from '@/components/Switch'
-import { createRoot } from 'react-dom/client';
+import { createRoot } from 'react-dom/client'
 
 export function PublishChapterPopup({ onClose, open }: { onClose: () => void; open: boolean }) {
   const isHidden = useBEState((s) => s.draft?.isChapterPubliclyAvailable === false)
@@ -30,7 +30,7 @@ export function PublishChapterPopup({ onClose, open }: { onClose: () => void; op
                 {window._('editor.viewChapter')}
                 &nbsp;
                 <i className="fa-solid fa-arrow-up-right-from-square" />
-              </a>
+              </a>,
             )
             return () => root.unmount()
           }
@@ -70,7 +70,11 @@ export function PublishChapterPopup({ onClose, open }: { onClose: () => void; op
           className="btn btn--outline w-32"
           onClick={() => publishMutation.mutate()}
         >
-          {publishMutation.isPending ? <span className="loader" /> : window._('editor.publishDraft')}
+          {publishMutation.isPending ? (
+            <span className="loader" />
+          ) : (
+            window._('editor.publishDraft')
+          )}
         </button>
         <button
           disabled={publishMutation.isPending}

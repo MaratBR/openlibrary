@@ -142,7 +142,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings, opti
     <header class="book-reader__header">
         <h1 class="text-3xl font-title">{ chapter.Name }</h1>
     
-        <p class="mt-2 text-muted-foreground">
+        <p class="mt-2 text-secondary-foreground">
             { l.TData("book.words", map[string]string{
                 "count": commonutil.FormatInt(int(chapter.Words)),
             }) } &bull; <time datetime={ chapter.CreatedAt.String() }>{ relativeTime(l, chapter.CreatedAt) }</time>

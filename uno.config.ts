@@ -50,14 +50,6 @@ export default defineConfig({
         DEFAULT: 'var(--secondary)',
         foreground: 'var(--secondary-foreground)',
       },
-      muted: {
-        DEFAULT: 'var(--muted)',
-        foreground: 'var(--muted-foreground)',
-      },
-      'muted-2': {
-        DEFAULT: 'var(--muted-2)',
-        foreground: 'var(--muted-2-foreground)',
-      },
       highlight: {
         DEFAULT: 'var(--highlight)',
         foreground: 'var(--foreground)',

@@ -5,7 +5,7 @@ export function ChapterNameInput() {
 
   return (
     <div className="my-4">
-      <span className="text-muted-foreground">Chapter name</span>
+      <span className="text-secondary-foreground">Chapter name</span>
       <input
         name="chapterName"
         className="be-chapter-name-input"

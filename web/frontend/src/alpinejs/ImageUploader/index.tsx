@@ -1,8 +1,7 @@
 import { ErrorDisplay } from '@/components/error'
 import { ImageResizer } from '@/components/image-upload'
 import Alpine from 'alpinejs'
-import { createRoot } from 'react-dom/client';
-
+import { createRoot } from 'react-dom/client'
 
 // class ImageUploaderFileEvent extends CustomEvent<{ file: File; fileCropped: boolean }> {
 //   fileCropped: boolean
@@ -132,7 +131,7 @@ function resizeImage(file: File, width: number, height: number) {
           expectedWidth={width}
           height={600}
           width={600}
-        />
+        />,
       )
     })
   })

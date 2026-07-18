@@ -16,7 +16,7 @@ export function BookChapters({ book }: { book: ManagerBookDetailsDto }) {
 
       <section className="space-y-4 mt-4">
         {book.chapters.map((chapter) => (
-          <Chapter key={chapter.id}  chapter={chapter} onOpenChapter={setChapter} />
+          <Chapter key={chapter.id} chapter={chapter} onOpenChapter={setChapter} />
         ))}
       </section>
 
@@ -48,7 +48,9 @@ function Chapter({
         <div className="flex gap-1">
           {chapter.isAdultOverride && <AdultChip />}
           {chapter.isPubliclyVisible && <HiddenChip />}
-          <div className="chip">{window._('book.words', { count: formatNumberK(chapter.words) })}</div>
+          <div className="chip">
+            {window._('book.words', { count: formatNumberK(chapter.words) })}
+          </div>
         </div>
       </div>
     </div>

@@ -1,11 +1,13 @@
 import { animate, linear } from 'popmotion'
 import { Component, ReactNode } from 'react'
 
-export class Collapsible extends Component<{
+type CollapsibleProps = {
   in: boolean
   duration: number
   children: ReactNode
-}, {}, never> {
+}
+
+export class Collapsible extends Component<CollapsibleProps> {
   private $el: HTMLElement | null = null
   private $inner: HTMLElement | null = null
   private animation?: { stop: () => void }
@@ -40,8 +42,7 @@ export class Collapsible extends Component<{
     this.resizeObserver?.disconnect()
   }
 
-
-  componentDidUpdate_(previousProps, previousState) {
+  componentDidUpdate(previousProps: Readonly<CollapsibleProps>) {
     if (previousProps.in !== this.props.in) {
       this.animation?.stop()
       if (this.props.in) {
@@ -76,7 +77,6 @@ export class Collapsible extends Component<{
     if (!$inner) return
     this.expectedHeight = $inner.getBoundingClientRect().height
   }
-
 
   render() {
     const { children } = this.props

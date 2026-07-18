@@ -116,23 +116,26 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                     <i class="fa-solid fa-book-open w-5 text-center"></i>
                     <span class="min-w-0">
                         <span class="block" x-text="i18n['readingList.currentChapter']"></span>
-                        <span class="block truncate text-xs font-normal text-muted-foreground" x-text="rl?.chapterName"></span>
+                        <span class="block truncate text-xs font-normal text-secondary-foreground" x-text="rl?.chapterName"></span>
                     </span>
                 </a>
                 <ul class="flex flex-col gap-1" role="none">
                     for _, status := range displayableReadingListStatuses() {
-                        <li role="none">
-                            <button
-                                type="button"
-                                role="menuitemradio"
-                                :aria-checked={ fmt.Sprintf("rl?.status === '%s'", status) }
-                                :disabled="busy"
-                                @click={ fmt.Sprintf("status('%s')", status) }
-                                class="btn btn--ghost w-full justify-start">
-                                <i class={ "btn__icon btn__icon--left fa-solid w-5 text-center text-muted-foreground " + readingListStatusIcon(status) }></i>
-                                <span class="flex-1" x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }></span>
-                                <i class="fa-solid fa-check text-primary opacity-0" :class={ fmt.Sprintf("rl?.status === '%s' && 'opacity-100'", status) }></i>
-                            </button>
+                        <li
+                            role="menuitemradio"
+                            :aria-checked={ fmt.Sprintf("rl?.status === '%s'", status) }
+                            :aria-disabled={ fmt.Sprintf("busy || rl?.status === '%s'", status) }
+                            :tabindex={ fmt.Sprintf("busy || rl?.status === '%s' ? -1 : 0", status) }
+                            :class={ fmt.Sprintf("rl?.status === '%s' && 'list-item--selected'", status) }
+                            @click={ fmt.Sprintf("!busy && rl?.status !== '%s' && status('%s')", status, status) }
+                            @keydown.enter.prevent={ fmt.Sprintf("!busy && rl?.status !== '%s' && status('%s')", status, status) }
+                            @keydown.space.prevent={ fmt.Sprintf("!busy && rl?.status !== '%s' && status('%s')", status, status) }
+                            class="list-item">
+                            <i class={ "list-item__icon fa-solid " + readingListStatusIcon(status) }></i>
+                            <span class="list-item__content" x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }></span>
+                            <i
+                                class="fa-solid fa-check text-primary opacity-0"
+                                :class={ fmt.Sprintf("rl?.status === '%s' && 'opacity-100'", status) }></i>
                         </li>
                     }
                 </ul>

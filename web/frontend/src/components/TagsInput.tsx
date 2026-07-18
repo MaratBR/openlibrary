@@ -69,7 +69,7 @@ export default function TagsInput({ tags = [], onInput, id }: TagsInputProps) {
             <ul>
               {searchResults.map((tag) =>
                 tags.some((x) => x.id === tag.id) ? null : (
-                  <li key={tag.id} onClick={() => add(tag)} role="button" className="listitem">
+                  <li key={tag.id} onClick={() => add(tag)} role="button" className="list-item">
                     {tag.name}
                   </li>
                 ),

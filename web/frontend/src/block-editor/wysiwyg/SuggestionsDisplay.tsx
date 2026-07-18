@@ -7,7 +7,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { wrapVirtualElement } from '@/lib/iframe'
 import { getNextElement, getPrevElement } from '@/lib/html-elements'
 import { Editor } from '@tiptap/core'
-import { createRoot, Root } from 'react-dom/client';
+import { createRoot, Root } from 'react-dom/client'
 
 export interface SuggestionsElements {
   iframe: HTMLIFrameElement
@@ -22,7 +22,9 @@ export class SuggestionsDisplay implements SlashCommandDisplayAdapter {
     SuggestionProps<SlashCommandItem, SlashCommandItem> | undefined
   >(undefined)
   private readonly getEditor: () => Editor
-  private readonly focusCallbackRef: RefObject<((arrowUp: boolean) => void) | null> = { current: null }
+  private readonly focusCallbackRef: RefObject<((arrowUp: boolean) => void) | null> = {
+    current: null,
+  }
 
   constructor(elements: SuggestionsElements, getEditor: () => Editor) {
     this.elements = elements
@@ -40,7 +42,7 @@ export class SuggestionsDisplay implements SlashCommandDisplayAdapter {
         props={this.props}
         elements={this.elements}
         getEditor={this.getEditor}
-      />
+      />,
     )
   }
   update(props: SuggestionProps<SlashCommandItem, SlashCommandItem>): void {
@@ -208,7 +210,7 @@ function computeSuggestionsModalPosition(
         fallbackPlacements: ['top', 'bottom'],
       }),
       offset({
-        mainAxis: clientRect.height * 0, // TODO what?
+        mainAxis: 0,
       }),
     ],
   })

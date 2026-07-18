@@ -46,7 +46,7 @@ templ BookTOC(
                                     <div class="mb-1">
                                         { chapter.Name }
                                     </div>
-                                    <span class="text-sm text-muted-foreground">
+                                    <span class="text-sm text-secondary-foreground">
                                         {relativeTime(l, chapter.CreatedAt)},&nbsp;
                                         { _tt(l, "book.words", map[string]string{
                                             "count": commonutil.FormatInt(chapter.Words),

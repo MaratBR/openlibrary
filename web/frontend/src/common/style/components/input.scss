@@ -89,7 +89,7 @@ textarea.input {
     }
 
     &__hint {
-        @apply text-sm text-muted-foreground;
+        @apply text-sm text-secondary-foreground;
     }
 }
 

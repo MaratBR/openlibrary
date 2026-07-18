@@ -1,7 +1,7 @@
 import { OLIsland, OLIslandMounted } from '@/lib/island'
 import { ReactIslandSetup } from './setup'
 import { ComponentType, ReactElement, useState } from 'react'
-import { createRoot } from 'react-dom/client';
+import { createRoot } from 'react-dom/client'
 
 export type ReactIslandProps = { data?: unknown; rootElement: HTMLElement }
 
@@ -26,9 +26,7 @@ abstract class ReactIslandBase implements OLIsland {
     }
 
     const root = createRoot(el)
-    root.render(
-      this.wrap(<StateProxy />)
-    )
+    root.render(this.wrap(<StateProxy />))
 
     return {
       dispose() {

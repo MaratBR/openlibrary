@@ -28,7 +28,12 @@ export function Books() {
 
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('bookManager.books.title')} />
+      <DashboardContent.StickyHeader title={window._('bookManager.books.title')}>
+        <NavLink to="/books/new" className="btn btn--lg btn--default">
+          <i className="fa-solid fa-plus mr-2" />
+          {window._('bookManager.books.addBook')}
+        </NavLink>
+      </DashboardContent.StickyHeader>
 
       <DashboardContent.Card>
         <div className="my-2 ml-4">
@@ -149,13 +154,18 @@ function TrashBookButton({
       </Modal>
       <Modal onClose={() => setOpenUntrashModal(false)} open={openUntrashModal}>
         <div className="max-w-128">
-          <h2 className="text-lg font-semibold">{window._('bookManager.books.restoreBook.title')}</h2>
+          <h2 className="text-lg font-semibold">
+            {window._('bookManager.books.restoreBook.title')}
+          </h2>
           <p className="my-2">{window._('bookManager.books.restoreBook.description')}</p>
           <div className="flex gap-2 mt-4">
             <button onClick={() => setOpenUntrashModal(false)} className="btn btn--default">
               {window._('common.cancel')}
             </button>
-            <button className="btn btn--destructive" onClick={() => trashBookMutation.mutate(false)}>
+            <button
+              className="btn btn--destructive"
+              onClick={() => trashBookMutation.mutate(false)}
+            >
               {trashBookMutation.isPending && <span className="circle-loader mr-1" />}
               {window._('common.untrash')}
             </button>

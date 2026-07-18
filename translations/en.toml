@@ -342,6 +342,7 @@ emptyBookSummary = "This book has no summary"
 
 [bookManager.books]
 title = "Your books"
+addBook = "Add book"
 name = "Name"
 stats = "Stats"
 trashed = "Trashed"

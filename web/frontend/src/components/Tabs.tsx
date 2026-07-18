@@ -56,10 +56,7 @@ function TabsTab({ value, children }: TabProps) {
 }
 
 const TabsBody = forwardRef(
-  (
-    { className, ...props }: HTMLAttributes<HTMLDivElement>,
-    ref: ForwardedRef<HTMLDivElement>,
-  ) => {
+  ({ className, ...props }: HTMLAttributes<HTMLDivElement>, ref: ForwardedRef<HTMLDivElement>) => {
     return <div ref={ref} className={clsx('tabs__body', className)} {...props} />
   },
 )
@@ -70,12 +67,7 @@ const TabsMenu = forwardRef(
     ref: ForwardedRef<HTMLUListElement>,
   ) => {
     return (
-      <ul
-        ref={ref}
-        role="tablist"
-        className={clsx('tabs tabs--primary', className)}
-        {...props}
-      >
+      <ul ref={ref} role="tablist" className={clsx('tabs tabs--primary', className)} {...props}>
         {children}
       </ul>
     )

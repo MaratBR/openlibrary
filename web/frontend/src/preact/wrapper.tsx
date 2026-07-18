@@ -16,10 +16,10 @@ type ErrorBoundaryProps = { children: ReactNode }
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, { error?: unknown }> {
   constructor(props: Readonly<ErrorBoundaryProps>) {
-    super(props);
+    super(props)
     this.state = {}
   }
-  
+
   render(): ReactNode {
     if (this.state.error) {
       return <ErrorDisplay error={this.state.error} />

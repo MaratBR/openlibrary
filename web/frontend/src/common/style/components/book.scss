@@ -15,7 +15,7 @@
     }
 
     &__rating-card {
-        @apply text-md text-muted-foreground ml-2 inline-block bg-surface rounded-xl py-2 px-4;
+        @apply text-md text-secondary-foreground ml-2 inline-block bg-surface rounded-xl py-2 px-4;
     }
 }
 
@@ -48,7 +48,7 @@
     }
 
     &__mark {
-        @apply inline-block text-muted-foreground;
+        @apply inline-block text-secondary-foreground;
     }
 }
 
@@ -75,7 +75,7 @@
     }
 
     &__link {
-        @apply text-2xl font-title !text-muted-2-foreground !hover:text-foreground;
+        @apply text-2xl font-title !text-secondary-foreground !hover:text-foreground;
     }
 
     &__author {

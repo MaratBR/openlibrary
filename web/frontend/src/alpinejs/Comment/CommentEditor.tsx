@@ -1,6 +1,5 @@
-
 import { useMemo, useState } from 'react'
-import { createRoot } from 'react-dom/client';
+import { createRoot } from 'react-dom/client'
 
 export type CommentEditorController = {
   close: () => void

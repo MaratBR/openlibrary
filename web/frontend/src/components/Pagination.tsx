@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import {  ComponentProps, ComponentType, HTMLAttributes, JSX, ReactNode } from 'react'
+import { ComponentProps, ComponentType, HTMLAttributes, JSX, ReactNode } from 'react'
 import React, { ForwardedRef, forwardRef, useMemo } from 'react'
 import { NavLink } from 'react-router'
 
@@ -40,7 +40,7 @@ const Pagination_Item = forwardRef(
         className={clsx('pagination__item', {
           'pagination__item--active': active,
         })}
-        aria-disabled={disabled?'true':'false'}
+        aria-disabled={disabled ? 'true' : 'false'}
         {...rest}
       >
         {children}
@@ -67,7 +67,12 @@ function Pagination_Facade({ page, totalPages, size, disabled = false }: Paginat
             {p}
           </Pagination.Item>
         ) : (
-          <Pagination.Item to={{ search: `?page=${p}` }} key={`${page}_current`} as={NavLink} disabled={disabled}>
+          <Pagination.Item
+            to={{ search: `?page=${p}` }}
+            key={`${page}_current`}
+            as={NavLink}
+            disabled={disabled}
+          >
             {p}
           </Pagination.Item>
         ),

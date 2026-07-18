@@ -2,7 +2,7 @@
     @apply outline-none;
 
     p.is-editor-empty:first-child::before {
-        @apply text-muted-2-foreground;
+        @apply text-secondary-foreground;
         content: attr(data-placeholder);
         float: left;
         height: 0;

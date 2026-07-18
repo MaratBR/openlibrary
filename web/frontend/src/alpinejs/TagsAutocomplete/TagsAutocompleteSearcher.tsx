@@ -2,13 +2,16 @@ import { DefinedTagDto, DefinedTagDtoSchema } from '@/api/search'
 import TagsInput from '@/components/TagsInput'
 import { Wrapper } from '@/preact'
 import { useMemo, useRef, useState } from 'react'
-import {  hydrateRoot } from 'react-dom/client';
+import { hydrateRoot } from 'react-dom/client'
 import z from 'zod'
 
 export function initTagsAutocomplete($root: HTMLElement): () => void {
   const initialTagsValue = parseTagsValue($root.dataset.value)
   if (!$root.parentElement) throw new Error('TagsAutocomplete root is missing')
-  const root = hydrateRoot($root.parentElement, <TagsAutocompleteSearcher initialTagsValue={initialTagsValue} />)
+  const root = hydrateRoot(
+    $root.parentElement,
+    <TagsAutocompleteSearcher initialTagsValue={initialTagsValue} />,
+  )
 
   return () => root.unmount()
 }

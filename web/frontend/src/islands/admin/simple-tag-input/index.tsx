@@ -37,7 +37,7 @@ export function SimpleTagInputModal({ data, rootElement }: ReactIslandProps) {
             <li
               key={tag.id}
               onClick={() => handleSelect(tag)}
-              className="p-2 cursor-pointer hover:bg-muted hover:text-primary"
+              className="p-2 cursor-pointer hover:bg-foreground/5 hover:text-primary"
             >
               {tag.name}
             </li>

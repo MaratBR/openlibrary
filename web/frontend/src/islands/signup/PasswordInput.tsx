@@ -17,7 +17,10 @@ export function PasswordInput({
   onPasswordChange,
   value,
 }: PasswordInputProps) {
-  const validation = useMemo(() => validatePassword(value, passwordRequirements), [value])
+  const validation = useMemo(
+    () => validatePassword(value, passwordRequirements),
+    [value, passwordRequirements],
+  )
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = (e.target as HTMLInputElement).value

@@ -43,7 +43,10 @@ export default function BookEdit() {
       <DashboardContent.StickyHeader
         title={
           <div className="flex items-center">
-            <NavLink className="btn btn--icon btn--primary mr-4" to={`/books/${bookResponse.data.id}`}>
+            <NavLink
+              className="btn btn--icon btn--primary mr-4"
+              to={`/books/${bookResponse.data.id}`}
+            >
               <i className="fa-solid fa-arrow-left" />
             </NavLink>
             {bookResponse.data.name}

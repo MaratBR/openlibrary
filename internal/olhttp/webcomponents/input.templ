@@ -30,7 +30,7 @@ templ InlineCategoriesSelection(props InlineCategoriesSelectionProps) {
                     <span class="font-semibold">
                         { category.Label }
                         if props.ShowCount {
-                            <span class="text-muted-foreground">
+                            <span class="text-secondary-foreground">
                                 { fmt.Sprintf(" (%d)", category.Count) }
                             </span>
                         }
@@ -39,7 +39,7 @@ templ InlineCategoriesSelection(props InlineCategoriesSelectionProps) {
                     <a class="link" href={ category.Href }>
                         { category.Label }
                         if props.ShowCount {
-                            <span class="text-muted-foreground">
+                            <span class="text-secondary-foreground">
                                 { fmt.Sprintf(" (%d)", category.Count) }
                             </span>
                         }

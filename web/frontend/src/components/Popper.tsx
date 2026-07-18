@@ -1,7 +1,7 @@
-import {  ReactNode, RefObject } from 'react'
+import { ReactNode, RefObject } from 'react'
 import { HTMLAttributes, useEffect, useRef } from 'react'
 import { useFloating, Placement } from '@floating-ui/react'
-import { createPortal } from 'react-dom';
+import { createPortal } from 'react-dom'
 
 export type PopperProps = {
   anchorEl?: HTMLElement | RefObject<HTMLElement | null> | null
