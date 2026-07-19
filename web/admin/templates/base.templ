@@ -25,10 +25,12 @@ templ flashes() {
 
 templ dashboardLayout(title string) {
     @baseLayout(title) {
-        @flashes()
-        @sidebar()
-		<div class="dashboard-layout__body">
-            { children... }
+        <div class="dashboard-layout">
+            @flashes()
+            @sidebar()
+            <div class="dashboard-layout__body">
+                { children... }
+            </div>
         </div>
     }
 }

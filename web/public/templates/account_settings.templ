@@ -187,7 +187,7 @@ templ moderationSettingsFields(l *i18n.Localizer) {
 templ customizationSettingsFields(l *i18n.Localizer) {
 	<div>
 		@settingsField(l.T("accountSettings.customization.defaultTheme"), l.T("accountSettings.customization.defaultThemeDescription")) {
-			<select class="input" x-model="settings.defaultTheme" @change="requestSave()">
+			<select class="input" x-model="settings.defaultTheme" @change="requestSave();OLTheme.theme.set(settings.defaultTheme||'system')">
 				<option value="">{ l.T("uiTheme.system") }</option>
 				<option value="light">{ l.T("uiTheme.light") }</option>
 				<option value="dark">{ l.T("uiTheme.dark") }</option>

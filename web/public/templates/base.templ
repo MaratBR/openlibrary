@@ -5,7 +5,6 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/flash"
 import "github.com/MaratBR/openlibrary/internal/i18n"
-import "fmt"
 
 templ flashes() {
     {{
@@ -59,7 +58,6 @@ templ htmlLayout(params htmlLayoutProps) {
             css = []string{modCss}
         }
 
-        uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
     }}
 
     @olhttp.Doc(olhttp.DocProps{
@@ -70,9 +68,6 @@ templ htmlLayout(params htmlLayoutProps) {
         AppendToHead: templ.Join(
             frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
         ),
-        BodyAttributes: templ.Attributes{
-            "style": fmt.Sprintf("--book-font-size:%dpx", uiSettings.FontSize),
-        },
     }) {
         {{
             l := i18n.GetLocalizer(ctx)
@@ -107,21 +102,7 @@ templ standardPageLayout(props standardPageLayoutProps) {
 
 
 script toggleTheme() {
-    let theme = getCookie('ui_theme');
-    switch (theme) {
-        case 'light':
-            theme = 'dark';
-            break;
-        case 'dark':
-            theme = '';
-            break;
-        case 'system':
-        default:
-            theme = 'light'
-            break;
-    }
-    document.cookie = 'ui_theme=' + theme
-    document.body.classList.toggle('dark', theme === 'dark');
+    window.OLTheme.toggle();
 }
 
 templ themeSwitcher() {

@@ -36,7 +36,8 @@ func (c *profileController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := c.service.GetUserDetails(r.Context(), app.GetUserQuery{
-		ID: userID,
+		ID:     userID,
+		UserID: auth.GetNullableUserID(r.Context()),
 	})
 	if err != nil {
 		if err == app.ErrUserNotFound {
@@ -93,7 +94,8 @@ func (c *profileController) GetCollections(w http.ResponseWriter, r *http.Reques
 	}
 
 	user, err := c.service.GetUserDetails(r.Context(), app.GetUserQuery{
-		ID: userID,
+		ID:     userID,
+		UserID: auth.GetNullableUserID(r.Context()),
 	})
 	if err != nil {
 		writeApplicationError(w, r, err)
@@ -128,7 +130,8 @@ func (c *profileController) GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := c.service.GetUserDetails(r.Context(), app.GetUserQuery{
-		ID: userID,
+		ID:     userID,
+		UserID: auth.GetNullableUserID(r.Context()),
 	})
 	if err != nil {
 		if err == app.ErrUserNotFound {
@@ -148,5 +151,5 @@ func (c *profileController) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates.User(user, pinnedBooks).Render(r.Context(), w)
+	olhttp.WriteTemplate(w, r.Context(), templates.User(user, pinnedBooks))
 }

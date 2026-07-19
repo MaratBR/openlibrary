@@ -1,18 +1,17 @@
-import { DraftDto } from './contracts'
+import { useBEState } from './state'
 
-export function CenterHeader({ draft }: { draft: DraftDto }) {
+export function CenterHeader() {
+  const scheduledAt = useBEState((state) => state.draft?.scheduledAt)
+
   return (
     <div className="flex justify-center items-center h-full">
-      <div className="flex justify-center items-center bg-surface p-1 gap-1 rounded-xl">
-        <a
-          href={`/book/${draft.book.id}/chapters/${draft.chapter.id}`}
-          target="_blank"
-          className="btn btn--icon btn--primary"
-          rel="noreferrer"
-        >
-          <i className="fa-solid fa-up-right-from-square" />
-        </a>
-      </div>
+      {scheduledAt && (
+        <span className="text-sm text-secondary-foreground">
+          {window._('editor.publishingScheduledFor', {
+            date: new Date(scheduledAt).toLocaleString(),
+          })}
+        </span>
+      )}
     </div>
   )
 }

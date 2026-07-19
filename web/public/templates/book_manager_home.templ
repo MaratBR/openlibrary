@@ -5,11 +5,14 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
-templ bmLayout(title string) {
+templ bmLayout(title string, additionalCSS ...string) {
+	{{
+		css := append([]string{"/_/assets/common.css"}, additionalCSS...)
+	}}
 	@olhttp.Doc(olhttp.DocProps{
 		Title:        title,
 		Scripts:      []string{"/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js"},
-		CSS:          []string{"/_/assets/common.css"},
+		CSS:          css,
 		InstantClick: false,
 		AppendToHead: templ.Join(
 			frontend.InlineCSSAsset(ctx, "embed-assets", "fonts.css"),
@@ -74,4 +77,3 @@ templ BM_Home() {
 		})
 	}
 }
-

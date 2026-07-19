@@ -11,6 +11,39 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const chapter_UserCanEdit = `-- name: Chapter_UserCanEdit :one
+select exists (
+    select 1
+    from book_chapters
+    join books on books.id = book_chapters.book_id
+    where book_chapters.id = $1
+	  and books.id = $2
+      and books.author_user_id = $3
+)
+`
+
+type Chapter_UserCanEditParams struct {
+	ChapterID int64
+	BookID    int64
+	UserID    pgtype.UUID
+}
+
+func (q *Queries) Chapter_UserCanEdit(ctx context.Context, arg Chapter_UserCanEditParams) (bool, error) {
+	row := q.db.QueryRow(ctx, chapter_UserCanEdit, arg.ChapterID, arg.BookID, arg.UserID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const draft_ClearChapterSchedules = `-- name: Draft_ClearChapterSchedules :exec
+update drafts set scheduled_at = null where chapter_id = $1
+`
+
+func (q *Queries) Draft_ClearChapterSchedules(ctx context.Context, chapterID int64) error {
+	_, err := q.db.Exec(ctx, draft_ClearChapterSchedules, chapterID)
+	return err
+}
+
 const draft_Delete = `-- name: Draft_Delete :exec
 delete from drafts where id = $1
 `
@@ -21,7 +54,7 @@ func (q *Queries) Draft_Delete(ctx context.Context, id int64) error {
 }
 
 const draft_GetById = `-- name: Draft_GetById :one
-select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.is_adult_override, drafts.updated_at, drafts.created_at, drafts.published_at, 
+select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.updated_at, drafts.created_at, drafts.published_at, drafts.scheduled_at,
     books.id as book_id, books.name as book_name, 
     bc.is_publicly_visible as is_chapter_publicly_visible,
     bc.content_updated_at as chapter_content_updated_at
@@ -39,10 +72,10 @@ type Draft_GetByIdRow struct {
 	Content                  string
 	Words                    int32
 	Summary                  string
-	IsAdultOverride          bool
 	UpdatedAt                pgtype.Timestamptz
 	CreatedAt                pgtype.Timestamptz
 	PublishedAt              pgtype.Timestamptz
+	ScheduledAt              pgtype.Timestamptz
 	BookID                   int64
 	BookName                 string
 	IsChapterPubliclyVisible bool
@@ -60,10 +93,10 @@ func (q *Queries) Draft_GetById(ctx context.Context, id int64) (Draft_GetByIdRow
 		&i.Content,
 		&i.Words,
 		&i.Summary,
-		&i.IsAdultOverride,
 		&i.UpdatedAt,
 		&i.CreatedAt,
 		&i.PublishedAt,
+		&i.ScheduledAt,
 		&i.BookID,
 		&i.BookName,
 		&i.IsChapterPubliclyVisible,
@@ -118,7 +151,7 @@ func (q *Queries) Draft_Insert(ctx context.Context, arg Draft_InsertParams) erro
 
 const draft_MarkAsPublished = `-- name: Draft_MarkAsPublished :exec
 update drafts
-set published_at = now()
+set published_at = now(), scheduled_at = null
 where id = $1
 `
 
@@ -127,26 +160,85 @@ func (q *Queries) Draft_MarkAsPublished(ctx context.Context, id int64) error {
 	return err
 }
 
+const draft_PublishDue = `-- name: Draft_PublishDue :many
+with due as (
+    select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.updated_at, drafts.created_at, drafts.published_at, drafts.scheduled_at
+    from drafts
+    where scheduled_at <= now()
+    for update skip locked
+), updated_chapters as (
+    update book_chapters
+    set name = due.chapter_name,
+        content = due.content,
+        words = due.words,
+        summary = due.summary,
+        is_publicly_visible = true,
+        content_updated_at = due.updated_at,
+        updated_at = now()
+    from due
+    where book_chapters.id = due.chapter_id
+    returning book_chapters.book_id, due.id as draft_id
+), published_drafts as (
+    update drafts
+    set published_at = now(), scheduled_at = null
+    from updated_chapters
+    where drafts.id = updated_chapters.draft_id
+)
+select distinct book_id from updated_chapters
+`
+
+func (q *Queries) Draft_PublishDue(ctx context.Context) ([]int64, error) {
+	rows, err := q.db.Query(ctx, draft_PublishDue)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var book_id int64
+		if err := rows.Scan(&book_id); err != nil {
+			return nil, err
+		}
+		items = append(items, book_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const draft_Schedule = `-- name: Draft_Schedule :exec
+update drafts set scheduled_at = $2, updated_at = now() where id = $1
+`
+
+type Draft_ScheduleParams struct {
+	ID          int64
+	ScheduledAt pgtype.Timestamptz
+}
+
+func (q *Queries) Draft_Schedule(ctx context.Context, arg Draft_ScheduleParams) error {
+	_, err := q.db.Exec(ctx, draft_Schedule, arg.ID, arg.ScheduledAt)
+	return err
+}
+
 const draft_Update = `-- name: Draft_Update :exec
 update drafts
-set chapter_name = $2, is_adult_override = $3, words = $4, content = $5, summary = $6, updated_at = now()
+set chapter_name = $2, words = $3, content = $4, summary = $5, updated_at = now()
 where id = $1
 `
 
 type Draft_UpdateParams struct {
-	ID              int64
-	ChapterName     string
-	IsAdultOverride bool
-	Words           int32
-	Content         string
-	Summary         string
+	ID          int64
+	ChapterName string
+	Words       int32
+	Content     string
+	Summary     string
 }
 
 func (q *Queries) Draft_Update(ctx context.Context, arg Draft_UpdateParams) error {
 	_, err := q.db.Exec(ctx, draft_Update,
 		arg.ID,
 		arg.ChapterName,
-		arg.IsAdultOverride,
 		arg.Words,
 		arg.Content,
 		arg.Summary,
@@ -185,4 +277,36 @@ type Draft_UpdateContentParams struct {
 func (q *Queries) Draft_UpdateContent(ctx context.Context, arg Draft_UpdateContentParams) error {
 	_, err := q.db.Exec(ctx, draft_UpdateContent, arg.ID, arg.Content, arg.Words)
 	return err
+}
+
+const draft_UserCanAccess = `-- name: Draft_UserCanAccess :one
+select exists (
+    select 1
+    from drafts
+    join book_chapters on book_chapters.id = drafts.chapter_id
+    join books on books.id = book_chapters.book_id
+    where drafts.id = $1
+      and books.author_user_id = $2
+      and ($3::int8 = 0 or book_chapters.id = $3)
+      and ($4::int8 = 0 or books.id = $4)
+)
+`
+
+type Draft_UserCanAccessParams struct {
+	DraftID   int64
+	UserID    pgtype.UUID
+	ChapterID int64
+	BookID    int64
+}
+
+func (q *Queries) Draft_UserCanAccess(ctx context.Context, arg Draft_UserCanAccessParams) (bool, error) {
+	row := q.db.QueryRow(ctx, draft_UserCanAccess,
+		arg.DraftID,
+		arg.UserID,
+		arg.ChapterID,
+		arg.BookID,
+	)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }

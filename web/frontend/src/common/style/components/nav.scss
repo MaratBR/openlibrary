@@ -111,12 +111,12 @@
     }
 
     &__body {
-        @apply min-h-screen;
+        @apply min-h-screen min-w-0;
     }
 }
 
 .dashboard-sidebar-ghost-btn {
-    @apply rounded-md p-2 mx-1 transition-colors text-md hover:bg-black/10 hover:text-foreground text-secondary-foreground;
+    @apply rounded-md p-2 mx-1 transition-colors text-md hover:bg-foreground/10 hover:text-foreground text-secondary-foreground;
 }
 
 

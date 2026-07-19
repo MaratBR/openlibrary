@@ -91,15 +91,17 @@ templ BookPage(
                     <div x-ignore class="mt-4 user-content">
                         @templ.Raw(book.Summary)
                     </div>
-                    <div class="mt-4 text-secondary-foreground font-medium">
-                        @bookRatingBadge(book.AgeRating)
-                    </div>
-                    <div class="mt-6">
-                        @webcomponents.Tags(webcomponents.TagsProps{
-                            Tags: book.Tags,
-                        })
-                    </div>
-                    @bookRating(&book, views)
+                    <section class="book-page__details" aria-label={l.T("book.details")}>
+                        <div class="book-page__classification">
+                            @bookRatingBadge(book.AgeRating)
+                            <div class="book-page__tags">
+                                @webcomponents.Tags(webcomponents.TagsProps{
+                                    Tags: book.Tags,
+                                })
+                            </div>
+                        </div>
+                        @bookRating(&book, views)
+                    </section>
 
                     <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) } class="mt-4">
                         <header role="tablist" class="flex gap-4 items-baseline">
@@ -175,12 +177,29 @@ func convertBookDetailsToAlpineState(book *app.BookDetailsDto, readingList app.N
 }
 
 templ bookRating(book *app.BookDetailsDto, views analytics.Views) {
-    <div id="rating-card" class="book-page__rating-card mt-4">
-        @starRating(book.Rating.Value, 0.4)
-        <div class="align-middle">
-            <i class="fa-solid fa-square-poll-vertical"></i> {formatInt32(book.Votes)}&nbsp;&nbsp;
-            <i class="fa-solid fa-comment"></i> {formatInt32(book.Reviews)}&nbsp;&nbsp;
-            <i class="fa-solid fa-eye"></i> {formatInt32(int32(views.Total))}
+    {{ l := i18n.GetLocalizer(ctx) }}
+    <div id="rating-card" class="book-page__rating-card">
+        <div class="book-page__rating-summary">
+            @starRating(book.Rating.Value, 0.34)
+            <span class="book-page__rating-value">{fmt.Sprintf("%.1f", book.Rating.Value)}</span>
+            <span class="book-page__rating-scale">/ 10</span>
+        </div>
+        <div class="book-page__stats">
+            <span class="book-page__stat" title={l.T("book.ratings")}>
+                <i class="fa-solid fa-square-poll-vertical" aria-hidden="true"></i>
+                <span>{formatInt32(book.Votes)}</span>
+                <span class="sr-only"> {l.T("book.ratings")}</span>
+            </span>
+            <span class="book-page__stat" title={l.T("book.reviews")}>
+                <i class="fa-solid fa-comment" aria-hidden="true"></i>
+                <span>{formatInt32(book.Reviews)}</span>
+                <span class="sr-only"> {l.T("book.reviews")}</span>
+            </span>
+            <span class="book-page__stat" title={l.T("book.views")}>
+                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                <span>{formatInt32(int32(views.Total))}</span>
+                <span class="sr-only"> {l.T("book.views")}</span>
+            </span>
         </div>
     </div>
 }

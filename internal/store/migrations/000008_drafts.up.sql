@@ -6,11 +6,13 @@ create table drafts (
     content text not null default '',
     words int4 not null default 0,
     summary text not null default '',
-    is_adult_override boolean not null default false,
     updated_at timestamptz null,
     created_at timestamptz not null default now(),
-    published_at timestamptz null
+    published_at timestamptz null,
+    scheduled_at timestamptz null
 );
+
+create index drafts_scheduled_at_idx on drafts (scheduled_at) where scheduled_at is not null;
 
 create table draft_log (
     id int8 primary key,

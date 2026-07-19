@@ -7,7 +7,6 @@ export const managerBookChapterDetailsDtoSchema = z.object({
   words: z.number(),
   summary: z.string(),
   order: z.number().int(),
-  isAdultOverride: z.boolean(),
   content: z.string(),
   isPubliclyVisible: z.boolean(),
 })

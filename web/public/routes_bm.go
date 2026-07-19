@@ -130,7 +130,7 @@ func (c *bookManagerController) chapter(w http.ResponseWriter, r *http.Request) 
 	var draftID int64
 
 	{
-		draftIDNullable, err := c.service.GetLatestDraft(r.Context(), app.GetLatestDraftQuery{ChapterID: chapterID, UserID: session.UserID})
+		draftIDNullable, err := c.service.GetLatestDraft(r.Context(), app.GetLatestDraftQuery{BookID: bookID, ChapterID: chapterID, UserID: session.UserID})
 		if err != nil {
 			writeApplicationError(w, r, err)
 			return
@@ -142,6 +142,7 @@ func (c *bookManagerController) chapter(w http.ResponseWriter, r *http.Request) 
 
 	if draftID == 0 {
 		newDraftID, err := c.service.CreateDraft(r.Context(), app.CreateDraftCommand{
+			BookID:    bookID,
 			ChapterID: chapterID,
 			UserID:    session.UserID,
 		})
@@ -187,5 +188,5 @@ func (c *bookManagerController) sendChapterEditorPage(bookID, chapterID, draftID
 		return
 	}
 
-	templates.ChapterEditor(bookID, draft).Render(r.Context(), w)
+	olhttp.WriteTemplate(w, r.Context(), templates.ChapterEditor(draft))
 }

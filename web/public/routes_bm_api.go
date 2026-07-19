@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
@@ -34,12 +35,60 @@ func (c *apiControllerBM) Register(r chi.Router) {
 
 		r.Post("/book/{bookID}/{chapterID}/{draftID}", c.updateDraftContent)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/publish", c.updateDraftContentAndPublish)
+		r.With(httpin.NewInput(&apiPayloadScheduleDraft{})).Post("/book/{bookID}/{chapterID}/{draftID}/schedule", c.scheduleDraft)
 		r.Post("/book/{bookID}/{chapterID}/{draftID}/chapterName", c.updateDraftChapterName)
 		r.With(httpin.NewInput(&ApiPayloadGetBooks{})).Get("/books", c.getBooks)
 		r.Get("/books/{bookID}", c.getBook)
 		r.With(httpin.NewInput(&apiPayloadTrashBook{})).Post("/books/trash", c.trashBook)
 
 	})
+}
+
+type apiPayloadScheduleDraft struct {
+	Body struct {
+		ScheduledAt time.Time `json:"scheduledAt"`
+	} `in:"body=json"`
+}
+
+func (c *apiControllerBM) scheduleDraft(w http.ResponseWriter, r *http.Request) {
+	input := r.Context().Value(httpin.Input).(*apiPayloadScheduleDraft)
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	chapterID, err := olhttp.URLParamInt64(r, "chapterID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	draftID, err := olhttp.URLParamInt64(r, "draftID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	session := auth.RequireSession(r.Context())
+	err = c.service.ScheduleDraft(r.Context(), app.ScheduleDraftCommand{
+		BookID:      bookID,
+		ChapterID:   chapterID,
+		DraftID:     draftID,
+		UserID:      session.UserID,
+		ScheduledAt: input.Body.ScheduledAt,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+
+	draft, err := c.service.GetDraft(r.Context(), app.GetDraftQuery{
+		BookID: bookID, ChapterID: chapterID, DraftID: draftID, UserID: session.UserID,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	olhttp.NewAPIResponse(draft).Write(w)
 }
 
 type apiPayloadUpdateChapter struct {
@@ -373,6 +422,7 @@ func (c *apiControllerBM) updateDraftContentAndPublish(w http.ResponseWriter, r 
 	})
 	if err != nil {
 		apiWriteApplicationError(w, err)
+		return
 	}
 
 	draft, err := c.service.GetDraft(r.Context(), app.GetDraftQuery{
@@ -391,10 +441,9 @@ func (c *apiControllerBM) updateDraftContentAndPublish(w http.ResponseWriter, r 
 
 type apiPayloadCreateChapter struct {
 	Body struct {
-		Name            string `json:"name"`
-		Summary         string `json:"summary"`
-		IsAdultOverride bool   `json:"isAdultOverride"`
-		Content         string `json:"content"`
+		Name    string `json:"name"`
+		Summary string `json:"summary"`
+		Content string `json:"content"`
 	} `in:"body=json"`
 }
 
@@ -412,7 +461,6 @@ func (c *apiControllerBM) createChapter(w http.ResponseWriter, r *http.Request) 
 		BookID:            bookID,
 		Name:              input.Body.Name,
 		Summary:           input.Body.Summary,
-		IsAdultOverride:   input.Body.IsAdultOverride,
 		Content:           input.Body.Content,
 		UserID:            session.UserID,
 		IsPubliclyVisible: false,

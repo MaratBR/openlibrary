@@ -6,6 +6,7 @@ export const DraftDtoSchema = z.object({
   content: z.string(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
+  scheduledAt: z.string().nullable(),
   chapter: z.object({
     id: z.string(),
     contentUpdatedAt: z.string(),

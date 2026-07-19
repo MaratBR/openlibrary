@@ -128,7 +128,6 @@ func importBook(
 			BookID:            bookID,
 			Name:              chapter.Title,
 			Content:           book.Chapters[i].Content,
-			IsAdultOverride:   false,
 			Summary:           fmt.Sprintf("Original chapter: https://www.royalroad.com/fiction/%d/chapter/%d", book.Book.ID, chapter.ID),
 			IsPubliclyVisible: true,
 		})

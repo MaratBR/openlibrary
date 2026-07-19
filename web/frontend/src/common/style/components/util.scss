@@ -71,15 +71,15 @@
   height: 1em;
   position: relative;
   overflow: hidden;
-  background-color: #DDDBDD;
+  background-color: var(--secondary);
   animation: shimmer 2s linear alternate infinite;
 
   @keyframes shimmer {
     0% {
-        background-color: #DDDBDD;
+        background-color: var(--secondary);
     }
     100% {
-        background-color: #F0F0F0;
+        background-color: var(--highlight);
     }
   }
 }

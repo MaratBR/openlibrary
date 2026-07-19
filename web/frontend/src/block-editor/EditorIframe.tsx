@@ -13,6 +13,7 @@ export function EditorIframe({ initialContent }: { initialContent: string }) {
   return (
     <>
       <iframe
+        title={window._('editor.chapterContentEditor')}
         onLoad={handleLoad}
         name="editor"
         style={{ width: '100%', height: '100%' }}

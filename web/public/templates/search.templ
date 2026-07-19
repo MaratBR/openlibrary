@@ -183,8 +183,10 @@ templ SimpleSearch() {
     }}
     @htmlLayout(htmlLayoutProps{Title: l.T("search.search")}) {
         <main class={ simpleSearchCSSRoot() }>
-            <img class="dark:hidden" src="/_/embed-assets/logo.svg" />
-            <img class="hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
+            <div class="size-64">
+                <img class="dark:hidden" src="/_/embed-assets/logo.svg" />
+                <img class="hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
+            </div>
             <form method="get" action="/search">
                 <input placeholder={l.T("search.search")} class="w-96 input rounded-full text-lg p-6" name="q" />
                 <div class="flex gap-2 justify-center mt-8">

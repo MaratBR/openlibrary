@@ -54,6 +54,19 @@ export function httpUpdateDraftChapterName(
     .then((r) => OLAPIResponse.createNoBody(r))
 }
 
+export function httpScheduleDraft(
+  bookId: string,
+  chapterId: string,
+  draftId: string,
+  scheduledAt: string,
+) {
+  return httpClient
+    .post(`/_api/books-manager/book/${bookId}/${chapterId}/${draftId}/schedule`, {
+      json: { scheduledAt },
+    })
+    .then((r) => OLAPIResponse.create(r, DraftDtoSchema))
+}
+
 const managerBookChapterDtoSchema = z.object({
   id: z.string(),
   order: z.number().min(0).int(),
@@ -61,9 +74,9 @@ const managerBookChapterDtoSchema = z.object({
   words: z.number(),
   createdAt: z.string(),
   summary: z.string(),
-  isAdultOverride: z.boolean(),
   isPubliclyVisible: z.boolean(),
   draftId: z.string().nullable(),
+  scheduledAt: z.string().nullable(),
 })
 
 export type ManagerBookChapterDto = z.infer<typeof managerBookChapterDtoSchema>

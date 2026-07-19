@@ -407,7 +407,6 @@ type BookChapter struct {
 	CreatedAt         pgtype.Timestamptz
 	UpdatedAt         pgtype.Timestamptz
 	Words             int32
-	IsAdultOverride   bool
 	Summary           string
 	IsPubliclyVisible bool
 }
@@ -475,17 +474,17 @@ type DefinedTag struct {
 }
 
 type Draft struct {
-	ID              int64
-	CreatedBy       pgtype.UUID
-	ChapterID       int64
-	ChapterName     string
-	Content         string
-	Words           int32
-	Summary         string
-	IsAdultOverride bool
-	UpdatedAt       pgtype.Timestamptz
-	CreatedAt       pgtype.Timestamptz
-	PublishedAt     pgtype.Timestamptz
+	ID          int64
+	CreatedBy   pgtype.UUID
+	ChapterID   int64
+	ChapterName string
+	Content     string
+	Words       int32
+	Summary     string
+	UpdatedAt   pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	PublishedAt pgtype.Timestamptz
+	ScheduledAt pgtype.Timestamptz
 }
 
 type DraftLog struct {
@@ -615,4 +614,13 @@ type UserLog struct {
 	ActorUserID pgtype.UUID
 	ActionType  UserActionType
 	Payload     []byte
+}
+
+type UserReaderPreference struct {
+	UserID     pgtype.UUID
+	FontSize   int16
+	FontFamily string
+	PageColor  string
+	Theme      string
+	UpdatedAt  pgtype.Timestamptz
 }

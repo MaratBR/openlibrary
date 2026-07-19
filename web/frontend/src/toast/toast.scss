@@ -13,15 +13,15 @@
         @apply w-full flex items-center justify-center;
 
         &[data-color=warn] {
-            @apply text-yellow;
+            @apply text-warning;
         }
 
         &[data-color=error] {
-            @apply text-red;
+            @apply text-destructive;
         }
 
         &[data-color=success] {
-            @apply text-green;
+            @apply text-success;
         }
 
         &[data-color=info] {

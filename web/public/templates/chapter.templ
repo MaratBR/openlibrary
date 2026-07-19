@@ -7,6 +7,7 @@ import "fmt"
 import "strconv"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
+import "github.com/MaratBR/openlibrary/internal/auth"
 
 type ChapterProgressTrackerOptions struct {
     JumpedBackward bool
@@ -18,10 +19,11 @@ templ Chapter(
     chapter app.ChapterDto,
     book app.BookDetailsDto,
     options ChapterProgressTrackerOptions,
+    preferences app.ReaderPreferences,
 ) {
     {{
         l := i18n.GetLocalizer(ctx)
-        uiSettings := getUIBookSettings(olhttp.GetRequest(ctx))
+        _, isAuthenticated := auth.GetSession(ctx)
     }}
 
     @htmlLayout(htmlLayoutProps{Title: chapter.Name}) {
@@ -42,40 +44,43 @@ templ Chapter(
 
         <div
             x-data="BookReader"
-            data-font-size={ strconv.Itoa(uiSettings.FontSize) }
-            class="book-reader">
-            <div class="relative pb-10">
-                <aside class="z-10 absolute top-0 bottom-0 right-0">
-                    <div class="flex flex-col gap-2 sticky top-[var(--header-height)] pr-2 pt-2">
-                        <button x-bind="toggleButton" class="btn btn--icon btn--primary z-20">
-                            <i class="fa-solid fa-gear"></i>
-                        </button>
-                    </div>
-                </aside>
-                <div class="book-reader__chapter relative">
-                    @ChapterContentSection(&chapter, uiSettings, options)
+            data-font-size={ strconv.Itoa(int(preferences.FontSize)) }
+            data-font-family={ preferences.FontFamily }
+            data-page-color={ preferences.PageColor }
+            data-reader-theme={ preferences.Theme }
+            if isAuthenticated {
+                data-authenticated="true"
+            }
+            class="book-reader"
+            @keydown.escape.window="settingsOpen = false">
+            <div class="book-reader__reading-area">
+                <button x-bind="toggleButton" class="book-reader__settings-button btn btn--icon btn--default" aria-label={ l.T("reader.settings") }>
+                    <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                </button>
+                <div class="book-reader__chapter">
+                    @ChapterContentSection(&chapter, options)
 
-                    <section class="grid grid-cols-2 mt-4 bg-surface shadow-md rounded-lg overflow-hidden">
+                    <nav class="book-reader__chapter-navigation" aria-label={ l.T("reader.chapterNavigation") }>
                         if chapter.PrevChapter.Valid {
-                            <a class="text-lg p-4 flex items-center gap-4 active:outline active:bg-primary active:text-primary-foreground justify-end"
+                            <a class="book-reader__chapter-link book-reader__chapter-link--previous"
                                 href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.PrevChapter.Value.ID)) }>
-                                <i class="fa-solid fa-arrow-left"></i>
-                                <span class="hover:underline underline-offset-2" style="text-decoration-thickness: 2px;">{ chapter.PrevChapter.Value.Name }</span>
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                                <span><small>{ l.T("reader.previous") }</small>{ chapter.PrevChapter.Value.Name }</span>
                             </a>
                         } else {
                             <span />
                         }
 
                         if chapter.NextChapter.Valid {
-                            <a class="text-lg p-4 flex items-center gap-4 active:outline active:bg-primary active:text-primary-foreground justify-start"
+                            <a class="book-reader__chapter-link book-reader__chapter-link--next"
                                 href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.NextChapter.Value.ID)) }>
-                                <span class="hover:underline underline-offset-2" style="text-decoration-thickness: 2px;">{ chapter.NextChapter.Value.Name }</span>
-                                <i class="fa-solid fa-arrow-right"></i>
+                                <span><small>{ l.T("reader.next") }</small>{ chapter.NextChapter.Value.Name }</span>
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </a>
                         } else {
                             <span />
                         }
-                    </section>
+                    </nav>
 
                     <div class="mt-8">
                         <a class="btn btn--ghost btn--lg btn--primary" href={ fmt.Sprintf("/book/%d/chapters/%d/comments", chapter.BookID, chapter.ID) }>
@@ -88,32 +93,7 @@ templ Chapter(
                 </div>
             </div>
 
-            <div class="book-reader__settings" x-cloak x-bind="settings">
-                <div class="sticky top-[var(--header-height)] h-[100%-var(--header-height)]">
-                    <div class="p-4">
-                        <button x-bind="closeButton" class="btn btn--lg btn--secondary w-full lg:hidden">Close</button>
-                    </div>
-
-                    
-                    <div class="p-3 space-y-4">
-                        <section>
-                            <span>Font size</span>
-                            <div class="max-w-[250px] grid grid-cols-3 border border-border rounded-sm h-16">
-                                <button x-bind="decreaseFont" class="flex items-center justify-center hover:bg-surface rounded-sm m-2">
-                                    <i class="fa-solid fa-minus"></i>
-                                </button>
-                                <div x-text="fontSize" class="flex items-center justify-center text-xl">
-                                    { strconv.Itoa(uiSettings.FontSize) }
-                                </div>
-                                <button x-bind="increaseFont" class="flex items-center justify-center hover:bg-surface rounded-sm m-2">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </div>
-                        </section>
-                    </div>
-
-                </div>
-            </div>
+            @ChapterReaderSettings(preferences, isAuthenticated)
         </div>
     }
 }
@@ -124,9 +104,6 @@ templ ChapterContentIframe() {
             "/_/assets/block-editor.css",
         },
     }) {
-        {{
-            // settings := getUIBookSettings(olhttp.GetRequest(ctx))
-        }}
         <div id="BlockEditorWrap">
             <div id="BlockEditorWrapHeader"></div>
             @ChapterContent("")
@@ -134,7 +111,7 @@ templ ChapterContentIframe() {
     }
 }
 
-templ ChapterContentSection(chapter *app.ChapterDto, uiSettings uiSettings, options ChapterProgressTrackerOptions) {
+templ ChapterContentSection(chapter *app.ChapterDto, options ChapterProgressTrackerOptions) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}

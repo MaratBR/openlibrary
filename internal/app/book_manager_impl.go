@@ -144,9 +144,9 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 				Words:             int(chapter.Words),
 				CreatedAt:         chapter.CreatedAt.Time,
 				Summary:           chapter.Summary,
-				IsAdultOverride:   chapter.IsAdultOverride,
 				IsPubliclyVisible: chapter.IsPubliclyVisible,
 				DraftID:           draftID,
+				ScheduledAt:       timeNullableDbToDomain(chapter.ScheduledAt),
 			}
 		})
 	}
@@ -594,13 +594,14 @@ func (s *bookManagerService) GetBookChapters(ctx context.Context, query ManagerG
 
 	for i, row := range rows {
 		chapters[i] = ManagerBookChapterDto{
-			ID:              row.ID,
-			Name:            row.Name,
-			Summary:         row.Summary,
-			CreatedAt:       row.CreatedAt.Time,
-			Words:           int(row.Words),
-			IsAdultOverride: row.IsAdultOverride,
-			Order:           row.Order,
+			ID:                row.ID,
+			Name:              row.Name,
+			Summary:           row.Summary,
+			CreatedAt:         row.CreatedAt.Time,
+			Words:             int(row.Words),
+			IsPubliclyVisible: row.IsPubliclyVisible,
+			Order:             row.Order,
+			ScheduledAt:       timeNullableDbToDomain(row.ScheduledAt),
 		}
 	}
 
@@ -625,7 +626,6 @@ func (s *bookManagerService) GetChapter(ctx context.Context, query ManagerGetCha
 			Summary:           chapter.Summary,
 			CreatedAt:         chapter.CreatedAt.Time,
 			Words:             int(chapter.Words),
-			IsAdultOverride:   chapter.IsAdultOverride,
 			Order:             chapter.Order,
 			Content:           chapter.Content,
 			IsPubliclyVisible: true,
@@ -671,6 +671,11 @@ func (s *bookManagerService) UpdateBookChapter(ctx context.Context, cmd UpdateBo
 
 // GetDraft implements BookManagerService.
 func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) (DraftDto, error) {
+	err := s.authorizeDraftAccess(ctx, query.UserID, query.BookID, query.ChapterID, query.DraftID)
+	if err != nil {
+		return DraftDto{}, err
+	}
+
 	draft, err := s.queries.Draft_GetById(ctx, query.DraftID)
 	if err != nil {
 		if err == store.ErrNoRows {
@@ -690,6 +695,7 @@ func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) 
 		Content:     draft.Content,
 		CreatedAt:   draft.CreatedAt.Time,
 		UpdatedAt:   timeNullableDbToDomain(draft.UpdatedAt),
+		ScheduledAt: timeNullableDbToDomain(draft.ScheduledAt),
 		Chapter: struct {
 			ID               int64     "json:\"id,string\""
 			ContentUpdatedAt time.Time "json:\"contentUpdatedAt\""
@@ -716,7 +722,13 @@ func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) 
 }
 
 func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error {
-	println("UpdateDraft called")
+	err := s.authorizeDraftAccess(ctx, cmd.UserID, cmd.BookID, cmd.ChapterID, cmd.DraftID)
+	if err != nil {
+		return err
+	}
+	if err := validateChapterName(cmd.Name); err != nil {
+		return err
+	}
 
 	content, err := ProcessContent(cmd.Content)
 
@@ -725,12 +737,11 @@ func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCom
 	}
 
 	err = s.queries.Draft_Update(ctx, store.Draft_UpdateParams{
-		ID:              cmd.DraftID,
-		Content:         content.Sanitized,
-		ChapterName:     cmd.Name,
-		Summary:         cmd.Summary,
-		IsAdultOverride: cmd.IsAdultOverride,
-		Words:           content.Words,
+		ID:          cmd.DraftID,
+		Content:     content.Sanitized,
+		ChapterName: cmd.Name,
+		Summary:     cmd.Summary,
+		Words:       content.Words,
 	})
 	if err != nil {
 		return apperror.WrapUnexpectedDBError(err)
@@ -740,7 +751,7 @@ func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCom
 
 // DeleteDraft implements BookManagerService.
 func (s *bookManagerService) DeleteDraft(ctx context.Context, cmd DeleteDraftCommand) error {
-	err := s.authorizeDraftDelete(cmd.UserID, cmd.DraftID)
+	err := s.authorizeDraftAccess(ctx, cmd.UserID, 0, 0, cmd.DraftID)
 	if err != nil {
 		return err
 	}
@@ -768,7 +779,7 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
-	err = s.authorizeDraftPublish(cmd.UserID, draft.ChapterID, cmd.DraftID)
+	err = s.authorizeDraftAccess(ctx, cmd.UserID, draft.BookID, draft.ChapterID, cmd.DraftID)
 	if err != nil {
 		return err
 	}
@@ -818,6 +829,36 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 	return nil
 }
 
+func (s *bookManagerService) ScheduleDraft(ctx context.Context, cmd ScheduleDraftCommand) error {
+	if !cmd.ScheduledAt.After(time.Now()) {
+		return apperror.ValidationError.New("scheduled publishing time must be in the future")
+	}
+	if err := s.authorizeDraftAccess(ctx, cmd.UserID, cmd.BookID, cmd.ChapterID, cmd.DraftID); err != nil {
+		return err
+	}
+
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	queries := s.queries.WithTx(tx)
+	if err = queries.Draft_ClearChapterSchedules(ctx, cmd.ChapterID); err != nil {
+		rollbackTx(ctx, tx)
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if err = queries.Draft_Schedule(ctx, store.Draft_ScheduleParams{
+		ID:          cmd.DraftID,
+		ScheduledAt: timeToTimestamptz(cmd.ScheduledAt),
+	}); err != nil {
+		rollbackTx(ctx, tx)
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	return nil
+}
+
 func (s *bookManagerService) recalculateBookStats(ctx context.Context, bookID int64) {
 	err := s.queries.RecalculateBookStats(ctx, bookID)
 	if err != nil {
@@ -827,6 +868,10 @@ func (s *bookManagerService) recalculateBookStats(ctx context.Context, bookID in
 
 // GetLatestDraft implements BookManagerService.
 func (s *bookManagerService) GetLatestDraft(ctx context.Context, cmd GetLatestDraftQuery) (Nullable[int64], error) {
+	if err := s.authorizeChapterEdit(ctx, cmd.UserID, cmd.BookID, cmd.ChapterID); err != nil {
+		return Null[int64](), err
+	}
+
 	draftID, err := s.queries.Draft_GetLatestID(ctx, cmd.ChapterID)
 	if err != nil {
 		if err == store.ErrNoRows {
@@ -840,14 +885,14 @@ func (s *bookManagerService) GetLatestDraft(ctx context.Context, cmd GetLatestDr
 
 // CreateDraft implements BookManagerService.
 func (s *bookManagerService) CreateDraft(ctx context.Context, cmd CreateDraftCommand) (int64, error) {
-	err := s.authorizeDraftCreate(cmd.UserID, cmd.ChapterID)
+	err := s.authorizeChapterEdit(ctx, cmd.UserID, cmd.BookID, cmd.ChapterID)
 	if err != nil {
 		return 0, err
 	}
 
 	chapter, err := s.queries.GetBookChapterWithDetails(ctx, store.GetBookChapterWithDetailsParams{
 		ID:     cmd.ChapterID,
-		BookID: 0,
+		BookID: cmd.BookID,
 	})
 
 	if err != nil {
@@ -879,8 +924,11 @@ func (s *bookManagerService) CreateDraft(ctx context.Context, cmd CreateDraftCom
 
 // UpdateDraftChapterName implements BookManagerService.
 func (s *bookManagerService) UpdateDraftChapterName(ctx context.Context, cmd UpdateDraftChapterNameCommand) error {
-	err := s.authorizeDraftUpdate(cmd.UserID, cmd.ChapterID, cmd.DraftID)
+	err := s.authorizeDraftAccess(ctx, cmd.UserID, cmd.BookID, cmd.ChapterID, cmd.DraftID)
 	if err != nil {
+		return err
+	}
+	if err := validateChapterName(cmd.ChapterName); err != nil {
 		return err
 	}
 
@@ -899,7 +947,7 @@ func (s *bookManagerService) UpdateDraftChapterName(ctx context.Context, cmd Upd
 
 // UpdateDraftContent implements BookManagerService.
 func (s *bookManagerService) UpdateDraftContent(ctx context.Context, cmd UpdateDraftContentCommand) error {
-	err := s.authorizeDraftUpdate(cmd.UserID, cmd.ChapterID, cmd.DraftID)
+	err := s.authorizeDraftAccess(ctx, cmd.UserID, cmd.BookID, cmd.ChapterID, cmd.DraftID)
 	if err != nil {
 		return err
 	}
@@ -923,21 +971,34 @@ func (s *bookManagerService) UpdateDraftContent(ctx context.Context, cmd UpdateD
 	return nil
 }
 
-// authorization stuff here
-
-func (s *bookManagerService) authorizeDraftUpdate(userID uuid.UUID, chapterID, draftID int64) error {
+func (s *bookManagerService) authorizeDraftAccess(ctx context.Context, userID uuid.UUID, bookID, chapterID, draftID int64) error {
+	allowed, err := s.queries.Draft_UserCanAccess(ctx, store.Draft_UserCanAccessParams{
+		DraftID:   draftID,
+		UserID:    uuidDomainToDb(userID),
+		ChapterID: chapterID,
+		BookID:    bookID,
+	})
+	if err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if !allowed {
+		return apperror.ErrGenericForbidden
+	}
 	return nil
 }
 
-func (s *bookManagerService) authorizeDraftPublish(userID uuid.UUID, chapterID, draftID int64) error {
-	return nil
-}
-
-func (s *bookManagerService) authorizeDraftDelete(userID uuid.UUID, draftID int64) error {
-	return nil
-}
-
-func (s *bookManagerService) authorizeDraftCreate(userID uuid.UUID, chapterID int64) error {
+func (s *bookManagerService) authorizeChapterEdit(ctx context.Context, userID uuid.UUID, bookID, chapterID int64) error {
+	allowed, err := s.queries.Chapter_UserCanEdit(ctx, store.Chapter_UserCanEditParams{
+		ChapterID: chapterID,
+		BookID:    bookID,
+		UserID:    uuidDomainToDb(userID),
+	})
+	if err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if !allowed {
+		return apperror.ErrGenericForbidden
+	}
 	return nil
 }
 

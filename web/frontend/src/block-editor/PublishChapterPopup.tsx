@@ -37,6 +37,9 @@ export function PublishChapterPopup({ onClose, open }: { onClose: () => void; op
         },
       })
     },
+    onError(error) {
+      window.toast.error(error)
+    },
   })
 
   const { ref } = useAnimation({

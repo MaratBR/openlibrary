@@ -3,5 +3,6 @@
 // Displays error information/description
 
 .error {
-    @apply p-2 rounded-sm shadow-lg shadow-foreground/25 bg-red-600 text-white text-sm;
+    @apply p-2 rounded-sm bg-destructive text-destructive-foreground text-sm;
+    box-shadow: var(--shadow-md);
 }

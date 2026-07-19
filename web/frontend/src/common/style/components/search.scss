@@ -1,3 +1,4 @@
 .search-filters {
-    @apply shadow-md shadow-gray-200 dark:shadow-gray-800 border rounded-sm bg-surface;
+    @apply border rounded-sm bg-surface;
+    box-shadow: var(--shadow-md);
 }

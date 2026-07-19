@@ -6,14 +6,15 @@ where books.id = $1
 limit 1;
 
 -- name: Book_GetPubliclyVisibleChapters :many
-select c.id, c.name, c.words, c."order", c.created_at, c.summary, c.is_adult_override
+select c.id, c.name, c.words, c."order", c.created_at, c.summary
 from book_chapters c
 where book_id = $1 and is_publicly_visible = true
 order by "order";
 
 -- name: GetAllBookChapters :many
-select c.*, 
-  cast(coalesce((select id from drafts where drafts.chapter_id = c.id order by created_at desc limit 1), 0) as int8) as latest_draft_id
+select c.*,
+  cast(coalesce((select id from drafts where drafts.chapter_id = c.id order by coalesce(updated_at, created_at) desc limit 1), 0) as int8) as latest_draft_id,
+  (select scheduled_at from drafts where drafts.chapter_id = c.id order by coalesce(updated_at, created_at) desc limit 1) as scheduled_at
 from book_chapters c
 where book_id = $1
 order by "order";
@@ -22,6 +23,9 @@ order by "order";
 select b.*
 from books b
 where b.author_user_id = $1 and chapters > 0
+  and b.is_publicly_visible
+  and not b.is_banned
+  and not b.is_trashed
 order by b.is_pinned desc, b.created_at asc
 limit $2 offset $3;
 

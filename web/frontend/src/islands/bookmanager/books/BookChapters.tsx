@@ -36,6 +36,13 @@ function Chapter({
     <div data-testid="BookChapters_Chapter" className="card grid cols-2">
       <div>
         <span className="text-xl font-medium">{chapter.name}</span>
+        {chapter.scheduledAt && (
+          <p className="mt-1 text-sm text-secondary-foreground">
+            {window._('editor.publishingScheduledFor', {
+              date: new Date(chapter.scheduledAt).toLocaleString(),
+            })}
+          </p>
+        )}
         <div className="flex gap-2 mt-2">
           <button onClick={() => onOpenChapter(chapter)} className="btn btn--lg btn--default">
             <i className="fa-solid fa-pen mr-2" />
@@ -46,7 +53,6 @@ function Chapter({
 
       <div>
         <div className="flex gap-1">
-          {chapter.isAdultOverride && <AdultChip />}
           {!chapter.isPubliclyVisible && <HiddenChip />}
           <div className="chip">
             {window._('book.words', { count: formatNumberK(chapter.words) })}
@@ -55,10 +61,6 @@ function Chapter({
       </div>
     </div>
   )
-}
-
-function AdultChip() {
-  return <div className="chip chip--destructive">{window._('common.adult')}</div>
 }
 
 function HiddenChip() {
@@ -87,7 +89,6 @@ function AddChapterButton({ bookId }: { bookId: string }) {
       await BMBookAPI.getInstance().createChapter(bookId, {
         name,
         summary: '',
-        isAdultOverride: false,
         content: '',
       })
 

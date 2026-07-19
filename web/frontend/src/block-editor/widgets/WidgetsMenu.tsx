@@ -1,21 +1,31 @@
 import { useEffect, useState } from 'react'
 import { Widget } from './core'
 import { WidgetsService } from './service'
+import { useWYSIWYG } from '../wysiwyg/state'
 
 export function WidgetsMenu({ service }: { service: WidgetsService }) {
   const [widgets, setWidgets] = useState<Widget[]>([])
+  const editor = useWYSIWYG((state) => state.editor)
 
   useEffect(() => {
     service.loadWidgets().then(setWidgets)
   }, [service])
 
   return (
-    <section>
-      <div className="grid grid-cols-2">
+    <section className="p-3">
+      <h2 className="text-sm font-semibold mb-3">{window._('editor.widgets')}</h2>
+      <div className="grid grid-cols-2 gap-2">
         {widgets.map((widget) => (
-          <div key={widget.name} className="be-widget-card">
-            {widget.name}
-          </div>
+          <button
+            type="button"
+            key={widget.name}
+            disabled={!editor}
+            className="be-widget-card"
+            onClick={() => editor && widget.apply(editor)}
+          >
+            <span className="be-widget-card__icon">{widget.icon}</span>
+            <span>{widget.name}</span>
+          </button>
         ))}
       </div>
     </section>

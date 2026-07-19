@@ -200,18 +200,17 @@ func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQu
 
 	return GetBookChapterResult{
 		Chapter: ChapterDto{
-			ID:              chapter.ID,
-			Name:            chapter.Name,
-			Words:           chapter.Words,
-			Content:         chapter.Content,
-			IsAdultOverride: chapter.IsAdultOverride,
-			CreatedAt:       chapter.CreatedAt.Time,
-			Order:           chapter.Order,
-			Summary:         chapter.Summary,
-			PrevChapter:     prev,
-			NextChapter:     next,
-			BookID:          chapter.BookID,
-			CommentsCount:   42, // TODO
+			ID:            chapter.ID,
+			Name:          chapter.Name,
+			Words:         chapter.Words,
+			Content:       chapter.Content,
+			CreatedAt:     chapter.CreatedAt.Time,
+			Order:         chapter.Order,
+			Summary:       chapter.Summary,
+			PrevChapter:   prev,
+			NextChapter:   next,
+			BookID:        chapter.BookID,
+			CommentsCount: 42, // TODO
 		},
 	}, nil
 }

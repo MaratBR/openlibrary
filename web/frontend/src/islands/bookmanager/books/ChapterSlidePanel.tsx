@@ -123,6 +123,12 @@ function ChapterEditForm({
       >
         {window._('common.save')}
       </button>
+
+      <div className="mt-6">
+        <a href={`/books-manager/book/${bookId}/chapter/${chapter.id}`} className="link">
+          {window._('bookManager.edit.goToEditor')}
+        </a>
+      </div>
     </form>
   )
 }

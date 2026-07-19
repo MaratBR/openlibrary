@@ -1,54 +1,84 @@
 import Alpine from 'alpinejs'
+import { setCookie } from '@/common/cookies'
 
-const FONT_SIZES = [10, 12, 14, 16, 18, 22, 30, 36, 48, 60, 70, 80, 90, 99]
-const FONT_SIZES_REVERSED = FONT_SIZES.slice().reverse()
+const FONT_SIZES = [12, 14, 16, 18, 20, 22, 26, 30, 36, 42, 48]
+const FONT_FAMILIES = ['serif', 'sans', 'dyslexic'] as const
+const PAGE_COLORS = ['background', 'surface'] as const
+const READER_THEMES = ['system', 'light', 'dark'] as const
+
+type ReaderFont = (typeof FONT_FAMILIES)[number]
+type PageColor = (typeof PAGE_COLORS)[number]
+type ReaderTheme = (typeof READER_THEMES)[number]
 
 Alpine.data('BookReader', () => ({
   settingsOpen: false,
   fontSize: 18,
+  fontFamily: 'serif' as ReaderFont,
+  pageColor: 'background' as PageColor,
+  readerTheme: 'system' as ReaderTheme,
+  authenticated: false,
+  saveTimer: undefined as number | undefined,
 
   init() {
-    const value = this.$el.getAttribute('data-font-size')
-    if (value && !Number.isNaN(+value)) {
-      const fontSize = Math.round(+value)
-      if (fontSize >= 12 && fontSize <= 50) {
-        this.fontSize = fontSize
-      }
-    }
-
-    // const chapterContent = document.getElementById('ChapterContent')
-    // if (chapterContent) {
-    //   initScrollPosition(chapterContent)
-    // }
+    this.fontSize = validNumber(this.$el.dataset.fontSize, FONT_SIZES, 18)
+    this.fontFamily = validValue(this.$el.dataset.fontFamily, FONT_FAMILIES, 'serif')
+    this.pageColor = validValue(this.$el.dataset.pageColor, PAGE_COLORS, 'background')
+    this.readerTheme = validValue(this.$el.dataset.readerTheme, READER_THEMES, 'system')
+    this.authenticated = this.$el.dataset.authenticated === 'true'
+    this.applyPreferences(false)
+    window.OLTheme.theme.subscribe(() => applyReaderTheme(this.readerTheme))
   },
 
   changeFontSize(increase: boolean) {
-    if (increase) {
-      if (this.fontSize === FONT_SIZES_REVERSED[0]) return
+    const currentIndex = FONT_SIZES.indexOf(this.fontSize)
+    const nextIndex = Math.max(0, Math.min(FONT_SIZES.length - 1, currentIndex + (increase ? 1 : -1)))
+    this.fontSize = FONT_SIZES[nextIndex]
+    this.applyPreferences()
+  },
 
-      const next = FONT_SIZES.find((f) => f > this.fontSize)
-      if (next) {
-        this.fontSize = next
-      } else {
-        this.fontSize = 18
-      }
-      setFontSize(this.fontSize)
-    } else {
-      if (this.fontSize === FONT_SIZES[0]) return
+  applyPreferences(persist = true) {
+    document.documentElement.style.setProperty('--book-font-size', `${this.fontSize}px`)
+    this.$el.dataset.pageColor = this.pageColor
+    this.$el.dataset.fontFamily = this.fontFamily
+    void loadReaderFont(this.fontFamily)
+    applyReaderTheme(this.readerTheme)
 
-      const next = FONT_SIZES_REVERSED.find((f) => f < this.fontSize)
-      if (next) {
-        this.fontSize = next
-      } else {
-        this.fontSize = 18
-      }
-      setFontSize(this.fontSize)
+    setCookie('reader_font_size', String(this.fontSize))
+    setCookie('reader_font_family', this.fontFamily)
+    setCookie('reader_page_color', this.pageColor)
+    setCookie('reader_theme', this.readerTheme)
+
+    if (persist && this.authenticated) {
+      window.clearTimeout(this.saveTimer)
+      this.saveTimer = window.setTimeout(() => void this.savePreferences(), 250)
+    }
+  },
+
+  async savePreferences() {
+    try {
+      await fetch('/_api/reader-preferences', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          fontSize: this.fontSize,
+          fontFamily: this.fontFamily,
+          pageColor: this.pageColor,
+          theme: this.readerTheme,
+        }),
+      }).then((response) => {
+        if (!response.ok) throw new Error(`Reader preferences request failed: ${response.status}`)
+      })
+    } catch (error) {
+      console.error(error)
     }
   },
 
   toggleButton: {
     '@click'() {
       this.settingsOpen = !this.settingsOpen
+    },
+    ':aria-expanded'() {
+      return String(this.settingsOpen)
     },
   },
 
@@ -62,11 +92,17 @@ Alpine.data('BookReader', () => ({
     '@click'() {
       this.changeFontSize(true)
     },
+    ':disabled'() {
+      return this.fontSize === FONT_SIZES.at(-1)
+    },
   },
 
   decreaseFont: {
     '@click'() {
       this.changeFontSize(false)
+    },
+    ':disabled'() {
+      return this.fontSize === FONT_SIZES[0]
     },
   },
 
@@ -77,174 +113,37 @@ Alpine.data('BookReader', () => ({
   },
 }))
 
-function setFontSize(fontSize: number) {
-  document.cookie = `ifs=${fontSize};path=/;max-age=31536000;`
-  document.body.style.setProperty('--book-font-size', `${fontSize}px`)
+function validNumber(value: string | undefined, values: readonly number[], fallback: number): number {
+  const parsed = Number(value)
+  return values.includes(parsed) ? parsed : fallback
 }
 
-// // eslint-disable-next-line no-unused-vars
-// function initScrollPosition(chapterContent: HTMLElement) {
-//   const recordCurrentPosition = Alpine.throttle(() => {
-//     getCurrentPosition(chapterContent).then((pos) => {
-//       console.log(pos)
-//     })
-//   }, 200)
+function validValue<T extends string>(value: string | undefined, values: readonly T[], fallback: T): T {
+  return values.includes(value as T) ? (value as T) : fallback
+}
 
-//   window.addEventListener('scrollend', recordCurrentPosition)
-// }
+async function loadReaderFont(font: ReaderFont): Promise<void> {
+  if (font === 'sans') {
+    await Promise.all([
+      import('@fontsource/atkinson-hyperlegible/latin-400.css'),
+      import('@fontsource/atkinson-hyperlegible/latin-700.css'),
+    ])
+  } else if (font === 'dyslexic') {
+    await Promise.all([
+      import('@fontsource/opendyslexic/latin-400.css'),
+      import('@fontsource/opendyslexic/latin-700.css'),
+    ])
+  }
+}
+
+function applyReaderTheme(theme: ReaderTheme): void {
+  let dark = false
+  if (theme === 'dark') dark = true
+  else if (theme === 'system') dark = window.OLTheme.isDarkThemeActive.get()
+  document.documentElement.classList.toggle('dark', dark)
+}
 
 export type CurrentPosition = {
-  window: {
-    height: number
-    width: number
-    scrollY: number
-  }
-  nearestElement: {
-    path: string
-    id: string | null
-    top: number
-  }
+  window: { height: number; width: number; scrollY: number }
+  nearestElement: { path: string; id: string | null; top: number }
 }
-
-// let elementAtOffset2: HTMLElement | null = null
-
-// async function getCurrentPosition(root: HTMLElement): Promise<CurrentPosition> {
-//   const elementAtOffset = await findNodeAtOffset(root, 64)
-
-//   if (elementAtOffset2) {
-//     elementAtOffset2.style.removeProperty('outline')
-//   }
-//   elementAtOffset2 = elementAtOffset
-//   if (elementAtOffset2) {
-//     elementAtOffset2.style.outline = '2px solid red'
-//   }
-
-//   const { innerHeight, innerWidth, scrollY } = window
-//   const nearestElement: CurrentPosition['nearestElement'] = {
-//     path: '',
-//     id: null,
-//     top: 0,
-//   }
-
-//   if (elementAtOffset) {
-//     const pathToElement = getRelativeNodePath(root, elementAtOffset)
-//     nearestElement.path = serializePathSteps(pathToElement)
-//     nearestElement.top = elementAtOffset.getBoundingClientRect().top
-
-//     if (elementAtOffset.id) {
-//       nearestElement.id = elementAtOffset.id
-//     }
-//   }
-
-//   return {
-//     window: {
-//       height: innerHeight,
-//       width: innerWidth,
-//       scrollY,
-//     },
-//     nearestElement,
-//   }
-// }
-
-// function findNodeAtOffset(root: HTMLElement, offset: number): Promise<HTMLElement | null> {
-//   if (offset < 1) {
-//     if (root.firstChild instanceof HTMLElement) {
-//       return Promise.resolve(root.firstChild)
-//     }
-//     return Promise.resolve(root)
-//   }
-
-//   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, null)
-//   let current = walker.currentNode as HTMLElement | null
-
-//   const task: IMicrotask = {
-//     next() {
-//       if (!current) {
-//         return true
-//       }
-
-//       if (current === root) {
-//         current = walker.nextNode() as HTMLElement | null
-//         return false
-//       }
-
-//       const rect = current.getBoundingClientRect()
-//       if (rect.top >= offset) {
-//         return true
-//       }
-//       current = walker.nextNode() as HTMLElement | null
-//       return false
-//     },
-//   }
-
-//   return new Promise((resolve, reject) => {
-//     queueMicrotasksWithBursts(task, 10, 5000, {
-//       onError: reject,
-//       onTimeout() {
-//         reject('timeout')
-//       },
-//       onSuccess() {
-//         resolve(current)
-//       },
-//     })
-//   })
-// }
-
-// type PathStep = {
-//   from: Node
-//   to: Node
-//   idx: number
-// }
-
-// function getRelativeNodePath(parent: Node, child: Node): PathStep[] {
-//   const steps: PathStep[] = []
-
-//   let current: Node | null = child
-
-//   while (current !== null && current !== parent) {
-//     const parentNode: Node | null = current.parentNode
-//     if (parentNode === null) {
-//       throw new Error('Child is not a descendant of parent')
-//     }
-
-//     const idx = Array.prototype.indexOf.call(parentNode.childNodes, current)
-
-//     if (idx === -1) {
-//       throw new Error('Invariant violation: node not found in parent.childNodes')
-//     }
-
-//     steps.push({
-//       from: parentNode,
-//       to: current,
-//       idx,
-//     })
-
-//     current = parentNode
-//   }
-
-//   if (current !== parent) {
-//     throw new Error('Child is not a descendant of parent')
-//   }
-
-//   return steps.reverse()
-// }
-
-// function serializePathSteps(steps: PathStep[]) {
-//   const s: string[] = []
-
-//   for (const step of steps) {
-//     let ss = `${step.idx}:`
-
-//     if (step.to instanceof Element) {
-//       ss += `e:${JSON.stringify({ tag: step.to.tagName })}`
-//     } else if (step.to instanceof Text) {
-//       ss += `t:${JSON.stringify({ l: step.to.textContent.length })}`
-//     } else {
-//       ss += '?'
-//     }
-
-//     s.push(ss)
-//   }
-
-//   return s.join(',')
-// }

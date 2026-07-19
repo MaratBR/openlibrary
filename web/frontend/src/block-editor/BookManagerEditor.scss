@@ -1,103 +1,151 @@
 #BlockEditorWrap {
-    min-height: 100vh
+  min-height: 100vh;
+}
+
+html:has(.be-layout),
+body:has(.be-layout) {
+  @apply h-full overflow-hidden;
+}
+
+ol-island:has(> .be-layout) {
+  @apply block h-full overflow-hidden;
 }
 
 .be-layout {
-    @apply flex flex-col h-full w-full;
+  @apply flex flex-col h-screen w-full;
 
-    &__header {
-        @apply h-16;
-    }
+  &__header {
+    @apply h-16;
+  }
 
-    &__body {
-        @apply grow-1 grid;
-        grid-template-columns: 100px 1fr 100px
-    }
+  &__body {
+    @apply grow-1 grid overflow-hidden;
+    min-height: 0;
+    transition: grid-template-columns 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-    &__left {
-        @apply bg-surface border-r;
-    }
+  &__sidebar-clip {
+    @apply relative min-w-0 overflow-hidden;
 
-    &__right {
-        @apply bg-surface border-l;
+    &[aria-hidden='true'] {
+      @apply pointer-events-none;
     }
+  }
+
+  &__left,
+  &__right {
+    @apply absolute inset-y-0 w-65 bg-surface overflow-y-auto overflow-x-hidden;
+    contain: layout paint;
+  }
+
+  &__left {
+    @apply left-0 border-r;
+  }
+
+  &__right {
+    @apply right-0 border-l;
+  }
+
+  &__center {
+    @apply relative min-w-0;
+  }
 }
 
 .be-header {
-    @apply bg-surface border-b h-full grid;
-    // I just borrowed it from WP
-    grid-template-columns: 64px minmax(min-content,2fr) 2.5fr minmax(min-content,2fr) 64px;
+  @apply bg-surface border-b h-full grid px-3;
+  grid-template-columns: minmax(220px, 1fr) minmax(200px, 2fr) minmax(360px, 1fr);
 
-    &__right {
-        @apply flex items-center justify-end;
+  &__left,
+  &__right {
+    @apply flex items-center gap-2;
+  }
+
+  &__logo {
+    @apply flex items-center mr-1;
+
+    img {
+      width: 112px;
+      max-height: 36px;
     }
+  }
+
+  &__right {
+    @apply flex items-center justify-end;
+  }
 }
 
 #BlockEditorWrap {
-    @apply p-4;
+  @apply p-4;
 
-    margin: 0 auto;
-    max-width: 65ch;
+  margin: 0 auto;
+  max-width: 65ch;
 
-    .ProseMirror {
-        @apply focus-visible:outline-none focus:outline-none;
+  .ProseMirror {
+    @apply focus-visible:outline-none focus:outline-none;
 
-        &::selection {
-            @apply bg-primary/20;
-        }
+    &::selection {
+      @apply bg-primary/20;
     }
+  }
 
-    p.is-editor-empty:first-child::before {
-        @apply text-secondary-foreground;
-        content: attr(data-placeholder);
-        float: left;
-        height: 0;
-        pointer-events: none;
-    }
+  p.is-editor-empty:first-child::before {
+    @apply text-secondary-foreground;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
 }
 
 @mixin interactable() {
-    line-height: calc(var(--spacing) * 10);
-    @apply 
-        h-10 px-1 rounded-xl transition
-        text-gray-700 dark:text-gray-100
-        hover:bg-black/20 hover:text-black dark:hover:bg-white/20 dark:hover:text-white;
+  line-height: calc(var(--spacing) * 10);
+  @apply h-10 px-1 rounded-xl transition
+        text-secondary-foreground hover:bg-foreground/10 hover:text-foreground;
 }
 
 .be-toggle {
-    @include interactable();
-    @apply size-10;
+  @include interactable();
+  @apply size-10;
 
-    &[aria-selected=true] {
-        @apply bg-black/10 text-black hover:bg-black/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20;
-    }
+  &[aria-selected='true'] {
+    @apply bg-foreground/10 text-foreground hover:bg-foreground/20;
+  }
 }
 
 .be-toggle-group {
-    @apply flex items-center rounded-xl;
+  @apply flex items-center rounded-xl;
 
-    & > .be-toggle {
-        // @apply rounded-none first:rounded-l-xl last:rounded-r-xl;
-    }
+  & > .be-toggle {
+    // @apply rounded-none first:rounded-l-xl last:rounded-r-xl;
+  }
 }
 
-
 .be-listitem {
-    @include interactable();
+  @include interactable();
 
-    &__icon {
-        @apply inline-block mr-1;
-    }
+  &__icon {
+    @apply inline-block mr-1;
+  }
+}
+
+.be-widget-card {
+  @apply flex flex-col items-center justify-center gap-2 p-3 min-h-20 border bg-background text-sm text-center
+        hover:bg-highlight disabled:opacity-50 disabled:pointer-events-none;
+  border-color: var(--border);
+  border-radius: var(--radius);
+
+  &__icon {
+    @apply text-lg;
+  }
 }
 
 .be-chapter-name-input {
-    @apply
-        focus:rounded-xl focus:bg-highlight focus:outline-none
+  @apply focus:rounded-xl focus:bg-highlight focus:outline-none
         text-3xl font-title w-full block p-4 -mx-4;
 }
 
 .be-publish-popup {
-    @apply fixed right-12 top-2 rounded-2xl shadow-lg bg-surface p-4;
-    width: 300px;
-    min-height: 200px;
+  @apply fixed right-4 top-18 rounded-2xl shadow-lg bg-surface p-4 z-50 border;
+  width: 340px;
+  min-height: 200px;
 }

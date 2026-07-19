@@ -1,5 +1,10 @@
 import { create } from 'zustand/react'
-import { httpUpdateAndPublishDraft, httpUpdateDraft, httpUpdateDraftChapterName } from '@/api/bm'
+import {
+  httpScheduleDraft,
+  httpUpdateAndPublishDraft,
+  httpUpdateDraft,
+  httpUpdateDraftChapterName,
+} from '@/api/bm'
 import { DraftDto } from './contracts'
 import { useWYSIWYG, useWYSIWYGHasChanges } from './wysiwyg/state'
 
@@ -15,6 +20,7 @@ export type BEState = {
   setChapterName(name: string): void
   saveDraft(): Promise<void>
   saveAndPublishDraft(makePublic: boolean): Promise<void>
+  saveAndScheduleDraft(scheduledAt: Date): Promise<void>
 }
 
 export const useBEState = create<BEState>((set, get) => ({
@@ -34,6 +40,8 @@ export const useBEState = create<BEState>((set, get) => ({
     set({
       draft,
       chapterName: draft.chapterName,
+      saving: false,
+      error: null,
     })
   },
 
@@ -74,6 +82,7 @@ export const useBEState = create<BEState>((set, get) => ({
         error,
         saving: false,
       })
+      throw error
     }
   },
 
@@ -114,6 +123,27 @@ export const useBEState = create<BEState>((set, get) => ({
         error,
         saving: false,
       })
+      throw error
+    }
+  },
+
+  async saveAndScheduleDraft(scheduledAt: Date) {
+    await get().saveDraft()
+    set({ saving: true })
+    try {
+      const { draft } = get()
+      if (!draft) throw new Error('cannot schedule draft - no draft information is available')
+      const response = await httpScheduleDraft(
+        draft.book.id,
+        draft.chapter.id,
+        draft.id,
+        scheduledAt.toISOString(),
+      )
+      response.throwIfError()
+      set({ saving: false, error: null, draft: response.data })
+    } catch (error: unknown) {
+      set({ error, saving: false })
+      throw error
     }
   },
 }))
@@ -122,6 +152,13 @@ export function useDraftHasChanges() {
   const contentWasChanged = useWYSIWYGHasChanges()
   const chapterNameChanged = useBEState((s) => s.chapterNameWasChanged())
   return chapterNameChanged || contentWasChanged
+}
+
+export function useChapterNameIsValid() {
+  return useBEState((s) => {
+    const name = s.chapterName.trim()
+    return name.length > 0 && Array.from(name).length <= 70
+  })
 }
 
 export function useDraftHasPendingChanges() {

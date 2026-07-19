@@ -1,7 +1,3 @@
-@mixin loader {
-
-}
-
 .with-loader {
   position: relative;
   color: transparent !important;
@@ -44,7 +40,7 @@
       box-shadow: 32px 0 color-mix(in srgb, var(--loader-color), transparent 50%), -32px 0 var(--loader-color);
     }
     50% {
-      background-color: hsl(var(--loader-color));
+      background-color: var(--loader-color);
       box-shadow: 32px 0 color-mix(in srgb, var(--loader-color), transparent 50%), -32px 0 color-mix(in srgb, var(--loader-color), transparent 50%);
     }
     100% {
@@ -71,4 +67,4 @@
   100% {
     transform: rotate(360deg);
   }
-} 
+}

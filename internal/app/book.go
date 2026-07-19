@@ -127,18 +127,17 @@ type GetPinnedUserBooksResult struct {
 }
 
 type ChapterDto struct {
-	ID              int64                        `json:"id,string"`
-	Name            string                       `json:"name"`
-	Words           int32                        `json:"words"`
-	Content         string                       `json:"content"`
-	IsAdultOverride bool                         `json:"isAdultOverride"`
-	CreatedAt       time.Time                    `json:"createdAt"`
-	Order           int32                        `json:"order"`
-	Summary         string                       `json:"summary"`
-	NextChapter     Nullable[ChapterNextPrevDto] `json:"nextChapter"`
-	PrevChapter     Nullable[ChapterNextPrevDto] `json:"prevChapter"`
-	BookID          int64                        `json:"bookId"`
-	CommentsCount   int64                        `json:"commentsCount"`
+	ID            int64                        `json:"id,string"`
+	Name          string                       `json:"name"`
+	Words         int32                        `json:"words"`
+	Content       string                       `json:"content"`
+	CreatedAt     time.Time                    `json:"createdAt"`
+	Order         int32                        `json:"order"`
+	Summary       string                       `json:"summary"`
+	NextChapter   Nullable[ChapterNextPrevDto] `json:"nextChapter"`
+	PrevChapter   Nullable[ChapterNextPrevDto] `json:"prevChapter"`
+	BookID        int64                        `json:"bookId"`
+	CommentsCount int64                        `json:"commentsCount"`
 }
 
 type ChapterNextPrevDto struct {

@@ -48,7 +48,6 @@ create table book_chapters (
     created_at timestamptz not null default now(),
     updated_at timestamptz,
     words int4 not null default 0,
-    is_adult_override bool not null default false,
     summary text not null default '',
     is_publicly_visible bool not null default false
 );

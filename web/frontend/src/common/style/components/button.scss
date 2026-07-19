@@ -90,7 +90,7 @@
         }
 
         &:active {
-            background-color: color-mix(in oklch, var(--secondary), var(--foreground) 10%);
+            background-color: color-mix(in srgb, var(--secondary), var(--foreground) 10%);
         }
     }
 

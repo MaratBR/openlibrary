@@ -17,10 +17,11 @@ type chaptersController struct {
 	readingListService app.ReadingListService
 	commentsService    app.CommentsService
 	viewsService       analytics.ViewsService
+	readerPreferences  app.ReaderPreferencesService
 }
 
-func newChaptersController(service app.BookService, readingListService app.ReadingListService, viewsService analytics.ViewsService, commentsService app.CommentsService) *chaptersController {
-	return &chaptersController{service: service, readingListService: readingListService, viewsService: viewsService, commentsService: commentsService}
+func newChaptersController(service app.BookService, readingListService app.ReadingListService, viewsService analytics.ViewsService, commentsService app.CommentsService, readerPreferences app.ReaderPreferencesService) *chaptersController {
+	return &chaptersController{service: service, readingListService: readingListService, viewsService: viewsService, commentsService: commentsService, readerPreferences: readerPreferences}
 }
 
 func (c *chaptersController) Register(r chi.Router) {
@@ -60,7 +61,18 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	options := c.getChapterProgressTrackerOptions(r, &result.Chapter)
-	templates.Chapter(result.Chapter, book, options).Render(r.Context(), w)
+	preferences := templates.GetReaderPreferencesFromCookies(r)
+	if userID.Valid {
+		storedPreferences, preferencesErr := c.readerPreferences.Get(r.Context(), userID.UUID)
+		if preferencesErr != nil {
+			writeApplicationError(w, r, preferencesErr)
+			return
+		}
+		if storedPreferences.Valid {
+			preferences = storedPreferences.Value
+		}
+	}
+	olhttp.WriteTemplate(w, r.Context(), templates.Chapter(result.Chapter, book, options, preferences))
 }
 
 func (c *chaptersController) getChapterProgressTrackerOptions(r *http.Request, chapter *app.ChapterDto) templates.ChapterProgressTrackerOptions {

@@ -64,6 +64,9 @@ const book_GetByUser = `-- name: Book_GetByUser :many
 select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned
 from books b
 where b.author_user_id = $1 and chapters > 0
+  and b.is_publicly_visible
+  and not b.is_banned
+  and not b.is_trashed
 order by b.is_pinned desc, b.created_at asc
 limit $2 offset $3
 `
@@ -133,20 +136,19 @@ func (q *Queries) Book_GetFirstChapterID(ctx context.Context, bookID int64) (int
 }
 
 const book_GetPubliclyVisibleChapters = `-- name: Book_GetPubliclyVisibleChapters :many
-select c.id, c.name, c.words, c."order", c.created_at, c.summary, c.is_adult_override
+select c.id, c.name, c.words, c."order", c.created_at, c.summary
 from book_chapters c
 where book_id = $1 and is_publicly_visible = true
 order by "order"
 `
 
 type Book_GetPubliclyVisibleChaptersRow struct {
-	ID              int64
-	Name            string
-	Words           int32
-	Order           int32
-	CreatedAt       pgtype.Timestamptz
-	Summary         string
-	IsAdultOverride bool
+	ID        int64
+	Name      string
+	Words     int32
+	Order     int32
+	CreatedAt pgtype.Timestamptz
+	Summary   string
 }
 
 func (q *Queries) Book_GetPubliclyVisibleChapters(ctx context.Context, bookID int64) ([]Book_GetPubliclyVisibleChaptersRow, error) {
@@ -165,7 +167,6 @@ func (q *Queries) Book_GetPubliclyVisibleChapters(ctx context.Context, bookID in
 			&i.Order,
 			&i.CreatedAt,
 			&i.Summary,
-			&i.IsAdultOverride,
 		); err != nil {
 			return nil, err
 		}
@@ -178,8 +179,9 @@ func (q *Queries) Book_GetPubliclyVisibleChapters(ctx context.Context, bookID in
 }
 
 const getAllBookChapters = `-- name: GetAllBookChapters :many
-select c.id, c.name, c.book_id, c.content, c.content_updated_at, c."order", c.created_at, c.updated_at, c.words, c.is_adult_override, c.summary, c.is_publicly_visible, 
-  cast(coalesce((select id from drafts where drafts.chapter_id = c.id order by created_at desc limit 1), 0) as int8) as latest_draft_id
+select c.id, c.name, c.book_id, c.content, c.content_updated_at, c."order", c.created_at, c.updated_at, c.words, c.summary, c.is_publicly_visible,
+  cast(coalesce((select id from drafts where drafts.chapter_id = c.id order by coalesce(updated_at, created_at) desc limit 1), 0) as int8) as latest_draft_id,
+  (select scheduled_at from drafts where drafts.chapter_id = c.id order by coalesce(updated_at, created_at) desc limit 1) as scheduled_at
 from book_chapters c
 where book_id = $1
 order by "order"
@@ -195,10 +197,10 @@ type GetAllBookChaptersRow struct {
 	CreatedAt         pgtype.Timestamptz
 	UpdatedAt         pgtype.Timestamptz
 	Words             int32
-	IsAdultOverride   bool
 	Summary           string
 	IsPubliclyVisible bool
 	LatestDraftID     int64
+	ScheduledAt       pgtype.Timestamptz
 }
 
 func (q *Queries) GetAllBookChapters(ctx context.Context, bookID int64) ([]GetAllBookChaptersRow, error) {
@@ -220,10 +222,10 @@ func (q *Queries) GetAllBookChapters(ctx context.Context, bookID int64) ([]GetAl
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Words,
-			&i.IsAdultOverride,
 			&i.Summary,
 			&i.IsPubliclyVisible,
 			&i.LatestDraftID,
+			&i.ScheduledAt,
 		); err != nil {
 			return nil, err
 		}
@@ -363,7 +365,7 @@ func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
 
 const getBookChapterWithDetails = `-- name: GetBookChapterWithDetails :one
 select 
-    bc.id, bc.name, bc.book_id, bc.content, bc.content_updated_at, bc."order", bc.created_at, bc.updated_at, bc.words, bc.is_adult_override, bc.summary, bc.is_publicly_visible,
+    bc.id, bc.name, bc.book_id, bc.content, bc.content_updated_at, bc."order", bc.created_at, bc.updated_at, bc.words, bc.summary, bc.is_publicly_visible,
     coalesce(prev_chapter.id, 0) as prev_chapter_id,
     coalesce(prev_chapter.name, '') as prev_chapter_name,
     coalesce(next_chapter.id, 0) as next_chapter_id,
@@ -406,7 +408,6 @@ type GetBookChapterWithDetailsRow struct {
 	CreatedAt         pgtype.Timestamptz
 	UpdatedAt         pgtype.Timestamptz
 	Words             int32
-	IsAdultOverride   bool
 	Summary           string
 	IsPubliclyVisible bool
 	PrevChapterID     int64
@@ -428,7 +429,6 @@ func (q *Queries) GetBookChapterWithDetails(ctx context.Context, arg GetBookChap
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Words,
-		&i.IsAdultOverride,
 		&i.Summary,
 		&i.IsPubliclyVisible,
 		&i.PrevChapterID,

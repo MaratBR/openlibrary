@@ -3,23 +3,35 @@ package templates
 import (
 	"net/http"
 	"strconv"
+
+	"github.com/MaratBR/openlibrary/internal/app"
 )
 
-type uiSettings struct {
-	FontSize int
-}
+func GetReaderPreferencesFromCookies(r *http.Request) app.ReaderPreferences {
+	preferences := app.DefaultReaderPreferences()
 
-func getUIBookSettings(r *http.Request) uiSettings {
-	var settings uiSettings
-	settings.FontSize = 18
-
-	v, err := r.Cookie("ifs")
-	if err == nil {
-		intValue, err := strconv.Atoi(v.Value)
-		if err == nil && (intValue >= 10 || intValue <= 99) {
-			settings.FontSize = intValue
+	fontSizeCookie, fontSizeCookieErr := r.Cookie("reader_font_size")
+	if fontSizeCookieErr != nil {
+		// Preserve the font-size preference used by the previous reader UI.
+		fontSizeCookie, fontSizeCookieErr = r.Cookie("ifs")
+	}
+	if fontSizeCookieErr == nil {
+		if value, parseErr := strconv.Atoi(fontSizeCookie.Value); parseErr == nil && value >= 12 && value <= 48 {
+			preferences.FontSize = int16(value)
 		}
 	}
+	if cookie, err := r.Cookie("reader_font_family"); err == nil {
+		preferences.FontFamily = cookie.Value
+	}
+	if cookie, err := r.Cookie("reader_page_color"); err == nil {
+		preferences.PageColor = cookie.Value
+	}
+	if cookie, err := r.Cookie("reader_theme"); err == nil {
+		preferences.Theme = cookie.Value
+	}
 
-	return settings
+	if err := preferences.Validate(); err != nil {
+		return app.DefaultReaderPreferences()
+	}
+	return preferences
 }

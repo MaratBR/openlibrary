@@ -1,29 +1,27 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
-import "encoding/json"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
-templ ChapterEditor(bookID int64, draft app.DraftDto) {
+templ ChapterEditor(draft app.DraftDto) {
     {{
-        type data struct {
-            BookID int64 `json:"bookId,string"`
-            Draft app.DraftDto `json:"draft"`
-        }
-
         l := i18n.GetLocalizer(ctx)
-        jsonBytes, _ := json.Marshal(data{
-            BookID: bookID,
+        jsonData, err := templ.JSONString(struct {
+            Draft app.DraftDto `json:"draft"`
+        }{
             Draft: draft,
         })
+        if err != nil {
+            return err
+        }
     }}
     @i18nExtractKeysByPrefix(l, "editor")
-    @bmLayout(draft.ChapterName) {
+    @bmLayout(draft.ChapterName, "/_/assets/block-editor.css") {
         @webcomponents.Island(webcomponents.IslandProps{
             Name: "ChapterEditor",
             Src: "/_/assets/block-editor.js",
-            Data: string(jsonBytes),
+            Data: jsonData,
         })
     }
 }

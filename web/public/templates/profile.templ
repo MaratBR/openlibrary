@@ -1,116 +1,103 @@
 package templates
 
+import "fmt"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "github.com/MaratBR/openlibrary/internal/i18n"
-import "fmt"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ UserNotFound() {
-    {{
-        l := i18n.GetLocalizer(ctx)
-    }}
+    {{ l := i18n.GetLocalizer(ctx) }}
     @standardPageLayout(standardPageLayoutProps{
-        htmlLayoutProps: htmlLayoutProps{
-            Title: "404 - " + l.T("user.notFound"),
-        },
+        htmlLayoutProps: htmlLayoutProps{Title: "404 - " + l.T("user.notFound")},
     }) {
         @olhttp.ErrorPage("404", l.T("user.notFound"), l.T("user.notFoundDescription"))
     }
 }
 
 templ User(user *app.UserDetailsDto, pinnedBooks app.GetPinnedUserBooksResult) {
-    {{
-        l := i18n.GetLocalizer(ctx)
-    }}
-
+    {{ l := i18n.GetLocalizer(ctx) }}
     @standardPageLayout(standardPageLayoutProps{
-        htmlLayoutProps: htmlLayoutProps{
-            Title: user.Name,
-        },
+        htmlLayoutProps: htmlLayoutProps{Title: user.Name},
     }) {
-        <div class="ol-container ol-container--big py-10">
-            <section class="border bg-surface rounded-lg overflow-hidden relative">
-                <div class="h-64 overflow-hidden">
-                    <img alt="profile cover" aria-hidden="true" src="/_/embed-assets/profile_cover.jpg" />
-                </div>
-                <div class="flex justify-center absolute left-0 right-0 top-32">
-                    <div class="overflow-auto size-64 border rounded-full bg-background">
-                        <img aria-hidden="true" src={ user.Avatar.LG } />
+        <main class="ol-container py-8 md:py-12">
+            <section class="card card--elevated overflow-hidden">
+                <div class="flex flex-col gap-6 p-6 sm:p-8 md:flex-row md:items-center">
+                    <img
+                        class="size-28 shrink-0 rounded-full border-4 border-surface bg-background object-cover shadow-md md:size-36"
+                        src={ user.Avatar.LG }
+                        alt={ user.Name }
+                    />
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <h1 class="break-words font-title text-3xl font-bold md:text-4xl">{ user.Name }</h1>
+                            if user.IsBanned {
+                                <span class="chip chip--destructive">{ l.T("profile.banned") }</span>
+                            }
+                        </div>
+                        if user.About.Bio != "" {
+                            <p class="mt-3 max-w-3xl whitespace-pre-line text-secondary-foreground">{ user.About.Bio }</p>
+                        }
                     </div>
                 </div>
-                <div class="pt-36 pb-5 px-4 flex flex-col items-center">
-                    <div>
-                        <h1 class="font-title text-4xl">{ user.Name }</h1>
-                    </div>
-                    <div class="flex gap-2">
-                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/users/%s/books", user.ID)) }>
-                            <div class="text-2xl font-semibold">
-                                { commonutil.FormatInt(int(user.BooksTotal)) }
-                            </div>
-                            { _tt(l, "user.books", int(user.BooksTotal)) }
-                        </a>
 
-                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/users/%s/followers", user.ID)) }>
-                            <div class="text-2xl font-semibold">
-                                { commonutil.FormatInt(int(user.Followers)) }
-                            </div>
-                            { _tt(l, "user.followers", int(user.Followers)) }
-                        </a>
-
-                        <a class="p-2 hover:text-primary rounded-md focus:ring" href={ templ.SafeURL(fmt.Sprintf("/users/%s/following", user.ID)) }>
-                            <div class="text-2xl font-semibold">
-                                { commonutil.FormatInt(int(user.Following)) }
-                            </div>
-                            { _tt(l, "user.following", int(user.Following)) }
-                        </a>
-                    </div>
-                </div>
+                <dl class="grid grid-cols-3 border-t bg-foreground/5">
+                    @profileStat(commonutil.FormatInt(int(user.BooksTotal)), _tt(l, "user.books", int(user.BooksTotal)))
+                    if user.Followers >= 0 {
+                        @profileStat(commonutil.FormatInt(int(user.Followers)), _tt(l, "user.followers", int(user.Followers)))
+                        @profileStat(commonutil.FormatInt(int(user.Following)), _tt(l, "user.following", int(user.Following)))
+                    } else {
+                        @profileStat(l.T("profile.privateStats"), _tt(l, "user.followers", 2))
+                        @profileStat(l.T("profile.privateStats"), _tt(l, "user.following", 2))
+                    }
+                </dl>
             </section>
 
-            {{
-                bookSectionId := fmt.Sprintf("profile-books-%s", user.ID)
-            }}
-        </div>
-        <section class="profile-books" id="profile-books">
-            <ul class="profile-books__list" id={bookSectionId}>
-                <div style="width: max(0px, calc((100vw - var(--_center-width)) / 2));"></div>
-                for _, book := range pinnedBooks.Books {
-                    @userProfilePinnedBookCard(book.ID, book.Name, book.Cover)
+            <section class="mt-10" aria-labelledby="profile-books-title">
+                <div class="mb-5">
+                    <h2 id="profile-books-title" class="font-title text-2xl font-semibold md:text-3xl">
+                        { l.T("profile.publishedBooks") }
+                    </h2>
+                </div>
+
+                if len(pinnedBooks.Books) == 0 {
+                    <div class="card border p-8 text-center text-secondary-foreground">
+                        <i class="fa-solid fa-book-open mb-3 text-3xl" aria-hidden="true"></i>
+                        <p>{ l.T("profile.noBooks") }</p>
+                    </div>
+                } else {
+                    <ul class="profile-books-grid">
+                        for _, book := range pinnedBooks.Books {
+                            <li>@userProfilePinnedBookCard(book.ID, book.Name, book.Cover)</li>
+                        }
+                    </ul>
+                    if pinnedBooks.HasMore {
+                        <div class="mt-7 flex justify-center">
+                            <a class="btn btn--outline" href={ templ.SafeURL(fmt.Sprintf("/users/%s/books", user.ID)) }>
+                                { l.T("profile.showMore") }
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    }
                 }
-                if pinnedBooks.HasMore {
-                    <a href={ templ.SafeURL(fmt.Sprintf("/users/%s/books", user.ID)) } class="flex flex-col items-center justify-center w-[200px] rounded-xl hover:text-primary">
-                        <span>Show more</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                }
-                <div style="width: max(0px, calc((100vw - var(--_center-width)) / 2));"></div>
-            </ul>
-        </section>
-        <script>
-            document.addEventListener('overlayscrollbars-ready', () => {
-                const root = document.getElementById('profile-books')
-                OverlayScrollbars(root, {})
-            })
-            document.addEventListener('ol:jsready', () => {
-                const root = document.getElementById('profile-books').querySelector('[data-overlayscrollbars-viewport]')
-                setTimeout(() => {
-                    enableDragScroll(root)
-                }, 2000)
-            })
-        </script>
-        
+            </section>
+        </main>
     }
 }
 
+templ profileStat(value, label string) {
+    <div class="min-w-0 px-2 py-5 text-center sm:px-5">
+        <dd class="truncate text-xl font-semibold sm:text-2xl">{ value }</dd>
+        <dt class="truncate text-xs text-secondary-foreground sm:text-sm">{ label }</dt>
+    </div>
+}
+
 templ userProfilePinnedBookCard(bookID int64, name string, cover app.BookCover) {
-    <a 
-        href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) } 
-        class="profile-book-card-sm" 
+    <a
+        href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) }
+        class="profile-book-card-sm"
         data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
         @bookCover(cover.URL, name, 300)
-        <div class="profile-book-card-sm__title">
-            { name }
-        </div>
+        <div class="profile-book-card-sm__title">{ name }</div>
     </a>
 }

@@ -14,8 +14,52 @@
         @apply md:col-span-9 px-4 md:px-0;
     }
 
+    &__details {
+        @apply mt-8 overflow-hidden rounded-xl border bg-surface;
+    }
+
+    &__classification {
+        @apply flex flex-col gap-4 p-4 sm:flex-row sm:items-center;
+    }
+
+    &__tags {
+        @apply min-w-0 flex-1;
+
+        .tags {
+            @apply flex flex-wrap gap-2;
+
+            > li {
+                @apply m-0;
+            }
+        }
+    }
+
     &__rating-card {
-        @apply text-md text-secondary-foreground ml-2 inline-block bg-surface rounded-xl py-2 px-4;
+        @apply flex flex-col gap-4 border-t bg-background/50 px-4 py-3 text-secondary-foreground sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    &__rating-summary {
+        @apply flex items-center gap-2;
+    }
+
+    &__rating-value {
+        @apply ml-1 text-xl font-semibold tabular-nums text-foreground;
+    }
+
+    &__rating-scale {
+        @apply text-sm;
+    }
+
+    &__stats {
+        @apply flex items-center divide-x divide-border;
+    }
+
+    &__stat {
+        @apply flex min-w-16 items-center justify-center gap-2 px-3 tabular-nums first:pl-0 last:pr-0 sm:first:pl-3;
+
+        i {
+            @apply text-primary;
+        }
     }
 }
 

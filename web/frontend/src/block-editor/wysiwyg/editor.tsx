@@ -60,7 +60,6 @@ export class ChapterContentEditor extends Editor {
       extensions: [
         StarterKit.configure({
           horizontalRule: false,
-          codeBlock: false,
           heading: false,
           code: { HTMLAttributes: { class: 'inline', spellcheck: 'false' } },
           dropcursor: { width: 2, class: 'ProseMirror-dropcursor border' },

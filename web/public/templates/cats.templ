@@ -1,0 +1,31 @@
+package templates
+
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
+templ Cats() {
+	{{
+		l := i18n.GetLocalizer(ctx)
+	}}
+	@htmlLayout(htmlLayoutProps{Title: l.T("cats.title")}) {
+		<main
+			class="fixed inset-0 grid grid-cols-2 grid-rows-8 sm:grid-cols-4 sm:grid-rows-4 overflow-hidden bg-background"
+			aria-label={ l.T("cats.mosaicLabel") }
+		>
+			for index := range 16 {
+				<img
+					class="size-full min-w-0 min-h-0 object-cover"
+					src={ fmt.Sprintf("https://cataas.com/cat?width=640&height=640&mosaic=%d", index) }
+					alt=""
+					if index < 6 {
+						loading="eager"
+					} else {
+						loading="lazy"
+					}
+					decoding="async"
+					referrerpolicy="no-referrer"
+				/>
+			}
+		</main>
+	}
+}

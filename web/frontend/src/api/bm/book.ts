@@ -62,9 +62,9 @@ export const ManagerBookChapterDtoSchema = z.object({
   words: z.number().int(),
   summary: z.string(),
   order: z.number(),
-  isAdultOverride: z.boolean(),
   isPubliclyVisible: z.boolean(),
   draftId: z.string().nullable(),
+  scheduledAt: z.string().nullable(),
 })
 
 export type ManagerBookChapterDto = z.infer<typeof ManagerBookChapterDtoSchema>
@@ -144,7 +144,6 @@ export class BMBookAPI {
     request: {
       name: string
       summary: string
-      isAdultOverride: boolean
       content: string
     },
   ) {

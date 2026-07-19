@@ -100,7 +100,6 @@ type CreateBookChapterCommand struct {
 	BookID            int64
 	Name              string
 	Content           string
-	IsAdultOverride   bool
 	Summary           string
 	UserID            uuid.UUID
 	IsPubliclyVisible bool
@@ -123,9 +122,9 @@ type ManagerBookChapterDto struct {
 	Words             int                   `json:"words"`
 	Summary           string                `json:"summary"`
 	Order             int32                 `json:"order"`
-	IsAdultOverride   bool                  `json:"isAdultOverride"`
 	IsPubliclyVisible bool                  `json:"isPubliclyVisible"`
 	DraftID           Nullable[Int64String] `json:"draftId"`
+	ScheduledAt       Nullable[time.Time]   `json:"scheduledAt"`
 }
 
 type ManagerGetBookChaptersQuery struct {
@@ -150,7 +149,6 @@ type ManagerBookChapterDetailsDto struct {
 	Words             int       `json:"words"`
 	Summary           string    `json:"summary"`
 	Order             int32     `json:"order"`
-	IsAdultOverride   bool      `json:"isAdultOverride"`
 	Content           string    `json:"content"`
 	IsPubliclyVisible bool      `json:"isPubliclyVisible"`
 }
@@ -205,6 +203,7 @@ type DraftDto struct {
 	Content     string              `json:"content"`
 	CreatedAt   time.Time           `json:"createdAt"`
 	UpdatedAt   Nullable[time.Time] `json:"updatedAt"`
+	ScheduledAt Nullable[time.Time] `json:"scheduledAt"`
 	CreatedBy   struct {
 		ID   uuid.UUID `json:"id"`
 		Name string    `json:"name"`
@@ -229,14 +228,13 @@ type UpdateDraftChapterNameCommand struct {
 }
 
 type UpdateDraftCommand struct {
-	Content         string
-	Summary         string
-	Name            string
-	IsAdultOverride bool
-	DraftID         int64
-	ChapterID       int64
-	BookID          int64
-	UserID          uuid.UUID
+	Content   string
+	Summary   string
+	Name      string
+	DraftID   int64
+	ChapterID int64
+	BookID    int64
+	UserID    uuid.UUID
 }
 
 type UpdateDraftContentCommand struct {
@@ -258,12 +256,22 @@ type PublishDraftCommand struct {
 	MakePublic bool
 }
 
+type ScheduleDraftCommand struct {
+	DraftID     int64
+	ChapterID   int64
+	BookID      int64
+	UserID      uuid.UUID
+	ScheduledAt time.Time
+}
+
 type GetLatestDraftQuery struct {
+	BookID    int64
 	ChapterID int64
 	UserID    uuid.UUID
 }
 
 type CreateDraftCommand struct {
+	BookID    int64
 	ChapterID int64
 	UserID    uuid.UUID
 }
@@ -304,6 +312,7 @@ type BookManagerService interface {
 	UpdateDraftContent(ctx context.Context, cmd UpdateDraftContentCommand) error
 	DeleteDraft(ctx context.Context, cmd DeleteDraftCommand) error
 	PublishDraft(ctx context.Context, cmd PublishDraftCommand) error
+	ScheduleDraft(ctx context.Context, cmd ScheduleDraftCommand) error
 	CreateDraft(ctx context.Context, cmd CreateDraftCommand) (int64, error)
 	GetLatestDraft(ctx context.Context, cmd GetLatestDraftQuery) (Nullable[int64], error)
 }
