@@ -89,6 +89,22 @@ set
 where id = $1
 returning book_chapters.book_id;
 
+-- name: Chapter_UpdateDetails :execrows
+update book_chapters
+set
+    name = sqlc.arg('name'),
+    summary = sqlc.arg('summary'),
+    is_publicly_visible = sqlc.arg('is_publicly_visible'),
+    updated_at = now()
+where book_chapters.id = sqlc.arg('chapter_id')
+  and book_chapters.book_id = sqlc.arg('book_id')
+  and exists (
+      select 1
+      from books
+      where books.id = sqlc.arg('book_id')
+        and books.author_user_id = sqlc.arg('user_id')
+  );
+
 -- name: GetChaptersOrder :many
 select id
 from book_chapters

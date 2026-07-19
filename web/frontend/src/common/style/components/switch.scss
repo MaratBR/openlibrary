@@ -2,9 +2,9 @@
 .switch {
   position: relative;
   display: inline-block;
-  width: 70px;
-  min-width: 60px;
-  height: 34px;
+  width: 48px;
+  min-width: 48px;
+  height: 26px;
 }
   
 .switch input {
@@ -21,32 +21,35 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
-  transition: 0.1s;
-  border-radius: 34px;
+  background-color: var(--secondary);
+  border: 1px solid var(--border-strong);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  border-radius: 999px;
 }
 
 /* The slider circle (the knob) */
 .switch__slider:before {
   position: absolute;
   content: "";
-  height: 26px;
-  width: 40px;
-  border-radius: 13px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.1s;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--surface);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast);
   transform: scale(var(--scale, 1));
 }
 
 /* When the switch is checked (turned on) */
 input:checked + .switch__slider {
   @apply bg-primary;
+  border-color: var(--primary);
 }
 
 input:disabled + .switch__slider {
-  @apply bg-gray-400 dark:bg-zinc-700;
+  opacity: 0.48;
 }
 
 input:checked + .switch__slider:before {
@@ -54,5 +57,9 @@ input:checked + .switch__slider:before {
 }
 
 .switch:hover .switch__slider:before {
-  --scale: 0.9;
+  --scale: 0.94;
+}
+
+.switch input:focus-visible + .switch__slider {
+  box-shadow: var(--focus-ring);
 }

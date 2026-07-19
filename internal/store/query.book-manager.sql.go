@@ -379,6 +379,47 @@ func (q *Queries) Chapter_Update(ctx context.Context, arg Chapter_UpdateParams) 
 	return book_id, err
 }
 
+const chapter_UpdateDetails = `-- name: Chapter_UpdateDetails :execrows
+update book_chapters
+set
+    name = $1,
+    summary = $2,
+    is_publicly_visible = $3,
+    updated_at = now()
+where book_chapters.id = $4
+  and book_chapters.book_id = $5
+  and exists (
+      select 1
+      from books
+      where books.id = $5
+        and books.author_user_id = $6
+  )
+`
+
+type Chapter_UpdateDetailsParams struct {
+	Name              string
+	Summary           string
+	IsPubliclyVisible bool
+	ChapterID         int64
+	BookID            int64
+	UserID            pgtype.UUID
+}
+
+func (q *Queries) Chapter_UpdateDetails(ctx context.Context, arg Chapter_UpdateDetailsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, chapter_UpdateDetails,
+		arg.Name,
+		arg.Summary,
+		arg.IsPubliclyVisible,
+		arg.ChapterID,
+		arg.BookID,
+		arg.UserID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getChaptersOrder = `-- name: GetChaptersOrder :many
 select id
 from book_chapters

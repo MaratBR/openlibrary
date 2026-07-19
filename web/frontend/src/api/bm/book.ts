@@ -131,7 +131,7 @@ export class BMBookAPI {
   normalizeChapterName(name: string) {
     name = name.trim()
 
-    const valid = name.length <= 255 && name.length > 0
+    const valid = Array.from(name).length <= 70 && name.length > 0
 
     return {
       value: name,
@@ -159,5 +159,15 @@ export class BMBookAPI {
     return httpClient
       .post(`/_api/books-manager/book/${bookId}/direct-update`, { json: body })
       .then((r) => OLAPIResponse.create(r, ManagerBookDetailsDtoSchema))
+  }
+
+  updateChapter(
+    bookId: string,
+    chapterId: string,
+    body: { name: string; summary: string; isPubliclyVisible: boolean },
+  ) {
+    return httpClient
+      .post(`/_api/books-manager/book/${bookId}/chapter/${chapterId}/direct-update`, { json: body })
+      .then((r) => OLAPIResponse.createNoBody(r))
   }
 }

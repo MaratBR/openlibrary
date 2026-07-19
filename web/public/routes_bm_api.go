@@ -29,6 +29,7 @@ func (c *apiControllerBM) Register(r chi.Router) {
 		r.With(httpin.NewInput(&apiPayloadUploadCover{})).Post("/book/{bookID}/cover", c.uploadCover)
 		r.With(httpin.NewInput(&apiPayloadChangeChaptersOrder{})).Post("/book/{bookID}/chapters-order", c.changeChaptersOrder)
 		r.With(httpin.NewInput(&apiPayloadCreateChapter{})).Post("/book/{bookID}/create-chapter", c.createChapter)
+		r.With(httpin.NewInput(&apiPayloadUpdateChapter{})).Post("/book/{bookID}/chapter/{chapterID}/direct-update", c.updateChapter)
 		r.Get("/book/{bookID}/chapters", c.getChapters)
 
 		r.Post("/book/{bookID}/{chapterID}/{draftID}", c.updateDraftContent)
@@ -39,6 +40,44 @@ func (c *apiControllerBM) Register(r chi.Router) {
 		r.With(httpin.NewInput(&apiPayloadTrashBook{})).Post("/books/trash", c.trashBook)
 
 	})
+}
+
+type apiPayloadUpdateChapter struct {
+	Body struct {
+		Name              string `json:"name"`
+		Summary           string `json:"summary"`
+		IsPubliclyVisible bool   `json:"isPubliclyVisible"`
+	} `in:"body=json"`
+}
+
+func (c *apiControllerBM) updateChapter(w http.ResponseWriter, r *http.Request) {
+	input := r.Context().Value(httpin.Input).(*apiPayloadUpdateChapter)
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	chapterID, err := olhttp.URLParamInt64(r, "chapterID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+
+	session := auth.RequireSession(r.Context())
+	err = c.service.UpdateBookChapter(r.Context(), app.UpdateBookChapterCommand{
+		BookID:            bookID,
+		ChapterID:         chapterID,
+		UserID:            session.UserID,
+		Name:              input.Body.Name,
+		Summary:           input.Body.Summary,
+		IsPubliclyVisible: input.Body.IsPubliclyVisible,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+
+	apiWriteOK(w)
 }
 
 type apiPayloadBookDirectUpdate struct {

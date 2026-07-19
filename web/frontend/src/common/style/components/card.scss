@@ -1,7 +1,16 @@
 .card {
-    @apply p-4 border bg-surface text-foreground rounded-xl;
+    @apply p-6 border bg-surface text-foreground rounded-xl;
+    border-color: var(--border);
+    box-shadow: var(--shadow-xs);
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
 
     &--elevated {
-        @apply shadow-sm;
+        box-shadow: var(--shadow-sm);
+    }
+
+    &--interactive:hover {
+        border-color: var(--border-strong);
+        box-shadow: var(--shadow-sm);
+        transform: translateY(-1px);
     }
 }

@@ -1,6 +1,14 @@
 package app
 
-import "errors"
+import (
+	"errors"
+	"strings"
+	"unicode/utf8"
+
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
+)
+
+const MaxChapterNameLength = 70
 
 var (
 	ErrEmptyBookName   = errors.New("empty book name")
@@ -21,6 +29,16 @@ func validateBookName(name string) error {
 func validateBookSummary(summary string) error {
 	if len(summary) > 100_000 {
 		return BookSummaryTooLong
+	}
+	return nil
+}
+
+func validateChapterName(name string) error {
+	if strings.TrimSpace(name) == "" {
+		return apperror.ValidationError.New("chapter name is required")
+	}
+	if utf8.RuneCountInString(name) > MaxChapterNameLength {
+		return apperror.ValidationError.New("chapter name cannot exceed 70 characters")
 	}
 	return nil
 }

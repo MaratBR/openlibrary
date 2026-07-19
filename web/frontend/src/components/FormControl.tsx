@@ -5,11 +5,13 @@ export function FormControl({
   htmlFor,
   children,
   description,
+  error,
 }: {
   label: string
   htmlFor?: string
   children?: ReactNode
   description?: string
+  error?: string
 }) {
   return (
     <div className="form-control">
@@ -25,7 +27,15 @@ export function FormControl({
         {description && <p className="form-control__hint">{description}</p>}
       </div>
 
-      <div className="form-control__value">{children}</div>
+      <div className="form-control__value">
+        {children}
+        {error && (
+          <p id={htmlFor ? `${htmlFor}-error` : undefined} className="form-control__error" role="alert">
+            <i className="fa-solid fa-circle-exclamation" aria-hidden="true" />
+            {error}
+          </p>
+        )}
+      </div>
     </div>
   )
 }

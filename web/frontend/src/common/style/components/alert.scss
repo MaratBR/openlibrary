@@ -1,7 +1,20 @@
 .alert {
-    @apply p-2 rounded-sm text-sm;
+    @apply p-4 text-sm border;
+    background: var(--secondary);
+    border-color: var(--border);
+    border-left: 3px solid var(--brass);
+    border-radius: var(--radius);
 
     &--warning {
-        @apply bg-yellow-200 border-yellow-500 border;
+        color: var(--warning);
+        background: var(--warning-soft);
+        border-color: color-mix(in srgb, var(--warning), var(--border) 70%);
+        border-left-color: var(--warning);
+    }
+
+    &--danger {
+        color: var(--destructive);
+        background: var(--destructive-soft);
+        border-left-color: var(--destructive);
     }
 }

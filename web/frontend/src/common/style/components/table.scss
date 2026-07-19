@@ -1,21 +1,33 @@
 .table {
     width: 100%;
     table-layout: fixed;
-    @apply bg-surface;
+    @apply bg-transparent;
 
     td, th {
-        @apply p-2 text-start font-normal;
+        @apply text-start;
+        padding: 1rem;
     }
 
     tr {
-        @apply border-b;
+        border-bottom: 1px solid var(--border);
+        transition: background var(--transition-fast);
+    }
+
+    tbody tr:hover {
+        background: color-mix(in srgb, var(--secondary) 58%, transparent);
     }
 
     th {
-        @apply font-medium;
+        @apply font-semibold uppercase text-secondary-foreground;
+        font-size: 0.72rem;
+        letter-spacing: 0.13em;
     }
 
     td {
         @apply v-start;
+    }
+
+    tbody tr:last-child {
+        border-bottom: 0;
     }
 }

@@ -159,6 +159,15 @@ type ManagerGetChapterQuery_Result struct {
 	Chapter ManagerBookChapterDetailsDto
 }
 
+type UpdateBookChapterCommand struct {
+	BookID            int64
+	ChapterID         int64
+	UserID            uuid.UUID
+	Name              string
+	Summary           string
+	IsPubliclyVisible bool
+}
+
 type UploadBookCoverCommand struct {
 	UserID uuid.UUID
 	BookID int64
@@ -287,6 +296,7 @@ type BookManagerService interface {
 	ReorderChapters(ctx context.Context, input ReorderChaptersCommand) error
 	GetBookChapters(ctx context.Context, query ManagerGetBookChaptersQuery) (ManagerGetBookChaptersQuery_Result, error)
 	GetChapter(ctx context.Context, query ManagerGetChapterQuery) (ManagerGetChapterQuery_Result, error)
+	UpdateBookChapter(ctx context.Context, cmd UpdateBookChapterCommand) error
 
 	GetDraft(ctx context.Context, query GetDraftQuery) (DraftDto, error)
 	UpdateDraft(ctx context.Context, cmd UpdateDraftCommand) error

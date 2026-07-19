@@ -1,22 +1,25 @@
 .chip {
-    @apply leading-6 rounded-full px-2 inline-flex items-center gap-1 text-foreground font-medium;
+    @apply leading-6 px-2 inline-flex items-center gap-1 text-secondary-foreground font-medium text-sm;
+    border-radius: calc(var(--radius) - 2px);
 
-    @apply bg-surface border text-card-foreground;
+    @apply bg-secondary border border-transparent;
 
     &--primary {
-        @apply bg-primary border-primary text-primary-foreground;
+        @apply text-primary;
+        background: var(--accent);
     }
 
     &--secondary {
-        @apply bg-surface;
+        @apply bg-secondary;
     }
 
     &--destructive {
-        @apply bg-destructive text-white border-destructive;
+        @apply text-destructive;
+        background: var(--destructive-soft);
     }
 
     &--lg {
-        @apply text-xl py-2 px-3 rounded-full font-medium;
+        @apply text-base py-1 px-3 font-medium;
     }
 
     &__close {

@@ -64,7 +64,7 @@ function UserMenuBody() {
       </div>
 
       <ul className="UserMenu__items">
-        <a className="UserMenu__item" role="listitem" href={`/user/${user.id}`}>
+        <a className="UserMenu__item" role="listitem" href={`/users/${user.id}`}>
           {window._('common.profile')}
         </a>
 

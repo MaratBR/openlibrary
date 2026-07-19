@@ -1,7 +1,13 @@
 .modal {
-    @apply fixed z-50 inset-0 flex items-center justify-center bg-black/20 dark:bg-white/20;
+    @apply fixed z-50 inset-0 flex items-center justify-center;
+    background: rgb(12 24 19 / 42%);
+    backdrop-filter: blur(2px);
 
     &__content {
-        @apply bg-surface/50 backdrop-blur-3xl p-6 rounded-3xl;
+        @apply bg-surface p-8 border;
+        width: min(36rem, calc(100vw - 2rem));
+        border-color: var(--border);
+        border-radius: calc(var(--radius) + 4px);
+        box-shadow: var(--shadow-md);
     }
 }

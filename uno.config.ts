@@ -63,8 +63,21 @@ export default defineConfig({
         foreground: 'var(--destructive-foreground)',
       },
       border: 'var(--border)',
+      'border-strong': 'var(--border-strong)',
       input: 'var(--input)',
       ring: 'var(--ring)',
+      brass: {
+        DEFAULT: 'var(--brass)',
+        soft: 'var(--brass-soft)',
+      },
+      success: {
+        DEFAULT: 'var(--success)',
+        soft: 'var(--success-soft)',
+      },
+      warning: {
+        DEFAULT: 'var(--warning)',
+        soft: 'var(--warning-soft)',
+      },
       chart: {
         1: 'var(--chart-1)',
         2: 'var(--chart-2)',

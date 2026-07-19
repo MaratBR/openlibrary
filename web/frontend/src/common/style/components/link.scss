@@ -1,5 +1,14 @@
 .link {
-    @apply text-primary underline-offset-4 hover:text-foreground focus:no-underline focus:outline-2 focus:outline-primary;
+    @apply text-primary underline-offset-4;
+
+    &:hover {
+        text-decoration: underline;
+        text-decoration-thickness: 0.1em;
+    }
+
+    &:active {
+        text-decoration-thickness: 0.19em;
+    }
 
     &--primary {
         @apply text-blue-600 hover:text-blue-900;

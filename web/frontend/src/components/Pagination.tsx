@@ -68,8 +68,8 @@ function Pagination_Facade({ page, totalPages, size, disabled = false }: Paginat
           </Pagination.Item>
         ) : (
           <Pagination.Item
-            to={{ search: `?page=${p}` }}
-            key={`${page}_current`}
+            key={`${p}`}
+          to={{ search: `?page=${p}` }}
             as={NavLink}
             disabled={disabled}
           >

@@ -1,14 +1,20 @@
 .pagination {
-    @apply flex flex-wrap gap-2;
+    @apply flex flex-wrap gap-1;
 
     &__item {
         @apply 
-            rounded-full flex items-center justify-center font-semibold
-            size-10 min-w-10 bg-secondary transition-colors
-            hover:bg-[color-mix(in_oklab,var(--secondary),var(--foreground)_10%)];
+            flex items-center justify-center font-medium text-secondary-foreground
+            size-9 min-w-9 bg-transparent border border-transparent;
+        border-radius: calc(var(--radius) - 2px);
+        transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+
+        &:hover {
+            color: var(--surface-foreground);
+            background: var(--highlight);
+        }
 
         &--active {
-            @apply bg-primary text-primary-foreground border-primary hover:bg-primary;
+            @apply bg-primary text-primary-foreground border-primary;
         }
     }
 }

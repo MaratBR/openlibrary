@@ -1,51 +1,105 @@
 .tabs {
-    --tab-height: 40px;
-    --tab-border-color-active: var(--primary);
-    @apply flex;
+    --tab-height: 3rem;
+    @apply relative flex items-end overflow-x-auto border-b;
+    gap: 1.75rem;
+    border-color: var(--border);
+    scrollbar-width: none;
 
-    .tab {
-        @apply cursor-pointer;
-        height: var(--tab-height);
-        line-height: var(--tab-height);
+    &::-webkit-scrollbar {
+        display: none;
     }
 
-    &--primary {
-        .tab {
-            @apply font-medium relative border-transparent text-secondary-foreground transition rounded-xl mr-2 last:mr-0;
-            padding-bottom: 3px;
+    .tab {
+        @apply relative inline-flex flex-none items-center whitespace-nowrap cursor-pointer text-secondary-foreground;
+        min-height: var(--tab-height);
+        padding: 0.7rem 0 0.85rem;
+        background: transparent;
+        border: 0;
+        font-family: var(--font-text);
+        font-size: 0.95rem;
+        font-weight: 500;
+        line-height: 1;
+        text-decoration: none;
+        transition: color var(--transition-fast), opacity var(--transition-fast);
 
-            &:hover:not(&--active) {
-                @apply text-foreground;
-            }
+        &::after {
+            position: absolute;
+            right: 0;
+            bottom: -1px;
+            left: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px 2px 0 0;
+            content: '';
+            opacity: 0;
+            transform: scaleX(0.65);
+            transition: opacity var(--transition-fast), transform var(--transition-fast);
+        }
+
+        &:hover:not(&--active) {
+            color: var(--surface-foreground);
+        }
+
+        &:focus-visible {
+            outline: 0;
+            border-radius: calc(var(--radius) - 4px);
+            box-shadow: var(--focus-ring);
+        }
+
+        &--active,
+        &[aria-selected='true'],
+        &[aria-current='page'] {
+            @apply font-semibold text-primary;
 
             &::after {
-                content: ' ';
-                @apply block absolute left-0 right-0 bottom-0 transition;
-                height: 3px;
+                opacity: 1;
+                transform: scaleX(1);
             }
+        }
 
-            &--active {
-                @apply text-primary font-semibold;
+        &[aria-disabled='true'] {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
 
-                &::after {
-                    @apply bg-primary;
-                }
-            }
+        & > a {
+            @apply inline-flex h-full items-center text-inherit no-underline;
         }
     }
 
+    &__count {
+        @apply inline-grid place-items-center ml-2 text-secondary-foreground bg-secondary border;
+        min-width: 1.35rem;
+        height: 1.35rem;
+        padding-inline: 0.35rem;
+        border-color: var(--border);
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .tab--active &__count,
+    .tab[aria-selected='true'] &__count {
+        color: var(--primary);
+        background: var(--accent);
+        border-color: transparent;
+    }
+
+    &--primary,
     &--primary-b {
+        // Both existing variants now share the editorial underline treatment.
+    }
+}
+
+@media (max-width: 48rem) {
+    .tabs {
+        --tab-height: 2.75rem;
+        gap: 1.25rem;
+        margin-inline: -1rem;
+        padding-inline: 1rem;
+
         .tab {
-            @apply border-b-2 font-medium border-transparent text-lg text-secondary-foreground hover:text-foreground;
-
-            &--active {
-                @apply font-semibold border-current text-foreground;
-            }
-
-            & > a {
-                @apply px-2 inline-block h-full v-middle;
-                line-height: var(--tab-height);
-            }
+            font-size: 0.875rem;
         }
     }
 }

@@ -1,10 +1,35 @@
 .input, .textarea {
     @apply 
-        border 
-        rounded-sm px-3 w-full bg-surface
-        hover:border-black dark:hover:border-white
-        focus:outline focus:outline-primary !focus:border-primary text-foreground
+        border px-3 w-full bg-surface
+        text-foreground
         disabled:opacity-80 disabled:pointer-events-none;
+    border-color: var(--border-strong);
+    border-radius: var(--radius);
+    box-shadow: inset 0 1px 1px rgb(23 37 31 / 3%);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+
+    &::placeholder {
+        color: color-mix(in srgb, var(--secondary-foreground), transparent 24%);
+    }
+
+    &:hover:not(:disabled) {
+        border-color: color-mix(in srgb, var(--border-strong), var(--foreground) 24%);
+    }
+
+    &:focus {
+        outline: 0;
+        border-color: var(--brass);
+        box-shadow: var(--focus-ring);
+    }
+
+    &[aria-invalid="true"] {
+        border-color: var(--destructive);
+        background: var(--destructive-soft);
+
+        &:focus {
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive), transparent 80%);
+        }
+    }
 }
 
 .textarea {
@@ -12,11 +37,12 @@
 }
 
 input.input, select.input {
-    @apply h-10;
+    min-height: 2.75rem;
 }
 
 textarea.input {
-    @apply pt-2;
+    @apply py-3;
+    resize: vertical;
 }
 
 .input-dropdown {
@@ -90,6 +116,11 @@ textarea.input {
 
     &__hint {
         @apply text-sm text-secondary-foreground;
+    }
+
+    &__error {
+        @apply flex items-center gap-1 px-2 mt-1 text-sm;
+        color: var(--destructive);
     }
 }
 

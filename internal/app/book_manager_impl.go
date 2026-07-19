@@ -475,6 +475,10 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 }
 
 func (s *bookManagerService) CreateBookChapter(ctx context.Context, input CreateBookChapterCommand) (CreateBookChapterCommand_Result, error) {
+	if err := validateChapterName(input.Name); err != nil {
+		return CreateBookChapterCommand_Result{}, err
+	}
+
 	lastOrder, err := s.queries.Book_GetLastChapterOrder(ctx, input.BookID)
 	if err != nil {
 		return CreateBookChapterCommand_Result{}, err
@@ -627,6 +631,42 @@ func (s *bookManagerService) GetChapter(ctx context.Context, query ManagerGetCha
 			IsPubliclyVisible: true,
 		},
 	}, nil
+}
+
+func (s *bookManagerService) UpdateBookChapter(ctx context.Context, cmd UpdateBookChapterCommand) error {
+	err := validateChapterName(cmd.Name)
+	if err != nil {
+		return err
+	}
+
+	summary, err := ProcessContent(cmd.Summary)
+	if err != nil {
+		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process chapter summary")
+	}
+
+	err = validateBookSummary(summary.Sanitized)
+	if err != nil {
+		return err
+	}
+
+	rows, err := s.queries.Chapter_UpdateDetails(ctx, store.Chapter_UpdateDetailsParams{
+		Name:              cmd.Name,
+		Summary:           summary.Sanitized,
+		IsPubliclyVisible: cmd.IsPubliclyVisible,
+		ChapterID:         cmd.ChapterID,
+		BookID:            cmd.BookID,
+		UserID:            uuidDomainToDb(cmd.UserID),
+	})
+	if err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if rows == 0 {
+		return ErrTypeChapterDoesNotExist.New("chapter not found")
+	}
+
+	s.recalculateBookStats(ctx, cmd.BookID)
+	s.bookReindexService.ScheduleReindex(ctx, cmd.BookID)
+	return nil
 }
 
 // GetDraft implements BookManagerService.

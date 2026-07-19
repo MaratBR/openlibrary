@@ -20,7 +20,7 @@ export function BookChapters({ book }: { book: ManagerBookDetailsDto }) {
         ))}
       </section>
 
-      <ChapterSlidePanel chapter={chapter} onClose={() => setChapter(null)} />
+      <ChapterSlidePanel bookId={book.id} chapter={chapter} onClose={() => setChapter(null)} />
     </>
   )
 }
@@ -47,7 +47,7 @@ function Chapter({
       <div>
         <div className="flex gap-1">
           {chapter.isAdultOverride && <AdultChip />}
-          {chapter.isPubliclyVisible && <HiddenChip />}
+          {!chapter.isPubliclyVisible && <HiddenChip />}
           <div className="chip">
             {window._('book.words', { count: formatNumberK(chapter.words) })}
           </div>
