@@ -22,7 +22,7 @@
 
 .btn {
     @apply 
-        inline-flex justify-center items-center v-middle whitespace-nowrap text-sm font-medium cursor-pointer relative border
+        inline-flex justify-center items-center v-middle whitespace-nowrap text-sm font-medium cursor-pointer border
         disabled:pointer-events-none disabled:opacity-50;
     height: var(--btn-height);
     line-height: var(--btn-height) !important;

@@ -53,26 +53,26 @@ html.dark {
 }
 
 .dark {
-  --background: #111a16;
-  --foreground: #d9ddd8;
-  --surface: #18231e;
+  --background: #151615;
+  --foreground: #d9dad5;
+  --surface: #1d1f1d;
   --surface-foreground: #f4f1e9;
-  --primary: #9fc7b5;
-  --primary-foreground: #10251d;
-  --secondary: #24312b;
-  --secondary-foreground: #a6ada7;
-  --accent: #294437;
-  --accent-foreground: #e8f0eb;
+  --primary: #a5c4b5;
+  --primary-foreground: #17221d;
+  --secondary: #292b28;
+  --secondary-foreground: #aaaca6;
+  --accent: #303a34;
+  --accent-foreground: #edf0ec;
   --destructive: #d98787;
   --destructive-foreground: #2b1010;
-  --border: #35443c;
-  --border-strong: #4a5a51;
-  --input: #4a5a51;
+  --border: #3a3d39;
+  --border-strong: #50544e;
+  --input: #50544e;
   --ring: #c8a65d;
   --brass: #c8a65d;
   --brass-soft: #3e3525;
   --success: #90bd96;
-  --success-soft: #263b2b;
+  --success-soft: #29352b;
   --warning: #d6b66e;
   --warning-soft: #423821;
   --destructive-soft: #432727;
@@ -81,6 +81,6 @@ html.dark {
   --chart-3: hsl(30 80 55);
   --chart-4: hsl(280 65 60);
   --chart-5: hsl(340 75 55);
-  --highlight: #2d3b34;
+  --highlight: #30322f;
   --focus-ring: 0 0 0 3px rgb(200 166 93 / 28%);
 }

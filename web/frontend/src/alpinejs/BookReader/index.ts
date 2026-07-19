@@ -38,9 +38,8 @@ Alpine.data('BookReader', () => ({
 
   applyPreferences(persist = true) {
     document.documentElement.style.setProperty('--book-font-size', `${this.fontSize}px`)
-    this.$el.dataset.pageColor = this.pageColor
-    this.$el.dataset.fontFamily = this.fontFamily
-    void loadReaderFont(this.fontFamily)
+    this.$root.setAttribute('data-page-color', this.pageColor)
+    this.$root.setAttribute('data-font-family', this.fontFamily)
     applyReaderTheme(this.readerTheme)
 
     setCookie('reader_font_size', String(this.fontSize))
@@ -122,19 +121,7 @@ function validValue<T extends string>(value: string | undefined, values: readonl
   return values.includes(value as T) ? (value as T) : fallback
 }
 
-async function loadReaderFont(font: ReaderFont): Promise<void> {
-  if (font === 'sans') {
-    await Promise.all([
-      import('@fontsource/atkinson-hyperlegible/latin-400.css'),
-      import('@fontsource/atkinson-hyperlegible/latin-700.css'),
-    ])
-  } else if (font === 'dyslexic') {
-    await Promise.all([
-      import('@fontsource/opendyslexic/latin-400.css'),
-      import('@fontsource/opendyslexic/latin-700.css'),
-    ])
-  }
-}
+
 
 function applyReaderTheme(theme: ReaderTheme): void {
   let dark = false

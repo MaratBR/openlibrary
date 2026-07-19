@@ -54,7 +54,7 @@ templ Chapter(
             class="book-reader"
             @keydown.escape.window="settingsOpen = false">
             <div class="book-reader__reading-area">
-                <button x-bind="toggleButton" class="book-reader__settings-button btn btn--icon btn--default" aria-label={ l.T("reader.settings") }>
+                <button x-bind="toggleButton" class="book-reader__settings-button btn btn--icon btn--ghost" aria-label={ l.T("reader.settings") }>
                     <i class="fa-solid fa-sliders" aria-hidden="true"></i>
                 </button>
                 <div class="book-reader__chapter">

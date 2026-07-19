@@ -15,7 +15,7 @@
     }
 
     &__reading-area {
-        @apply relative mx-auto min-h-[calc(100vh-var(--header-height))] max-w-[96rem] px-4 pb-14 pt-8 sm:px-8;
+        @apply relative mx-auto min-h-[calc(100vh-var(--header-height))] max-w-[96rem] px-4 pb-14 pt-14 sm:px-8 sm:pt-16;
     }
 
     &__chapter {
@@ -27,7 +27,7 @@
     }
 
     &__settings-button {
-        @apply fixed right-4 top-[calc(var(--header-height)+1rem)] z-20 shadow-md sm:right-6;
+        @apply absolute md:right-4 md:top-4 z-20 right-6 top-6;
     }
 
     &__settings-backdrop {
@@ -36,15 +36,19 @@
     }
 
     &__settings {
-        @apply fixed bottom-0 right-0 top-0 z-40 w-full max-w-[25rem] overflow-y-auto border-l bg-surface shadow-md;
+        @apply fixed bottom-0 left-0 right-0 z-40 max-h-[88vh] overflow-y-auto rounded-t-xl border-t bg-surface shadow-md;
+
+        @media (min-width: 768px) {
+            @apply left-auto top-0 max-h-none w-full max-w-[26rem] rounded-none border-l border-t-0;
+        }
     }
 
     &__settings-header {
-        @apply sticky top-0 z-10 flex items-start justify-between gap-4 border-b bg-surface p-5;
+        @apply sticky top-0 z-10 flex items-start justify-between gap-4 border-b bg-surface px-6 pb-5 pt-7 md:pt-8;
     }
 
     &__settings-content {
-        @apply space-y-7 p-5;
+        @apply space-y-8 px-6 pb-10 pt-7;
     }
 
     &__chapter-navigation {
@@ -73,8 +77,10 @@
 }
 
 .reader-setting {
-    legend {
-        @apply mb-2 text-sm font-semibold;
+    @apply mb-3;
+
+    &__label {
+        @apply mb-3 block text-sm font-semibold text-foreground;
     }
 
     &__stepper {
@@ -94,7 +100,7 @@
     }
 
     &__choice {
-        @apply flex cursor-pointer items-center gap-3 rounded-lg border bg-background px-3 py-3 transition-colors hover:bg-foreground/5;
+        @apply flex cursor-pointer items-center gap-3 rounded-lg border bg-background px-4 py-3 transition-colors hover:bg-foreground/5;
 
         &:has(input:checked) {
             @apply border-primary bg-accent text-accent-foreground;
@@ -103,6 +109,29 @@
         input {
             @apply accent-primary;
         }
+    }
+}
+
+.reader-settings-transition {
+    transition: transform 240ms ease, opacity 180ms ease;
+}
+
+.reader-settings-hidden {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+.reader-backdrop-transition {
+    transition: opacity 180ms ease;
+}
+
+.reader-backdrop-hidden {
+    opacity: 0;
+}
+
+@media (min-width: 768px) {
+    .reader-settings-hidden {
+        transform: translateX(100%);
     }
 }
 

@@ -67,6 +67,12 @@ system = "System"
 
 switchTheme = "Switch theme"
 
+[footer]
+navigationLabel = "Footer navigation"
+github = "GitHub"
+reportIssue = "Report an issue"
+cats = "Cats"
+
 [pageNotFound]
 text = "Page not found"
 

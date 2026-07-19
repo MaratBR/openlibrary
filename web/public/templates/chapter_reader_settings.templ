@@ -6,12 +6,28 @@ import "strconv"
 
 templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated bool) {
     {{ l := i18n.GetLocalizer(ctx) }}
-    <div class="book-reader__settings-backdrop" x-cloak x-show="settingsOpen" @click="settingsOpen = false"></div>
-    <aside class="book-reader__settings" x-cloak x-bind="settings" aria-labelledby="reader-settings-title">
+    <div
+        class="book-reader__settings-backdrop"
+        x-cloak
+        x-show="settingsOpen"
+        x-transition:enter="reader-backdrop-transition"
+        x-transition:enter-start="reader-backdrop-hidden"
+        x-transition:leave="reader-backdrop-transition"
+        x-transition:leave-end="reader-backdrop-hidden"
+        @click="settingsOpen = false"></div>
+    <aside
+        class="book-reader__settings"
+        x-cloak
+        x-bind="settings"
+        x-transition:enter="reader-settings-transition"
+        x-transition:enter-start="reader-settings-hidden"
+        x-transition:leave="reader-settings-transition"
+        x-transition:leave-end="reader-settings-hidden"
+        aria-labelledby="reader-settings-title">
         <header class="book-reader__settings-header">
             <div>
-                <h2 id="reader-settings-title" class="font-title text-xl font-semibold">{ l.T("reader.settings") }</h2>
-                <p class="text-sm text-secondary-foreground">
+                <h2 id="reader-settings-title" class="font-title text-2xl font-semibold">{ l.T("reader.settings") }</h2>
+                <p class="mt-1 text-sm text-secondary-foreground">
                     if isAuthenticated {
                         { l.T("reader.savedToAccount") }
                     } else {
@@ -26,7 +42,7 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
 
         <div class="book-reader__settings-content">
             <fieldset class="reader-setting">
-                <legend>{ l.T("reader.fontSize") }</legend>
+                <legend class="reader-setting__label">{ l.T("reader.fontSize") }</legend>
                 <div class="reader-setting__stepper">
                     <button x-bind="decreaseFont" class="btn btn--icon btn--ghost" aria-label={ l.T("reader.decreaseFontSize") }>
                         <i class="fa-solid fa-minus" aria-hidden="true"></i>
@@ -39,7 +55,7 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
             </fieldset>
 
             <fieldset class="reader-setting">
-                <legend>{ l.T("reader.font") }</legend>
+                <legend class="reader-setting__label">{ l.T("reader.font") }</legend>
                 <div class="reader-setting__choices reader-setting__choices--stacked">
                     @readerSettingChoice("fontFamily", app.ReaderFontSerif, l.T("reader.fontSerif"), "font-family: Merriweather, serif")
                     @readerSettingChoice("fontFamily", app.ReaderFontSans, l.T("reader.fontSans"), "font-family: 'Atkinson Hyperlegible', sans-serif")
@@ -48,28 +64,28 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
             </fieldset>
 
             <fieldset class="reader-setting">
-                <legend>{ l.T("reader.pageColor") }</legend>
+                <legend class="reader-setting__label">{ l.T("reader.pageColor") }</legend>
                 <div class="reader-setting__choices">
                     @readerSettingChoice("pageColor", app.ReaderPageBackground, l.T("reader.background"), "")
                     @readerSettingChoice("pageColor", app.ReaderPageSurface, l.T("reader.surface"), "")
                 </div>
             </fieldset>
 
-            <fieldset class="reader-setting">
-                <legend>{ l.T("reader.theme") }</legend>
-                <div class="reader-setting__choices reader-setting__choices--stacked">
-                    @readerSettingChoice("readerTheme", app.ReaderThemeSystem, l.T("reader.themeWebsite"), "")
-                    @readerSettingChoice("readerTheme", app.ReaderThemeLight, l.T("reader.themeLight"), "")
-                    @readerSettingChoice("readerTheme", app.ReaderThemeDark, l.T("reader.themeDark"), "")
-                </div>
-            </fieldset>
+            <label class="reader-setting block">
+                <span class="reader-setting__label">{ l.T("reader.theme") }</span>
+                <select class="input w-full" x-model="readerTheme" @change="$nextTick(() => applyPreferences())">
+                    <option value={ app.ReaderThemeSystem }>{ l.T("reader.themeWebsite") }</option>
+                    <option value={ app.ReaderThemeLight }>{ l.T("reader.themeLight") }</option>
+                    <option value={ app.ReaderThemeDark }>{ l.T("reader.themeDark") }</option>
+                </select>
+            </label>
         </div>
     </aside>
 }
 
 templ readerSettingChoice(model, value, label, style string) {
     <label class="reader-setting__choice" style={ style }>
-        <input type="radio" x-model={ model } value={ value } @change="applyPreferences()" />
+        <input type="radio" x-model={ model } value={ value } @change="$nextTick(() => applyPreferences())" />
         <span>{ label }</span>
     </label>
 }

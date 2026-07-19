@@ -1,6 +1,6 @@
 .site-header {
     @apply z-40 w-full sticky top-0 h-[var(--header-height)] border-b;
-    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    background: color-mix(in srgb, var(--surface) 84%, transparent);
     backdrop-filter: blur(12px);
     border-color: var(--border);
 

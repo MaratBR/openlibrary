@@ -31,13 +31,31 @@ templ flashes() {
 templ siteFooter() {
     {{ 
         version := app.AppVersion()
+        l := i18n.GetLocalizer(ctx)
     }}
 
-    <footer id="site-footer" class="ol-container p-10">
-        <a href="https://github.com/MaratBR/openlibrary" class="text-secondary-foreground hover:text-foreground" target="_blank">
-            Powered by <span class="font-[500] font-title">OpenLibrary</span> <br />
-            <span class="text-sm">v:{ version }</span>
+    <footer id="site-footer" class="ol-container mt-8 flex flex-wrap items-center gap-x-8 gap-y-4 border-t px-4 py-6 text-sm text-secondary-foreground">
+        <a href="/" class="font-title font-medium text-foreground hover:text-primary">
+            OpenLibrary <span class="font-text font-normal text-secondary-foreground">v{ version }</span>
         </a>
+        <nav class="mr-auto" aria-label={l.T("footer.navigationLabel")}>
+            <ul class="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <li>
+                    <a class="link" href="https://github.com/MaratBR/openlibrary" target="_blank" rel="noreferrer">
+                        { l.T("footer.github") }
+                    </a>
+                </li>
+                <li>
+                    <a class="link" href="https://github.com/MaratBR/openlibrary/issues" target="_blank" rel="noreferrer">
+                        { l.T("footer.reportIssue") }
+                    </a>
+                </li>
+                <li>
+                    <a class="link" href="/cats">{ l.T("footer.cats") }</a>
+                </li>
+            </ul>
+        </nav>
+        @themeSwitcher()
     </footer>
 }
 
@@ -101,19 +119,27 @@ templ standardPageLayout(props standardPageLayoutProps) {
 }
 
 
-script toggleTheme() {
-    window.OLTheme.toggle();
-}
-
 templ themeSwitcher() {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
-    <button 
-        onclick={toggleTheme()}
-        class="btn btn--secondary size-12" 
-        aria-label={l.T("uiTheme.switchTheme")}>
-        <i class="fa-solid fa-sun dark:!hidden"></i>
-        <i class="fa-solid fa-moon !hidden dark:!inline-block"></i>
-    </button>
+    <label
+        class="inline-flex items-center gap-2 text-sm text-secondary-foreground"
+        x-data="{ theme: window.OLTheme.theme.get(), unsubscribe: null }"
+        x-init="unsubscribe = window.OLTheme.theme.subscribe(value => theme = value)"
+        x-destroy="unsubscribe?.()"
+    >
+        <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+        <span class="sr-only">{ l.T("uiTheme.switchTheme") }</span>
+        <select
+            class="input w-auto min-w-28"
+            x-model="theme"
+            @change="window.OLTheme.theme.set(theme)"
+            aria-label={l.T("uiTheme.switchTheme")}
+        >
+            <option value="system">{ l.T("uiTheme.system") }</option>
+            <option value="light">{ l.T("uiTheme.light") }</option>
+            <option value="dark">{ l.T("uiTheme.dark") }</option>
+        </select>
+    </label>
 }
