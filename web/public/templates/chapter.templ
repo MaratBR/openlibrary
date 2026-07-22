@@ -193,6 +193,7 @@ templ ChapterComments(
     chapter app.ChapterDto,
     book app.BookDetailsDto,
     result app.GetCommentsResult,
+    replies map[int64]app.GetCommentRepliesResult,
     sort app.CommentSort,
 ) {
     {{
@@ -210,9 +211,9 @@ templ ChapterComments(
                 <p class="ol-comments__eyebrow">{ l.T("comments.chapterDiscussion") }</p>
                 <h1 class="ol-comments__title" id="chapter-comments-title">{ l.T("comments.title") }</h1>
                 <p class="ol-comments__context">
-                  <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>{ book.Name }</a>
+                  <a class="link" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>{ book.Name }</a>
                   <span aria-hidden="true"> · </span>
-                  <a href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.ID)) }>{ chapter.Name }</a>
+                  <a class="link" href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.ID)) }>{ chapter.Name }</a>
                 </p>
               </div>
               <span class="ol-comments__count">{ l.TData("common.commentsCount", map[string]int64{"Count": result.Total}) }</span>
@@ -255,7 +256,7 @@ templ ChapterComments(
               if len(result.Comments) == 0 {
                 <p class="ol-comments__empty">{ l.T("comments.empty") }</p>
               }
-              @ChapterCommentsFragment(result.Comments, result.NextCursor)
+              @ChapterCommentsFragment(result.Comments, replies, result.NextCursor)
             </div>
           </section>
         </main>
@@ -264,6 +265,7 @@ templ ChapterComments(
 
 templ ChapterCommentsFragment(
     comments []app.CommentDto, 
+    replies map[int64]app.GetCommentRepliesResult,
     nextCursor uint32,
 ) {
     {{
@@ -282,7 +284,7 @@ templ ChapterCommentsFragment(
                     <img class="ol-comment__avatar" src={ comment.User.Avatar } alt="" />
                     <div class="ol-comment__body">
                       <header class="ol-comment__header">
-                        <strong class="ol-comment__author">{ comment.User.Name }</strong>
+                        <a href={ templ.URL(fmt.Sprintf("/users/%s", comment.User.ID)) } class="ol-comment__author">{ comment.User.Name }</a>
                         <time class="ol-comment__meta" datetime={ comment.CreatedAt.Format(time.RFC3339) }>{ relativeTime(l, comment.CreatedAt) }</time>
                         if comment.UpdatedAt.Valid {
                           <span class="ol-comment__meta">{ l.T("comments.edited") }</span>
@@ -318,16 +320,21 @@ templ ChapterCommentsFragment(
 
                     <div class="ol-comment-replies" x-ref="replies">
                         <div x-ref="slotReply" class="contents" />
-                        <button 
-                            if comment.Subcomments == 0 {
-                                x-cloak
+                        {{ initialRepliesJSON, _ := templ.JSONString(replies[comment.ID].Comments) }}
+                        <div
+                            x-ref="slotReplies"
+                            class="contents"
+                            data-initial-replies={ initialRepliesJSON }
+                            data-next-cursor={ strconv.FormatInt(int64(replies[comment.ID].NextCursor), 10) }>
+                            for _, reply := range replies[comment.ID].Comments {
+                                @ChapterCommentReply(reply)
                             }
-                            x-bind="openRepliesBtn" 
-                            class="ol-comment-replies__toggle">
-                            <i class="fa-solid fa-caret-down"></i>
-                            { l.TData("comments.replies", map[string]int{"Count": comment.Subcomments}) }
-                        </button>
-                        <div x-ref="slotReplies" class="contents" />
+                            if replies[comment.ID].NextCursor > 0 {
+                                <button class="btn btn--ghost mt-2" type="button">
+                                    { l.T("common.loadMore") }
+                                </button>
+                            }
+                        </div>
                     </div>
                   </div>
                 </article>
@@ -341,4 +348,31 @@ templ ChapterCommentsFragment(
                 { l.T("common.loadMore") }
             </button>
         }
+}
+
+templ ChapterCommentReply(reply app.CommentDto) {
+    {{ l := i18n.GetLocalizer(ctx) }}
+    <article class="ol-comment">
+        <img class="ol-comment__avatar" src={ reply.User.Avatar } alt="" />
+        <div class="ol-comment__body">
+            <header class="ol-comment__header">
+                <strong class="ol-comment__author">{ reply.User.Name }</strong>
+                <time class="ol-comment__meta" datetime={ reply.CreatedAt.Format(time.RFC3339) }>{ relativeTime(l, reply.CreatedAt) }</time>
+            </header>
+            <div class="ol-comment__content">
+                @webcomponents.UserContent(webcomponents.UserContentProps{Content: reply.Content})
+            </div>
+            <div class="ol-comment__actions">
+                <button class="ol-comment-action" aria-pressed={ strconv.FormatBool(reply.LikedAt.Valid) }>
+                    <i class="fa-solid fa-arrow-up"></i>
+                    if reply.RealLikesCount() > 0 {
+                        { reply.RealLikesCount() }
+                    }
+                </button>
+                <button class="ol-comment-action" type="button" @click="alert('Not implemented yet')">
+                    <i class="fa-solid fa-ellipsis"></i> { l.T("common.more") }
+                </button>
+            </div>
+        </div>
+    </article>
 }

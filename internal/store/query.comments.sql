@@ -26,15 +26,15 @@ select comments.*, users.name as user_name
 from comments
 join users on comments.user_id = users.id
 where parent_id = sqlc.arg('parent_id')::int8
-order by created_at desc
+order by created_at asc
 limit $1;
 
 -- name: Comment_GetChildCommentsAfter :many
 select comments.*, users.name as user_name
 from comments
 join users on comments.user_id = users.id
-where parent_id = sqlc.arg('parent_id')::int8 and created_at < $2
-order by created_at desc
+where parent_id = sqlc.arg('parent_id')::int8 and created_at > $2
+order by created_at asc
 limit $1;
 
 

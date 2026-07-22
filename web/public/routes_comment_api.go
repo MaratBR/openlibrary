@@ -24,10 +24,12 @@ func newAPICommentsController(
 
 func (c *apiControllerComments) Register(r chi.Router) {
 	r.Route("/comments", func(r chi.Router) {
-		r.Use(requiresAuthorizationMiddleware)
-		r.Post("/like", c.like)
-		r.Post("/add", c.add)
 		r.Get("/replies", c.replies)
+		r.Group(func(r chi.Router) {
+			r.Use(requiresAuthorizationMiddleware)
+			r.Post("/like", c.like)
+			r.Post("/add", c.add)
+		})
 	})
 }
 
@@ -82,15 +84,22 @@ func (c *apiControllerComments) replies(w http.ResponseWriter, r *http.Request) 
 	cursor, _ := olhttp.URLQueryParamInt64(r, "cursor")
 	commentId, _ := olhttp.URLQueryParamInt64(r, "commentId")
 
+	const pageSize = 2
 	result, err := c.commentsService.GetReplies(r.Context(), app.GetCommentRepliesQuery{
 		ActorUserID: auth.GetNullableUserID(r.Context()),
-		Limit:       20,
+		Limit:       pageSize + 1,
 		Cursor:      uint32(cursor),
 		CommentID:   commentId,
 	})
 	if err != nil {
 		apiWriteApplicationError(w, err)
 		return
+	}
+	if len(result.Comments) > pageSize {
+		result.Comments = result.Comments[:pageSize]
+		result.NextCursor = uint32(result.Comments[pageSize-1].CreatedAt.Unix())
+	} else {
+		result.NextCursor = 0
 	}
 	olhttp.NewAPIResponse(map[string]any{
 		"cursor":     result.Cursor,

@@ -18,6 +18,16 @@ Alpine.data(
           httpLikeComment(id, newValue)
         }, 1000),
       )
+
+      if (this.replies > 0) {
+        const $slot = this.$refs.slotReplies
+        if (!($slot instanceof HTMLElement))
+          throw new Error('could not find slotReplies ref in Comment component')
+
+        const initialReplies = JSON.parse($slot.dataset.initialReplies ?? '[]')
+        const nextCursor = Number($slot.dataset.nextCursor ?? 0)
+        this.repliesController = initCommentReplies($slot, id, initialReplies, nextCursor)
+      }
     },
 
     like: {
@@ -54,28 +64,8 @@ Alpine.data(
         if (!($slot instanceof HTMLElement))
           throw new Error('could not find slotReply ref in Comment component')
 
-		this.replyController = initCommentEditor($slot, id)
+        this.replyController = initCommentEditor($slot, id)
         this.$el.setAttribute('data-set', 'true')
-      },
-    },
-
-    openRepliesBtn: {
-      'x-show'() {
-        return this.replies > 0
-      },
-
-      '@click'() {
-		if (this.repliesController) {
-		  this.repliesController.close()
-		  this.repliesController = null
-          return
-        }
-
-        const $slot = this.$refs.slotReplies
-        if (!($slot instanceof HTMLElement))
-          throw new Error('could not find slotReplies ref in Comment component')
-
-		this.repliesController = initCommentReplies($slot, id)
       },
     },
   }),

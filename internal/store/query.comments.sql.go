@@ -187,7 +187,7 @@ select comments.id, comments.chapter_id, comments.user_id, comments.content, com
 from comments
 join users on comments.user_id = users.id
 where parent_id = $2::int8
-order by created_at desc
+order by created_at asc
 limit $1
 `
 
@@ -248,8 +248,8 @@ const comment_GetChildCommentsAfter = `-- name: Comment_GetChildCommentsAfter :m
 select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at, comments.parent_id, comments.subcomments, comments.likes, comments.likes_recalculated_at, users.name as user_name
 from comments
 join users on comments.user_id = users.id
-where parent_id = $3::int8 and created_at < $2
-order by created_at desc
+where parent_id = $3::int8 and created_at > $2
+order by created_at asc
 limit $1
 `
 

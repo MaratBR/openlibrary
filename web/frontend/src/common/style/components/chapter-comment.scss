@@ -211,6 +211,11 @@
   font-size: var(--ol-text-sm, 0.875rem);
   font-weight: 650;
   text-decoration: none;
+  cursor: pointer;
+
+  &:active {
+    text-decoration-thickness: 0.3em;
+  }
 }
 
 .ol-comment__author:hover {

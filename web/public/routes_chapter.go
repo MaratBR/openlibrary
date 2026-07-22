@@ -161,6 +161,37 @@ func (c *chaptersController) chapterComments(w http.ResponseWriter, r *http.Requ
 		writeApplicationError(w, r, err)
 		return
 	}
+	replies := make(map[int64]app.GetCommentRepliesResult, len(result.Comments))
+	for _, comment := range result.Comments {
+		if comment.Subcomments == 0 {
+			continue
+		}
+		replyResult, err := c.getInitialCommentReplies(r, comment.ID)
+		if err != nil {
+			writeApplicationError(w, r, err)
+			return
+		}
+		replies[comment.ID] = replyResult
+	}
 
-	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(chapterResult.Chapter, book, result, sort))
+	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(chapterResult.Chapter, book, result, replies, sort))
+}
+
+func (c *chaptersController) getInitialCommentReplies(r *http.Request, commentID int64) (app.GetCommentRepliesResult, error) {
+	const pageSize = 2
+	result, err := c.commentsService.GetReplies(r.Context(), app.GetCommentRepliesQuery{
+		ActorUserID: auth.GetNullableUserID(r.Context()),
+		Limit:       pageSize + 1,
+		CommentID:   commentID,
+	})
+	if err != nil {
+		return result, err
+	}
+	if len(result.Comments) > pageSize {
+		result.Comments = result.Comments[:pageSize]
+		result.NextCursor = uint32(result.Comments[pageSize-1].CreatedAt.Unix())
+	} else {
+		result.NextCursor = 0
+	}
+	return result, nil
 }
