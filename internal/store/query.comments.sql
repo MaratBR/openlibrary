@@ -3,8 +3,15 @@ select comments.*, users.name as user_name
 from comments
 join users on comments.user_id = users.id
 where chapter_id = $1 and parent_id is null
-order by created_at desc
-limit $2;
+order by
+    case when sqlc.arg('sort')::text = 'oldest' then comments.created_at end asc,
+    case when sqlc.arg('sort')::text = 'popular' then comments.likes end desc,
+    case when sqlc.arg('sort')::text in ('newest', 'popular') then comments.created_at end desc,
+    comments.id desc
+limit sqlc.arg('page_limit') offset sqlc.arg('page_offset');
+
+-- name: Comment_CountByChapter :one
+select count(*) from comments where chapter_id = $1 and parent_id is null;
 
 -- name: Comment_GetByChapterAfter :many
 select comments.*, users.name as user_name

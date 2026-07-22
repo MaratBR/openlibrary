@@ -16,6 +16,9 @@ type commentsService struct {
 
 // AddComment implements CommentsService.
 func (c *commentsService) AddComment(ctx context.Context, command AddCommentCommand) (AddCommentResult, error) {
+	if err := command.Validate(); err != nil {
+		return AddCommentResult{}, err
+	}
 	queries := store.New(c.db)
 	id := GenID()
 	err := queries.Comment_Insert(ctx, store.Comment_InsertParams{
@@ -27,6 +30,11 @@ func (c *commentsService) AddComment(ctx context.Context, command AddCommentComm
 	})
 	if err != nil {
 		return AddCommentResult{}, apperror.WrapUnexpectedDBError(err)
+	}
+	if command.ParentCommentID.Valid {
+		if err := queries.Comment_RecalculateSubcomments(ctx, int64NullableDomainToDb(command.ParentCommentID)); err != nil {
+			return AddCommentResult{}, apperror.WrapUnexpectedDBError(err)
+		}
 	}
 
 	comment, err := c.getByID(ctx, id, command.UserID)
@@ -42,59 +50,39 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 	queries := store.New(c.db)
 
 	result.Cursor = query.Cursor
-
-	if query.Cursor == 0 {
-		var rows []store.Comment_GetByChapterRow
-		rows, err = queries.Comment_GetByChapter(ctx, store.Comment_GetByChapterParams{
-			ChapterID: query.ChapterID,
-			Limit:     query.Limit,
-		})
-		if err != nil {
-			err = apperror.WrapUnexpectedDBError(err)
-			return
-		}
-		result.Comments = MapSlice(rows, func(r store.Comment_GetByChapterRow) CommentDto {
-			return CommentDto{
-				ID:             r.ID,
-				Content:        r.Content,
-				User:           CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName, Avatar: getUserAvatar(r.UserName, 84)},
-				CreatedAt:      timeDbToDomain(r.CreatedAt),
-				UpdatedAt:      timeNullableDbToDomain(r.UpdatedAt),
-				Subcomments:    int(r.Subcomments),
-				Likes:          int64(r.Likes),
-				LikesUpdatedAt: timeDbToDomain(r.LikesRecalculatedAt),
-			}
-		})
-	} else {
-		ts := time.Unix(int64(query.Cursor), 0)
-
-		var rows []store.Comment_GetByChapterAfterRow
-		rows, err = queries.Comment_GetByChapterAfter(ctx, store.Comment_GetByChapterAfterParams{
-			ChapterID: query.ChapterID,
-			Limit:     query.Limit,
-			CreatedAt: timeToTimestamptz(ts),
-		})
-		if err != nil {
-			err = apperror.WrapUnexpectedDBError(err)
-			return
-		}
-		result.Comments = MapSlice(rows, func(r store.Comment_GetByChapterAfterRow) CommentDto {
-			return CommentDto{
-				ID:          r.ID,
-				Content:     r.Content,
-				User:        CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName, Avatar: getUserAvatar(r.UserName, 84)},
-				CreatedAt:   timeDbToDomain(r.CreatedAt),
-				UpdatedAt:   timeNullableDbToDomain(r.UpdatedAt),
-				Subcomments: int(r.Subcomments),
-			}
-		})
+	result.Total, err = queries.Comment_CountByChapter(ctx, query.ChapterID)
+	if err != nil {
+		return result, apperror.WrapUnexpectedDBError(err)
 	}
+
+	rows, err := queries.Comment_GetByChapter(ctx, store.Comment_GetByChapterParams{
+		ChapterID:  query.ChapterID,
+		Sort:       string(query.Sort),
+		PageLimit:  query.Limit + 1,
+		PageOffset: int32(query.Cursor),
+	})
+	if err != nil {
+		return result, apperror.WrapUnexpectedDBError(err)
+	}
+	hasMore := len(rows) > int(query.Limit)
+	if hasMore {
+		rows = rows[:query.Limit]
+	}
+	result.Comments = MapSlice(rows, func(r store.Comment_GetByChapterRow) CommentDto {
+		return CommentDto{
+			ID: r.ID, Content: r.Content,
+			User:      CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName, Avatar: getUserAvatar(r.UserName, 84)},
+			CreatedAt: timeDbToDomain(r.CreatedAt), UpdatedAt: timeNullableDbToDomain(r.UpdatedAt),
+			Subcomments: int(r.Subcomments), Likes: int64(r.Likes), LikesUpdatedAt: timeDbToDomain(r.LikesRecalculatedAt),
+		}
+	})
 
 	if len(result.Comments) == 0 {
 		result.NextCursor = 0
 	} else {
-		unixTs := result.Comments[len(result.Comments)-1].CreatedAt.Unix()
-		result.NextCursor = uint32(unixTs)
+		if hasMore {
+			result.NextCursor = query.Cursor + uint32(len(result.Comments))
+		}
 
 		if query.ActorUserID.Valid {
 			err = c.fillWithLikedAtData(ctx, queries, result.Comments, query.ActorUserID.UUID)

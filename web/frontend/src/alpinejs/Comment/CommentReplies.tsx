@@ -2,24 +2,19 @@ import { CommentDto, httpGetCommentReplies, httpLikeComment } from '@/api/commen
 import UserContent from '@/components/UserContent'
 
 import { useEffect, useRef, useState } from 'react'
+import { createRoot } from 'react-dom/client'
 
 export type CommentRepliesController = {
   close(): void
 }
 
 export function initCommentReplies(
-  _$root: HTMLElement,
-  _commentId: string,
+  $root: HTMLElement,
+  commentId: string,
 ): CommentRepliesController {
-  alert('Comments are not finished')
-  throw new Error('not implemented')
-  // render(<Replies commentId={commentId} />, $root)
-
-  // return {
-  //   close() {
-  //     render(null, $root)
-  //   },
-  // }
+  const root = createRoot($root)
+  root.render(<Replies commentId={commentId} />)
+  return { close() { root.unmount() } }
 }
 
 export function Replies({ commentId }: { commentId: string }) {
@@ -36,7 +31,7 @@ export function Replies({ commentId }: { commentId: string }) {
   useEffect(load, [commentId])
 
   return (
-    <div className="mt-4 border-b pb-2">
+    <div>
       {replies.map((reply) => {
         return <Reply key={reply.id} reply={reply} />
       })}
@@ -65,22 +60,18 @@ function Reply({ reply }: { reply: CommentDto }) {
   }
 
   return (
-    <div className="chapter-comment chapter-comment--reply">
-      <header className="chapter-comment__header">
-        <img className="avatar border size-12" src={reply.user.avatar} />
-        <strong>{reply.user.name}</strong>
-      </header>
-
-      <div className="chapter-comment__content">
-        <UserContent value={reply.content} />
+    <article className="ol-comment">
+      <img className="ol-comment__avatar" src={reply.user.avatar} alt="" />
+      <div className="ol-comment__body">
+        <header className="ol-comment__header"><strong className="ol-comment__author">{reply.user.name}</strong></header>
+        <div className="ol-comment__content"><UserContent value={reply.content} /></div>
+        <div className="ol-comment__actions">
+          <button className="ol-comment-action" onClick={handleLike} aria-pressed={liked}>
+            <i className="fa-solid fa-arrow-up" /> {likes > 0 && `${likes}`}
+          </button>
+          <button className="ol-comment-action" onClick={() => alert('Not implemented yet')}><i className="fa-solid fa-ellipsis" /> {window._('common.more')}</button>
+        </div>
       </div>
-
-      <div className="chapter-comment__actions">
-        <button onClick={handleLike} data-set={`${liked}`}>
-          <i className="fa-solid fa-thumbs-up" />
-          {likes > 0 && `${likes}`}
-        </button>
-      </div>
-    </div>
+    </article>
   )
 }

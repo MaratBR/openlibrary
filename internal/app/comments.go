@@ -22,6 +22,24 @@ type GetCommentsQuery struct {
 	Limit       int32
 	Cursor      uint32
 	ChapterID   int64
+	Sort        CommentSort
+}
+
+type CommentSort string
+
+const (
+	CommentSortNewest  CommentSort = "newest"
+	CommentSortOldest  CommentSort = "oldest"
+	CommentSortPopular CommentSort = "popular"
+)
+
+func ParseCommentSort(value string) CommentSort {
+	switch CommentSort(value) {
+	case CommentSortOldest, CommentSortPopular:
+		return CommentSort(value)
+	default:
+		return CommentSortNewest
+	}
 }
 
 type CommentDto struct {
@@ -54,6 +72,7 @@ type GetCommentsResult struct {
 	Cursor     uint32
 	NextCursor uint32
 	Comments   []CommentDto
+	Total      int64
 }
 type GetCommentRepliesQuery struct {
 	ActorUserID uuid.NullUUID

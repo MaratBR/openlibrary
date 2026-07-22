@@ -8,6 +8,7 @@ import "strconv"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 import "github.com/MaratBR/openlibrary/internal/auth"
+import "time"
 
 type ChapterProgressTrackerOptions struct {
     JumpedBackward bool
@@ -83,7 +84,7 @@ templ Chapter(
                     </nav>
 
                     <div class="mt-8">
-                        <a class="btn btn--ghost btn--lg btn--primary" href={ fmt.Sprintf("/book/%d/chapters/%d/comments", chapter.BookID, chapter.ID) }>
+                        <a class="btn btn--ghost btn--lg" href={ fmt.Sprintf("/book/%d/chapters/%d/comments", chapter.BookID, chapter.ID) }>
                             <i class="fa-solid fa-comments"></i>
                             { l.TData("common.commentsCount", map[string]int64{
                                 "Count": chapter.CommentsCount,
@@ -189,21 +190,75 @@ templ ChapterContent(content string) {
 }
 
 templ ChapterComments(
-    comments []app.CommentDto,
-    nextCursor uint32,
+    chapter app.ChapterDto,
+    book app.BookDetailsDto,
+    result app.GetCommentsResult,
+    sort app.CommentSort,
 ) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+        user, isAuthenticated := auth.GetUser(ctx)
+    }}
     @standardPageLayout(standardPageLayoutProps{
         DisableFooter: true,
     }) {
-        <div class="ol-container">
-            <header class="page-header-container mt-4">
-                <h1 class="page-header">
-                    Comments
-                </h1>
+        @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapter.ID))
+        <main class="ol-container py-8">
+          <section class="ol-comments" aria-labelledby="chapter-comments-title">
+            <header class="ol-comments__heading-row">
+              <div>
+                <p class="ol-comments__eyebrow">{ l.T("comments.chapterDiscussion") }</p>
+                <h1 class="ol-comments__title" id="chapter-comments-title">{ l.T("comments.title") }</h1>
+                <p class="ol-comments__context">
+                  <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>{ book.Name }</a>
+                  <span aria-hidden="true"> · </span>
+                  <a href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.ID)) }>{ chapter.Name }</a>
+                </p>
+              </div>
+              <span class="ol-comments__count">{ l.TData("common.commentsCount", map[string]int64{"Count": result.Total}) }</span>
             </header>
 
-            @ChapterCommentsFragment(comments, nextCursor)
-        </div>
+            if isAuthenticated {
+              <form class="ol-comment-composer" x-data={ fmt.Sprintf("{content:'', submitting:false, async submit() { this.submitting=true; try { const response = await fetch('/_api/comments/add', {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({chapterId:'%d', content:this.content})}); if (!response.ok) throw new Error('Could not post comment'); window.location.reload() } catch (error) { window.toast.error(error) } finally { this.submitting=false } }}", chapter.ID) } @submit.prevent="submit">
+                <img class="ol-comment__avatar" src={ user.Avatar.MD } alt="" />
+                <div class="ol-comment-composer__body">
+                  <label class="sr-only" for="ChapterCommentContent">{ l.T("comments.shareThoughts") }</label>
+                  <textarea id="ChapterCommentContent" class="ol-comment-composer__input" maxlength="2000" required x-model="content" placeholder={ l.T("comments.shareThoughts") }></textarea>
+                  <div class="ol-comment-composer__footer">
+                    <p class="ol-comment-composer__hint">{ l.T("comments.kindHint") }</p>
+                    <div class="ol-comment-composer__actions">
+                      <button type="button" class="btn btn--outline" @click="alert('Not implemented yet')">{ l.T("comments.preview") }</button>
+                      <button type="submit" class="btn btn--default" :disabled="submitting || !content.trim()">{ l.T("comments.post") }</button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            } else {
+              <div class="ol-comments__signin card">
+                <a class="btn btn--default" href="/login">{ l.T("comments.signInToComment") }</a>
+              </div>
+            }
+
+            <div class="ol-comments__toolbar">
+              <span class="ol-comments__toolbar-title">{ l.T("comments.discussion") }</span>
+              <form method="get">
+                <label class="sr-only" for="ChapterCommentsSort">{ l.T("comments.sort") }</label>
+                <select id="ChapterCommentsSort" class="ol-comments__sort" name="sort" @change="$el.form.submit()">
+                  <option value="newest" selected?={ sort == app.CommentSortNewest }>{ l.T("comments.newest") }</option>
+                  <option value="oldest" selected?={ sort == app.CommentSortOldest }>{ l.T("comments.oldest") }</option>
+                  <option value="popular" selected?={ sort == app.CommentSortPopular }>{ l.T("comments.popular") }</option>
+                </select>
+              </form>
+            </div>
+
+            <div id="ChapterCommentsList" class="ol-comment-list" x-merge="append">
+              if len(result.Comments) == 0 {
+                <p class="ol-comments__empty">{ l.T("comments.empty") }</p>
+              }
+              @ChapterCommentsFragment(result.Comments, result.NextCursor)
+            </div>
+          </section>
+        </main>
     }
 }
 
@@ -221,33 +276,30 @@ templ ChapterCommentsFragment(
         l := i18n.GetLocalizer(ctx)
     }}
 
-    <div class="card p-4 mb-8" id="ChapterCommentsFragment">
-        <div id="ChapterCommentsList" class="space-y-4" x-merge="append">
-            for _, comment := range comments {
-                <div class="chapter-comment"
+    for _, comment := range comments {
+                <article class="ol-comment"
                     x-data={fmt.Sprintf("Comment({id:'%d',liked:%t,replies:%d})", comment.ID, comment.LikedAt.Valid, comment.Subcomments)}>
-                    <header class="chapter-comment__header">
-                        <img class="avatar border size-12" src={ comment.User.Avatar } />
-
-                        <strong>
-                            { comment.User.Name }
-                        </strong>
-                    </header>
-
-
-                    <div class="chapter-comment__content">
+                    <img class="ol-comment__avatar" src={ comment.User.Avatar } alt="" />
+                    <div class="ol-comment__body">
+                      <header class="ol-comment__header">
+                        <strong class="ol-comment__author">{ comment.User.Name }</strong>
+                        <time class="ol-comment__meta" datetime={ comment.CreatedAt.Format(time.RFC3339) }>{ relativeTime(l, comment.CreatedAt) }</time>
+                        if comment.UpdatedAt.Valid {
+                          <span class="ol-comment__meta">{ l.T("comments.edited") }</span>
+                        }
+                      </header>
+                      <div class="ol-comment__content">
                         @webcomponents.UserContent(webcomponents.UserContentProps{
                             Content: comment.Content,
                         })
-                    </div>
-
-                    <div class="chapter-comment__actions">
-                        <button x-bind="like"
+                      </div>
+                      <div class="ol-comment__actions">
+                        <button class="ol-comment-action" x-bind="like" aria-label={ l.T("comments.like") }
                             if comment.LikedAt.Valid {
                                 data-set="true"
-                            } 
-                            >
-                            <i class="fa-solid fa-thumbs-up"></i>
+                                aria-pressed="true"
+                            } else { aria-pressed="false" }>
+                            <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
                             {{
                                 likes := comment.RealLikesCount()
                             }}
@@ -256,35 +308,37 @@ templ ChapterCommentsFragment(
                             }
                         </button>
 
-                        <button x-bind="reply">
+                        <button class="ol-comment-action" x-bind="reply">
                             <i class="fa-solid fa-reply"></i>&nbsp;{ l.T("common.reply") }
+                        </button>
+                        <button class="ol-comment-action" type="button" @click="alert('Not implemented yet')">
+                          <i class="fa-solid fa-ellipsis" aria-hidden="true"></i> { l.T("common.more") }
                         </button>
                     </div>
 
-                    <div class="comment-replies" x-ref="replies">
+                    <div class="ol-comment-replies" x-ref="replies">
                         <div x-ref="slotReply" class="contents" />
                         <button 
                             if comment.Subcomments == 0 {
                                 x-cloak
                             }
                             x-bind="openRepliesBtn" 
-                            class="btn btn--ghost comment-replies__open">
+                            class="ol-comment-replies__toggle">
                             <i class="fa-solid fa-caret-down"></i>
-                            { comment.Subcomments } replies
+                            { l.TData("comments.replies", map[string]int{"Count": comment.Subcomments}) }
                         </button>
                         <div x-ref="slotReplies" class="contents" />
                     </div>
-                </div>
-            }
-        </div>
+                  </div>
+                </article>
+    }
         if nextCursor > 0 {
             <button 
                 x-init 
                 @click={fmt.Sprintf("$ajax(%q, {target:'ChapterCommentsList ChapterCommentNext'})", url.String())} 
                 id="ChapterCommentNext" 
-                class="btn btn--ghost btn--lg btn--primary mt-4">
+                class="btn btn--ghost btn--lg mt-4">
                 { l.T("common.loadMore") }
             </button>
         }
-    </div>
 }

@@ -37,6 +37,7 @@ Alpine.data(
           text.data = `${newCount}`
         }
         this.$el.setAttribute('data-set', `${this.liked}`)
+        this.$el.setAttribute('aria-pressed', `${this.liked}`)
       },
     },
 
@@ -53,7 +54,7 @@ Alpine.data(
         if (!($slot instanceof HTMLElement))
           throw new Error('could not find slotReply ref in Comment component')
 
-        this.replyController = initCommentEditor($slot)
+		this.replyController = initCommentEditor($slot, id)
         this.$el.setAttribute('data-set', 'true')
       },
     },
@@ -64,9 +65,9 @@ Alpine.data(
       },
 
       '@click'() {
-        if (this.replyController) {
-          this.replyController.close()
-          this.replyController = null
+		if (this.repliesController) {
+		  this.repliesController.close()
+		  this.repliesController = null
           return
         }
 
@@ -74,7 +75,7 @@ Alpine.data(
         if (!($slot instanceof HTMLElement))
           throw new Error('could not find slotReplies ref in Comment component')
 
-        this.replyController = initCommentReplies($slot, id)
+		this.repliesController = initCommentReplies($slot, id)
       },
     },
   }),

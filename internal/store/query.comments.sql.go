@@ -12,18 +12,35 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const comment_CountByChapter = `-- name: Comment_CountByChapter :one
+select count(*) from comments where chapter_id = $1 and parent_id is null
+`
+
+func (q *Queries) Comment_CountByChapter(ctx context.Context, chapterID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, comment_CountByChapter, chapterID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const comment_GetByChapter = `-- name: Comment_GetByChapter :many
 select comments.id, comments.chapter_id, comments.user_id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at, comments.parent_id, comments.subcomments, comments.likes, comments.likes_recalculated_at, users.name as user_name
 from comments
 join users on comments.user_id = users.id
 where chapter_id = $1 and parent_id is null
-order by created_at desc
-limit $2
+order by
+    case when $2::text = 'oldest' then comments.created_at end asc,
+    case when $2::text = 'popular' then comments.likes end desc,
+    case when $2::text in ('newest', 'popular') then comments.created_at end desc,
+    comments.id desc
+limit $4 offset $3
 `
 
 type Comment_GetByChapterParams struct {
-	ChapterID int64
-	Limit     int32
+	ChapterID  int64
+	Sort       string
+	PageOffset int32
+	PageLimit  int32
 }
 
 type Comment_GetByChapterRow struct {
@@ -42,7 +59,12 @@ type Comment_GetByChapterRow struct {
 }
 
 func (q *Queries) Comment_GetByChapter(ctx context.Context, arg Comment_GetByChapterParams) ([]Comment_GetByChapterRow, error) {
-	rows, err := q.db.Query(ctx, comment_GetByChapter, arg.ChapterID, arg.Limit)
+	rows, err := q.db.Query(ctx, comment_GetByChapter,
+		arg.ChapterID,
+		arg.Sort,
+		arg.PageOffset,
+		arg.PageLimit,
+	)
 	if err != nil {
 		return nil, err
 	}

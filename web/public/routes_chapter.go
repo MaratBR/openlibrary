@@ -126,6 +126,11 @@ func (c *chaptersController) getChapterProgressTrackerOptions(r *http.Request, c
 }
 
 func (c *chaptersController) chapterComments(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		writeBadRequest(w, r, err)
+		return
+	}
 	chapterID, err := olhttp.URLParamInt64(r, "chapterID")
 	if err != nil {
 		writeBadRequest(w, r, err)
@@ -134,12 +139,28 @@ func (c *chaptersController) chapterComments(w http.ResponseWriter, r *http.Requ
 
 	cursor, _ := olhttp.URLQueryParamInt64(r, "cursor")
 
+	chapterResult, err := c.service.GetBookChapter(r.Context(), app.GetBookChapterQuery{BookID: bookID, ChapterID: chapterID})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+	book, err := c.service.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: auth.GetNullableUserID(r.Context())})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+	sort := app.ParseCommentSort(r.URL.Query().Get("sort"))
 	result, err := c.commentsService.GetList(r.Context(), app.GetCommentsQuery{
 		ChapterID:   chapterID,
 		ActorUserID: auth.GetNullableUserID(r.Context()),
 		Limit:       30,
 		Cursor:      uint32(cursor),
+		Sort:        sort,
 	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
 
-	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(result.Comments, result.NextCursor))
+	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(chapterResult.Chapter, book, result, sort))
 }

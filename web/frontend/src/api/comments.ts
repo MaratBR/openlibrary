@@ -11,6 +11,10 @@ export function httpLikeComment(commentId: string, like: boolean) {
   })
 }
 
+export function httpAddComment(chapterId: string, content: string) {
+  return httpClient.post('/_api/comments/add', { json: { chapterId, content } })
+}
+
 export const CommentUserDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
