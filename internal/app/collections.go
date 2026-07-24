@@ -31,6 +31,7 @@ type GetRecentCollectionsQuery struct {
 	Limit  int32
 }
 
+// go2tsdef:generate
 type CollectionDto struct {
 	ID            int64
 	Name          string

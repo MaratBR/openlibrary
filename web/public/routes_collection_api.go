@@ -118,6 +118,7 @@ func (c *apiControllerCollection) removeFromCollection(w http.ResponseWriter, r 
 	}
 }
 
+// go2tsdef:generate
 type recentCollectionDto struct {
 	ID   int64  `json:"id,string"`
 	Name string `json:"name"`

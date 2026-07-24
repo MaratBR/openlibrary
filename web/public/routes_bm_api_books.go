@@ -15,6 +15,7 @@ type ApiPayloadGetBooks struct {
 	Search string `in:"query=search"`
 }
 
+// go2tsdef:generate
 type ApiResponseGetBooks struct {
 	Books      []app.ManagerBookDto `json:"books"`
 	TotalPages uint32               `json:"totalPages"`

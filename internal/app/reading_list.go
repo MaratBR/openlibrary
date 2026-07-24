@@ -9,6 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// go2tsdef:generate
+// go2tsdef:override_type 'dnf' | 'reading' | 'paused' | 'read' | 'want_to_read'
 type ReadingListStatus store.ReadingListStatus
 
 var (
@@ -26,6 +28,7 @@ const (
 	ReadingListStatusWantToRead ReadingListStatus = ReadingListStatus(store.ReadingListStatusWantToRead)
 )
 
+// go2tsdef:generate
 type BookReadingListDto struct {
 	Status        ReadingListStatus     `json:"status"`
 	ChapterID     Nullable[Int64String] `json:"chapterId"`

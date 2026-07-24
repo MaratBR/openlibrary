@@ -2,6 +2,7 @@ package olhttp
 
 import "encoding/json"
 
+// go2tsdef:generate
 type NotificationType uint8
 
 func (n NotificationType) MarshalJSON() ([]byte, error) {
@@ -25,6 +26,7 @@ const (
 	NotificationError
 )
 
+// go2tsdef:generate
 type Notification struct {
 	Text string           `json:"text"`
 	Type NotificationType `json:"type"`

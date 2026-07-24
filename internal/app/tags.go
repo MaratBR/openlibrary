@@ -12,6 +12,7 @@ var (
 	ErrTagNotFound = apperror.AppErrors.NewType("tag404", apperror.ErrTraitEntityNotFound).New("tag with this ID cannot be found")
 )
 
+// go2tsdef:generate
 type DefinedTagDto struct {
 	ID          int64        `json:"id,string"`
 	Name        string       `json:"name"`

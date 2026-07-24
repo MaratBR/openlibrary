@@ -42,6 +42,7 @@ type ManagerGetBookQuery struct {
 	BookID      int64
 }
 
+// go2tsdef:generate
 type ManagerBookDetailsDto struct {
 	ID                int64                   `json:"id,string"`
 	Name              string                  `json:"name"`
@@ -64,12 +65,14 @@ type ManagerGetBookQuery_Result struct {
 	Book ManagerBookDetailsDto
 }
 
+// go2tsdef:generate
 type ManagerBookDto_Stats struct {
 	Views   analytics.Views `json:"views"`
 	Reviews int32           `json:"reviews"`
 	Ratings int32           `json:"ratings"`
 }
 
+// go2tsdef:generate
 type ManagerBookDto struct {
 	ID                int64                `json:"id,string"`
 	Slug              string               `json:"slug"`
@@ -115,6 +118,7 @@ type ReorderChaptersCommand struct {
 	ChapterIDs []int64
 }
 
+// go2tsdef:generate
 type ManagerBookChapterDto struct {
 	ID                int64                 `json:"id,string"`
 	Name              string                `json:"name"`
@@ -197,6 +201,7 @@ type GetDraftQuery struct {
 	BookID    int64
 }
 
+// go2tsdef:generate
 type DraftDto struct {
 	ID          int64               `json:"id,string"`
 	ChapterName string              `json:"chapterName"`

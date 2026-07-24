@@ -24,6 +24,7 @@ type AnalyticsPeriods struct {
 	Year  AnalyticsPeriod
 }
 
+// go2tsdef:generate
 type Views struct {
 	Total int64 `json:"total"`
 	Year  int64 `json:"year"`

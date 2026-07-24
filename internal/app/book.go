@@ -76,6 +76,7 @@ type ChapterListDto struct {
 	Summary   string    `json:"summary"`
 }
 
+// go2tsdef:generate
 type BookDetailsAuthorDto struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
@@ -146,6 +147,7 @@ type ChapterNextPrevDto struct {
 	Order int32  `json:"order"`
 }
 
+// go2tsdef:generate
 type BookCollectionDto struct {
 	ID       int64  `json:"id,string"`
 	Name     string `json:"name"`

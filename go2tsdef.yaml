@@ -1,0 +1,10 @@
+src:
+  - ./internal/**/*.go
+  - ./lib/**/*.go
+  - ./web/**/*.go
+dest:
+  default: ./web/frontend/src/backend-types.ts
+types:
+  uuid.UUID: string
+insert_before: |
+  type Nullable<T> = T | null;

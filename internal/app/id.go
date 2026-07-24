@@ -5,6 +5,8 @@ import (
 	"strconv"
 )
 
+// go2tsdef:generate
+// go2tsdef:override_type string
 type Int64String int64
 
 func (i Int64String) MarshalJSON() ([]byte, error) {

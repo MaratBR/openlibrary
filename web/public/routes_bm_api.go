@@ -218,6 +218,7 @@ func (c *apiControllerBM) uploadCover(w http.ResponseWriter, r *http.Request) {
 	response.Write(w)
 }
 
+// go2tsdef:generate
 type responseModifiedChapterOrderPositions map[int64]int
 
 func (r responseModifiedChapterOrderPositions) MarshalJSON() ([]byte, error) {

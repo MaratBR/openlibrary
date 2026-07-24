@@ -2,6 +2,7 @@ package app
 
 import "github.com/MaratBR/openlibrary/internal/store"
 
+// go2tsdef:generate
 type AgeRating string
 
 const (

@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// go2tsdef:generate
 type RatingValue uint8
 
 func (v RatingValue) ToUint16() int16 {
@@ -44,12 +45,14 @@ type GetBookReviewsQuery struct {
 	Page     int32
 }
 
+// go2tsdef:generate
 type ReviewUserDto struct {
 	ID     uuid.UUID `json:"id"`
 	Name   string    `json:"name"`
 	Avatar string    `json:"avatar"`
 }
 
+// go2tsdef:generate
 type ReviewDto struct {
 	User      ReviewUserDto       `json:"user"`
 	Rating    RatingValue         `json:"rating"`
@@ -59,6 +62,7 @@ type ReviewDto struct {
 	Likes     int32               `json:"likes"`
 }
 
+// go2tsdef:generate
 type RatingAndReview struct {
 	Rating Nullable[RatingValue] `json:"rating"`
 	Review Nullable[ReviewDto]   `json:"review"`

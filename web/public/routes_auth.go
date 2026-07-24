@@ -14,19 +14,21 @@ import (
 	"github.com/MaratBR/openlibrary/internal/session"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid"
 	"github.com/knadh/koanf/v2"
 )
 
 type authController struct {
 	authService   app.AuthService
+	userService   app.UserService
 	signUpService app.SignUpService
 	csrfHandler   *csrf.Handler
 	siteConfig    *app.SiteConfig
 	cfg           *koanf.Koanf
 }
 
-func newAuthController(authService app.AuthService, signUpService app.SignUpService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig, cfg *koanf.Koanf) *authController {
-	return &authController{authService: authService, csrfHandler: csrfHandler, siteConfig: siteConfig, cfg: cfg, signUpService: signUpService}
+func newAuthController(authService app.AuthService, signUpService app.SignUpService, userService app.UserService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig, cfg *koanf.Koanf) *authController {
+	return &authController{authService: authService, csrfHandler: csrfHandler, siteConfig: siteConfig, userService: userService, cfg: cfg, signUpService: signUpService}
 }
 
 func (c *authController) Register(r chi.Router) {
@@ -155,7 +157,19 @@ func (c *authController) signIn(username string, password string, w http.Respons
 	c.csrfHandler.WriteCSRFToken(w, result.SessionID)
 	w.Header().Add("Set-Cookie", "auth_ll="+username)
 
+	c.applyCustomizationSettings(w, r, result.UserID)
+
 	redirectToNext(w, r)
+}
+
+func (c *authController) applyCustomizationSettings(w http.ResponseWriter, r *http.Request, userID uuid.UUID) {
+	customizationSettings, err := c.userService.GetUserCustomizationSettings(r.Context(), userID)
+	if err != nil {
+		slog.Error("failed to load customization settings during sign-in flow", "err", err, "userID", userID)
+		return
+	}
+
+	w.Header().Add("Set-Cookie", "_theme="+customizationSettings.DefaultTheme)
 }
 
 func redirectToNext(w http.ResponseWriter, r *http.Request) {

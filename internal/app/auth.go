@@ -31,6 +31,7 @@ type SignInCommand struct {
 
 type SignInResult struct {
 	SessionID string
+	UserID    uuid.UUID
 }
 
 type SignUpResult struct {

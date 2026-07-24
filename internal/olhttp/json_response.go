@@ -68,6 +68,7 @@ type apiError struct {
 	err error
 }
 
+// go2tsdef:generate
 type jsonErrorResponse struct {
 	Message string `json:"message"`
 	Cause   string `json:"cause"`

@@ -113,7 +113,8 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 		return SignInResult{}, ErrInvalidCredentials
 	}
 
-	sessionID, err := s.createNewSession(ctx, queries, uuidDbToDomain(user.ID), input.UserAgent, input.IpAddress)
+	userID := uuidDbToDomain(user.ID)
+	sessionID, err := s.createNewSession(ctx, queries, userID, input.UserAgent, input.IpAddress)
 	if err != nil {
 		return SignInResult{}, err
 	}
@@ -123,7 +124,7 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 		return SignInResult{}, err
 	}
 
-	return SignInResult{SessionID: sessionID}, nil
+	return SignInResult{SessionID: sessionID, UserID: userID}, nil
 }
 
 func (s *authService) CreateSessionForUser(ctx context.Context, userID uuid.UUID, userAgent, ip string) (string, error) {

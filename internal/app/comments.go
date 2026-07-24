@@ -42,6 +42,7 @@ func ParseCommentSort(value string) CommentSort {
 	}
 }
 
+// go2tsdef:generate
 type CommentDto struct {
 	ID             int64               `json:"id,string"`
 	Content        string              `json:"content"`
@@ -62,6 +63,7 @@ func (c CommentDto) RealLikesCount() int64 {
 	return count
 }
 
+// go2tsdef:generate
 type CommentUserDto struct {
 	ID     uuid.UUID `json:"id"`
 	Name   string    `json:"name"`

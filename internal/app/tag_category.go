@@ -7,6 +7,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/store"
 )
 
+// go2tsdef:generate
 type TagsCategory uint8
 
 const (

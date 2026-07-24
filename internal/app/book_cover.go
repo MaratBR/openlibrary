@@ -2,6 +2,7 @@ package app
 
 import "fmt"
 
+// go2tsdef:generate
 type BookCover struct {
 	URL string `json:"url"`
 }
