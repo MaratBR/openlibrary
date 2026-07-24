@@ -35,13 +35,7 @@
 .ol-comments__title {
   margin: 0;
   color: var(--ol-ink, #17251f);
-  font-family: var(
-    --ol-font-display,
-    "Cormorant Garamond",
-    "Iowan Old Style",
-    Georgia,
-    serif
-  );
+  font-family: var(--ol-font-display, 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif);
   font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 600;
   line-height: 0.98;
@@ -290,7 +284,7 @@
   background: var(--ol-surface-subtle, #f1eee6);
 }
 
-.ol-comment-action[aria-pressed="true"] {
+.ol-comment-action[aria-pressed='true'] {
   color: var(--ol-success, #426948);
   background: var(--ol-success-soft, #e8f0e6);
 }
@@ -337,11 +331,8 @@
   bottom: 2.25rem;
   left: calc(var(--comment-avatar-size) / 2);
   width: 1px;
-  background: linear-gradient(
-    var(--ol-brass, #a37b2c),
-    var(--ol-border, #ddd7ca)
-  );
-  content: "";
+  background: linear-gradient(var(--ol-brass, #a37b2c), var(--ol-border, #ddd7ca));
+  content: '';
 }
 
 .ol-comment-replies .ol-comment {

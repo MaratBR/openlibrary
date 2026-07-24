@@ -1,11 +1,11 @@
 .books-recommendation-list {
-    @apply flex gap-4 p-4 overflow-x-auto;
+  @apply flex gap-4 p-4 overflow-x-auto;
 
-    & > li {
-        @apply block transition cursor-pointer hover:scale-105;
+  & > li {
+    @apply block transition cursor-pointer hover:scale-105;
 
-        & > a > .book-cover {
-            @apply block;
-        }
+    & > a > .book-cover {
+      @apply block;
     }
+  }
 }

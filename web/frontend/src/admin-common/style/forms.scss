@@ -1,13 +1,13 @@
 .admin-form-field {
-    @apply grid grid-cols-[400px_1fr] mb-2;
+  @apply grid grid-cols-[400px_1fr] mb-2;
 
-    &__label {
-        label {
-            @apply text-foreground;
-        }
+  &__label {
+    label {
+      @apply text-foreground;
     }
+  }
 
-    &__value {
-        @apply max-w-[50%];
-    }
+  &__value {
+    @apply max-w-[50%];
+  }
 }

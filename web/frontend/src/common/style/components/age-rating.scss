@@ -1,27 +1,27 @@
-@use "./content-rating";
+@use './content-rating';
 
 .age-rating {
-    @apply py-2 px-4 bg-background rounded-md hover:bg-surface text-lg font-medium whitespace-nowrap;
-    @include content-rating.colors;
+  @apply py-2 px-4 bg-background rounded-md hover:bg-surface text-lg font-medium whitespace-nowrap;
+  @include content-rating.colors;
 }
 
 .age-rating-input {
-    @apply appearance-none w-0 h-0 hidden;
+  @apply appearance-none w-0 h-0 hidden;
 
-    & + .age-rating {
-        @apply cursor-pointer transition-shadow relative;
+  & + .age-rating {
+    @apply cursor-pointer transition-shadow relative;
 
-        &::after {
-            content: ' ';
-            @apply absolute block inset-0 bg-transparent transition-colors rounded-md pointer-events-none;
-        }
-
-        &:hover::after {
-            @apply bg-white/30;
-        }
+    &::after {
+      content: ' ';
+      @apply absolute block inset-0 bg-transparent transition-colors rounded-md pointer-events-none;
     }
 
-    &:checked + .age-rating {
-        @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+    &:hover::after {
+      @apply bg-white/30;
     }
+  }
+
+  &:checked + .age-rating {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
 }

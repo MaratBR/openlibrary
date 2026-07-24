@@ -1,129 +1,133 @@
-.input, .textarea {
-    @apply 
-        border px-3 w-full bg-surface
+.input,
+.textarea {
+  @apply border px-3 w-full bg-surface
         text-foreground
         disabled:opacity-80 disabled:pointer-events-none;
-    border-color: var(--border-strong);
-    border-radius: var(--radius);
-    box-shadow: inset 0 1px 1px rgb(23 37 31 / 3%);
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  border-color: var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: inset 0 1px 1px rgb(23 37 31 / 3%);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast);
 
-    &::placeholder {
-        color: color-mix(in srgb, var(--secondary-foreground), transparent 24%);
-    }
+  &::placeholder {
+    color: color-mix(in srgb, var(--secondary-foreground), transparent 24%);
+  }
 
-    &:hover:not(:disabled) {
-        border-color: color-mix(in srgb, var(--border-strong), var(--foreground) 24%);
-    }
+  &:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--border-strong), var(--foreground) 24%);
+  }
+
+  &:focus {
+    outline: 0;
+    border-color: var(--brass);
+    box-shadow: var(--focus-ring);
+  }
+
+  &[aria-invalid='true'] {
+    border-color: var(--destructive);
+    background: var(--destructive-soft);
 
     &:focus {
-        outline: 0;
-        border-color: var(--brass);
-        box-shadow: var(--focus-ring);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive), transparent 80%);
     }
-
-    &[aria-invalid="true"] {
-        border-color: var(--destructive);
-        background: var(--destructive-soft);
-
-        &:focus {
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive), transparent 80%);
-        }
-    }
+  }
 }
 
 .textarea {
-    @apply block p-3;
+  @apply block p-3;
 }
 
-input.input, select.input {
-    min-height: 2.75rem;
+input.input,
+select.input {
+  min-height: 2.75rem;
 }
 
 textarea.input {
-    @apply py-3;
-    resize: vertical;
+  @apply py-3;
+  resize: vertical;
 }
 
 .input-dropdown {
-    @apply hidden;
+  @apply hidden;
 }
 
 .label {
-    @apply block text-sm text-foreground font-medium;
+  @apply block text-sm text-foreground font-medium;
 
-    &[for] {
-        @apply cursor-pointer;
-    }
+  &[for] {
+    @apply cursor-pointer;
+  }
 }
 
 .dropdown {
-    @apply border rounded-sm w-full bg-surface relative transition-all;
+  @apply border rounded-sm w-full bg-surface relative transition-all;
 
-    &__input {
-        @apply outline-none w-full h-10 px-3 mb-1 bg-transparent;
-    }
+  &__input {
+    @apply outline-none w-full h-10 px-3 mb-1 bg-transparent;
+  }
 
-    &__menu {
-        @apply hidden absolute left-[-1px] right-[-1px] top-full bg-surface z-30 border border-t-0 rounded-b-sm;
-    }
+  &__menu {
+    @apply hidden absolute left-[-1px] right-[-1px] top-full bg-surface z-30 border border-t-0 rounded-b-sm;
+  }
 
-    &__chips {
-        @apply flex flex-wrap items-center gap-1 m-2 empty:hidden;
-    }
+  &__chips {
+    @apply flex flex-wrap items-center gap-1 m-2 empty:hidden;
+  }
 
-    &[data-open=true] {
-        @apply rounded-b-none shadow-lg;
-    }
+  &[data-open='true'] {
+    @apply rounded-b-none shadow-lg;
+  }
 
-    &[data-open=true] &__menu {
-        @apply shadow-lg;
-    }
+  &[data-open='true'] &__menu {
+    @apply shadow-lg;
+  }
 
-    &:not([data-open=true]) {
-        @apply hover:border-primary hover:ring-1 hover:ring-primary;
-    }
+  &:not([data-open='true']) {
+    @apply hover:border-primary hover:ring-1 hover:ring-primary;
+  }
 
-    &[data-open=true] &__menu {
-        @apply block;
-    }
+  &[data-open='true'] &__menu {
+    @apply block;
+  }
 }
 
 .form-control {
-    &--horizontal {
-        @apply md:grid md:grid-cols-[200px_1fr];
+  &--horizontal {
+    @apply md:grid md:grid-cols-[200px_1fr];
+  }
+
+  &__label {
+    @apply text-foreground px-2;
+
+    & > .label {
+      @apply mb-0;
     }
 
-    &__label {
-        @apply text-foreground px-2;
-
-        & > .label {
-            @apply mb-0;
-        }
-
-        & > label {
-            @apply mb-2;
-        }
+    & > label {
+      @apply mb-2;
     }
+  }
 
-    &--horizontal &__label {
-        @apply py-2;
-    }
+  &--horizontal &__label {
+    @apply py-2;
+  }
 
-    &__value {
-        @apply p-2;
-    }
+  &__value {
+    @apply p-2;
+  }
 
-    &__hint {
-        @apply text-sm text-secondary-foreground;
-    }
+  &__hint {
+    @apply text-sm text-secondary-foreground;
+  }
 
-    &__error {
-        @apply flex items-center gap-1 px-2 mt-1 text-sm;
-        color: var(--destructive);
-    }
+  &__error {
+    @apply flex items-center gap-1 px-2 mt-1 text-sm;
+    color: var(--destructive);
+  }
 }
 
 .input-transparent {
-    @apply focus:bg-highlight focus:outline-none;
+  @apply focus:bg-highlight focus:outline-none;
 }

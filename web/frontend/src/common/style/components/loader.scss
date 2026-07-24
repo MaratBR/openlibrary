@@ -15,7 +15,8 @@
   }
 }
 
-.loader, .with-loader::after {
+.loader,
+.with-loader::after {
   --loader-color: var(--foreground);
 
   display: block;
@@ -23,7 +24,9 @@
   height: 16px;
   border-radius: 50%;
   background-color: var(--loader-color);
-  box-shadow: 32px 0 var(--loader-color), -32px 0 var(--loader-color);
+  box-shadow:
+    32px 0 var(--loader-color),
+    -32px 0 var(--loader-color);
   position: relative;
   margin-left: 32px;
   margin-right: 32px;
@@ -35,18 +38,24 @@
 }
 
 @keyframes flash {
-    0% {
-      background-color: color-mix(in srgb, var(--loader-color), transparent 50%);
-      box-shadow: 32px 0 color-mix(in srgb, var(--loader-color), transparent 50%), -32px 0 var(--loader-color);
-    }
-    50% {
-      background-color: var(--loader-color);
-      box-shadow: 32px 0 color-mix(in srgb, var(--loader-color), transparent 50%), -32px 0 color-mix(in srgb, var(--loader-color), transparent 50%);
-    }
-    100% {
-      background-color: color-mix(in srgb, var(--loader-color), transparent 50%);
-      box-shadow: 32px 0 var(--loader-color), -32px 0 color-mix(in srgb, var(--loader-color), transparent 50%);
-    }
+  0% {
+    background-color: color-mix(in srgb, var(--loader-color), transparent 50%);
+    box-shadow:
+      32px 0 color-mix(in srgb, var(--loader-color), transparent 50%),
+      -32px 0 var(--loader-color);
+  }
+  50% {
+    background-color: var(--loader-color);
+    box-shadow:
+      32px 0 color-mix(in srgb, var(--loader-color), transparent 50%),
+      -32px 0 color-mix(in srgb, var(--loader-color), transparent 50%);
+  }
+  100% {
+    background-color: color-mix(in srgb, var(--loader-color), transparent 50%);
+    box-shadow:
+      32px 0 var(--loader-color),
+      -32px 0 color-mix(in srgb, var(--loader-color), transparent 50%);
+  }
 }
 
 .circle-loader {

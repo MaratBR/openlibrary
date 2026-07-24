@@ -1,6 +1,6 @@
-@use "./content-rating";
+@use './content-rating';
 
 .book-rating {
-    @apply p-2 rounded-sm inline-block min-w-9 text-center;
-    @include content-rating.colors;
+  @apply p-2 rounded-sm inline-block min-w-9 text-center;
+  @include content-rating.colors;
 }

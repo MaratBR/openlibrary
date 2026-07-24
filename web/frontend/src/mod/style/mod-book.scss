@@ -1,21 +1,21 @@
 .mod-actions-container {
-    @apply flex gap-3;
+  @apply flex gap-3;
 }
 
 .mod-action-card {
-    @apply transition-shadow cursor-pointer bg-surface rounded-sm border-2 border-slate-400 p-4 max-w-64 
+  @apply transition-shadow cursor-pointer bg-surface rounded-sm border-2 border-slate-400 p-4 max-w-64 
         hover:shadow-md
         data-[active=true]:border-orange-600;
 
-    &__name {
-        @apply font-medium text-lg flex items-center gap-2 mb-2;
-    }
+  &__name {
+    @apply font-medium text-lg flex items-center gap-2 mb-2;
+  }
 
-    &__description {
-        @apply text-sm block text-secondary-foreground;
-    }
+  &__description {
+    @apply text-sm block text-secondary-foreground;
+  }
 
-    &[aria-disabled=true] {
-        @apply opacity-70 pointer-events-none;
-    }
+  &[aria-disabled='true'] {
+    @apply opacity-70 pointer-events-none;
+  }
 }

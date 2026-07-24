@@ -1,8 +1,8 @@
 .be-bubble-menu {
-    @apply bg-surface shadow-sm rounded-2xl font-sans flex items-center;
-    padding: 2px;
+  @apply bg-surface shadow-sm rounded-2xl font-sans flex items-center;
+  padding: 2px;
 
-    &__delimiter {
-        @apply h-5 border mx-1;
-    }
+  &__delimiter {
+    @apply h-5 border mx-1;
+  }
 }

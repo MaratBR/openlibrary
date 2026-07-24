@@ -31,7 +31,10 @@ Alpine.data('BookReader', () => ({
 
   changeFontSize(increase: boolean) {
     const currentIndex = FONT_SIZES.indexOf(this.fontSize)
-    const nextIndex = Math.max(0, Math.min(FONT_SIZES.length - 1, currentIndex + (increase ? 1 : -1)))
+    const nextIndex = Math.max(
+      0,
+      Math.min(FONT_SIZES.length - 1, currentIndex + (increase ? 1 : -1)),
+    )
     this.fontSize = FONT_SIZES[nextIndex]
     this.applyPreferences()
   },
@@ -112,16 +115,22 @@ Alpine.data('BookReader', () => ({
   },
 }))
 
-function validNumber(value: string | undefined, values: readonly number[], fallback: number): number {
+function validNumber(
+  value: string | undefined,
+  values: readonly number[],
+  fallback: number,
+): number {
   const parsed = Number(value)
   return values.includes(parsed) ? parsed : fallback
 }
 
-function validValue<T extends string>(value: string | undefined, values: readonly T[], fallback: T): T {
+function validValue<T extends string>(
+  value: string | undefined,
+  values: readonly T[],
+  fallback: T,
+): T {
   return values.includes(value as T) ? (value as T) : fallback
 }
-
-
 
 function applyReaderTheme(theme: ReaderTheme): void {
   let dark = false

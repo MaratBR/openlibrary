@@ -1,20 +1,20 @@
 .alert {
-    @apply p-4 text-sm border;
-    background: var(--secondary);
-    border-color: var(--border);
-    border-left: 3px solid var(--brass);
-    border-radius: var(--radius);
+  @apply p-4 text-sm border;
+  background: var(--secondary);
+  border-color: var(--border);
+  border-left: 3px solid var(--brass);
+  border-radius: var(--radius);
 
-    &--warning {
-        color: var(--warning);
-        background: var(--warning-soft);
-        border-color: color-mix(in srgb, var(--warning), var(--border) 70%);
-        border-left-color: var(--warning);
-    }
+  &--warning {
+    color: var(--warning);
+    background: var(--warning-soft);
+    border-color: color-mix(in srgb, var(--warning), var(--border) 70%);
+    border-left-color: var(--warning);
+  }
 
-    &--danger {
-        color: var(--destructive);
-        background: var(--destructive-soft);
-        border-left-color: var(--destructive);
-    }
+  &--danger {
+    color: var(--destructive);
+    background: var(--destructive-soft);
+    border-left-color: var(--destructive);
+  }
 }

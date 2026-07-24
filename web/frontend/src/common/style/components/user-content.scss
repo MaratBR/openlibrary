@@ -1,77 +1,95 @@
 .user-content {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-title font-[500];
+    margin-bottom: 0.5em;
+  }
 
-    h1, h2, h3, h4, h5, h6 {
-        @apply font-title font-[500];
-        margin-bottom: 0.5em;
+  --uc-h1-font-size: 2em;
+  --uc-h2-font-size: 1.8em;
+  --uc-h3-font-size: 1.5em;
+  --uc-h4-font-size: 1.2em;
+  --uc-h5-font-size: 1.1em;
+  --uc-h6-font-size: 1em;
+  white-space: break-spaces;
+  word-break: break-word;
+
+  h1 {
+    font-size: var(--uc-h1-font-size);
+  }
+  h2 {
+    font-size: var(--uc-h2-font-size);
+  }
+  h3 {
+    font-size: var(--uc-h3-font-size);
+  }
+  h4 {
+    font-size: var(--uc-h4-font-size);
+  }
+  h5 {
+    font-size: var(--uc-h5-font-size);
+  }
+  h6 {
+    font-size: var(--uc-h6-font-size);
+  }
+
+  hr {
+    @apply my-4;
+  }
+
+  p {
+    margin-bottom: 0.6em;
+  }
+
+  strong,
+  b {
+    @apply font-[600];
+  }
+
+  a {
+    @apply underline-offset-4 text-blue-600 underline hover:text-blue-800;
+  }
+
+  img.ProseMirror-selectednode {
+    @apply outline outline-4 outline-primary;
+  }
+
+  table {
+    border-collapse: collapse;
+
+    td,
+    th {
+      @apply border-border border p-2;
+
+      &:empty {
+        @apply p-0;
+      }
     }
 
-    --uc-h1-font-size: 2em;
-    --uc-h2-font-size: 1.8em;
-    --uc-h3-font-size: 1.5em;
-    --uc-h4-font-size: 1.2em;
-    --uc-h5-font-size: 1.1em;
-    --uc-h6-font-size: 1em;
-    white-space: break-spaces;
-    word-break: break-word;
-
-    h1 { font-size: var(--uc-h1-font-size); }
-    h2 { font-size: var(--uc-h2-font-size); }
-    h3 { font-size: var(--uc-h3-font-size); }
-    h4 { font-size: var(--uc-h4-font-size); }
-    h5 { font-size: var(--uc-h5-font-size); }
-    h6 { font-size: var(--uc-h6-font-size); }
-
-    hr {
-        @apply my-4;
+    th {
+      @apply font-bold;
     }
+  }
 
-    p {
-        margin-bottom: 0.6em;
+  div:has(table) {
+    overflow-x: auto;
+  }
+
+  blockquote {
+    @apply bg-surface p-4 italic border-b border-b-4 my-8;
+
+    & > p:last-child {
+      @apply mb-0;
     }
+  }
 
-    strong, b {
-        @apply font-[600];
-    }
-
-    a {
-        @apply underline-offset-4 text-blue-600 underline hover:text-blue-800;
-    }
-
-    img.ProseMirror-selectednode {
-        @apply outline outline-4 outline-primary;
-    }
-
-    table {
-        border-collapse: collapse;
-
-        td, th {
-            @apply border-border border p-2;
-
-            &:empty {
-                @apply p-0;
-            }
-        }
-
-        th {
-            @apply font-bold;
-        }
-    }
-
-    div:has(table) {
-        overflow-x: auto;
-    }
-
-    blockquote {
-        @apply bg-surface p-4 italic border-b border-b-4 my-8;
-
-        & > p:last-child {
-            @apply mb-0;
-        }
-    }
-
-    ul, ol {
-        list-style: revert;
-        margin-left: 20px;
-    }
-
+  ul,
+  ol {
+    list-style: revert;
+    margin-left: 20px;
+  }
 }

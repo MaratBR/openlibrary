@@ -1,190 +1,194 @@
 @mixin btnVariantSolid() {
-    background-color: var(--btn-colors-main);
-    color: var(--btn-colors-text);
-    border-color: var(--btn-colors-main);
+  background-color: var(--btn-colors-main);
+  color: var(--btn-colors-text);
+  border-color: var(--btn-colors-main);
 
-    &:hover {
-        background-color: color-mix(in srgb, var(--btn-colors-main), black 12%);
-        border-color: color-mix(in srgb, var(--btn-colors-main), black 12%);
-    }
+  &:hover {
+    background-color: color-mix(in srgb, var(--btn-colors-main), black 12%);
+    border-color: color-mix(in srgb, var(--btn-colors-main), black 12%);
+  }
 
-    &:active {
-        background-color: color-mix(in srgb, var(--btn-colors-main), black 20%);
-        transform: translateY(1px);
-    }
+  &:active {
+    background-color: color-mix(in srgb, var(--btn-colors-main), black 20%);
+    transform: translateY(1px);
+  }
 }
 
 @mixin btnColorPrimary {
-    --btn-colors-main: var(--primary);
-    --btn-colors-shadow: var(--primary);
-    --btn-colors-text: var(--primary-foreground);
+  --btn-colors-main: var(--primary);
+  --btn-colors-shadow: var(--primary);
+  --btn-colors-text: var(--primary-foreground);
 }
 
 .btn {
-    @apply 
-        inline-flex justify-center items-center v-middle whitespace-nowrap text-sm font-medium cursor-pointer border
+  @apply inline-flex justify-center items-center v-middle whitespace-nowrap text-sm font-medium cursor-pointer border
         disabled:pointer-events-none disabled:opacity-50;
-    height: var(--btn-height);
-    line-height: var(--btn-height) !important;
-    padding: 0 calc(var(--btn-height) / 2.5);
-    text-align: center;
-    text-decoration: none;
-    border-color: var(--border-strong);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-xs);
-    transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
-    --btn-height: calc(var(--spacing) * 10);
+  height: var(--btn-height);
+  line-height: var(--btn-height) !important;
+  padding: 0 calc(var(--btn-height) / 2.5);
+  text-align: center;
+  text-decoration: none;
+  border-color: var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-xs);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  --btn-height: calc(var(--spacing) * 10);
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--border-strong), var(--foreground) 22%);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow: var(--focus-ring);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &--default,
+  &--primary {
+    @include btnVariantSolid();
+    @include btnColorPrimary();
+  }
+
+  &--outline {
+    background-color: var(--surface);
 
     &:hover {
-        border-color: color-mix(in srgb, var(--border-strong), var(--foreground) 22%);
-        box-shadow: var(--shadow-sm);
-    }
-
-    &:focus-visible {
-        outline: 0;
-        box-shadow: var(--focus-ring);
+      color: var(--surface-foreground);
+      background-color: var(--secondary);
     }
 
     &:active {
-        transform: translateY(1px);
+      background-color: var(--highlight);
+    }
+  }
+
+  &--ghost {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+
+    &:hover {
+      background-color: var(--highlight);
     }
 
-    &--default, &--primary {
-        @include btnVariantSolid();
-        @include btnColorPrimary();
+    &:active {
+      background-color: var(--secondary);
+    }
+  }
+
+  &--secondary {
+    background-color: var(--secondary);
+    border-color: var(--border);
+
+    &:hover {
+      background-color: var(--highlight);
     }
 
-    &--outline {
-        background-color: var(--surface);
-
-        &:hover {
-            color: var(--surface-foreground);
-            background-color: var(--secondary);
-        }
-
-        &:active {
-            background-color: var(--highlight);
-        }
+    &:active {
+      background-color: color-mix(in srgb, var(--secondary), var(--foreground) 10%);
     }
+  }
 
-    &--ghost {
-        background-color: transparent;
-        border-color: transparent;
-        box-shadow: none;
-
-        &:hover {
-            background-color: var(--highlight);
-        }
-
-        &:active {
-            background-color: var(--secondary);
-        }    
+  &--destructive {
+    @apply text-destructive;
+    background-color: var(--destructive-soft);
+    border-color: color-mix(in srgb, var(--destructive), var(--border) 60%);
+    &:hover {
+      color: var(--destructive-foreground);
+      background-color: var(--destructive);
+      border-color: var(--destructive);
     }
-
-    &--secondary {
-        background-color: var(--secondary);
-        border-color: var(--border);
-
-        &:hover {
-            background-color: var(--highlight);
-        }
-
-        &:active {
-            background-color: color-mix(in srgb, var(--secondary), var(--foreground) 10%);
-        }
+    &:active {
+      background-color: color-mix(in srgb, var(--destructive), black 16%);
     }
+  }
 
-    &--destructive {
-        @apply text-destructive;
-        background-color: var(--destructive-soft);
-        border-color: color-mix(in srgb, var(--destructive), var(--border) 60%);
-        &:hover {
-            color: var(--destructive-foreground);
-            background-color: var(--destructive);
-            border-color: var(--destructive);
-        }
-        &:active {
-            background-color: color-mix(in srgb, var(--destructive), black 16%);
-        }
+  &--icon {
+    width: var(--btn-height);
+    padding: 0;
+  }
+
+  // SIZES
+  &--sm {
+    @apply text-sm;
+  }
+
+  &--lg {
+    --btn-height: calc(var(--spacing) * 11);
+    @apply text-base;
+  }
+
+  &--sq {
+    @apply rounded-sm;
+  }
+
+  &__icon {
+    &--left {
+      @apply mr-1;
     }
-
-    &--icon {
-        width: var(--btn-height);
-        padding: 0;
-    }
-
-    // SIZES
-    &--sm {
-        @apply text-sm;
-    }
-
-    &--lg {
-        --btn-height: calc(var(--spacing) * 11);
-        @apply text-base;
-    }
-
-    &--sq {
-        @apply rounded-sm;
-    }
-
-    &__icon {
-        &--left {
-            @apply mr-1;
-        }
-
-    }
+  }
 }
 
-
 .btn-group {
-    @apply inline-flex items-stretch;
+  @apply inline-flex items-stretch;
 
-    & > .btn:not(:first-child):not(:last-child) {
-        @apply rounded-none;
-    }
+  & > .btn:not(:first-child):not(:last-child) {
+    @apply rounded-none;
+  }
 
-    & > .btn:not(:first-child) {
-        @apply border-l-0;
-    }
+  & > .btn:not(:first-child) {
+    @apply border-l-0;
+  }
 
-    & > .btn:not(:last-child) {
-        @apply border-r-0;
-    }
+  & > .btn:not(:last-child) {
+    @apply border-r-0;
+  }
 
-    & > .btn:first-child {
-        @apply rounded-r-none;
-    }
+  & > .btn:first-child {
+    @apply rounded-r-none;
+  }
 
-    & > .btn:last-child {
-        @apply rounded-l-none;
-    }
+  & > .btn:last-child {
+    @apply rounded-l-none;
+  }
 
-    & > .btn:not(:last-child)::after {
-        content: ' ';
-        @apply block border-r-1 absolute border-current/30;
-        top: 0%;
-        bottom: 0%;
-        right: 0;
-    }
+  & > .btn:not(:last-child)::after {
+    content: ' ';
+    @apply block border-r-1 absolute border-current/30;
+    top: 0%;
+    bottom: 0%;
+    right: 0;
+  }
 
-    &--rounded-md {
-        &, & > .btn {
-            @apply rounded-md;
-        }
+  &--rounded-md {
+    &,
+    & > .btn {
+      @apply rounded-md;
     }
+  }
 }
 
 .btn-list {
-    & > li > .btn {
-        @apply block w-full text-start !rounded-none;
-    }
+  & > li > .btn {
+    @apply block w-full text-start !rounded-none;
+  }
 }
 
 .circular-indicator {
-    --indicator-color: var(--primary);
-    @apply size-2 absolute -top-1 -right-1 rounded-full;
-    background-color: var(--indicator-color);
-    animation: circular-indicator-glow 1.5s ease-out infinite;
+  --indicator-color: var(--primary);
+  @apply size-2 absolute -top-1 -right-1 rounded-full;
+  background-color: var(--indicator-color);
+  animation: circular-indicator-glow 1.5s ease-out infinite;
 }
 
 @keyframes circular-indicator-glow {

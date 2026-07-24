@@ -1,26 +1,24 @@
 .SimpleEditor {
-    @apply bg-surface rounded-xl border;
+  @apply bg-surface rounded-xl border;
 
-    &__toolbar {
-        @apply bg-surface rounded-lg m-2 p-2 shadow-sm flex items-center gap-1 h-12;
-    }
+  &__toolbar {
+    @apply bg-surface rounded-lg m-2 p-2 shadow-sm flex items-center gap-1 h-12;
+  }
 
-    &__btn {
-        @apply 
-            size-8 bg-surface rounded-md flex items-center justify-center
+  &__btn {
+    @apply size-8 bg-surface rounded-md flex items-center justify-center
             hover:bg-primary hover:text-primary-foreground;
-        
 
-        &--active {
-            @apply bg-primary text-primary-foreground hover:opacity-80;
-        }
+    &--active {
+      @apply bg-primary text-primary-foreground hover:opacity-80;
     }
+  }
 
-    &__delimiter {
-        @apply border h-5 mx-2;
-    }
+  &__delimiter {
+    @apply border h-5 mx-2;
+  }
 
-    &__content {
-        @apply px-3;
-    }
+  &__content {
+    @apply px-3;
+  }
 }

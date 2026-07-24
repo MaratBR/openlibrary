@@ -45,10 +45,7 @@ function ChapterEditForm({
   const summaryEditor = useOLEditor({ content: chapter.summary })
   const revalidator = useRevalidator()
 
-  const normalizedName = useMemo(
-    () => BMBookAPI.getInstance().normalizeChapterName(name),
-    [name],
-  )
+  const normalizedName = useMemo(() => BMBookAPI.getInstance().normalizeChapterName(name), [name])
   const nameError = normalizedName.valid
     ? undefined
     : window._('bookManager.edit.chapterNameInvalid', { max: '70' })

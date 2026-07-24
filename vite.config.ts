@@ -1,9 +1,6 @@
 /* eslint-disable no-undef */
-import { dirname, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { defineConfig, Plugin } from 'vite'
-import type { OutputAsset } from 'rollup'
-import { build as esbuild } from 'esbuild'
-import { readFile } from 'node:fs/promises'
 import glob from 'fast-glob'
 import UnoCSS from 'unocss/vite'
 import chokidar, { FSWatcher } from 'chokidar'
@@ -11,102 +8,43 @@ import react from '@vitejs/plugin-react'
 
 const SOURCEMAP = true
 
-type AutoInjectCSSAsLinkOptions = {
-  baseUrl: string
-}
 
-function autoInjectCSSAsLinkTagPlugin({ baseUrl }: AutoInjectCSSAsLinkOptions): Plugin {
-  return {
-    name: 'auto-inject-css-as-link-tag',
-    enforce: 'post',
-    apply: 'build',
+// function esbuildMinifyPlugin(): Plugin {
+//   return {
+//     name: 'esbuild-minify-post',
+//     apply: 'build',
+//     async closeBundle() {
+//       // adjust this to match your outDir
+//       const outDir = resolve(process.cwd(), 'dist')
+//       // get all .js files from dist
+//       const files = await glob('**/*.js', { cwd: outDir, absolute: true })
 
-    async generateBundle(_, bundle) {
-      const chunksAssets: Record<string, string[]> = {}
+//       await Promise.all(
+//         files.map(async (file) => {
+//           const code = await readFile(file, 'utf8')
+//           const result = await esbuild({
+//             stdin: {
+//               contents: code,
+//               resolveDir: dirname(file),
+//               sourcefile: file,
+//               loader: 'js',
+//             },
+//             outfile: file,
+//             write: true,
+//             bundle: false,
+//             minify: true,
+//             sourcemap: SOURCEMAP,
+//             allowOverwrite: true,
+//           })
 
-      for (const [fileName, chunk] of Object.entries(bundle)) {
-        if (chunk.type !== 'chunk' || !/\.js$/.test(fileName)) {
-          continue
-        }
-
-        const assets = new Set<string>()
-
-        if (chunk.viteMetadata) {
-          for (const importedAsset of chunk.viteMetadata.importedCss) {
-            assets.add(importedAsset)
-          }
-        }
-
-        chunksAssets[fileName] = [...assets]
-      }
-
-      // Append asset data to each chunk
-      for (const [fileName, chunk] of Object.entries(bundle)) {
-        if (chunk.type !== 'chunk') continue
-
-        const assets = chunksAssets[fileName]
-        if (!assets || assets.length === 0) {
-          continue
-        }
-
-        const funcName = `__cssInject${Math.random().toString(36).substring(2)}`
-        const func = `function ${funcName}(url){${baseUrl ? `url=${JSON.stringify(baseUrl)}+url;` : ''}if(!Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')).some(link=>link.getAttribute('href')===url)){const link=document.createElement("link");link.rel="stylesheet";link.href=url;document.head.appendChild(link);}}`
-        const injectedCode = `(()=>{${func};${JSON.stringify([...assets])}.forEach(${funcName})})();\n`
-        chunk.code = injectedCode + chunk.code
-      }
-
-      const cssManifest: OutputAsset = {
-        fileName: '__injectedCSS.js',
-        needsCodeReference: false,
-        name: '__injectedCSS.js',
-        names: ['__injectedCSS.js'],
-        originalFileName: null,
-        originalFileNames: [],
-        source: `window.__injectedCSS=${JSON.stringify(chunksAssets)}`,
-        type: 'asset',
-      }
-
-      bundle['__injectedCSS.json'] = cssManifest
-    },
-  }
-}
-
-function esbuildMinifyPlugin(): Plugin {
-  return {
-    name: 'esbuild-minify-post',
-    apply: 'build',
-    async closeBundle() {
-      // adjust this to match your outDir
-      const outDir = resolve(process.cwd(), 'dist')
-      // get all .js files from dist
-      const files = await glob('**/*.js', { cwd: outDir, absolute: true })
-
-      await Promise.all(
-        files.map(async (file) => {
-          const code = await readFile(file, 'utf8')
-          const result = await esbuild({
-            stdin: {
-              contents: code,
-              resolveDir: dirname(file),
-              sourcefile: file,
-              loader: 'js',
-            },
-            outfile: file,
-            write: true,
-            bundle: false,
-            minify: true,
-            sourcemap: SOURCEMAP,
-            allowOverwrite: true,
-          })
-
-          if (result.errors.length) {
-            console.error(`esbuild failed on ${file}`, result.errors)
-          }
-        }),
-      )
-    },
-  }
-}
+//           if (result.errors.length) {
+//             console.error(`esbuild failed on ${file}`, result.errors)
+//           }
+//         }),
+//       )
+//     },
+//   }
+// }
 
 function watchExternalPlugin(options: { paths?: string[] } = {}): Plugin {
   const { paths = [] } = options
@@ -198,10 +136,6 @@ export default defineConfig((env) => ({
     UnoCSS(),
 
     react({}),
-    autoInjectCSSAsLinkTagPlugin({
-      baseUrl: '/_/assets/',
-    }),
-    // esbuildMinifyPlugin(),
   ],
 
   resolve: {
@@ -210,12 +144,6 @@ export default defineConfig((env) => ({
     },
   },
 
-  esbuild: {
-    // legalComments: 'none',
-    minifyWhitespace: true,
-    minifyIdentifiers: true,
-    minifySyntax: true,
-  },
 
   build: {
     minify: false, // TODO toggle depending on env

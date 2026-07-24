@@ -6,7 +6,7 @@
   min-width: 48px;
   height: 26px;
 }
-  
+
 .switch input {
   opacity: 0;
   width: 0;
@@ -23,14 +23,16 @@
   bottom: 0;
   background-color: var(--secondary);
   border: 1px solid var(--border-strong);
-  transition: background var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
   border-radius: 999px;
 }
 
 /* The slider circle (the knob) */
 .switch__slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 18px;
   width: 18px;
   border-radius: 50%;

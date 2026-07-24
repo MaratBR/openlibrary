@@ -1,11 +1,11 @@
 .ProseMirror {
-    @apply outline-none;
+  @apply outline-none;
 
-    p.is-editor-empty:first-child::before {
-        @apply text-secondary-foreground;
-        content: attr(data-placeholder);
-        float: left;
-        height: 0;
-        pointer-events: none;
-    }
+  p.is-editor-empty:first-child::before {
+    @apply text-secondary-foreground;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
 }

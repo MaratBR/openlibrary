@@ -4,63 +4,63 @@
 //                   //
 // ----------------- //
 .book-page {
-    @apply md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[100ch] py-4;
+  @apply md:grid md:grid-cols-12 md:gap-4 mx-auto max-w-[100ch] py-4;
 
-    &__left {
-        @apply md:col-span-3 flex flex-col items-center mb-10 md:mb-0;
+  &__left {
+    @apply md:col-span-3 flex flex-col items-center mb-10 md:mb-0;
+  }
+
+  &__right {
+    @apply md:col-span-9 px-4 md:px-0;
+  }
+
+  &__details {
+    @apply mt-8 overflow-hidden rounded-xl border bg-surface;
+  }
+
+  &__classification {
+    @apply flex flex-col gap-4 p-4 sm:flex-row sm:items-center;
+  }
+
+  &__tags {
+    @apply min-w-0 flex-1;
+
+    .tags {
+      @apply flex flex-wrap gap-2;
+
+      > li {
+        @apply m-0;
+      }
     }
+  }
 
-    &__right {
-        @apply md:col-span-9 px-4 md:px-0;
+  &__rating-card {
+    @apply flex flex-col gap-4 border-t bg-background/50 px-4 py-3 text-secondary-foreground sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  &__rating-summary {
+    @apply flex items-center gap-2;
+  }
+
+  &__rating-value {
+    @apply ml-1 text-xl font-semibold tabular-nums text-foreground;
+  }
+
+  &__rating-scale {
+    @apply text-sm;
+  }
+
+  &__stats {
+    @apply flex items-center divide-x divide-border;
+  }
+
+  &__stat {
+    @apply flex min-w-16 items-center justify-center gap-2 px-3 tabular-nums first:pl-0 last:pr-0 sm:first:pl-3;
+
+    i {
+      @apply text-primary;
     }
-
-    &__details {
-        @apply mt-8 overflow-hidden rounded-xl border bg-surface;
-    }
-
-    &__classification {
-        @apply flex flex-col gap-4 p-4 sm:flex-row sm:items-center;
-    }
-
-    &__tags {
-        @apply min-w-0 flex-1;
-
-        .tags {
-            @apply flex flex-wrap gap-2;
-
-            > li {
-                @apply m-0;
-            }
-        }
-    }
-
-    &__rating-card {
-        @apply flex flex-col gap-4 border-t bg-background/50 px-4 py-3 text-secondary-foreground sm:flex-row sm:items-center sm:justify-between;
-    }
-
-    &__rating-summary {
-        @apply flex items-center gap-2;
-    }
-
-    &__rating-value {
-        @apply ml-1 text-xl font-semibold tabular-nums text-foreground;
-    }
-
-    &__rating-scale {
-        @apply text-sm;
-    }
-
-    &__stats {
-        @apply flex items-center divide-x divide-border;
-    }
-
-    &__stat {
-        @apply flex min-w-16 items-center justify-center gap-2 px-3 tabular-nums first:pl-0 last:pr-0 sm:first:pl-3;
-
-        i {
-            @apply text-primary;
-        }
-    }
+  }
 }
 
 // ----------------- //
@@ -69,31 +69,30 @@
 //                   //
 // ----------------- //
 .book-toc {
-    ul {
-        @apply md:grid md:grid-cols-2 mt-3 gap-1 items-stretch;
-    }
+  ul {
+    @apply md:grid md:grid-cols-2 mt-3 gap-1 items-stretch;
+  }
 
-    &__search {
-        @apply col-end-2;
-    }
+  &__search {
+    @apply col-end-2;
+  }
 
-    &__item {
-        @apply 
-            p-2 text-lg grid grid-cols-[48px_auto] rounded-lg bg-surface border h-full
+  &__item {
+    @apply p-2 text-lg grid grid-cols-[48px_auto] rounded-lg bg-surface border h-full
             hover:bg-surface hover:shadow-sm hover:outline hover:outline-2;
 
-        &--readingNow {
-            @apply border-primary outline-primary outline outline-2;
-        }
+    &--readingNow {
+      @apply border-primary outline-primary outline outline-2;
     }
+  }
 
-    &__num {
-        @apply flex flex-col items-center gap-2;
-    }
+  &__num {
+    @apply flex flex-col items-center gap-2;
+  }
 
-    &__mark {
-        @apply inline-block text-secondary-foreground;
-    }
+  &__mark {
+    @apply inline-block text-secondary-foreground;
+  }
 }
 
 // ----------------- //
@@ -102,47 +101,45 @@
 //                   //
 // ----------------- //
 .book-search-results {
-    @apply md:bg-surface md:shadow-md;
+  @apply md:bg-surface md:shadow-md;
 }
 
 .book-search-card {
-    @apply
-        border-b-2 relative
+  @apply border-b-2 relative
         md:grid md:grid-cols-[165px_1fr] md:border-b md:pb-2 md:pt-4;
 
-    &__left {
-        @apply bg-surface md:bg-transparent py-2 mb-4 md:mb-0 flex flex-col items-center justify-start;
-    }
+  &__left {
+    @apply bg-surface md:bg-transparent py-2 mb-4 md:mb-0 flex flex-col items-center justify-start;
+  }
 
-    &__right {
-        @apply px-4 md:pl-0 md:pl-2;
-    }
+  &__right {
+    @apply px-4 md:pl-0 md:pl-2;
+  }
 
-    &__link {
-        @apply text-2xl font-title !text-secondary-foreground !hover:text-foreground;
-    }
+  &__link {
+    @apply text-2xl font-title !text-secondary-foreground !hover:text-foreground;
+  }
 
-    &__author {
-    }
+  &__author {
+  }
 
-    &__imglink {
-        @apply rounded-r-xl transition-shadow focus:ring focus:ring-foreground focus:ring-offset-4 inline-block h-[200px];
-    }
+  &__imglink {
+    @apply rounded-r-xl transition-shadow focus:ring focus:ring-foreground focus:ring-offset-4 inline-block h-[200px];
+  }
 
-    &:hover &__imglink {
-        @apply scale-[1.02] transition-transform [&>img]:transition-shadow [&>img]:shadow-lg inline-block;
-    }
+  &:hover &__imglink {
+    @apply scale-[1.02] transition-transform [&>img]:transition-shadow [&>img]:shadow-lg inline-block;
+  }
 
-    &__summary {
-        @apply text-sm mt-4;
-    }
+  &__summary {
+    @apply text-sm mt-4;
+  }
 }
 
-
 .book-cover {
-    @apply overflow-hidden h-[calc(200px*var(--cover-scale,1))] inline-block rounded-r-xl;
+  @apply overflow-hidden h-[calc(200px*var(--cover-scale,1))] inline-block rounded-r-xl;
 
-    img {
-        @apply object-contain h-full w-full;
-    }
+  img {
+    @apply object-contain h-full w-full;
+  }
 }

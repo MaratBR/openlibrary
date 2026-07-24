@@ -1,171 +1,176 @@
 .site-header {
-    @apply z-40 w-full sticky top-0 h-[var(--header-height)] border-b;
-    background: color-mix(in srgb, var(--surface) 84%, transparent);
-    backdrop-filter: blur(12px);
-    border-color: var(--border);
+  @apply z-40 w-full sticky top-0 h-[var(--header-height)] border-b;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  backdrop-filter: blur(12px);
+  border-color: var(--border);
 
-    &__inner {
-        max-width: var(--ol-container-big-width);
-        @apply mx-auto h-full flex flex-nowrap;
+  &__inner {
+    max-width: var(--ol-container-big-width);
+    @apply mx-auto h-full flex flex-nowrap;
 
-        @apply lg:items-stretch;
-    }
+    @apply lg:items-stretch;
+  }
 
-    &__logo {
-        // main site logo
-        @apply px-2 inline-block focus:outline focus:outline-2 outline-offset-[-2px] lg:mr-4 active:bg-surface;
-    }
+  &__logo {
+    // main site logo
+    @apply px-2 inline-block focus:outline focus:outline-2 outline-offset-[-2px] lg:mr-4 active:bg-surface;
+  }
 
-    &__mobile-open {
-        @apply p-2 active:outline absolute right-2 top-1 bottom-1 lg:hidden;
-    }
+  &__mobile-open {
+    @apply p-2 active:outline absolute right-2 top-1 bottom-1 lg:hidden;
+  }
 }
 
 .site-nav {
-    top: var(--header-height);
-    @apply flex flex-col gap-2 fixed z-50 w-screen shadow-lg invisible transition-all opacity-0 bg-surface;
-    transform: translateY(-20px);
+  top: var(--header-height);
+  @apply flex flex-col gap-2 fixed z-50 w-screen shadow-lg invisible transition-all opacity-0 bg-surface;
+  transform: translateY(-20px);
 
-    @apply lg:visible lg:static lg:shadow-none lg:flex-row lg:bg-transparent lg:transition-none lg:transform-none lg:opacity-100; 
+  @apply lg:visible lg:static lg:shadow-none lg:flex-row lg:bg-transparent lg:transition-none lg:transform-none lg:opacity-100;
 
-    &[data-open=true] {
-        @apply visible opacity-100;
-        transform: translateY(0px);
+  &[data-open='true'] {
+    @apply visible opacity-100;
+    transform: translateY(0px);
+  }
+
+  &__user {
+    @apply lg:ml-auto flex items-stretch;
+  }
+
+  &__himage {
+    --scale: 0.5;
+    background-image: url('/_/embed-assets/img/headerImage.png');
+    height: calc(var(--h) * var(--scale));
+    width: calc(var(--w) * var(--scale));
+    background-position: var(--offset) 0;
+    background-size: calc(var(--w) * var(--scale)) calc(var(--h) * var(--scale));
+
+    &[data-image='1'] {
+      --h: 162px;
+      --w: 171px;
+      --offset: 0px;
     }
-
-    &__user {
-        @apply lg:ml-auto flex items-stretch;
-    }
-
-    &__himage {
-        --scale: 0.5;
-        background-image: url('/_/embed-assets/img/headerImage.png');
-        height: calc(var(--h) * var(--scale));
-        width: calc(var(--w) * var(--scale));
-        background-position: var(--offset) 0;
-        background-size: calc(var(--w) * var(--scale)) calc(var(--h) * var(--scale));
-
-
-        &[data-image="1"] {
-            --h: 162px;
-            --w: 171px;
-            --offset: 0px;
-        }
-    }
+  }
 }
 
 .site-nav-overlay {
-    @apply lg:hidden hidden fixed inset-0 z-30;
+  @apply lg:hidden hidden fixed inset-0 z-30;
 
-    &[data-open=true] {
-        @apply block;
-    }
+  &[data-open='true'] {
+    @apply block;
+  }
 }
 
 .nav-links {
-    @apply flex flex-col;
+  @apply flex flex-col;
 
-    @apply lg:flex-row lg:mr-auto;
+  @apply lg:flex-row lg:mr-auto;
 }
 
 .nav-link {
-    @apply 
-        inline-flex items-center font-medium text-foreground/80 text-[1rem] px-5  h-16
+  @apply inline-flex items-center font-medium text-foreground/80 text-[1rem] px-5  h-16
         lg:h-[initial] lg:my-2 lg:rounded-lg
         hover:text-foreground hover:bg-accent
         active:text-primary;
-    transition: color var(--transition-fast), background var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
 
-    &__icon {
-        @apply mr-2;   
-    }
+  &__icon {
+    @apply mr-2;
+  }
 }
 
 .nav-user {
-    @apply 
-        relative h-full ml-4 mt-0 w-full
+  @apply relative h-full ml-4 mt-0 w-full
         lg:min-w-12 lg:max-w-24;
 
-    &__btn {
-        @apply lg:h-full;
-    }
+  &__btn {
+    @apply lg:h-full;
+  }
 }
 
 :root {
-    --dashboard-layout__sidebar-width: 220px;
-    --dashboard-sidebar-item-height: 38px;
-    --dashboard-sidebar-item-icon-width: 38px;
-    --dashboard-layout__sidebar-indicator-size: 16px;
+  --dashboard-layout__sidebar-width: 220px;
+  --dashboard-sidebar-item-height: 38px;
+  --dashboard-sidebar-item-icon-width: 38px;
+  --dashboard-layout__sidebar-indicator-size: 16px;
 }
 
 .dashboard-layout {
-    padding-left: var(--dashboard-layout__sidebar-width);
+  padding-left: var(--dashboard-layout__sidebar-width);
 
-    &__sidebar {
-        @apply h-full fixed bg-surface border-r;
-        border-color: var(--border);
-        width: var(--dashboard-layout__sidebar-width);
-        height: 100%;
-        left: 0px;
-        top: 0px;
-    }
+  &__sidebar {
+    @apply h-full fixed bg-surface border-r;
+    border-color: var(--border);
+    width: var(--dashboard-layout__sidebar-width);
+    height: 100%;
+    left: 0px;
+    top: 0px;
+  }
 
-    &__body {
-        @apply min-h-screen min-w-0;
-    }
+  &__body {
+    @apply min-h-screen min-w-0;
+  }
 }
 
 .dashboard-sidebar-ghost-btn {
-    @apply rounded-md p-2 mx-1 transition-colors text-md hover:bg-foreground/10 hover:text-foreground text-secondary-foreground;
+  @apply rounded-md p-2 mx-1 transition-colors text-md hover:bg-foreground/10 hover:text-foreground text-secondary-foreground;
 }
 
-
 .dashboard-sidebar-list {
-    & > .dashboard-sidebar-item {
-        @apply mb-2;
-    }
+  & > .dashboard-sidebar-item {
+    @apply mb-2;
+  }
 }
 
 .dashboard-sidebar-item {
-    @apply cursor-pointer text-md text-secondary-foreground relative mx-1 rounded-md;
-    transition: color var(--transition-fast), background var(--transition-fast);
+  @apply cursor-pointer text-md text-secondary-foreground relative mx-1 rounded-md;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
 
-    & > a {
-        display: block;
-    }
+  & > a {
+    display: block;
+  }
 
-    &--active, &:has(>a.active) {
-        @apply font-semibold text-primary;
-        background: var(--accent);
-    }
-    
-    &:hover:not(&--active) {
-        @apply text-foreground bg-highlight;
-    }
+  &--active,
+  &:has(> a.active) {
+    @apply font-semibold text-primary;
+    background: var(--accent);
+  }
 
-    &__icon {
-        @apply text-center v-middle absolute left-0 top-0;
-        height: var(--dashboard-sidebar-item-height);
-        width: var(--dashboard-sidebar-item-icon-width);
+  &:hover:not(&--active) {
+    @apply text-foreground bg-highlight;
+  }
 
-        & > i {
-            line-height: var(--dashboard-sidebar-item-height);
-        }
-    }
+  &__icon {
+    @apply text-center v-middle absolute left-0 top-0;
+    height: var(--dashboard-sidebar-item-height);
+    width: var(--dashboard-sidebar-item-icon-width);
 
-    &__label {
-        padding-left: var(--dashboard-sidebar-item-icon-width);
-        min-height: var(--dashboard-sidebar-item-height);
-        line-height: var(--dashboard-sidebar-item-height);
+    & > i {
+      line-height: var(--dashboard-sidebar-item-height);
     }
+  }
+
+  &__label {
+    padding-left: var(--dashboard-sidebar-item-icon-width);
+    min-height: var(--dashboard-sidebar-item-height);
+    line-height: var(--dashboard-sidebar-item-height);
+  }
 }
 
 .dashboard-content {
-    @apply relative px-16;
+  @apply relative px-16;
 
-    &__sticky-header {
-        @apply sticky top-0 p-4 backdrop-blur-sm z-1 -mx-16 px-16;
-        background-image: linear-gradient(color-mix(in srgb, var(--background), transparent 18%),color-mix(in srgb, var(--background), transparent 18%),transparent);
-        mask: linear-gradient(black, black, transparent);
-    }
+  &__sticky-header {
+    @apply sticky top-0 p-4 backdrop-blur-sm z-1 -mx-16 px-16;
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--background), transparent 18%),
+      color-mix(in srgb, var(--background), transparent 18%),
+      transparent
+    );
+    mask: linear-gradient(black, black, transparent);
+  }
 }

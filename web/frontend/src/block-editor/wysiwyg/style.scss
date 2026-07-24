@@ -1,38 +1,38 @@
 .be-suggestion {
-    @apply font-sans bg-primary/10 px-2 -mx-2 -my-1 py-1 inline-block rounded-md text-primary;
-    text-decoration: none;
-    font-weight: normal;
-    font-style: normal;
+  @apply font-sans bg-primary/10 px-2 -mx-2 -my-1 py-1 inline-block rounded-md text-primary;
+  text-decoration: none;
+  font-weight: normal;
+  font-style: normal;
 }
 
 .be-suggestions-modal {
-    @apply bg-surface shadow-md fixed left-0 top-0 p-2;
-    min-width: 300px;
-    min-height: 300px;
-    scrollbar-width: thin;
-    overflow-y: auto;
+  @apply bg-surface shadow-md fixed left-0 top-0 p-2;
+  min-width: 300px;
+  min-height: 300px;
+  scrollbar-width: thin;
+  overflow-y: auto;
 }
 
 .be-suggestion-item {
-    @apply p-4 border-b last:border-none;
+  @apply p-4 border-b last:border-none;
 
-    &:focus {
-        @apply outline-primary outline-2;
-    }
+  &:focus {
+    @apply outline-primary outline-2;
+  }
 
-    &:hover {
-        @apply text-primary;
-    }
+  &:hover {
+    @apply text-primary;
+  }
 
-    &__name {
-        @apply font-[500] text-lg;
-    }
+  &__name {
+    @apply font-[500] text-lg;
+  }
 
-    &__icon {
-        @apply mr-1 inline-block;
-    }
+  &__icon {
+    @apply mr-1 inline-block;
+  }
 }
 
 .be-floating-menu {
-    @apply text-secondary-foreground italic pointer-events-none select-none;
+  @apply text-secondary-foreground italic pointer-events-none select-none;
 }

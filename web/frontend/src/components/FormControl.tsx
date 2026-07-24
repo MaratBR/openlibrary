@@ -30,7 +30,11 @@ export function FormControl({
       <div className="form-control__value">
         {children}
         {error && (
-          <p id={htmlFor ? `${htmlFor}-error` : undefined} className="form-control__error" role="alert">
+          <p
+            id={htmlFor ? `${htmlFor}-error` : undefined}
+            className="form-control__error"
+            role="alert"
+          >
             <i className="fa-solid fa-circle-exclamation" aria-hidden="true" />
             {error}
           </p>

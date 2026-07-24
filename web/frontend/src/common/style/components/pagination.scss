@@ -1,20 +1,22 @@
 .pagination {
-    @apply flex flex-wrap gap-1;
+  @apply flex flex-wrap gap-1;
 
-    &__item {
-        @apply 
-            flex items-center justify-center font-medium text-secondary-foreground
+  &__item {
+    @apply flex items-center justify-center font-medium text-secondary-foreground
             size-9 min-w-9 bg-transparent border border-transparent;
-        border-radius: calc(var(--radius) - 2px);
-        transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+    border-radius: calc(var(--radius) - 2px);
+    transition:
+      color var(--transition-fast),
+      background var(--transition-fast),
+      border-color var(--transition-fast);
 
-        &:hover {
-            color: var(--surface-foreground);
-            background: var(--highlight);
-        }
-
-        &--active {
-            @apply bg-primary text-primary-foreground border-primary;
-        }
+    &:hover {
+      color: var(--surface-foreground);
+      background: var(--highlight);
     }
+
+    &--active {
+      @apply bg-primary text-primary-foreground border-primary;
+    }
+  }
 }
