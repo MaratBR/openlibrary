@@ -18,6 +18,7 @@ import (
 type Example struct {
   CreatedAt time.Time ` + "`json:\"createdAt\"`" + `
   Count app.Int64String ` + "`json:\"count,omitempty\"`" + `
+  ID int64 ` + "`json:\"id,string\"`" + `
   Unix time.Time ` + "`go2tsdef:\"number\"`" + `
   Ignored string ` + "`json:\"-\"`" + `
   Labels []string
@@ -43,7 +44,7 @@ type ID int64
 	if err != nil {
 		t.Fatal(err)
 	}
-	wantParts := []string{"import type { Brand } from './brand';", "type ExternalID = Brand<string, 'ExternalID'>;", "/** Generated from `model.go`. */\nexport interface Example", "createdAt: string;", "count?: string;", "Unix: number;", "Labels: Array<string>;", "/** Generated from `model.go`. */\nexport type ID = number;"}
+	wantParts := []string{"import type { Brand } from './brand';", "type ExternalID = Brand<string, 'ExternalID'>;", "/** Generated from `model.go`. */\nexport interface Example", "createdAt: string;", "count?: string;", "id: string;", "Unix: number;", "Labels: Array<string>;", "/** Generated from `model.go`. */\nexport type ID = number;"}
 	for _, want := range wantParts {
 		if !strings.Contains(string(got), want) {
 			t.Errorf("output missing %q:\n%s", want, got)

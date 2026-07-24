@@ -1,30 +1,16 @@
 import { KyResponse } from 'ky'
 import { z, ZodSchema } from 'zod'
+import type { jsonErrorResponse, Notification } from '@/backend-types'
 
-const notificationSchema = z.object({
-  type: z.enum(['info', 'error']),
-  text: z.string(),
-})
-
-const anyArray = z.array(z.any())
-
-export type OLNotification = z.infer<typeof notificationSchema>
+export type OLNotification = Notification
 
 const NO_BODY_SCHEMA = z.literal('ok')
-
-export const olErrorSchema = z.object({
-  message: z.string(),
-  cause: z.string(),
-  code: z.string(),
-})
-
-export type OLErrorSchema = z.infer<typeof olErrorSchema>
 
 export class OLAPIResponse<T> {
   private readonly response: Response
   private _notifications?: OLNotification[] = undefined
   private _data?: T
-  private _error?: OLErrorSchema
+  private _error?: jsonErrorResponse
   private readonly _schema: ZodSchema<T>
 
   public static async create<T>(
@@ -85,7 +71,7 @@ export class OLAPIResponse<T> {
     const json = await this.response.json()
 
     if (this.response.status >= 400 && this.response.status <= 599) {
-      this._error = await olErrorSchema.parseAsync(json)
+      this._error = json as jsonErrorResponse
     }
 
     this._data = await this._schema.parseAsync(json)
@@ -97,23 +83,7 @@ export class OLAPIResponse<T> {
 
     try {
       const json = JSON.parse(flashes)
-      const arr = anyArray.parse(json)
-      const notifications: OLNotification[] = []
-
-      for (let i = 0; i < arr.length; i++) {
-        const el = arr[i]
-        const result = notificationSchema.safeParse(el)
-        if (result.success) {
-          notifications.push(result.data)
-        } else {
-          console.warn(
-            `failed to parse value as server notification at position ${i}`,
-            result.error,
-          )
-        }
-      }
-
-      return notifications
+      return Array.isArray(json) ? (json as OLNotification[]) : []
     } catch (e: unknown) {
       console.warn('failed to parse x-flash header contents', e)
       return []

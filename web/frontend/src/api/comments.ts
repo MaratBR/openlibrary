@@ -1,5 +1,5 @@
 import { httpClient, OLAPIResponse } from '@/http-client'
-import z from 'zod'
+import type { CommentDto } from '@/backend-types'
 
 export function httpLikeComment(commentId: string, like: boolean) {
   return httpClient.post('/_api/comments/like', {
@@ -15,26 +15,6 @@ export function httpAddComment(chapterId: string, content: string) {
   return httpClient.post('/_api/comments/add', { json: { chapterId, content } })
 }
 
-export const CommentUserDtoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  avatar: z.string(),
-})
-
-export const CommentDtoSchema = z.object({
-  id: z.string(),
-  content: z.string(),
-  user: CommentUserDtoSchema,
-  createdAt: z.string(),
-  updatedAt: z.string().nullable(),
-  likedAt: z.string().nullable(),
-  likes: z.number(),
-  likesUpdatedAt: z.string(),
-  subcomments: z.number(),
-})
-
-export type CommentDto = z.infer<typeof CommentDtoSchema>
-
 export function httpGetCommentReplies(commentId: string, cursor: number) {
   return httpClient
     .get('/_api/comments/replies', {
@@ -44,13 +24,8 @@ export function httpGetCommentReplies(commentId: string, cursor: number) {
       },
     })
     .then((r) =>
-      OLAPIResponse.create(
-        r,
-        z.object({
-          cursor: z.number(),
-          nextCursor: z.number(),
-          comments: CommentDtoSchema.array(),
-        }),
-      ),
+      OLAPIResponse.create<{ cursor: number; nextCursor: number; comments: CommentDto[] }>(r),
     )
 }
+
+export type { CommentDto } from '@/backend-types'

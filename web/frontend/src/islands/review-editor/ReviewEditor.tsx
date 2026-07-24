@@ -3,7 +3,7 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import { Editor, EditorOptions } from '@tiptap/core'
-import { httpGetReview, httpUpdateReview, ratingSchema, ReviewDto, reviewDtoSchema } from './api'
+import { httpGetReview, httpUpdateReview, ReviewDto } from './api'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
 import { ReactIslandProps } from '../common/react-island'
 
@@ -47,7 +47,7 @@ export default function ReviewEditor({ rootElement }: ReactIslandProps) {
 
     httpUpdateReview(bookId, {
       content: editor.current!.getHTML(),
-      rating: ratingSchema.parse(rating),
+      rating,
     })
       .then((review) => {
         rootElement.dispatchEvent(new CustomEvent('review:updated', { detail: review }))
@@ -171,7 +171,7 @@ function createEditor(editorElement: HTMLElement, options?: Partial<EditorOption
 
 /**
  * Finds a hidden element containing review data in JSON format and parses it
- * into a ReviewDto object using `reviewDtoSchema`. If the element is not found,
+ * into a ReviewDto object. If the element is not found,
  * null is returned.
  *
  * This function is used to pre-fill the review text area with existing review
@@ -183,8 +183,7 @@ function getExistingReviewData(): ReviewDto | null {
   const el = document.getElementById('island-review-editor-data')
 
   if (el instanceof HTMLTemplateElement) {
-    const data = JSON.parse(el.content.textContent || '')
-    return reviewDtoSchema.parse(data)
+    return JSON.parse(el.content.textContent || '') as ReviewDto
   }
 
   return null

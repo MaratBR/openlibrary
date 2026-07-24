@@ -1,6 +1,6 @@
 import { httpClient, OLAPIResponse } from '@/http-client'
 import { z } from 'zod'
-import { DraftDtoSchema } from '@/block-editor/contracts'
+import type { DraftDto, ManagerBookChapterDto } from '@/backend-types'
 
 export function httpUpdateDraft(
   bookId: string,
@@ -15,7 +15,7 @@ export function httpUpdateDraft(
         'Content-Type': 'text/plain',
       },
     })
-    .then((r) => OLAPIResponse.create(r, DraftDtoSchema))
+    .then((r) => OLAPIResponse.create<DraftDto>(r))
 }
 
 export function httpUpdateAndPublishDraft(
@@ -35,7 +35,7 @@ export function httpUpdateAndPublishDraft(
         makePublic,
       },
     })
-    .then((r) => OLAPIResponse.create(r, DraftDtoSchema))
+    .then((r) => OLAPIResponse.create<DraftDto>(r))
 }
 
 export function httpUpdateDraftChapterName(
@@ -64,22 +64,8 @@ export function httpScheduleDraft(
     .post(`/_api/books-manager/book/${bookId}/${chapterId}/${draftId}/schedule`, {
       json: { scheduledAt },
     })
-    .then((r) => OLAPIResponse.create(r, DraftDtoSchema))
+    .then((r) => OLAPIResponse.create<DraftDto>(r))
 }
-
-const managerBookChapterDtoSchema = z.object({
-  id: z.string(),
-  order: z.number().min(0).int(),
-  name: z.string(),
-  words: z.number(),
-  createdAt: z.string(),
-  summary: z.string(),
-  isPubliclyVisible: z.boolean(),
-  draftId: z.string().nullable(),
-  scheduledAt: z.string().nullable(),
-})
-
-export type ManagerBookChapterDto = z.infer<typeof managerBookChapterDtoSchema>
 
 export type UploadCoverRequest = {
   file: File
@@ -121,5 +107,7 @@ export function httpUpdateChaptersOrder(
 export function httpGetBookChapters(bookId: string) {
   return httpClient
     .get(`/_api/books-manager/book/${bookId}/chapters`)
-    .then((r) => OLAPIResponse.create(r, z.array(managerBookChapterDtoSchema)))
+    .then((r) => OLAPIResponse.create<ManagerBookChapterDto[]>(r))
 }
+
+export type { ManagerBookChapterDto } from '@/backend-types'

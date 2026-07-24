@@ -8,6 +8,7 @@ import (
 )
 
 // go2tsdef:generate
+// go2tsdef:override_type 'other' | 'warning' | 'fandom' | 'rel' | 'reltype' | 'unknown'
 type TagsCategory uint8
 
 const (

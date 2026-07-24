@@ -1,20 +1,15 @@
 import { useLayoutEffect, useMemo, useState } from 'react'
 import { ReactIslandProps } from '@/islands/common/react-island'
-import { z } from 'zod'
 import './BookManagerEditor.scss'
-import { DraftDtoSchema } from './contracts'
+import type { DraftDto } from './contracts'
 import { useBEState } from './state'
 import { EditorIframe } from './EditorIframe'
 import { SaveButton } from './SaveButton'
 import { CenterHeader } from './CenterHeader'
 import { WidgetsMenu, WidgetsService } from './widgets'
 
-const dataSchema = z.object({
-  draft: DraftDtoSchema,
-})
-
 export default function EditorIslandComponent({ data }: ReactIslandProps) {
-  const { draft } = useMemo(() => dataSchema.parse(data), [data])
+  const { draft } = useMemo(() => data as { draft: DraftDto }, [data])
   const [leftOpen, setLeftOpen] = useState(true)
   const [rightOpen, setRightOpen] = useState(true)
 

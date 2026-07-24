@@ -6,7 +6,6 @@ import { ReactIslandProps } from '../common/react-island'
 import { z } from 'zod'
 import {
   DetailedBookSearchQuery,
-  detailedBookSearchQuerySchema,
   getDefaultDetailedBookSearchQuery,
   getQueryParams,
 } from '@/api/search'
@@ -96,8 +95,7 @@ function getDetailedBookSearchQuery(): DetailedBookSearchQuery {
   const el = document.getElementById('data-search-explained-query')
   if (el instanceof HTMLTemplateElement) {
     try {
-      const parsed = JSON.parse(el.content.textContent || '')
-      return detailedBookSearchQuerySchema.parse(parsed)
+      return JSON.parse(el.content.textContent || '') as DetailedBookSearchQuery
     } catch {
       // no-op
     }

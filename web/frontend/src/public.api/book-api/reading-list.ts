@@ -1,44 +1,30 @@
 import { httpClient } from '@/http-client'
-import { z } from 'zod'
-
-export const readingListStatusSchema = z.enum(['dnf', 'paused', 'read', 'reading', 'want_to_read'])
-
-export type ReadingListStatus = z.infer<typeof readingListStatusSchema>
-
-export const readingListDtoSchema = z.object({
-  lastUpdatedAt: z.string(),
-  chapterId: z.string().nullable(),
-  chapterName: z.string(),
-  chapterOrder: z.number(),
-  status: readingListStatusSchema,
-})
-
-export type ReadingListDto = z.infer<typeof readingListDtoSchema>
+import type { BookReadingListDto, ReadingListStatus } from '@/backend-types'
 
 export async function updateReadingListStatus(
   bookId: string,
   status: ReadingListStatus,
-): Promise<ReadingListDto> {
+): Promise<BookReadingListDto> {
   const response = await httpClient.post('/_api/reading-list/status', {
     searchParams: { bookId, status },
   })
   if (!response.ok) {
     throw new Error(`unexpected non-ok status code ${response.status}`)
   }
-  const json = await response.json()
-  return readingListDtoSchema.parse(json)
+  return response.json<BookReadingListDto>()
 }
 
 export async function updateReadingListStartReading(
   bookId: string,
   chapterId: string,
-): Promise<ReadingListDto> {
+): Promise<BookReadingListDto> {
   const response = await httpClient.post('/_api/reading-list/start-reading', {
     searchParams: { bookId, chapterId },
   })
   if (!response.ok) {
     throw new Error(`unexpected non-ok status code ${response.status}`)
   }
-  const json = await response.json()
-  return readingListDtoSchema.parse(json)
+  return response.json<BookReadingListDto>()
 }
+
+export type { BookReadingListDto as ReadingListDto, ReadingListStatus } from '@/backend-types'

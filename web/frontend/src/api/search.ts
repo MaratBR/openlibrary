@@ -1,51 +1,30 @@
 import { DEFAULT_SEARCH_DEBOUNCE } from '@/config'
 import { httpClient } from '@/http-client'
+import type { DefinedTagDto } from '@/backend-types'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { z } from 'zod'
+type UserDto = {
+  id: string
+  name: string
+  avatar: string
+}
 
-const TagCategorySchema = z.enum(['other', 'warning', 'fandom', 'rel', 'reltype', 'unknown'])
+type NumberRange = { min: number | null; max: number | null }
 
-export type TagsCategory = z.infer<typeof TagCategorySchema>
-
-export const DefinedTagDtoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  desc: z.string(),
-  adult: z.boolean(),
-  spoiler: z.boolean(),
-  cat: TagCategorySchema,
-})
-
-export type DefinedTagDto = z.infer<typeof DefinedTagDtoSchema>
-
-const UserDtoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  avatar: z.string(),
-})
-
-const NumberRangeSchema = z.object({
-  min: z.number().int().nullable(),
-  max: z.number().int().nullable(),
-})
-
-export const detailedBookSearchQuerySchema = z.object({
-  words: NumberRangeSchema,
-  chapters: NumberRangeSchema,
-  wordsPerChapter: NumberRangeSchema,
-  includeTags: z.array(DefinedTagDtoSchema),
-  excludeTags: z.array(DefinedTagDtoSchema),
-  includeUsers: z.array(UserDtoSchema),
-  excludeUsers: z.array(UserDtoSchema),
-  includeBanned: z.boolean(),
-  includeHidden: z.boolean(),
-  includeEmpty: z.boolean(),
-  page: z.number().int(),
-  pageSize: z.number().int(),
-})
-
-export type DetailedBookSearchQuery = z.infer<typeof detailedBookSearchQuerySchema>
+export type DetailedBookSearchQuery = {
+  words: NumberRange
+  chapters: NumberRange
+  wordsPerChapter: NumberRange
+  includeTags: DefinedTagDto[]
+  excludeTags: DefinedTagDto[]
+  includeUsers: UserDto[]
+  excludeUsers: UserDto[]
+  includeBanned: boolean
+  includeHidden: boolean
+  includeEmpty: boolean
+  page: number
+  pageSize: number
+}
 
 export function getDefaultDetailedBookSearchQuery(): DetailedBookSearchQuery {
   return {
@@ -86,10 +65,10 @@ export function getQueryParams(query: DetailedBookSearchQuery): URLSearchParams 
 
 export async function searchTags(query: string): Promise<DefinedTagDto[]> {
   const response = await httpClient.get('/_api/tags', { searchParams: { q: query } })
-  const json = await response.json()
-
-  return z.array(DefinedTagDtoSchema).parse(json)
+  return response.json<DefinedTagDto[]>()
 }
+
+export type { DefinedTagDto, TagsCategory } from '@/backend-types'
 
 export type TagsSearchOptions = {
   query: string

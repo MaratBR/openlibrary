@@ -14,7 +14,7 @@ export interface ApiResponseGetBooks {
 
 /** Generated from `internal/app/book.go`. */
 export interface BookCollectionDto {
-  id: number
+  id: string
   name: string
   pos: number
   size: number
@@ -55,7 +55,7 @@ export interface CollectionDto {
 
 /** Generated from `internal/app/comments.go`. */
 export interface CommentDto {
-  id: number
+  id: string
   content: string
   user: CommentUserDto
   createdAt: string
@@ -75,7 +75,7 @@ export interface CommentUserDto {
 
 /** Generated from `internal/app/tags.go`. */
 export interface DefinedTagDto {
-  id: number
+  id: string
   name: string
   desc: string
   adult: boolean
@@ -85,7 +85,7 @@ export interface DefinedTagDto {
 
 /** Generated from `internal/app/book_manager.go`. */
 export interface DraftDto {
-  id: number
+  id: string
   chapterName: string
   content: string
   createdAt: string
@@ -96,11 +96,11 @@ export interface DraftDto {
     name: string
   }
   book: {
-    id: number
+    id: string
     name: string
   }
   chapter: {
-    id: number
+    id: string
     contentUpdatedAt: string
   }
   isChapterPubliclyAvailable: boolean
@@ -111,7 +111,7 @@ export type Int64String = string
 
 /** Generated from `internal/app/book_manager.go`. */
 export interface ManagerBookChapterDto {
-  id: number
+  id: string
   name: string
   createdAt: string
   words: number
@@ -124,7 +124,7 @@ export interface ManagerBookChapterDto {
 
 /** Generated from `internal/app/book_manager.go`. */
 export interface ManagerBookDetailsDto {
-  id: number
+  id: string
   name: string
   ageRating: AgeRating
   adult: boolean
@@ -143,7 +143,7 @@ export interface ManagerBookDetailsDto {
 
 /** Generated from `internal/app/book_manager.go`. */
 export interface ManagerBookDto {
-  id: number
+  id: string
   slug: string
   name: string
   createdAt: string
@@ -175,7 +175,7 @@ export interface Notification {
 }
 
 /** Generated from `internal/olhttp/notification.go`. */
-export type NotificationType = number
+export type NotificationType = 'info' | 'error'
 
 /** Generated from `internal/app/reviews.go`. */
 export interface RatingAndReview {
@@ -207,7 +207,7 @@ export interface ReviewUserDto {
 }
 
 /** Generated from `internal/app/tag_category.go`. */
-export type TagsCategory = number
+export type TagsCategory = 'other' | 'warning' | 'fandom' | 'rel' | 'reltype' | 'unknown'
 
 /** Generated from `internal/app/analytics/analytics_views.go`. */
 export interface Views {
@@ -228,7 +228,7 @@ export interface jsonErrorResponse {
 
 /** Generated from `web/public/routes_collection_api.go`. */
 export interface recentCollectionDto {
-  id: number
+  id: string
   name: string
 }
 

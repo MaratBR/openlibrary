@@ -46,7 +46,6 @@ templ Doc(
             <script>window.matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.classList.toggle('dark', true)</script>
         }
         <meta charset="UTF-8" />
-        // <link rel="icon" type="image/svg+xml" href="/vite.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         if l != nil && l.Passthrough() {
             <meta name="openlibrary-debug-meta:localizer-passthrough-mode" content="true" />
@@ -58,16 +57,18 @@ templ Doc(
         for _, scriptPath := range props.Scripts {
             <script data-no-instant defer type="module" src={ scriptPath }></script>
         }
+        <!-- Dynamic CSS -->
+        @templ.JSONScript("head-css", props.CSS)
         for _, cssPath := range props.CSS {
             <link rel="stylesheet" href={ cssPath } />
         }
+        <!-- Dynamic CSS END -->
         <link rel="stylesheet" href="/_/embed-assets/css/fa/all.min.css">
-        <style>
-        [x-cloak]{ display: none !important; }
-        </style>
-
+        <style>[x-cloak]{ display: none !important; }</style>
         if props.AppendToHead != nil {
+            <!-- AppendToHead -->
             @props.AppendToHead
+            <!-- /AppendToHead -->
         }
         <noscript><style>.nojs-hidden{display: none;};</style></noscript>
         @ServerData()
@@ -82,8 +83,10 @@ templ Doc(
         class={bodyClasses}>
         { children... }
         if props.InstantClick {
+            <!-- Instant click -->
             <script src="/_/embed-assets/instantclick.min.js" data-no-instant></script>
             <script data-no-instant>InstantClick.init('mousedown');</script>
+            <!-- Instant click END -->
         }
     </body>
     </html>

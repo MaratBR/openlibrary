@@ -368,10 +368,14 @@ func (c converter) fields(b *bytes.Buffer, fields []*ast.Field) error {
 			continue
 		}
 		if t == "" {
-			var err error
-			t, err = c.tsType(f.Type)
-			if err != nil {
-				return err
+			if hasTagOption(f, "json", "string") {
+				t = "string"
+			} else {
+				var err error
+				t, err = c.tsType(f.Type)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		if optional {
@@ -380,6 +384,16 @@ func (c converter) fields(b *bytes.Buffer, fields []*ast.Field) error {
 		fmt.Fprintf(b, "  %s: %s;\n", quoteProperty(name), t)
 	}
 	return nil
+}
+
+func hasTagOption(f *ast.Field, key, option string) bool {
+	parts := strings.Split(reflectTag(f, key), ",")
+	for _, part := range parts[1:] {
+		if part == option {
+			return true
+		}
+	}
+	return false
 }
 
 func fieldName(f *ast.Field) (string, bool, bool) {

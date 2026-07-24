@@ -1,18 +1,9 @@
 import { httpClient } from '@/http-client'
 import { z } from 'zod'
-
-const recentCollectionDtoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-})
-
-export type RecentCollectionDto = z.infer<typeof recentCollectionDtoSchema>
+import type { recentCollectionDto as RecentCollectionDto } from '@/backend-types'
 
 export async function httpGetRecentCollections(): Promise<RecentCollectionDto[]> {
-  return httpClient
-    .get('/_api/collections/recent')
-    .then((r) => r.json())
-    .then(z.array(recentCollectionDtoSchema).parse)
+  return httpClient.get('/_api/collections/recent').then((r) => r.json<RecentCollectionDto[]>())
 }
 
 export async function httpGetCollectionsContainingBook(
@@ -20,9 +11,10 @@ export async function httpGetCollectionsContainingBook(
 ): Promise<RecentCollectionDto[]> {
   return httpClient
     .get('/_api/collections/containingBook', { searchParams: { bookId } })
-    .then((r) => r.json())
-    .then(z.array(recentCollectionDtoSchema).parse)
+    .then((r) => r.json<RecentCollectionDto[]>())
 }
+
+export type { recentCollectionDto as RecentCollectionDto } from '@/backend-types'
 
 export async function httpCreateCollection(name: string): Promise<string> {
   return httpClient

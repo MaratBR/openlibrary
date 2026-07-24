@@ -67,13 +67,13 @@ type htmlLayoutProps struct {
 // htmlLayout is a basic layout of an HTML page with nothing in besides basic JS, CSS, common translations and UI settings
 templ htmlLayout(params htmlLayoutProps) {
     {{
-        modCss := "/_/assets/common.css"
+        modCss := []string{"/_/assets/common.css", "/_/assets/alpinejs.css"}
         var css []string
 
         if len(params.CSS) > 0 {
-            css = append(params.CSS, modCss)
+            css = append(params.CSS, modCss...)
         } else {
-            css = []string{modCss}
+            css = modCss
         }
 
     }}

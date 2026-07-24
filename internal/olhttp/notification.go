@@ -3,6 +3,7 @@ package olhttp
 import "encoding/json"
 
 // go2tsdef:generate
+// go2tsdef:override_type 'info' | 'error'
 type NotificationType uint8
 
 func (n NotificationType) MarshalJSON() ([]byte, error) {
