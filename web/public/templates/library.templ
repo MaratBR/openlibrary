@@ -56,7 +56,7 @@ templ libraryTab(
     active bool,
 ) {
     if active {
-        <h1 class="library-header__item library-header__item--active">{title}</h1>
+        <a href="#" aria-current="true" class="library-header__item library-header__item--active">{title}</a>
     } else {
         <a href={templ.SafeURL(url)} class="library-header__item">{title}</a>
     }

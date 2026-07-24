@@ -47,15 +47,6 @@ h3,
   letter-spacing: -0.02em;
 }
 
-a {
-  text-decoration-color: color-mix(in srgb, var(--primary) 35%, transparent);
-  text-underline-offset: 0.18em;
-}
-
-a:hover {
-  text-decoration-color: currentColor;
-}
-
 * {
   @apply border-border;
 }

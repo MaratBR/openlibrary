@@ -1,13 +1,14 @@
 .library-header {
   &__item {
-    @apply text-3xl font-medium p-2 rounded-xl;
+    @apply text-3xl font-medium p-2 rounded-xl font-text;
 
     &:not(&--active) {
-      @apply text-secondary-foreground transition-colors duration-75 hover:bg-primary/10 hover:text-primary active:bg-primary/15;
+      @apply transition-colors duration-75 hover:bg-primary/20 hover:text-primary active:bg-primary/15;
     }
 
     &--active {
-      @apply shadow-lg bg-background;
+      @apply underline;
+      text
     }
   }
 }
