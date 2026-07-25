@@ -14,7 +14,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/app/email"
 	"github.com/MaratBR/openlibrary/internal/csrf"
-	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
+	elasticstore "github.com/MaratBR/openlibrary/internal/elasticstore"
 	i18n "github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/session"
 	"github.com/MaratBR/openlibrary/internal/store"

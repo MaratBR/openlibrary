@@ -7,7 +7,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
-	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
+	elasticstore "github.com/MaratBR/openlibrary/internal/elasticstore"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/lib/gset"
 	"github.com/gofrs/uuid"

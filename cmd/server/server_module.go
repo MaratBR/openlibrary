@@ -18,7 +18,6 @@ import (
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/reqid"
 	"github.com/MaratBR/openlibrary/internal/session"
-	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/admin"
 	"github.com/MaratBR/openlibrary/web/frontend"
 	"github.com/MaratBR/openlibrary/web/public"
@@ -129,15 +128,6 @@ func postInit(cfg *koanf.Koanf, uploadService *app.UploadService, authService ap
 			err := authService.EnsureAdminUserExists(context.Background())
 			if err != nil {
 				log.Errorw("failed to ensure admin user exists", "err", err)
-			}
-		}()
-	}
-
-	if cfg.Bool("init.import-predefined-tags") {
-		go func() {
-			err := app.ImportPredefinedTags(context.Background(), store.New(db))
-			if err != nil {
-				log.Errorw("failed to import predefined tags", "err", err)
 			}
 		}()
 	}

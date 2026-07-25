@@ -203,6 +203,7 @@ const (
 	TagTypeFandom   TagType = "fandom"
 	TagTypeReltype  TagType = "reltype"
 	TagTypeRel      TagType = "rel"
+	TagTypeGenre    TagType = "genre"
 )
 
 func (e *TagType) Scan(src interface{}) error {

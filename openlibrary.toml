@@ -14,6 +14,7 @@ target-protocol = "http"
 [init]
 create-default-users = true
 import-predefined-tags = true
+import-predefined-tags-path = "./oldata/tags"
 
 [minio]
 endpoint = "localhost:9000"

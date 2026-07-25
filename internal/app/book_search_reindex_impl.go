@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	elasticstore "github.com/MaratBR/openlibrary/internal/elastic-store"
+	elasticstore "github.com/MaratBR/openlibrary/internal/elasticstore"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"go.uber.org/zap"

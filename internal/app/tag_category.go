@@ -17,9 +17,10 @@ const (
 	TagsCategoryFandom
 	TagsCategoryRelationship
 	TagsCategoryRelationshipType
+	TagsCategoryGenre
 )
 
-var TagsCategoryList = []TagsCategory{TagsCategoryOther, TagsCategoryWarning, TagsCategoryFandom, TagsCategoryRelationship, TagsCategoryRelationshipType}
+var TagsCategoryList = []TagsCategory{TagsCategoryOther, TagsCategoryWarning, TagsCategoryFandom, TagsCategoryRelationship, TagsCategoryRelationshipType, TagsCategoryGenre}
 
 func (t TagsCategory) MarshalJSON() ([]byte, error) {
 	return fmt.Appendf(nil, `"%s"`, t.String()), nil
@@ -47,6 +48,8 @@ func (t TagsCategory) String() string {
 		return "rel"
 	case TagsCategoryRelationshipType:
 		return "reltype"
+	case TagsCategoryGenre:
+		return "genre"
 	default:
 		return "unknown"
 	}
@@ -64,6 +67,8 @@ func dbTagTypeToTagsCategory(t store.TagType) TagsCategory {
 		return TagsCategoryRelationship
 	case store.TagTypeReltype:
 		return TagsCategoryRelationshipType
+	case store.TagTypeGenre:
+		return TagsCategoryGenre
 	default:
 		return TagsCategoryOther
 	}
@@ -81,6 +86,8 @@ func tagsCategoryToDbTagType(cat TagsCategory) store.TagType {
 		return store.TagTypeRel
 	case TagsCategoryRelationshipType:
 		return store.TagTypeReltype
+	case TagsCategoryGenre:
+		return store.TagTypeGenre
 	default:
 		return store.TagTypeFreeform
 	}
@@ -98,6 +105,8 @@ func TagsCategoryFromName(name string) TagsCategory {
 		return TagsCategoryRelationship
 	case "reltype":
 		return TagsCategoryRelationshipType
+	case "genre":
+		return TagsCategoryGenre
 	default:
 		return TagsCategoryOther
 	}

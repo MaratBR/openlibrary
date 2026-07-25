@@ -3,7 +3,8 @@ create type tag_type as enum (
     'warning',
     'fandom',
     'reltype',
-    'rel'
+    'rel',
+    'genre'
 );
 
 create table defined_tags (

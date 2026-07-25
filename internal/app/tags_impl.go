@@ -131,7 +131,7 @@ func (t *tagsService) CreateTags(ctx context.Context, cmd CreateTagsCommand) ([]
 		}
 	}
 
-	err := importTags(ctx, t.queries, tags)
+	err := importTagsBulk(ctx, t.queries, tags)
 	if err != nil {
 		return nil, err
 	}

@@ -44,5 +44,7 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 		},
 	),
 
+	fx.Invoke(startTagsPopulateService),
+
 	fx.Invoke(func(srv BookBackgroundService, draftPublishing *DraftPublishingService) {}),
 )

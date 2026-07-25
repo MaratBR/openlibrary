@@ -1,0 +1,380 @@
+[
+    {
+        name: "Sci-fi",
+        description: "Fiction centered on speculative science, advanced technology, space, or possible futures.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Adventure",
+        description: "Stories driven by journeys, exploration, danger, and the pursuit of significant goals.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Fantasy",
+        description: "Fiction featuring magic, mythical beings, supernatural forces, or invented worlds.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "War and Military",
+        description: "Stories focused on warfare, military organizations, soldiers, tactics, and armed conflict.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Super Heroes",
+        description: "Stories about individuals with extraordinary abilities who act as heroes, vigilantes, or protectors.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Progression",
+        description: "Stories centered on a protagonist steadily gaining power, skill, status, or knowledge.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Portal Fantasy / Isekai",
+        description: "Fantasy in which characters are transported, summoned, or displaced into another world.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Slice of Life",
+        description: "Stories focused on everyday experiences, relationships, routines, and gradual personal development.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Mystery",
+        description: "Stories centered on uncovering secrets, solving crimes, or explaining unexplained events.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "LitRPG",
+        description: "Fiction where game-like statistics, levels, skills, and progression systems are explicit parts of the world.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Low Fantasy",
+        description: "Fantasy with limited or grounded supernatural elements, often set in a realistic or familiar world.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Drama",
+        description: "Character-focused stories built around serious conflict, emotion, relationships, and personal consequences.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Martial Arts",
+        description: "Stories centered on combat disciplines, physical training, tournaments, and skilled fighters.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Kingdom Building",
+        description: "Stories focused on creating, governing, expanding, or reforming a kingdom, state, or civilization.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Urban Fantasy",
+        description: "Fantasy where magic and supernatural beings exist within a modern urban setting.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Comedy",
+        description: "Stories primarily intended to entertain through humor, absurdity, wit, or comedic situations.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Supernatural",
+        description: "Fiction involving ghosts, spirits, occult forces, psychic abilities, or unexplained phenomena.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "High Fantasy",
+        description: "Epic fantasy set in a substantially invented world with prominent magic and large-scale conflicts.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Dystopia",
+        description: "Stories set in oppressive or damaged societies shaped by authoritarianism, inequality, or systemic collapse.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Psychological",
+        description: "Stories emphasizing mental states, internal conflict, perception, trauma, or psychological manipulation.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Space Opera",
+        description: "Large-scale science fiction featuring interstellar travel, political conflict, warfare, and dramatic adventure.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Cyberpunk",
+        description: "Science fiction combining advanced technology with social decay, corporate power, and marginalized protagonists.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Tragedy",
+        description: "Stories in which serious flaws, conflict, or fate lead to suffering, loss, or a devastating conclusion.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Post Apocalyptic",
+        description: "Stories set after a civilization-ending disaster, focusing on survival and the remains of society.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Hard Sci-fi",
+        description: "Science fiction that emphasizes scientific accuracy, technical detail, and plausible extrapolation.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Virtual Reality",
+        description: "Stories centered on simulated worlds, immersive digital environments, or life within virtual spaces.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Sports",
+        description: "Stories focused on athletic competition, training, teamwork, rivalry, and sporting achievement.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Historical",
+        description: "Fiction set in a recognizable past period and shaped by its historical culture, events, and conditions.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "GameLit",
+        description: "Fiction strongly influenced by video games, game worlds, mechanics, or gaming culture.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Wuxia",
+        description: "Chinese-inspired martial-arts fiction featuring wandering heroes, honor, rival sects, and extraordinary combat.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Soft Sci-fi",
+        description: "Science fiction emphasizing characters, societies, or speculative ideas over technical scientific detail.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Horror",
+        description: "Stories intended to evoke fear, dread, shock, or unease through threatening or disturbing elements.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Grimdark",
+        description: "Dark speculative fiction characterized by moral ambiguity, brutality, pessimism, and flawed characters.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Cultivation",
+        description: "Progression fantasy centered on spiritual training, martial advancement, enlightenment, and ascending levels of power.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Satire",
+        description: "Fiction using humor, exaggeration, or irony to criticize people, institutions, or society.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Steampunk",
+        description: "Speculative fiction featuring steam-powered technology, industrial aesthetics, and alternate-history influences.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Survival",
+        description: "Stories centered on enduring dangerous environments, scarce resources, disasters, or persistent threats.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Contemporary",
+        description: "Fiction set in the present day and grounded in recognizable modern life and society.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Dungeon Crawler",
+        description: "Adventure fiction focused on exploring dangerous dungeons, defeating enemies, and acquiring rewards.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Dungeon Core",
+        description: "Fantasy told from or centered on a sentient dungeon that builds rooms, traps, creatures, and defenses.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Thriller",
+        description: "Fast-paced stories built around danger, suspense, pursuit, conspiracy, or high-stakes conflict.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Mecha",
+        description: "Science fiction centered on piloted robots, powered machines, or large mechanized combat units.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Romance",
+        description: "Stories where the development of a romantic relationship is a primary focus.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Cozy",
+        description: "Low-intensity fiction emphasizing comfort, community, everyday life, and limited interpersonal conflict.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Apocalypse",
+        description: "Stories depicting an ongoing civilization-ending catastrophe and the struggle to survive it.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Monster Evolution",
+        description: "Progression fiction in which a monster grows stronger by evolving, transforming, or acquiring new abilities.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Magical Girl",
+        description: "Fantasy centered on empowered heroines who transform, use magic, and confront supernatural threats.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "System Invasion",
+        description: "Fiction where game-like systems, monsters, dungeons, or supernatural mechanics suddenly transform the modern world.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Magitech",
+        description: "Fantasy or science fiction where magic is engineered, industrialized, or used as a form of technology.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Crafting",
+        description: "Stories focused on creating equipment, artifacts, structures, inventions, or other valuable items.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Tower",
+        description: "Progression fiction centered on climbing a supernatural tower containing trials, enemies, and rewards.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Deck Building",
+        description: "Game-inspired fiction where characters collect and combine cards, abilities, or units into strategic decks.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Otome",
+        description: "Game-inspired fiction based on romance games aimed at women, often involving routes and competing love interests.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    },
+    {
+        name: "Action",
+        description: "Fast-paced stories emphasizing combat, danger, pursuit, and physically intense conflict.",
+        isAdult: false,
+        isSpoiler: false,
+        category: "genre"
+    }
+]

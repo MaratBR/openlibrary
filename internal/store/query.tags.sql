@@ -55,8 +55,11 @@ as json_set (
     created_at timestamptz, 
     tag_type tag_type, 
     synonym_of int8)
-where not exists (select 1 from defined_tags where name = json_set.name)
-on conflict (name) do nothing;
+on conflict (name) do update set
+    tag_type = excluded.tag_type,
+    is_adult = excluded.is_adult,
+    description = excluded.description,
+    is_spoiler = excluded.is_spoiler;
 
 -- name: RemoveUnusedDefaultTags :exec
 delete from defined_tags d
