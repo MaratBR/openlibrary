@@ -1,0 +1,80 @@
+package templates
+
+import "fmt"
+import "strings"
+
+import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+
+func genreInitial(name string) string {
+	for _, letter := range name {
+		return strings.ToUpper(string(letter))
+	}
+	return "?"
+}
+
+templ GenresPage(result app.ListTagsResult, query string) {
+	{{ l := i18n.GetLocalizer(ctx) }}
+	@standardPageLayout(standardPageLayoutProps{
+		htmlLayoutProps: htmlLayoutProps{Title: l.T("genres.title")},
+	}) {
+		<main class="ol-container py-10 md:py-14">
+			<header class="page-header">
+				<div class="page-header__body">
+					<h1 class="page-header__title">{ l.T("genres.title") }</h1>
+					<p class="page-header__description">{ l.T("genres.description") }</p>
+				</div>
+			</header>
+
+			<section class="card mb-6 flex items-center gap-5 p-5" aria-label={ l.T("genres.total") }>
+				<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-secondary text-2xl text-primary">
+					<i class="fa-solid fa-book-open" aria-hidden="true"></i>
+				</div>
+				<div>
+					<div class="text-sm text-secondary-foreground">{ l.T("genres.total") }</div>
+					<div class="text-2xl font-semibold">{ fmt.Sprintf("%d", result.TotalCount) }</div>
+					<div class="text-sm text-secondary-foreground">{ l.T("genres.available") }</div>
+				</div>
+			</section>
+
+			<form action="/browse/genres" method="get" role="search" class="mb-5">
+				<label class="relative block max-w-xl">
+					<span class="sr-only">{ l.T("common.search") }</span>
+					<i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-secondary-foreground" aria-hidden="true"></i>
+					<input class="input w-full pl-11" type="search" name="q" value={ query } placeholder={ l.T("genres.searchPlaceholder") }/>
+				</label>
+			</form>
+
+			if len(result.Tags) == 0 {
+				<div class="card p-10 text-center text-secondary-foreground">{ l.T("genres.empty") }</div>
+			} else {
+				<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+					for _, genre := range result.Tags {
+						@genreCard(genre)
+					}
+				</div>
+				if result.TotalPages > 1 {
+					<div class="mt-8 flex justify-center">@olhttp.Pagination(result.Page, result.TotalPages, 7)</div>
+				}
+			}
+		</main>
+	}
+}
+
+templ genreCard(genre app.TagDetailsItemDto) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", genre.ID)) } class="card group flex min-h-32 items-stretch overflow-hidden border-t-2 border-t-primary p-0 transition-shadow hover:shadow-md">
+		<div class="flex w-20 shrink-0 items-center justify-center border-r text-5xl font-title text-primary/70">
+			{ genreInitial(genre.Name) }
+		</div>
+		<div class="min-w-0 flex-1 p-4">
+			<h2 class="font-title text-xl font-semibold group-hover:text-primary">{ genre.Name }</h2>
+			if genre.Description != "" {
+				<p class="mt-2 line-clamp-2 text-sm text-secondary-foreground">{ genre.Description }</p>
+			}
+		</div>
+		<div class="flex items-center px-4 text-secondary-foreground">
+			<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+		</div>
+	</a>
+}

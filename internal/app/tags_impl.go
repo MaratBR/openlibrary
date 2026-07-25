@@ -152,6 +152,12 @@ func (t *tagsService) List(ctx context.Context, query ListTagsQuery) (ListTagsRe
 		OnlyParentTags: query.OnlyParentTags,
 		OnlyAdultTags:  query.OnlyAdultTags,
 	}
+	if query.Category.Valid {
+		dbQuery.TagType = store.NullTagType{
+			TagType: tagsCategoryToDbTagType(query.Category.Value),
+			Valid:   true,
+		}
+	}
 	tags, err := store.ListTags(ctx, t.db, dbQuery)
 	if err != nil {
 		return ListTagsResult{}, apperror.WrapUnexpectedDBError(err)
@@ -193,6 +199,7 @@ func (t *tagsService) List(ctx context.Context, query ListTagsQuery) (ListTagsRe
 	return ListTagsResult{
 		Tags:       tagDtos,
 		TotalPages: totalPages,
+		TotalCount: uint32(count),
 		Page:       query.Page,
 	}, nil
 }

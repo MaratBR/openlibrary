@@ -21,31 +21,29 @@ templ TagPage(tag app.TagDetailsItemDto) {
         },
     }) {
         <main class="ol-container">
-            <header class="pt-16 pb-8">
-                <h1 class="font-title font-bold text-6xl">{tag.Name}</h1>
-                <div class="flex gap-2 empty:hidden">
+            <header class="page-header pt-16">
+                <div class="page-header__body">
+                    <h1 class="page-header__title">{tag.Name}</h1>
+                    <div class="page-header__meta empty:hidden">
                     if tag.IsAdult {
-                        <span class="chip chip--destructive mt-4 cursor-help" title={ l.T("tag.adultDescription") }>
+                        <span class="chip chip--destructive cursor-help" title={ l.T("tag.adultDescription") }>
                             { l.T("common.adult") }
                         </span>
                     }
                     if tag.IsSpoiler {
-                        <span class="chip mt-4 border cursor-help" title={ l.T("tag.spoilerDescription") }>
+                        <span class="chip border cursor-help" title={ l.T("tag.spoilerDescription") }>
                             { l.T("common.spoiler") }
                         </span>
                     }
-                </div>
+                    </div>
 
-                <p class="my-8 text-xl">{tag.Description}</p>
+                    <p class="page-header__description text-lg">{tag.Description}</p>
 
-                <div>
-                    <a class="link" href={templ.URL(fmt.Sprintf("/search?it=%d", tag.ID))}>
-                        {l.T("common.books")}
-                    </a>
-                    &bull;
-                    <a class="link" href={templ.URL(fmt.Sprintf("/collections?it=%d", tag.ID))}>
-                        {l.T("common.collections")}
-                    </a>
+                    <div class="page-header__meta">
+                        <a class="link" href={templ.URL(fmt.Sprintf("/search?it=%d", tag.ID))}>{l.T("common.books")}</a>
+                        &bull;
+                        <a class="link" href={templ.URL(fmt.Sprintf("/collections?it=%d", tag.ID))}>{l.T("common.collections")}</a>
+                    </div>
                 </div>
             </header>
         </main>

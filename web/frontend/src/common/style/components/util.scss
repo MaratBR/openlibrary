@@ -19,32 +19,27 @@
   padding-left: max(0px, calc((100% - 120ch) / 2));
 }
 
-/**
- * Main page header
- */
 .page-header {
-  @apply font-medium text-4xl inline-block font-semibold;
-  line-height: 1.3;
-  vertical-align: bottom;
+  @apply mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between;
 
-  &__after {
-    @apply text-sm font-normal ml-4 mt-1 inline-block leading-[2.2];
-    vertical-align: top;
-  }
-}
-
-.page-header-container {
-  @apply relative mb-8;
-
-  --page-header-container-right-width: 300px;
-
-  &:has(&__right) {
-    padding-right: var(--page-header-container-right-width);
+  &__body {
+    @apply min-w-0;
   }
 
-  &__right {
-    @apply absolute top-0 right-0;
-    width: var(--page-header-container-right-width);
+  &__title {
+    @apply break-words font-title text-4xl font-semibold leading-tight;
+  }
+
+  &__description {
+    @apply mt-2 max-w-3xl text-secondary-foreground;
+  }
+
+  &__meta {
+    @apply mt-3 flex flex-wrap items-center gap-2;
+  }
+
+  &__actions {
+    @apply flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto;
   }
 }
 

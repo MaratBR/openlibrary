@@ -14,6 +14,7 @@ type ListTagsQuery struct {
 	Query          string
 	OnlyParentTags bool
 	OnlyAdultTags  bool
+	TagType        NullTagType
 	Limit          uint
 	Offset         uint
 }
@@ -37,16 +38,16 @@ func applyTagsQuery(query *goqu.SelectDataset, req *ListTagsQuery) *goqu.SelectD
 		query = query.Where(goqu.I("defined_tags.synonym_of").IsNull())
 	}
 
-	if req.OnlyParentTags {
-		query = query.Where(goqu.I("defined_tags.synonym_of").IsNull())
-	}
-
 	if req.OnlyAdultTags {
 		query = query.Where(goqu.I("defined_tags.is_adult").IsTrue())
 	}
 
 	if req.Query != "" {
 		query = query.Where(goqu.I("defined_tags.name").ILike("%" + req.Query + "%"))
+	}
+
+	if req.TagType.Valid {
+		query = query.Where(goqu.I("defined_tags.tag_type").Eq(req.TagType.TagType))
 	}
 
 	return query

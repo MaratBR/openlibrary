@@ -56,12 +56,14 @@ type ListTagsQuery struct {
 	PageSize       uint32
 	OnlyParentTags bool
 	OnlyAdultTags  bool
+	Category       Nullable[TagsCategory]
 }
 
 type ListTagsResult struct {
 	Tags       []TagDetailsItemDto
 	Page       uint32
 	TotalPages uint32
+	TotalCount uint32
 }
 
 type UpdateTagCommand struct {

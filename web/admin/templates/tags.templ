@@ -25,9 +25,11 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
 
     @dashboardLayout("Tags") {
         <div class="dashboard-content">
-            <header class="page-header-container">
-                <h1 class="page-header">Tags</h1>
-                <p>View list of tags and create new tags or edit existing ones.</p>
+            <header class="page-header">
+                <div class="page-header__body">
+                    <h1 class="page-header__title">Tags</h1>
+                    <p class="page-header__description">View list of tags and create new tags or edit existing ones.</p>
+                </div>
             </header>
 
             <section class="mt-4">
@@ -162,12 +164,11 @@ templ Tag(tag app.TagDetailsItemDto) {
 
     @dashboardLayout("Admin - " + tag.Name) {
         <div class="dashboard-content">
-            <header class="page-header-container">
-                <h1 class="page-header">
-                    { tag.Name }
-                </h1>
+            <header class="page-header">
+                <div class="page-header__body">
+                    <h1 class="page-header__title">{ tag.Name }</h1>
 
-                <article class="admin-card p-4">
+                    <article class="admin-card mt-4 p-4">
                     if tag.Description == "" {
                         <p class="text-secondary-foreground">
                             { l.T("admin.tags.noDescription") }
@@ -175,7 +176,8 @@ templ Tag(tag app.TagDetailsItemDto) {
                     } else {
                         <p>{ tag.Description }</p>
                     }
-                </article>
+                    </article>
+                </div>
             </header>
 
             <div class="admin-card p-4">
@@ -206,12 +208,14 @@ templ TagEdit(tag app.TagDetailsItemDto) {
             <form method="post">
                 @csrf.CSRFInputTempl(ctx)
 
-                <header class="page-header-container">
-                    <input autocomplete="off" name="name" required value={tag.Name} class="input-transparent border-b-2 border-current my-6 text-5xl bg-transparent">
+                <header class="page-header">
+                    <div class="page-header__body w-full">
+                    <input autocomplete="off" name="name" required value={tag.Name} class="page-header__title input-transparent w-full border-b-2 border-current bg-transparent">
 
-                    <article class="admin-card">
+                    <article class="admin-card mt-4">
                         <textarea maxlength="500" rows="10" name="description" class="textarea p-4 w-full" placeholder={l.T("admin.tags.noDescription")}>{tag.Description}</textarea>
                     </article>
+                    </div>
                 </header>
 
                 <div class="admin-card p-4 space-y-4">

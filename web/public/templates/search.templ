@@ -56,17 +56,21 @@ templ SearchResultFragment(
         @jsonTemplate("data-search-explained-query", explainedQuery)
 
         if !disableHeader {
-            <h1 class="page-header">
-                if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
-                    {{ firstTag := explainedQuery.IncludeTags[0] }}
-                    { firstTag.Name }
-                } else {
-                    { l.T("search.search") }
-                }
-            </h1>
+            <header class="page-header">
+                <div class="page-header__body">
+                    <h1 class="page-header__title">
+                        if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
+                            {{ firstTag := explainedQuery.IncludeTags[0] }}
+                            { firstTag.Name }
+                        } else {
+                            { l.T("search.search") }
+                        }
+                    </h1>
+                </div>
+            </header>
         }
 
-        <form class="mt-5">
+        <form>
             <input id="search-input" name="q" class="input focus:ring-4 focus:ring-primary p-6 rounded-full text-lg w-full" value={ explainedQuery.Query } />
         </form>
 

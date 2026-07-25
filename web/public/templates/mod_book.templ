@@ -35,10 +35,11 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
         <div 
             x-data={string(dataJson)}
             class="ol-container ol-container--big">
-            <header>
-                <h1 class="page-header font-title my-8">{book.Name}</h1>
+            <header class="page-header mt-8">
+                <div class="page-header__body">
+                <h1 class="page-header__title">{book.Name}</h1>
 
-                <div class="flex gap-1 mt-2">
+                <div class="page-header__meta">
                     if book.IsBanned {
                         <div class="bg-red-700 text-white px-3 rounded-full leading-8 font-medium flex items-center">
                             <span class="material-symbols-outlined mr-1">gavel</span>
@@ -58,6 +59,7 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
                         </div>
                     }
 
+                </div>
                 </div>
             </header>
 
@@ -210,14 +212,16 @@ templ ModBookLog(book app.BookModerationInfo, logs app.BookLogResult) {
         <div 
             class="ol-container ol-container--big">
 
-            <header class="my-8">
-                <h1 class="page-header font-title">
+            <header class="page-header mt-8">
+                <div class="page-header__body">
+                <h1 class="page-header__title">
                     <a class="link" href={ templ.SafeURL(fmt.Sprintf("/mod/book/%d", book.ID)) }>
                         { book.Name }
                     </a>
                     <i class="fa-solid fa-chevron-right"></i>
                     { l.T("mod.bookLog.title") }
                 </h1>
+                </div>
             </header>
 
 

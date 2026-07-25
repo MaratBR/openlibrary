@@ -26,9 +26,11 @@ function DashboardContent_StickyHeader({
 }) {
   return (
     <div className="dashboard-content__sticky-header" data-testid="DashboardContent_StickyHeader">
-      <header className="page-header-container">
-        <h1 className="page-header">{title}</h1>
-        {children}
+      <header className="page-header">
+        <div className="page-header__body">
+          <h1 className="page-header__title">{title}</h1>
+        </div>
+        {children && <div className="page-header__actions">{children}</div>}
       </header>
     </div>
   )

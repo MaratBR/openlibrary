@@ -31,6 +31,7 @@ var FXModule = fx.Module("public_ui_handler",
 		newChaptersController,
 		newSearchController,
 		newTagsController,
+		newGenresController,
 		newProfileController,
 		newLibraryController,
 		newCollectionController,
@@ -68,6 +69,7 @@ func newHandler(
 	profileController *profileController,
 	searchController *searchController,
 	tagsController *tagsController,
+	genresController *genresController,
 	settingsController *account.SettingsController,
 
 	apiControllerTags *apiControllerTags,
@@ -109,6 +111,7 @@ func newHandler(
 	profileController.Register(h.r)
 	searchController.Register(h.r)
 	tagsController.Register(h.r)
+	genresController.Register(h.r)
 
 	h.r.Route("/account", func(r chi.Router) {
 		r.Use(requiresAuthorizationMiddleware)

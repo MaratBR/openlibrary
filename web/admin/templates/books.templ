@@ -9,10 +9,12 @@ templ BooksPage() {
     
     @dashboardLayout("Books") {
         <div class="dashboard-content">
-            <header class="page-header-container">
-                <h1 class="page-header">
+            <header class="page-header">
+                <div class="page-header__body">
+                <h1 class="page-header__title">
                     {l.T("admin.books.title")}
                 </h1>
+                </div>
             </header>
 
             <p class="mb-4">

@@ -39,6 +39,14 @@ moderationPortal = "Moderation portal"
 logout = "Logout"
 close = "Close"
 
+[genres]
+title = "Genres"
+description = "Browse all available genres and explore stories by category."
+total = "Total genres"
+available = "Available categories"
+searchPlaceholder = "Search genres…"
+empty = "No genres found"
+
 [comments]
 title = "Comments"
 chapterDiscussion = "Chapter discussion"
