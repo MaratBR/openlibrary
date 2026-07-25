@@ -1,11 +1,25 @@
-.books-recommendation-list {
-  @apply flex gap-4 p-4 overflow-x-auto;
+.book-recommendation-list {
+  @apply flex py-8;
+}
 
-  & > li {
-    @apply block transition cursor-pointer hover:scale-105;
+.book-recommendation-item {
+  @apply 
+    rounded-xl bg-surface w-42 min-w-42 transition block mx-3 first:ml-0;
 
-    & > a > .book-cover {
-      @apply block;
-    }
+  &__img {
+    @apply rounded-xl h-56 max-h-56 w-full transition;
+    object-fit: cover
+  }
+
+  &:hover &__img {
+    @apply scale-102;
+  }
+
+  &__summary {
+    @apply p-2 font-title text-sm;
+  }
+
+  &__name {
+    @apply text-base whitespace-nowrap text-ellipsis overflow-hidden font-medium;
   }
 }

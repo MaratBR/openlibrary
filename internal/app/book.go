@@ -88,6 +88,7 @@ type BookUserPermissions struct {
 
 type BookListDto struct {
 	ID              int64     `json:"id,string"`
+	Slug            string    `json:"slug"`
 	Name            string    `json:"name"`
 	CreatedAt       time.Time `json:"createdAt"`
 	AgeRating       AgeRating `json:"ageRating"`

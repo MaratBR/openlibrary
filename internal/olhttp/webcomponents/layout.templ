@@ -1,5 +1,16 @@
 package webcomponents
 
-templ SidebarLayout(sidebar templ.Component) {
-
+templ Carousel() {
+    <div class="carousel" x-data="Carousel" data-can-scroll-l="false">
+        <button class="carousel__button carousel__button--left" x-bind="btnL">
+            <i class="fa-solid fa-chevron-left" />
+        </button>
+        <div class="carousel__curtain carousel__curtain--left"
+        />
+        { children... }
+        <div class="carousel__curtain carousel__curtain--right" />
+        <button class="carousel__button carousel__button--right" x-bind="btnR">
+            <i class="fa-solid fa-chevron-right" />
+        </button>
+    </div>
 }

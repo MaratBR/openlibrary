@@ -76,6 +76,7 @@ export function UserMenu() {
 function UserMenuBody({ onNavigate }: { onNavigate: () => void }) {
   const user = useUserSelfData()
   const isAdmin = user.role === 'admin' || user.role === 'system'
+  const isModerator = isAdmin || user.role === 'moderator'
 
   return (
     <div className="UserMenu__body">
@@ -97,6 +98,11 @@ function UserMenuBody({ onNavigate }: { onNavigate: () => void }) {
         <MenuItem icon="fa-solid fa-book-open" href="/books-manager" onClick={onNavigate}>
           {window._('common.bookManager')}
         </MenuItem>
+        {isModerator && (
+          <MenuItem icon="fa-solid fa-shield" href="/moderation/" onClick={onNavigate}>
+            {window._('common.moderationPortal')}
+          </MenuItem>
+        )}
         {isAdmin && (
           <MenuItem
             icon="fa-solid fa-shield-halved"

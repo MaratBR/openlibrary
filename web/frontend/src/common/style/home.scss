@@ -1,0 +1,51 @@
+.home-hero-welcome {
+    @apply pt-32 pb-8 relative;
+
+    &__container {
+        @apply max-w-110;
+    }
+
+    &__bg {
+        @apply absolute inset-0 bg-no-repeat pointer-events-none
+            bg-[url(/_/embed-assets/img/books.png)]
+            dark:bg-[url(/_/embed-assets/img/books_dark.png)];
+        background-position: 100% 45%;
+        background-size: 58%;
+    }
+
+    &__eyebrow {
+        @apply font-title text-2xl font-normal;
+    }
+
+    &__title {
+        @apply font-title text-6xl font-medium my-2;
+    }
+
+    &__text {
+        @apply font-title text-secondary-foreground mt-2;
+    }
+
+    &__actions {
+        @apply flex gap-2 mt-6;
+    }
+}
+
+.home-header-container {
+    @apply py-2 relative;
+
+    &__right {
+        @apply right-0 top-0 bottom-0 absolute z-1 bg-surface flex flex-col justify-center pl-4;
+    }
+
+    &__hr {
+        @apply border-t w-full absolute top-1/2 -translate-y-1/2;
+    }
+
+    & .home-header {
+        @apply pr-4 bg-surface z-1 relative;
+    }
+}
+
+.home-header {
+    @apply text-2xl font-title font-medium inline-block;
+}

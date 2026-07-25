@@ -81,6 +81,9 @@ func (s *sessionService) get(ctx context.Context, sessionID string) (SessionInfo
 		}
 		return SessionInfo{}, apperror.WrapUnexpectedDBError(err)
 	}
+	if result.UserIsBanned {
+		return SessionInfo{}, ErrUserBanned
+	}
 
 	return SessionInfo{
 		ID:           result.ID,

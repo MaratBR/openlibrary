@@ -11,7 +11,7 @@ templ SignUp(siteConfig *app.SiteConfig, requireEmail bool) {
     }}
 
     @htmlLayout(htmlLayoutProps{Title: l.T("login.login")}) {
-        <div class="p-8 w-screen h-screen flex items-center justify-center bg-surface">
+        <div class="p-8 w-screen h-screen flex items-center justify-center bg-background">
             <main class="w-[400px] min-h-[450px] bg-surface p-4 shadow-lg rounded-sm">
                 <div class="flex justify-center select-none">
                     <img class="block dark:hidden" src="/_/embed-assets/logo.svg" />
@@ -45,7 +45,7 @@ templ SignUpEmailVerification(email string, status app.EmailVerificationStatus) 
         l := i18n.GetLocalizer(ctx)
     }}
     @htmlLayout(htmlLayoutProps{Title: l.T("login.login")}) {
-        <div class="p-8 w-screen h-screen flex items-center justify-center bg-surface">
+        <div class="p-8 w-screen h-screen flex items-center justify-center bg-background">
             <main class="w-[400px] min-h-[450px] bg-surface p-4 shadow-lg rounded-sm">
                 <form method="post" x-data="{
                     code:''

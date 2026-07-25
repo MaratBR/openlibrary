@@ -1,71 +1,132 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
-import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 import "strconv"
-import "fmt"
 import "github.com/MaratBR/openlibrary/internal/app/analytics"
-import "time"
+import "github.com/MaratBR/openlibrary/internal/auth"
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 
-templ Home() {
+templ Home(
+    widgets []templ.Component,
+) {
     @standardPageLayout(standardPageLayoutProps{
         htmlLayoutProps: htmlLayoutProps{
             Title: "Home",
+            UseSurfaceColorForBody: true,
         },
     }) {
-        <div class="ol-container">
-            
-            <section>
-                <header class="my-4">
-                    <h2 class="text-3xl font-semibold">
-                        Most viewed books { time.Now().Year() }
-                    </h2>
-                </header>
-                {{
-                    periods := analytics.CurrentAnalyticsPeriods(time.Now())
-                }}
-                @webcomponents.Fragment(webcomponents.FragmentProps{
-                    Path: "/__fragment/most-viewed-books?period=" + strconv.FormatInt(int64(periods.Month), 10),
-                }) {
-                    <div class="flex gap-4 overflow-hidden p-4">
-                        <div style="min-width:133px;height:200px;" class="skeleton rounded-r-xl" />
-                        <div style="min-width:133px;height:200px;" class="skeleton rounded-r-xl" />
-                        <div style="min-width:133px;height:200px;" class="skeleton rounded-r-xl" />
-                        <div style="min-width:133px;height:200px;" class="skeleton rounded-r-xl" />
-                    </div>
-                }
-            </section>
-
-
-        
-        </div>
+        for _, widget := range widgets {
+            @widget
+        }
     }
 }
 
 
-templ HomeBooksListFragment(
+templ Home_MainHeroSection() {
+    <section class="ol-container ol-container--big home-hero-welcome">
+        <div class="home-hero-welcome__bg" />
+        <div class="home-hero-welcome__container">
+            <p class="home-hero-welcome__eyebrow">Welcome to</p>
+            <h1 class="home-hero-welcome__title">OpenLibrary</h1>
+            <div class="border-t h-0 w-full relative my-8" aria-hidden="true">
+                <div class="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 bg-surface">
+                    <img src="/_/embed-assets/svg/accent.svg" class="size-6" />
+                </div>
+            </div>
+
+            <p class="home-hero-welcome__text">
+                A place to discover stories worth your time. <br />
+                Read, track, and explore books from our community.
+            </p>
+
+            <div class="home-hero-welcome__actions">
+                <a class="btn btn--primary" href="/browse">
+                    Browse library
+                    <i class="btn__icon btn__icon--right fa-solid fa-chevron-right" />
+                </a>
+
+                {{
+                    _, isAuthorized := auth.GetSession(ctx)
+                }}
+                if isAuthorized {
+                    <a class="btn btn--outline" href="/library">
+                        Your library
+                    </a>
+                } else {
+                    <a class="btn btn--outline" href="/signup">
+                        Your library
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+templ Home_MostViewedBooks(
     period analytics.AnalyticsPeriod,
     books []app.BookListDto,
     views map[int64]int64,
 ) {
-    <ul class="books-recommendation-list" data-period={strconv.FormatInt(int64(period), 10)}>
-        for _, book := range books {
-            {{
-                viewCount, _ := views[book.ID] 
-            }}
-            <li data-views={strconv.FormatInt(viewCount, 10)} data-book-card-preview={strconv.FormatInt(book.ID, 10)}>
-                <a href={ fmt.Sprintf("/book/%d", book.ID) }>
-                    @bookCover(book.Cover.URL, book.Name, 200)
+    <div class="ol-container ol-container--big">
+        <header class="home-header-container">
+            <span class="home-header">
+                Most viewed books in 2026
+            </span>
+
+            <div class="home-header-container__right">
+                <a class="link font-title" href="/browse/analytics/most-viewed-2026">
+                    View all <i class="fa-solid fa-chevron-right" />
                 </a>
-            </li>
+            </div>
+
+            <div class="home-header-container__hr" />
+        </header>
+
+        @webcomponents.Carousel() {
+            <ul class="book-recommendation-list overflow-x-hidden" data-period={strconv.FormatInt(int64(period), 10)}>
+                for _, book := range books {
+                    {{
+                        viewCount, _ := views[book.ID] 
+                    }}
+                    <li class="book-recommendation-item">
+                        <a href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>
+                            // data-views={strconv.FormatInt(viewCount, 10)} 
+                            // data-book-card-preview={strconv.FormatInt(book.ID, 10)}
+                            <img loading="lazy" src={book.Cover.URL} class="book-recommendation-item__img"></img>
+                        </a>
+
+                        <div class="book-recommendation-item__summary">
+                            <div class="book-recommendation-item__name">
+                                <a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>
+                                    { book.Name }
+                                </a>
+                            </div>
+                            <div>
+                                by <a class="link">{ "A. Lumen" }</a>
+                            </div>
+                            <div>
+                                <i class="fa-solid fa-eye" />
+                                { formatNumber(viewCount) }
+                            </div>
+                        </div>
+                    </li>
+                }
+                // @webcomponents.Island2(webcomponents.Island2Props{
+                //     Name: "book-card-preview",
+                //     Data: map[string]string{"selector": ":parent"},
+                // })
+            </ul>
         }
-        @webcomponents.Island2(webcomponents.Island2Props{
-            Name: "book-card-preview",
-            Data: map[string]string{"selector": ":parent"},
-        })
-    </ul>
+    </div>
     
+}
+
+templ Home_WidgetError(err error) {
+    <div>
+        { err.Error() }
+    </div>
 }
 
 templ UIDemo() {

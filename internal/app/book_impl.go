@@ -260,6 +260,7 @@ func (s *bookService) GetBooksById(ctx context.Context, ids []int64) ([]BookList
 	for i := range rows {
 		books = append(books, BookListDto{
 			ID:        rows[i].ID,
+			Slug:      rows[i].Slug,
 			Name:      rows[i].Name,
 			CreatedAt: rows[i].CreatedAt.Time,
 			AgeRating: ageRatingFromDbValue(rows[i].AgeRating),

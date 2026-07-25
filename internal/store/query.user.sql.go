@@ -116,10 +116,12 @@ func (q *Queries) GetUserPrivacySettings(ctx context.Context, id pgtype.UUID) (G
 }
 
 const session_GetInfo = `-- name: Session_GetInfo :one
-select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.name as user_name, u.joined_at as user_joined_at, u."role" as user_role
+select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.name as user_name, u.joined_at as user_joined_at, u."role" as user_role, u.is_banned as user_is_banned
 from sessions s
 join users u on s.user_id = u.id
 where s.sid = $1
+  and not s.is_terminated
+  and s.expires_at > now()
 `
 
 type Session_GetInfoRow struct {
@@ -134,6 +136,7 @@ type Session_GetInfoRow struct {
 	UserName     string
 	UserJoinedAt pgtype.Timestamptz
 	UserRole     UserRole
+	UserIsBanned bool
 }
 
 func (q *Queries) Session_GetInfo(ctx context.Context, sid string) (Session_GetInfoRow, error) {
@@ -151,6 +154,7 @@ func (q *Queries) Session_GetInfo(ctx context.Context, sid string) (Session_GetI
 		&i.UserName,
 		&i.UserJoinedAt,
 		&i.UserRole,
+		&i.UserIsBanned,
 	)
 	return i, err
 }

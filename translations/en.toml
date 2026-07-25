@@ -35,6 +35,7 @@ profile = "Profile"
 settings = "Settings"
 bookManager = "Book manager"
 adminDashboard = "Admin dashboard"
+moderationPortal = "Moderation portal"
 logout = "Logout"
 close = "Close"
 
@@ -84,6 +85,17 @@ light = "Light"
 system = "System"
 
 switchTheme = "Switch theme"
+
+[moderationPortal]
+title = "Moderation"
+navigation = "Moderation navigation"
+overview = "Overview"
+books = "Books"
+chapters = "Chapters"
+comments = "Comments"
+users = "Users"
+loginHistory = "Login history"
+auditLog = "Audit log"
 
 [footer]
 navigationLabel = "Footer navigation"

@@ -1,0 +1,16 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
+
+templ ModerationPortal() {
+	{{
+		l := i18n.GetLocalizer(ctx)
+	}}
+	@bmLayout(l.T("moderationPortal.title")) {
+		@i18nExtractKeysByPrefix(l, "moderationPortal")
+		@webcomponents.Island2(webcomponents.Island2Props{
+			Name: "moderation/Portal",
+		})
+	}
+}

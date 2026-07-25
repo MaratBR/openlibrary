@@ -15,7 +15,7 @@ templ Login(data LoginData) {
     }}
 
     @htmlLayout(htmlLayoutProps{Title: l.T("login.login")}) {
-        <div class="p-8 w-screen h-screen flex items-center justify-center bg-surface">
+        <div class="p-8 w-screen h-screen flex items-center justify-center bg-background">
             <main class="w-[400px] min-h-[450px] bg-surface p-4 shadow-lg rounded-sm">
                 if data.IsToAdmin {
                     <section class="p-2 bg-emerald-500 text-white rounded-sm -m-3 text-sm text-center">

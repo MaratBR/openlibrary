@@ -35,6 +35,7 @@ var FXModule = fx.Module("public_ui_handler",
 		newLibraryController,
 		newCollectionController,
 		newBookManagerController,
+		newModerationPortalController,
 		newModController,
 		newAPIBookController,
 		newAPIReadingListController,
@@ -43,6 +44,7 @@ var FXModule = fx.Module("public_ui_handler",
 		newAPIBookManagerController,
 		newAPICollectionController,
 		newAPICommentsController,
+		newAPIModerationController,
 		newApiControllerI18N,
 		account.NewSettingsController,
 		webinfra.AsMountableHandler(newHandler),
@@ -58,6 +60,7 @@ func newHandler(
 	authController *authController,
 	bookController *bookController,
 	bookManagerController *bookManagerController,
+	moderationPortalController *moderationPortalController,
 	chapterController *chaptersController,
 	collectionController *collectionController,
 	modController *modController,
@@ -74,6 +77,7 @@ func newHandler(
 	apiControllerReadingList *apiControllerReadingList,
 	apiControllerReaderPreferences *apiControllerReaderPreferences,
 	apiControllerComments *apiControllerComments,
+	apiControllerModeration *apiControllerModeration,
 	apiControllerI18N *apiControllerI18N,
 
 	flashMiddleware flash.Middleware,
@@ -97,6 +101,7 @@ func newHandler(
 	authController.Register(h.r)
 	bookController.Register(h.r)
 	bookManagerController.Register(h.r)
+	moderationPortalController.Register(h.r)
 	chapterController.Register(h.r)
 	collectionController.Register(h.r)
 	modController.Register(h.r)
@@ -125,6 +130,7 @@ func newHandler(
 		apiControllerReaderPreferences.Register(r)
 		apiControllerTags.Register(r)
 		apiControllerComments.Register(r)
+		apiControllerModeration.Register(r)
 		apiControllerI18N.Register(r)
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {

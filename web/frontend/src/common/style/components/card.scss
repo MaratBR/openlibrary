@@ -16,4 +16,8 @@
     box-shadow: var(--shadow-sm);
     transform: translateY(-1px);
   }
+
+  &--nopad {
+    @apply p-0;
+  }
 }

@@ -1,0 +1,34 @@
+.carousel {
+    @apply relative;
+    
+    &__curtain {
+        @apply transition-opacity absolute top-0 bottom-0 pointer-events-none from-surface to-transparent w-24;
+
+        &--left {
+            @apply bg-gradient-to-r left-0 z-1;
+        }
+
+        &--right {
+            @apply bg-gradient-to-l right-0;
+        }
+    }
+
+    &__button {
+        @apply transition-opacity absolute top-1/2 -translate-y-1/2 size-12 flex items-center justify-center bg-surface shadow-xl rounded-full hover:bg-secondary;
+
+        &--left {
+            @apply left-0 z-2;
+        }
+
+        &--right {
+            @apply right-0;
+        }
+    }
+
+    &[data-can-scroll-l=false] &__button--left,
+    &[data-can-scroll-l=false] &__curtain--left,
+    &[data-can-scroll-r=false] &__button--right,
+    &[data-can-scroll-r=false] &__curtain--right {
+        @apply opacity-0 pointer-events-none;
+    }
+}

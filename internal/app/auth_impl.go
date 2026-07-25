@@ -55,11 +55,15 @@ func createUser(ctx context.Context, queries *store.Queries, username, email, pa
 }
 
 func (s *authService) EnsureAdminUserExists(ctx context.Context) error {
-	exists, err := s.queries.User_ExistsByUsername(ctx, "admin")
+	adminExists, err := s.queries.User_ExistsByUsername(ctx, "admin")
 	if err != nil {
 		return err
 	}
-	if exists {
+	systemExists, err := s.queries.User_ExistsByUsername(ctx, "system")
+	if err != nil {
+		return err
+	}
+	if adminExists && systemExists {
 		return nil
 	}
 
@@ -73,10 +77,19 @@ func (s *authService) EnsureAdminUserExists(ctx context.Context) error {
 		return err
 	}
 
-	_, err = createUser(ctx, queries, "admin", "", "admin", RoleAdmin, true)
-	if err != nil {
-		rollbackTx(ctx, tx)
-		return err
+	if !adminExists {
+		if _, err = createUser(ctx, queries, "admin", "", "admin", RoleAdmin, true); err != nil {
+			rollbackTx(ctx, tx)
+			return err
+		}
+	}
+	if !systemExists {
+		// System-owned anonymized records need a real foreign-key target. Its
+		// random password is never exposed, making interactive login impractical.
+		if _, err = createUser(ctx, queries, "system", "", uuidV4().String(), RoleSystem, true); err != nil {
+			rollbackTx(ctx, tx)
+			return err
+		}
 	}
 
 	err = tx.Commit(ctx)
@@ -98,6 +111,7 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 	queries := s.queries.WithTx(tx)
 	user, err := queries.User_FindByLogin(ctx, input.Username)
 	if err != nil {
+		rollbackTx(ctx, tx)
 		if err == pgx.ErrNoRows {
 			return SignInResult{}, ErrInvalidCredentials
 		}
@@ -106,16 +120,30 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 
 	match, err := verifyPassword(input.Password, user.PasswordHash)
 	if err != nil {
+		rollbackTx(ctx, tx)
 		return SignInResult{}, err
 	}
 
 	if !match {
+		rollbackTx(ctx, tx)
 		return SignInResult{}, ErrInvalidCredentials
+	}
+
+	if user.IsBanned {
+		expiresAt, banErr := queries.Moderation_GetLatestUserBanExpiry(ctx, user.ID)
+		if banErr == nil && !expiresAt.Time.After(time.Now()) {
+			banErr = queries.Moderation_SetUserBanned(ctx, store.Moderation_SetUserBannedParams{ID: user.ID, IsBanned: false})
+		}
+		if banErr != nil || expiresAt.Time.After(time.Now()) {
+			rollbackTx(ctx, tx)
+			return SignInResult{}, ErrUserBanned
+		}
 	}
 
 	userID := uuidDbToDomain(user.ID)
 	sessionID, err := s.createNewSession(ctx, queries, userID, input.UserAgent, input.IpAddress)
 	if err != nil {
+		rollbackTx(ctx, tx)
 		return SignInResult{}, err
 	}
 

@@ -13,6 +13,7 @@ var (
 
 	ErrTypeAuthenticationError = apperror.AppErrors.NewType("authentication", apperror.ErrTraitAuthorizationIssue)
 	ErrInvalidCredentials      = ErrTypeAuthenticationError.New("invalid credentials")
+	ErrUserBanned              = ErrTypeAuthenticationError.New("user is banned")
 )
 
 type AuthService interface {

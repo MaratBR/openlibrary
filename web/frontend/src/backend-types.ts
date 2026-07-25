@@ -31,6 +31,26 @@ export interface BookDetailsAuthorDto {
   name: string
 }
 
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface BookModerationLogEntryResponse {
+  time: string
+  action: string
+  payload: unknown
+  reason: string
+  actorUserId: string
+  actorUserName: string
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface BookModerationLogResponse {
+  entries: Array<BookModerationLogEntryResponse>
+  page: number
+  pageSize: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+  totalPages: number
+}
+
 /** Generated from `internal/app/reading_list.go`. */
 export interface BookReadingListDto {
   status: ReadingListStatus
@@ -64,6 +84,7 @@ export interface CommentDto {
   likes: number
   likesUpdatedAt: string
   subcomments: number
+  deleted: boolean
 }
 
 /** Generated from `internal/app/comments.go`. */
@@ -108,6 +129,13 @@ export interface DraftDto {
 
 /** Generated from `internal/app/id.go`. */
 export type Int64String = string
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface LoginHistoryEntryResponse {
+  ipAddress: string
+  userAgent: string
+  loggedInAt: string
+}
 
 /** Generated from `internal/app/book_manager.go`. */
 export interface ManagerBookChapterDto {
@@ -168,6 +196,16 @@ export interface ManagerBookDto_Stats {
   ratings: number
 }
 
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationBookResponse {
+  id: string
+  name: string
+  summary: string
+  isBanned: boolean
+  isShadowBanned: boolean
+  isPermanentlyRemoved: boolean
+}
+
 /** Generated from `internal/olhttp/notification.go`. */
 export interface Notification {
   text: string
@@ -208,6 +246,9 @@ export interface ReviewUserDto {
 
 /** Generated from `internal/app/tag_category.go`. */
 export type TagsCategory = 'other' | 'warning' | 'fandom' | 'rel' | 'reltype' | 'unknown'
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export type UserLoginHistoryResponse = Array<LoginHistoryEntryResponse>
 
 /** Generated from `internal/app/analytics/analytics_views.go`. */
 export interface Views {

@@ -13,14 +13,21 @@ import (
 )
 
 type moderationBookService struct {
-	db DB
+	db   DB
+	auth ModerationAuthorizer
+}
+
+func (m *moderationBookService) authorize(ctx context.Context, actor uuid.UUID) error {
+	return m.auth.AuthorizeModerator(ctx, actor)
 }
 
 // GetBookInfo implements ModerationBookService.
 func (m *moderationBookService) GetBookInfo(ctx context.Context, query GetBookInfoQuery) (BookModerationInfo, error) {
 	queries := store.New(m.db)
 
-	// TODO: authorization
+	if err := m.authorize(ctx, query.ActorUserID); err != nil {
+		return BookModerationInfo{}, err
+	}
 
 	row, err := queries.ModGetBookInfo(ctx, query.BookID)
 	if err != nil {
@@ -43,6 +50,9 @@ func (m *moderationBookService) GetBookInfo(ctx context.Context, query GetBookIn
 
 // GetBookLog implements ModerationBookService.
 func (m *moderationBookService) GetBookLog(ctx context.Context, query GetBookLogQuery) (BookLogResult, error) {
+	if err := m.authorize(ctx, query.ActorUserID); err != nil {
+		return BookLogResult{}, err
+	}
 	queries := store.New(m.db)
 
 	var (
@@ -119,6 +129,9 @@ func (m *moderationBookService) BanBook(ctx context.Context, cmd ModerationPerfo
 	if err := cmd.Validate(); err != nil {
 		return err
 	}
+	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
+		return err
+	}
 
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
@@ -171,22 +184,32 @@ func (m *moderationBookService) PermanentlyRemoveBook(ctx context.Context, cmd M
 	if err := cmd.Validate(); err != nil {
 		return err
 	}
+	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
+		return err
+	}
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
 		return apperror.WrapUnexpectedDBError(err)
 	}
 	queries := store.New(m.db).WithTx(tx)
 
-	err = queries.ModSetBookBanned(ctx, store.ModSetBookBannedParams{
-		ID:       cmd.BookID,
-		IsBanned: true,
-	})
+	// The system user owns anonymized books after permanent removal.
+	systemUser, err := queries.User_FindByLogin(ctx, "system")
+	if err != nil {
+		rollbackTx(ctx, tx)
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if UserRole(systemUser.Role) != RoleSystem {
+		rollbackTx(ctx, tx)
+		return ErrModerationForbidden
+	}
+	err = queries.ModPermRemoveBook(ctx, store.ModPermRemoveBookParams{ID: cmd.BookID, AuthorUserID: systemUser.ID})
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
-	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeBan, cmd.Reason, cmd.ActorUserID)
+	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypePermRemoval, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
 		rollbackTx(ctx, tx)
 		return err
@@ -204,6 +227,9 @@ func (m *moderationBookService) PermanentlyRemoveBook(ctx context.Context, cmd M
 // ShadowBanBook implements ModerationBookService.
 func (m *moderationBookService) ShadowBanBook(ctx context.Context, cmd ModerationPerformBookActionCommand) error {
 	if err := cmd.Validate(); err != nil {
+		return err
+	}
+	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
 		return err
 	}
 
@@ -242,6 +268,9 @@ func (m *moderationBookService) UnBanBook(ctx context.Context, cmd ModerationPer
 	if err := cmd.Validate(); err != nil {
 		return err
 	}
+	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
+		return err
+	}
 
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
@@ -277,6 +306,9 @@ func (m *moderationBookService) UnShadowBanBook(ctx context.Context, cmd Moderat
 	if err := cmd.Validate(); err != nil {
 		return err
 	}
+	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
+		return err
+	}
 
 	tx, err := m.db.Begin(ctx)
 	if err != nil {
@@ -307,6 +339,6 @@ func (m *moderationBookService) UnShadowBanBook(ctx context.Context, cmd Moderat
 	return nil
 }
 
-func NewModerationBookService(db DB) ModerationBookService {
-	return &moderationBookService{db: db}
+func NewModerationBookService(db DB, auth ModerationAuthorizer) ModerationBookService {
+	return &moderationBookService{db: db, auth: auth}
 }

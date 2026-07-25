@@ -53,6 +53,7 @@ type CommentDto struct {
 	Likes          int64               `json:"likes"`
 	LikesUpdatedAt time.Time           `json:"likesUpdatedAt"`
 	Subcomments    int                 `json:"subcomments"`
+	Deleted        bool                `json:"deleted"`
 }
 
 func (c CommentDto) RealLikesCount() int64 {

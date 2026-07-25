@@ -69,12 +69,12 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 		rows = rows[:query.Limit]
 	}
 	result.Comments = MapSlice(rows, func(r store.Comment_GetByChapterRow) CommentDto {
-		return CommentDto{
+		return moderationSafeComment(CommentDto{
 			ID: r.ID, Content: r.Content,
 			User:      CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName, Avatar: getUserAvatar(r.UserName, 84)},
 			CreatedAt: timeDbToDomain(r.CreatedAt), UpdatedAt: timeNullableDbToDomain(r.UpdatedAt),
 			Subcomments: int(r.Subcomments), Likes: int64(r.Likes), LikesUpdatedAt: timeDbToDomain(r.LikesRecalculatedAt),
-		}
+		}, r.DeletedAt.Valid)
 	})
 
 	if len(result.Comments) == 0 {
@@ -111,7 +111,7 @@ func (c *commentsService) GetReplies(ctx context.Context, query GetCommentReplie
 			return
 		}
 		result.Comments = MapSlice(rows, func(r store.Comment_GetChildCommentsRow) CommentDto {
-			return CommentDto{
+			return moderationSafeComment(CommentDto{
 				ID:             r.ID,
 				Content:        r.Content,
 				User:           CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName, Avatar: getUserAvatar(r.UserName, 84)},
@@ -120,7 +120,7 @@ func (c *commentsService) GetReplies(ctx context.Context, query GetCommentReplie
 				Subcomments:    int(r.Subcomments),
 				Likes:          int64(r.Likes),
 				LikesUpdatedAt: timeDbToDomain(r.LikesRecalculatedAt),
-			}
+			}, r.DeletedAt.Valid)
 		})
 	} else {
 		ts := time.Unix(int64(query.Cursor), 0)
@@ -136,14 +136,14 @@ func (c *commentsService) GetReplies(ctx context.Context, query GetCommentReplie
 			return
 		}
 		result.Comments = MapSlice(rows, func(r store.Comment_GetChildCommentsAfterRow) CommentDto {
-			return CommentDto{
+			return moderationSafeComment(CommentDto{
 				ID:          r.ID,
 				Content:     r.Content,
 				User:        CommentUserDto{ID: uuidDbToDomain(r.UserID), Name: r.UserName, Avatar: getUserAvatar(r.UserName, 84)},
 				CreatedAt:   timeDbToDomain(r.CreatedAt),
 				UpdatedAt:   timeNullableDbToDomain(r.UpdatedAt),
 				Subcomments: int(r.Subcomments),
-			}
+			}, r.DeletedAt.Valid)
 		})
 	}
 
@@ -247,12 +247,21 @@ func (c *commentsService) getByID(ctx context.Context, id int64, userID uuid.UUI
 		Likes:          int64(row.Likes),
 		LikesUpdatedAt: timeDbToDomain(row.LikesRecalculatedAt),
 	}
+	dto = moderationSafeComment(dto, row.DeletedAt.Valid)
 
 	if len(likedComments) > 0 {
 		dto.LikedAt = Value(timeDbToDomain(likedComments[0].LikedAt))
 	}
 
 	return dto, nil
+}
+
+func moderationSafeComment(dto CommentDto, deleted bool) CommentDto {
+	dto.Deleted = deleted
+	if deleted {
+		dto.Content = ""
+	}
+	return dto
 }
 
 func (c *commentsService) LikeComment(ctx context.Context, command LikeCommentCommand) (bool, error) {

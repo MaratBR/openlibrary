@@ -11,6 +11,7 @@ type DocProps struct {
     AppendToHead templ.Component
     BodyClasses string
     BodyAttributes templ.Attributes
+    UseSurfaceColorForBody bool
 }
 
 templ Doc(
@@ -74,7 +75,11 @@ templ Doc(
         @ServerData()
     </head>
     {{
-        bodyClasses := "m-0 font-text bg-background text-foreground min-h-screen"
+        bodyBgClass := "bg-background"
+        if props.UseSurfaceColorForBody {
+            bodyBgClass = "bg-surface"
+        }
+        bodyClasses := bodyBgClass + " m-0 font-text text-foreground min-h-screen"
     }}
     <body 
         if props.BodyAttributes != nil {

@@ -5,6 +5,10 @@ import UserMenuIsland from '@/islands/header-user-menu'
 
 Islands.register('bookmanager/BM', () => import('@/islands/bookmanager').then((r) => r.BMIsland))
 
+Islands.register('moderation/Portal', () =>
+  import('@/islands/moderation').then((r) => r.ModerationPortalIsland),
+)
+
 Islands.register('search/filters', () => Promise.resolve(SearchFiltersIsland))
 
 Islands.register('book-card-preview', () => Promise.resolve(BookCardPreviewIsland))

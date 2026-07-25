@@ -454,6 +454,16 @@ type Comment struct {
 	LikesRecalculatedAt pgtype.Timestamptz
 }
 
+type CommentLog struct {
+	ID          int64
+	Time        pgtype.Timestamptz
+	CommentID   int64
+	ActionType  string
+	Payload     []byte
+	ActorUserID pgtype.UUID
+	Reason      string
+}
+
 type CommentsLiked struct {
 	CommentID int64
 	UserID    pgtype.UUID
@@ -612,8 +622,10 @@ type UserLog struct {
 	ID          int64
 	UserID      pgtype.UUID
 	ActorUserID pgtype.UUID
-	ActionType  UserActionType
+	ActionType  string
 	Payload     []byte
+	Time        pgtype.Timestamptz
+	Reason      string
 }
 
 type UserReaderPreference struct {

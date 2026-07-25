@@ -1,12 +1,14 @@
 package public
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
+	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -20,9 +22,7 @@ func newHomeController(viewsService analytics.ViewsService, bookService app.Book
 }
 
 func (c *homeController) Register(r chi.Router) {
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		olhttp.WriteTemplate(w, r.Context(), templates.Home())
-	})
+	r.Get("/", c.homePage)
 
 	r.Get("/cats", func(w http.ResponseWriter, r *http.Request) {
 		olhttp.WriteTemplate(w, r.Context(), templates.Cats())
@@ -31,18 +31,29 @@ func (c *homeController) Register(r chi.Router) {
 	r.Get("/ui-demo", func(w http.ResponseWriter, r *http.Request) {
 		olhttp.WriteTemplate(w, r.Context(), templates.UIDemo())
 	})
-
-	r.Get("/__fragment/most-viewed-books", c.getMostViewedBooksWidget)
 }
 
-func (c *homeController) getMostViewedBooksWidget(w http.ResponseWriter, r *http.Request) {
-	period, _ := olhttp.URLQueryParamInt64(r, "period")
-	_, _ = olhttp.URLQueryParamInt64(r, "count")
+func (c *homeController) homePage(w http.ResponseWriter, r *http.Request) {
+	olhttp.WriteTemplate(w, r.Context(), templates.Home([]templ.Component{
+		templates.Home_MainHeroSection(),
+		c.renderMostViewedWidget(r.Context()),
+	}))
+}
 
-	bookViewData, err := c.viewsService.GetMostViewedBooks(r.Context(), analytics.AnalyticsPeriod(period))
+func (c *homeController) renderMostViewedWidget(ctx context.Context) templ.Component {
+	period := analytics.ANALYTICS_PERIOD_TOTAL
+	books, views, err := c.getMostViewedBooks(ctx, period)
 	if err != nil {
-		writeApplicationError(w, r, err)
-		return
+		return templates.Home_WidgetError(err)
+	}
+
+	return templates.Home_MostViewedBooks(analytics.ANALYTICS_PERIOD_TOTAL, books, views)
+}
+
+func (c *homeController) getMostViewedBooks(ctx context.Context, period analytics.AnalyticsPeriod) ([]app.BookListDto, map[int64]int64, error) {
+	bookViewData, err := c.viewsService.GetMostViewedBooks(ctx, period)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	views := make(map[int64]int64)
@@ -53,11 +64,10 @@ func (c *homeController) getMostViewedBooksWidget(w http.ResponseWriter, r *http
 		views[entry.BookID] = entry.Views
 	}
 
-	books, err := c.bookService.GetBooksById(r.Context(), bookIds)
+	books, err := c.bookService.GetBooksById(ctx, bookIds)
 	if err != nil {
-		writeApplicationError(w, r, err)
-		return
+		return nil, nil, err
 	}
 
-	olhttp.WriteTemplate(w, r.Context(), templates.HomeBooksListFragment(analytics.AnalyticsPeriod(period), books, views))
+	return books, views, nil
 }

@@ -31,7 +31,11 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 		NewReaderPreferencesService,
 		NewCollectionsService,
 		NewSessionService,
+		NewModerationAuthorizer,
 		NewModerationBookService,
+		NewContentModerationRepository,
+		NewContentModerationService,
+		NewLoginHistoryService,
 		NewTagsService,
 
 		// alias for DB -> DBTX

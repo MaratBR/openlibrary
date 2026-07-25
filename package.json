@@ -23,7 +23,6 @@
     "@unocss/preset-wind4": "^66.5.10",
     "@vitejs/plugin-react": "^6.0.3",
     "autoprefixer": "^10.4.22",
-    "chokidar": "^4.0.3",
     "esbuild": "^0.25.12",
     "fast-glob": "^3.3.3",
     "oxlint": "^1.73.0",

@@ -44,7 +44,7 @@ func (c *cachedSessionService) Renew(ctx context.Context, command RenewSessionCo
 
 // TerminateAllByUserID implements SessionService.
 func (c *cachedSessionService) TerminateAllByUserID(ctx context.Context, userID uuid.UUID) error {
-	err := c.TerminateAllByUserID(ctx, userID)
+	err := c.inner.TerminateAllByUserID(ctx, userID)
 	c.invalidateByUserID(ctx, userID)
 	return err
 }
