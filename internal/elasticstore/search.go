@@ -26,6 +26,7 @@ func (r Range) Has() bool {
 
 type SearchRequest struct {
 	Query           string
+	Sort            SearchSort
 	IncludeUsers    []string
 	ExcludeUsers    []string
 	IncludeTags     []int64
@@ -36,6 +37,27 @@ type SearchRequest struct {
 	Page            int32
 	PageSize        int32
 	IncludeHidden   bool
+}
+
+type SearchSort string
+
+const (
+	SearchSortChapters        SearchSort = "chapters"
+	SearchSortWords           SearchSort = "words"
+	SearchSortWordsPerChapter SearchSort = "words-per-chapter"
+)
+
+func (s SearchSort) field() string {
+	switch s {
+	case SearchSortChapters:
+		return "chapters"
+	case SearchSortWords:
+		return "words"
+	case SearchSortWordsPerChapter:
+		return "wordsPerChapter"
+	default:
+		return ""
+	}
 }
 
 type SearchRow struct {
@@ -196,6 +218,11 @@ func Search(
 		},
 		From: from,
 		Size: size,
+	}
+	if sortField := req.Sort.field(); sortField != "" {
+		searchReqBody.Sort = []map[string]SortOption{{
+			sortField: {Order: "desc"},
+		}}
 	}
 	searchReqBodyBytes, err := json.Marshal(searchReqBody)
 	if err != nil {

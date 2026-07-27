@@ -87,6 +87,8 @@ func writeInt32Range(w io.Writer, r Int32Range) {
 
 func getSearchRequestCacheKey(req *BookSearchQuery) string {
 	h := sha512.New()
+	io.WriteString(h, string(req.Sort))
+	h.Write([]byte{0})
 	writeInt32Range(h, req.Words)
 	writeInt32Range(h, req.WordsPerChapter)
 	writeInt32Range(h, req.Chapters)

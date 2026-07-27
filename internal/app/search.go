@@ -55,10 +55,52 @@ type Int32Range struct {
 	Max Int32 `json:"max"`
 }
 
+type BookSearchSort string
+
+const (
+	BookSearchSortRelevance       BookSearchSort = ""
+	BookSearchSortChapters        BookSearchSort = "chapters"
+	BookSearchSortWords           BookSearchSort = "words"
+	BookSearchSortWordsPerChapter BookSearchSort = "words-per-chapter"
+	BookSearchSortLastUpdated     BookSearchSort = "last-updated"
+	BookSearchSortCreatedAt       BookSearchSort = "created-at"
+	BookSearchSortReviews         BookSearchSort = "reviews"
+	BookSearchSortReaders         BookSearchSort = "readers"
+	BookSearchSortWeightedRating  BookSearchSort = "weighted-rating"
+	BookSearchSortRandom          BookSearchSort = "random"
+)
+
+func ParseBookSearchSort(value string) BookSearchSort {
+	switch BookSearchSort(value) {
+	case BookSearchSortChapters,
+		BookSearchSortWords,
+		BookSearchSortWordsPerChapter,
+		BookSearchSortLastUpdated,
+		BookSearchSortCreatedAt,
+		BookSearchSortReviews,
+		BookSearchSortReaders,
+		BookSearchSortWeightedRating,
+		BookSearchSortRandom:
+		return BookSearchSort(value)
+	default:
+		return BookSearchSortRelevance
+	}
+}
+
+func (s BookSearchSort) IsImplemented() bool {
+	switch s {
+	case BookSearchSortRelevance, BookSearchSortChapters, BookSearchSortWords, BookSearchSortWordsPerChapter:
+		return true
+	default:
+		return false
+	}
+}
+
 type BookSearchQuery struct {
 	UserID uuid.NullUUID
 
 	Query string
+	Sort  BookSearchSort
 
 	Words           Int32Range
 	Chapters        Int32Range
@@ -146,7 +188,8 @@ type UserFromSearchRequestDto struct {
 }
 
 type DetailedBookSearchQuery struct {
-	Query string `json:"query"`
+	Query string         `json:"query"`
+	Sort  BookSearchSort `json:"sort"`
 
 	Words           Int32Range `json:"words"`
 	Chapters        Int32Range `json:"chapters"`

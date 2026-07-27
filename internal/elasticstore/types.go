@@ -10,9 +10,14 @@ type Query struct {
 }
 
 type SearchReqBody struct {
-	Query Query `json:"query"`
-	From  int   `json:"from,omitempty"`
-	Size  int   `json:"size,omitempty"`
+	Query Query                   `json:"query"`
+	From  int                     `json:"from,omitempty"`
+	Size  int                     `json:"size,omitempty"`
+	Sort  []map[string]SortOption `json:"sort,omitempty"`
+}
+
+type SortOption struct {
+	Order string `json:"order"`
 }
 
 type TermQuery struct {

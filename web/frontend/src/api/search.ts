@@ -11,7 +11,20 @@ type UserDto = {
 
 type NumberRange = { min: number | null; max: number | null }
 
+export type BookSearchSort =
+  | ''
+  | 'chapters'
+  | 'words'
+  | 'words-per-chapter'
+  | 'last-updated'
+  | 'created-at'
+  | 'reviews'
+  | 'readers'
+  | 'weighted-rating'
+  | 'random'
+
 export type DetailedBookSearchQuery = {
+  sort: BookSearchSort
   words: NumberRange
   chapters: NumberRange
   wordsPerChapter: NumberRange
@@ -28,6 +41,7 @@ export type DetailedBookSearchQuery = {
 
 export function getDefaultDetailedBookSearchQuery(): DetailedBookSearchQuery {
   return {
+    sort: '',
     words: { min: null, max: null },
     chapters: { min: null, max: null },
     wordsPerChapter: { min: null, max: null },
@@ -45,6 +59,8 @@ export function getDefaultDetailedBookSearchQuery(): DetailedBookSearchQuery {
 
 export function getQueryParams(query: DetailedBookSearchQuery): URLSearchParams {
   const params = new URLSearchParams()
+
+  if (query.sort) params.set('sort', query.sort)
 
   if (query.words.min !== null) params.set('w.min', query.words.min.toString())
   if (query.words.max !== null) params.set('w.max', query.words.max.toString())

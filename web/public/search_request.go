@@ -10,6 +10,7 @@ import (
 
 type booksSearchRequest struct {
 	Query string
+	Sort  app.BookSearchSort
 
 	IncludeUsers []uuid.UUID
 	ExcludeUsers []uuid.UUID
@@ -32,6 +33,7 @@ func getBooksSearchRequest(r *http.Request, opts *bookSearchRequestParsingOption
 	source := r.URL.Query()
 
 	search.Query = source.Get("q")
+	search.Sort = app.ParseBookSearchSort(source.Get("sort"))
 
 	search.Words = olhttp.GetInt32RangeFromQuery(source, "w")
 	search.Chapters = olhttp.GetInt32RangeFromQuery(source, "c")

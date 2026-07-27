@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"log/slog"
 	"math"
 	"time"
 
@@ -27,6 +28,7 @@ type searchService struct {
 func (s *searchService) ExplainSearchQuery(ctx context.Context, req BookSearchQuery) (DetailedBookSearchQuery, error) {
 	detailed := DetailedBookSearchQuery{
 		Query:           req.Query,
+		Sort:            req.Sort,
 		Words:           req.Words,
 		WordsPerChapter: req.WordsPerChapter,
 		Chapters:        req.Chapters,
@@ -110,9 +112,14 @@ func (s *searchService) ExplainSearchQuery(ctx context.Context, req BookSearchQu
 
 // SearchBooks implements SearchService.
 func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*BookSearchResult, error) {
+	if !req.Sort.IsImplemented() {
+		slog.WarnContext(ctx, "search sort is not implemented; using relevance order", "sort", req.Sort)
+	}
+
 	// convert to elastic request
 	esReq := elasticstore.SearchRequest{
 		Query:        req.Query,
+		Sort:         elasticstore.SearchSort(req.Sort),
 		IncludeUsers: MapSlice(req.IncludeUsers, func(id uuid.UUID) string { return id.String() }),
 		ExcludeUsers: MapSlice(req.ExcludeUsers, func(id uuid.UUID) string { return id.String() }),
 		IncludeTags:  req.IncludeTags,

@@ -54,6 +54,7 @@ func (c *searchController) search(w http.ResponseWriter, r *http.Request) {
 		UserID: auth.GetNullableUserID(r.Context()),
 
 		Query: search.Query,
+		Sort:  search.Sort,
 
 		IncludeUsers:    search.IncludeUsers,
 		ExcludeUsers:    search.ExcludeUsers,

@@ -43,6 +43,31 @@ export default function SearchFilters({ data }: ReactIslandProps) {
   return (
     <form onSubmit={handleSubmit}>
       <div className="mb-4">
+        <label htmlFor="search-sort" className="label font-semibold mb-2 text-md">
+          {window._('search.sortBy')}
+        </label>
+        <select
+          id="search-sort"
+          name="sort"
+          className="input w-full"
+          value={filters.sort}
+          onChange={(event) =>
+            setFilters({ ...filters, sort: event.target.value as DetailedBookSearchQuery['sort'] })
+          }
+        >
+          <option value="">{window._('search.sortRelevance')}</option>
+          <option value="chapters">{window._('search.sortChapters')}</option>
+          <option value="words">{window._('search.sortWords')}</option>
+          <option value="words-per-chapter">{window._('search.sortWordsPerChapter')}</option>
+          <option value="last-updated">{window._('search.sortLastUpdated')}</option>
+          <option value="created-at">{window._('search.sortCreatedAt')}</option>
+          <option value="reviews">{window._('search.sortReviews')}</option>
+          <option value="readers">{window._('search.sortReaders')}</option>
+          <option value="weighted-rating">{window._('search.sortWeightedRating')}</option>
+          <option value="random">{window._('search.sortRandom')}</option>
+        </select>
+      </div>
+      <div className="mb-4">
         <label className="label font-semibold mb-2 text-md">{window._('search.words')}</label>
         <RangeInput
           disableNegative
