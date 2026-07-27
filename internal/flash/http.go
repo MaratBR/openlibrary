@@ -33,7 +33,7 @@ func MakeMiddleware(log *zap.SugaredLogger) Middleware {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			s, ok := session.Get(r)
 			if !ok {
-				log.Warn("could not load flash messages to session: session is not attached to request context")
+				// no session - no flash messages
 				next.ServeHTTP(w, r)
 				return
 			}
