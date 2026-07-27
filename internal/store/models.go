@@ -150,6 +150,140 @@ func (ns NullCensorMode) Value() (driver.Value, error) {
 	return string(ns.CensorMode), nil
 }
 
+type OlAnalyticsBucketPeriodType string
+
+const (
+	OlAnalyticsBucketPeriodTypeAll   OlAnalyticsBucketPeriodType = "all"
+	OlAnalyticsBucketPeriodTypeYear  OlAnalyticsBucketPeriodType = "year"
+	OlAnalyticsBucketPeriodTypeMonth OlAnalyticsBucketPeriodType = "month"
+	OlAnalyticsBucketPeriodTypeWeek  OlAnalyticsBucketPeriodType = "week"
+	OlAnalyticsBucketPeriodTypeDay   OlAnalyticsBucketPeriodType = "day"
+)
+
+func (e *OlAnalyticsBucketPeriodType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OlAnalyticsBucketPeriodType(s)
+	case string:
+		*e = OlAnalyticsBucketPeriodType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OlAnalyticsBucketPeriodType: %T", src)
+	}
+	return nil
+}
+
+type NullOlAnalyticsBucketPeriodType struct {
+	OlAnalyticsBucketPeriodType OlAnalyticsBucketPeriodType
+	Valid                       bool // Valid is true if OlAnalyticsBucketPeriodType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOlAnalyticsBucketPeriodType) Scan(value interface{}) error {
+	if value == nil {
+		ns.OlAnalyticsBucketPeriodType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OlAnalyticsBucketPeriodType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOlAnalyticsBucketPeriodType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OlAnalyticsBucketPeriodType), nil
+}
+
+type OlAnalyticsCounterType string
+
+const (
+	OlAnalyticsCounterTypeViews        OlAnalyticsCounterType = "views"
+	OlAnalyticsCounterTypeSearchClicks OlAnalyticsCounterType = "search_clicks"
+)
+
+func (e *OlAnalyticsCounterType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OlAnalyticsCounterType(s)
+	case string:
+		*e = OlAnalyticsCounterType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OlAnalyticsCounterType: %T", src)
+	}
+	return nil
+}
+
+type NullOlAnalyticsCounterType struct {
+	OlAnalyticsCounterType OlAnalyticsCounterType
+	Valid                  bool // Valid is true if OlAnalyticsCounterType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOlAnalyticsCounterType) Scan(value interface{}) error {
+	if value == nil {
+		ns.OlAnalyticsCounterType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OlAnalyticsCounterType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOlAnalyticsCounterType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OlAnalyticsCounterType), nil
+}
+
+type OlAnalyticsInteractionEventType string
+
+const (
+	OlAnalyticsInteractionEventTypeBookView        OlAnalyticsInteractionEventType = "book_view"
+	OlAnalyticsInteractionEventTypeChapterView     OlAnalyticsInteractionEventType = "chapter_view"
+	OlAnalyticsInteractionEventTypeStartedReading  OlAnalyticsInteractionEventType = "started_reading"
+	OlAnalyticsInteractionEventTypeCompleted       OlAnalyticsInteractionEventType = "completed"
+	OlAnalyticsInteractionEventTypeDropped         OlAnalyticsInteractionEventType = "dropped"
+	OlAnalyticsInteractionEventTypeFinishedChapter OlAnalyticsInteractionEventType = "finished_chapter"
+	OlAnalyticsInteractionEventTypeSearchClick     OlAnalyticsInteractionEventType = "search_click"
+)
+
+func (e *OlAnalyticsInteractionEventType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OlAnalyticsInteractionEventType(s)
+	case string:
+		*e = OlAnalyticsInteractionEventType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OlAnalyticsInteractionEventType: %T", src)
+	}
+	return nil
+}
+
+type NullOlAnalyticsInteractionEventType struct {
+	OlAnalyticsInteractionEventType OlAnalyticsInteractionEventType
+	Valid                           bool // Valid is true if OlAnalyticsInteractionEventType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOlAnalyticsInteractionEventType) Scan(value interface{}) error {
+	if value == nil {
+		ns.OlAnalyticsInteractionEventType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OlAnalyticsInteractionEventType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOlAnalyticsInteractionEventType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OlAnalyticsInteractionEventType), nil
+}
+
 type ReadingListStatus string
 
 const (
@@ -514,12 +648,30 @@ type EmailVerification struct {
 	ValidThrough         pgtype.Timestamptz
 }
 
-type OlAnalyticsViewCounter struct {
-	Period     int32
-	EntityType int16
-	EntityID   int64
-	BookID     int64
-	ViewCount  int64
+type OlAnalyticsBucketCounter struct {
+	BookID      int64
+	Metric      OlAnalyticsCounterType
+	BucketType  OlAnalyticsBucketPeriodType
+	BucketStart pgtype.Timestamptz
+	Value       int64
+	UpdatedAt   pgtype.Timestamptz
+}
+
+type OlAnalyticsBucketPopularity struct {
+	BookID      int64
+	BucketType  OlAnalyticsBucketPeriodType
+	BucketStart pgtype.Timestamptz
+	Value       float64
+	UpdatedAt   pgtype.Timestamptz
+}
+
+type OlAnalyticsInteractionEvent struct {
+	ID        int64
+	UserKey   string
+	BookID    int64
+	EventType OlAnalyticsInteractionEventType
+	Value     float64
+	CreatedAt pgtype.Timestamptz
 }
 
 type Rating struct {

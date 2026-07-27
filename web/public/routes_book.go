@@ -18,15 +18,15 @@ type bookController struct {
 	service            app.BookService
 	reviewService      app.ReviewsService
 	readingListService app.ReadingListService
-	viewsService       analytics.ViewsService
+	eventSink          analytics.EventSink
 }
 
-func newBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService, analytics analytics.ViewsService) *bookController {
+func newBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService, eventSink analytics.EventSink) *bookController {
 	return &bookController{
 		service:            service,
 		reviewService:      reviewService,
 		readingListService: readingListService,
-		viewsService:       analytics,
+		eventSink:          eventSink,
 	}
 }
 
@@ -101,9 +101,7 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 		reviews = reviewsResult.Reviews
 	}
 
-	b.viewsService.IncrBookView(r.Context(), bookID, webinfra.GetAnalyticsViewMetadata(r))
-
-	views, err := b.viewsService.GetBookViews(r.Context(), bookID)
+	b.eventSink.SubmitEvent(r.Context(), analytics.NewBookViewEvent(bookID, webinfra.GetAnalyticsViewMetadata(r)))
 
 	showAdultWarning := false
 
@@ -113,7 +111,7 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 
 	templates.BookPage(
 		book,
-		views,
+		analytics.TODO_VIEWS(),
 		ratingAndReview,
 		readingListStatus,
 		reviews,

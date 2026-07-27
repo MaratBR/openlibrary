@@ -9,246 +9,259 @@ import (
 	"context"
 )
 
-const analytics_GetChapterViews = `-- name: Analytics_GetChapterViews :many
-select "period", sum(view_count) as agg_view_count
-from ol_analytics.view_counter
-where
-    book_id = $1 and entity_type = 1 and (
-        "period" = 0 or
-        "period" = $2 or
-        "period" = $3 or
-        "period" = $4 or
-        "period" = $5 or
-        "period" = $6
+const analytics_IncrementBucketCounters = `-- name: Analytics_IncrementBucketCounters :exec
+WITH 
+    input_rows AS (
+        SELECT
+            ($1::bigint[])[i] AS book_id,
+            ($2::ol_analytics.counter_type[])[i] AS metric,
+            ($3::bigint[])[i] AS increment_value
+        FROM generate_subscripts(
+            $1::bigint[],
+            1
+        ) AS indexes(i)
+    ),
+    bucket_definitions AS (
+        SELECT
+            'all'::ol_analytics.bucket_period_type AS bucket_type,
+            TIMESTAMPTZ '1970-01-01 00:00:00+00' AS bucket_start
+
+        UNION ALL
+
+        SELECT
+            'year'::ol_analytics.bucket_period_type,
+            date_trunc('year', now(), 'UTC')
+
+        UNION ALL
+
+        SELECT
+            'month'::ol_analytics.bucket_period_type,
+            date_trunc('month', now(), 'UTC')
+
+        UNION ALL
+
+        SELECT
+            'week'::ol_analytics.bucket_period_type,
+            date_trunc('week', now(), 'UTC')
+
+        UNION ALL
+
+        SELECT
+            'day'::ol_analytics.bucket_period_type,
+            date_trunc('day', now(), 'UTC')
+    ),
+    aggregated_buckets AS (
+        SELECT
+            input.book_id,
+            input.metric,
+            buckets.bucket_type,
+            buckets.bucket_start,
+            sum(input.increment_value) AS increment_value
+        FROM input_rows AS input
+        CROSS JOIN bucket_definitions AS buckets
+        GROUP BY
+            input.book_id,
+            input.metric,
+            buckets.bucket_type,
+            buckets.bucket_start
     )
-group by entity_id
+INSERT INTO ol_analytics.bucket_counter (
+    book_id,
+    metric,
+    bucket_type,
+    bucket_start,
+    value
+)
+SELECT
+    book_id,
+    metric,
+    bucket_type,
+    bucket_start,
+    increment_value
+FROM aggregated_buckets
+ON CONFLICT (
+    book_id,
+    metric,
+    bucket_type,
+    bucket_start
+)
+DO UPDATE SET
+    value = ol_analytics.bucket_counter.value + EXCLUDED.value,
+    updated_at = now()
 `
 
-type Analytics_GetChapterViewsParams struct {
-	BookID      int64
-	YearPeriod  int32
-	MonthPeriod int32
-	WeekPeriod  int32
-	DayPeriod   int32
-	HourPeriod  int32
+type Analytics_IncrementBucketCountersParams struct {
+	BookIds []int64
+	Metrics []OlAnalyticsCounterType
+	Values  []int64
 }
 
-type Analytics_GetChapterViewsRow struct {
-	Period       int32
-	AggViewCount int64
+func (q *Queries) Analytics_IncrementBucketCounters(ctx context.Context, arg Analytics_IncrementBucketCountersParams) error {
+	_, err := q.db.Exec(ctx, analytics_IncrementBucketCounters, arg.BookIds, arg.Metrics, arg.Values)
+	return err
 }
 
-func (q *Queries) Analytics_GetChapterViews(ctx context.Context, arg Analytics_GetChapterViewsParams) ([]Analytics_GetChapterViewsRow, error) {
-	rows, err := q.db.Query(ctx, analytics_GetChapterViews,
-		arg.BookID,
-		arg.YearPeriod,
-		arg.MonthPeriod,
-		arg.WeekPeriod,
-		arg.DayPeriod,
-		arg.HourPeriod,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Analytics_GetChapterViewsRow
-	for rows.Next() {
-		var i Analytics_GetChapterViewsRow
-		if err := rows.Scan(&i.Period, &i.AggViewCount); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const analytics_GetMostViewedBooksByBookViewsOnly = `-- name: Analytics_GetMostViewedBooksByBookViewsOnly :many
-select book_id, view_count
-from ol_analytics.view_counter
-where "period" = $1 and entity_type = 0
-order by view_count desc
-limit $2
-`
-
-type Analytics_GetMostViewedBooksByBookViewsOnlyParams struct {
-	Period int32
-	Limit  int32
-}
-
-type Analytics_GetMostViewedBooksByBookViewsOnlyRow struct {
+type Analytics_InsertEventParams struct {
+	UserKey   string
 	BookID    int64
-	ViewCount int64
+	EventType OlAnalyticsInteractionEventType
+	Value     float64
 }
 
-func (q *Queries) Analytics_GetMostViewedBooksByBookViewsOnly(ctx context.Context, arg Analytics_GetMostViewedBooksByBookViewsOnlyParams) ([]Analytics_GetMostViewedBooksByBookViewsOnlyRow, error) {
-	rows, err := q.db.Query(ctx, analytics_GetMostViewedBooksByBookViewsOnly, arg.Period, arg.Limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Analytics_GetMostViewedBooksByBookViewsOnlyRow
-	for rows.Next() {
-		var i Analytics_GetMostViewedBooksByBookViewsOnlyRow
-		if err := rows.Scan(&i.BookID, &i.ViewCount); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
+const analytics_UpdatePopularity = `-- name: Analytics_UpdatePopularity :exec
+WITH 
+    params AS (
+        SELECT statement_timestamp() AS run_at
+    ),
+    expanded_events AS (
+        SELECT
+            event.book_id,
+            event.event_type,
+            event.created_at,
+            event_bucket.bucket_type,
+            event_bucket.bucket_start
+        FROM ol_analytics.interaction_event AS event
+        CROSS JOIN LATERAL (
+            SELECT
+                'all'::ol_analytics.bucket_period_type AS bucket_type,
+                TIMESTAMPTZ '1970-01-01 00:00:00+00' AS bucket_start
 
-const analytics_GetTotalViews = `-- name: Analytics_GetTotalViews :one
-select view_count
-from ol_analytics.view_counter
-where book_id = $1 and "period" = 0 and entity_type = 0
-`
+            UNION ALL
 
-func (q *Queries) Analytics_GetTotalViews(ctx context.Context, bookID int64) (int64, error) {
-	row := q.db.QueryRow(ctx, analytics_GetTotalViews, bookID)
-	var view_count int64
-	err := row.Scan(&view_count)
-	return view_count, err
-}
+            SELECT
+                'year'::ol_analytics.bucket_period_type,
+                date_trunc('year', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
 
-const analytics_GetViews = `-- name: Analytics_GetViews :many
-select "period", view_count
-from ol_analytics.view_counter
-where 
-    book_id = $1 and entity_type = 0 and (
-        "period" = 0 or
-        "period" = $2 or
-        "period" = $3 or
-        "period" = $4 or
-        "period" = $5 or
-        "period" = $6
+            UNION ALL
+
+            SELECT
+                'month'::ol_analytics.bucket_period_type,
+                date_trunc('month', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+
+            UNION ALL
+
+            SELECT
+                'week'::ol_analytics.bucket_period_type,
+                date_trunc('week', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+
+            UNION ALL
+
+            SELECT
+                'day'::ol_analytics.bucket_period_type,
+                date_trunc('day', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+        ) AS event_bucket
+    ),
+    unprocessed_events AS (
+        SELECT
+            event.book_id, event.event_type, event.created_at, event.bucket_type, event.bucket_start,
+            existing.updated_at AS previous_updated_at
+        FROM expanded_events AS event
+        LEFT JOIN ol_analytics.bucket_popularity AS existing
+            ON existing.book_id = event.book_id
+        AND existing.bucket_type = event.bucket_type
+        AND existing.bucket_start = event.bucket_start
+        WHERE event.created_at > COALESCE(
+            existing.updated_at,
+            TIMESTAMPTZ '-infinity'
+        )
+    ),
+    new_scores AS (
+        SELECT
+            event.book_id,
+            event.bucket_type,
+            event.bucket_start,
+            SUM(
+                CASE event.event_type
+                    WHEN 'book_view'
+                        THEN $2::double precision
+                    WHEN 'search_click'
+                        THEN $3::double precision
+                    WHEN 'chapter_view'
+                        THEN $4::double precision
+                    WHEN 'started_reading'
+                        THEN $5::double precision
+                    WHEN 'completed'
+                        THEN $6::double precision
+                    WHEN 'dropped'
+                        THEN $7::double precision
+                    WHEN 'finished_chapter'
+                        THEN $8::double precision
+                    ELSE 0
+                END
+                *
+                POWER(
+                    0.5,
+                    EXTRACT(
+                        EPOCH FROM params.run_at - event.created_at
+                    )
+                    / $1::double precision
+                )
+            ) AS value
+        FROM unprocessed_events AS event
+        CROSS JOIN params
+        GROUP BY
+            event.book_id,
+            event.bucket_type,
+            event.bucket_start
     )
+INSERT INTO ol_analytics.bucket_popularity (
+    book_id,
+    bucket_type,
+    bucket_start,
+    value,
+    updated_at
+)
+SELECT
+    score.book_id,
+    score.bucket_type,
+    score.bucket_start,
+    score.value,
+    params.run_at
+FROM new_scores AS score
+CROSS JOIN params
+ON CONFLICT (
+    book_id,
+    bucket_type,
+    bucket_start
+)
+DO UPDATE SET
+    value =
+        ol_analytics.bucket_popularity.value
+        * POWER(
+            0.5,
+            EXTRACT(
+                EPOCH FROM (
+                    EXCLUDED.updated_at
+                    - ol_analytics.bucket_popularity.updated_at
+                )
+            )
+            / $1::double precision
+        )
+        + EXCLUDED.value,
+    updated_at = EXCLUDED.updated_at
 `
 
-type Analytics_GetViewsParams struct {
-	BookID      int64
-	YearPeriod  int32
-	MonthPeriod int32
-	WeekPeriod  int32
-	DayPeriod   int32
-	HourPeriod  int32
+type Analytics_UpdatePopularityParams struct {
+	HalfLifeSeconds      float64
+	BookViewScore        float64
+	SearchClickScore     float64
+	ChapterViewScore     float64
+	StartedReadingScore  float64
+	CompletedScore       float64
+	DroppedScore         float64
+	FinishedChapterScore float64
 }
 
-type Analytics_GetViewsRow struct {
-	Period    int32
-	ViewCount int64
-}
-
-func (q *Queries) Analytics_GetViews(ctx context.Context, arg Analytics_GetViewsParams) ([]Analytics_GetViewsRow, error) {
-	rows, err := q.db.Query(ctx, analytics_GetViews,
-		arg.BookID,
-		arg.YearPeriod,
-		arg.MonthPeriod,
-		arg.WeekPeriod,
-		arg.DayPeriod,
-		arg.HourPeriod,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Analytics_GetViewsRow
-	for rows.Next() {
-		var i Analytics_GetViewsRow
-		if err := rows.Scan(&i.Period, &i.ViewCount); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const analytics_GetViews_Multiple = `-- name: Analytics_GetViews_Multiple :many
-select "period", view_count, book_id
-from ol_analytics.view_counter
-where 
-    book_id = ANY($1::int8[]) and entity_type = 0 and (
-        "period" = 0 or
-        "period" = $2 or
-        "period" = $3 or
-        "period" = $4 or
-        "period" = $5 or
-        "period" = $6
-    )
-`
-
-type Analytics_GetViews_MultipleParams struct {
-	BookID      []int64
-	YearPeriod  int32
-	MonthPeriod int32
-	WeekPeriod  int32
-	DayPeriod   int32
-	HourPeriod  int32
-}
-
-type Analytics_GetViews_MultipleRow struct {
-	Period    int32
-	ViewCount int64
-	BookID    int64
-}
-
-func (q *Queries) Analytics_GetViews_Multiple(ctx context.Context, arg Analytics_GetViews_MultipleParams) ([]Analytics_GetViews_MultipleRow, error) {
-	rows, err := q.db.Query(ctx, analytics_GetViews_Multiple,
-		arg.BookID,
-		arg.YearPeriod,
-		arg.MonthPeriod,
-		arg.WeekPeriod,
-		arg.DayPeriod,
-		arg.HourPeriod,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Analytics_GetViews_MultipleRow
-	for rows.Next() {
-		var i Analytics_GetViews_MultipleRow
-		if err := rows.Scan(&i.Period, &i.ViewCount, &i.BookID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const analytics_IncrView = `-- name: Analytics_IncrView :exec
-insert into ol_analytics.view_counter ("period", book_id, view_count, entity_type, entity_id)
-values ($1, $2, $3, $4, $5)
-on conflict (period, entity_type, entity_id)
-do update set view_count = EXCLUDED.view_count + ol_analytics.view_counter.view_count
-`
-
-type Analytics_IncrViewParams struct {
-	Period     int32
-	BookID     int64
-	IncrBy     int64
-	EntityType int16
-	EntityID   int64
-}
-
-func (q *Queries) Analytics_IncrView(ctx context.Context, arg Analytics_IncrViewParams) error {
-	_, err := q.db.Exec(ctx, analytics_IncrView,
-		arg.Period,
-		arg.BookID,
-		arg.IncrBy,
-		arg.EntityType,
-		arg.EntityID,
+func (q *Queries) Analytics_UpdatePopularity(ctx context.Context, arg Analytics_UpdatePopularityParams) error {
+	_, err := q.db.Exec(ctx, analytics_UpdatePopularity,
+		arg.HalfLifeSeconds,
+		arg.BookViewScore,
+		arg.SearchClickScore,
+		arg.ChapterViewScore,
+		arg.StartedReadingScore,
+		arg.CompletedScore,
+		arg.DroppedScore,
+		arg.FinishedChapterScore,
 	)
 	return err
 }

@@ -85,7 +85,7 @@ func (t *tagsPopulateService) importTags(ctx context.Context, dir string) {
 	}
 
 	t.log.Debugf("importing %d tags", len(tagRows))
-	t.log.Debugw("tags for import", "tags", tagRows)
+	// t.log.Debugw("tags for import", "tags", tagRows)
 	err = importTagsBulk(ctx, t.queries, tagRows)
 	if err != nil {
 		t.log.Errorw("importTagsBulk failed during tags population", "err", err)

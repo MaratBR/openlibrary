@@ -65,7 +65,9 @@ func mainServer(
 				webinfra.ProviderMountables(),
 			),
 		),
-		fx.Invoke(postInit, func(*http.Server) {}),
+		fx.Invoke(func(params postInitParams) {
+			go postInit(params)
+		}, func(*http.Server) {}),
 	).Run()
 }
 
@@ -120,31 +122,40 @@ func newRootMux(
 	return r
 }
 
-func postInit(cfg *koanf.Koanf, uploadService *app.UploadService, authService app.AuthService, db app.DB, log *zap.SugaredLogger) {
+type postInitParams struct {
+	fx.In
+	Cfg           *koanf.Koanf
+	UploadService *app.UploadService
+	AuthService   app.AuthService
+	DB            app.DB
+	Log           *zap.SugaredLogger
+}
+
+func postInit(params postInitParams) {
 	time.Sleep(time.Second * 2)
 
-	if cfg.Bool("init.create-default-users") {
+	if params.Cfg.Bool("init.create-default-users") {
 		go func() {
-			err := authService.EnsureAdminUserExists(context.Background())
+			err := params.AuthService.EnsureAdminUserExists(context.Background())
 			if err != nil {
-				log.Errorw("failed to ensure admin user exists", "err", err)
+				params.Log.Errorw("failed to ensure admin user exists", "err", err)
 			}
 		}()
 	}
 
 	go func() {
-		err := uploadService.InitBuckets(context.Background())
+		err := params.UploadService.InitBuckets(context.Background())
 		if err != nil {
-			log.Errorw("failed to make main bucket", "err", err)
+			params.Log.Errorw("failed to make main bucket", "err", err)
 		}
 	}()
 
 	go func() {
 		ip, err := getPublicIP()
 		if err == nil {
-			log.Infow("public ip", "ip", ip)
+			params.Log.Infow("public ip", "ip", ip)
 		} else {
-			log.Errorw("failed to get public ip", "err", err)
+			params.Log.Errorw("failed to get public ip", "err", err)
 		}
 	}()
 

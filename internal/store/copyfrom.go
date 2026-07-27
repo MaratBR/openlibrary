@@ -9,6 +9,41 @@ import (
 	"context"
 )
 
+// iteratorForAnalytics_InsertEvent implements pgx.CopyFromSource.
+type iteratorForAnalytics_InsertEvent struct {
+	rows                 []Analytics_InsertEventParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForAnalytics_InsertEvent) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForAnalytics_InsertEvent) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].UserKey,
+		r.rows[0].BookID,
+		r.rows[0].EventType,
+		r.rows[0].Value,
+	}, nil
+}
+
+func (r iteratorForAnalytics_InsertEvent) Err() error {
+	return nil
+}
+
+func (q *Queries) Analytics_InsertEvent(ctx context.Context, arg []Analytics_InsertEventParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"ol_analytics", "interaction_event"}, []string{"user_key", "book_id", "event_type", "value"}, &iteratorForAnalytics_InsertEvent{rows: arg})
+}
+
 // iteratorForInsertDefinedTagEnMasse implements pgx.CopyFromSource.
 type iteratorForInsertDefinedTagEnMasse struct {
 	rows                 []InsertDefinedTagEnMasseParams

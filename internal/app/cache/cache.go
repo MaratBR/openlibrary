@@ -11,12 +11,6 @@ var (
 	ErrCacheMiss = errors.New("cache miss")
 )
 
-func (c CacheEntry) copyInto(dest *CacheEntry) {
-	dest.Key = c.Key
-	dest.Value = c.Value // shallow copy, probably fine in this case
-	dest.Expiration = c.Expiration
-}
-
 type CacheBackend interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context)

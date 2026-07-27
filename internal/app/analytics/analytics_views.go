@@ -34,6 +34,17 @@ type Views struct {
 	Hour  int64 `json:"hour"`
 }
 
+func TODO_VIEWS() Views {
+	return Views{
+		Total: 1234,
+		Year:  1234,
+		Month: 1234,
+		Week:  1234,
+		Day:   1234,
+		Hour:  1234,
+	}
+}
+
 func CurrentAnalyticsPeriods(now time.Time) AnalyticsPeriods {
 	var (
 		year      int
@@ -79,6 +90,7 @@ func (m ViewMetadata) UniqueID() string {
 	return "unknown"
 }
 
+// Deprecated: use EventSink instead
 type ViewsService interface {
 	IncrBookView(ctx context.Context, bookID int64, meta ViewMetadata) error
 	IncrChapterView(ctx context.Context, bookID, chapterID int64, meta ViewMetadata) error

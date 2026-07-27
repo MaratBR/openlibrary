@@ -7,6 +7,8 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 
+// TODO move style of this page to common? assuming we will even need it?
+
 func genreInitial(name string) string {
 	for _, letter := range name {
 		return strings.ToUpper(string(letter))
