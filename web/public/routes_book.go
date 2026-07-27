@@ -8,25 +8,31 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/MaratBR/openlibrary/web/webinfra"
 	"github.com/go-chi/chi/v5"
 	"github.com/joomcode/errorx"
+	"go.uber.org/zap"
 )
 
 type bookController struct {
-	service            app.BookService
+	bookService        app.BookService
 	reviewService      app.ReviewsService
 	readingListService app.ReadingListService
 	eventSink          analytics.EventSink
+	metricService      analytics.MetricService
+	log                *zap.SugaredLogger
 }
 
-func newBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService, eventSink analytics.EventSink) *bookController {
+func newBookController(service app.BookService, reviewService app.ReviewsService, readingListService app.ReadingListService, eventSink analytics.EventSink, metricService analytics.MetricService, log *zap.SugaredLogger) *bookController {
 	return &bookController{
-		service:            service,
+		bookService:        service,
 		reviewService:      reviewService,
 		readingListService: readingListService,
 		eventSink:          eventSink,
+		metricService:      metricService,
+		log:                log,
 	}
 }
 
@@ -47,7 +53,7 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := auth.GetNullableUserID(r.Context())
-	book, err := b.service.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
+	book, err := b.bookService.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
 	if err != nil {
 		if errorx.IsOfType(err, app.ErrTypeBookNotFound) || errorx.IsOfType(err, app.ErrTypeBookPrivated) {
 			// send 404 page
@@ -109,9 +115,14 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 		showAdultWarning = !canViewAdultContent(r)
 	}
 
+	views, err := b.metricService.GetMetricValue(r.Context(), analytics.MetricViews, book.ID, store.OlAnalyticsBucketPeriodTypeAll)
+	if err != nil {
+		b.log.Error("failed to fetch book views fron analytics", "err", err)
+	}
+
 	templates.BookPage(
 		book,
-		analytics.TODO_VIEWS(),
+		views,
 		ratingAndReview,
 		readingListStatus,
 		reviews,
@@ -128,7 +139,7 @@ func (b *bookController) bookTOC(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chapters, err := b.service.GetBookChapters(r.Context(), app.GetBookChaptersQuery{
+	chapters, err := b.bookService.GetBookChapters(r.Context(), app.GetBookChaptersQuery{
 		ID: bookID,
 	})
 	if err != nil {
@@ -161,7 +172,7 @@ func (b *bookController) bookPreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	book, err := b.service.GetBookDetails(r.Context(), app.GetBookQuery{
+	book, err := b.bookService.GetBookDetails(r.Context(), app.GetBookQuery{
 		ID:          bookID,
 		ActorUserID: auth.GetNullableUserID(r.Context()),
 	})

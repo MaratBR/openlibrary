@@ -9,15 +9,15 @@ func (a *analyticsViewsDummyService) CommitPendingViewsToDB(ctx context.Context)
 }
 
 // GetBookViews implements [ViewsService].
-func (a *analyticsViewsDummyService) GetBookViews(ctx context.Context, bookID int64) (Views, error) {
-	return Views{}, nil
+func (a *analyticsViewsDummyService) GetBookViews(ctx context.Context, bookID int64) (MetricValues, error) {
+	return MetricValues{}, nil
 }
 
 // GetBooksViews implements [ViewsService].
-func (a *analyticsViewsDummyService) GetBooksViews(ctx context.Context, bookIDs []int64) (map[int64]Views, error) {
-	m := make(map[int64]Views)
+func (a *analyticsViewsDummyService) GetBooksViews(ctx context.Context, bookIDs []int64) (map[int64]MetricValues, error) {
+	m := make(map[int64]MetricValues)
 	for _, id := range bookIDs {
-		m[id] = Views{}
+		m[id] = MetricValues{}
 	}
 	return m, nil
 }

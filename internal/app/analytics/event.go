@@ -5,13 +5,19 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/MaratBR/openlibrary/internal/store"
+	"go.uber.org/fx"
+)
+
+type EventType string
+
+const (
+	EventTypeView = "view"
 )
 
 type Event struct {
 	BookID    int64
 	UserKey   string
-	EventType store.OlAnalyticsInteractionEventType
+	EventType EventType
 	Value     float64
 	CreatedAt time.Time
 }
@@ -28,7 +34,7 @@ func NewBookViewEvent(
 		BookID:    bookID,
 		UserKey:   meta.UniqueID(),
 		CreatedAt: time.Now(),
-		EventType: store.OlAnalyticsInteractionEventTypeBookView,
+		EventType: EventTypeView,
 	}
 }
 
@@ -39,3 +45,16 @@ type EventRepository interface {
 type EventSink interface {
 	SubmitEvent(ctx context.Context, event Event)
 }
+
+var eventModule = fx.Module("ol_analytics_events",
+	fx.Provide(
+		newEventRepository,
+		newEventBackgroundService,
+		fx.Private,
+	),
+	fx.Provide(newDedupedEventSink),
+
+	fx.Invoke(
+		func(*eventBackgroundService) {},
+	),
+)

@@ -121,12 +121,12 @@ package analytics
 // 			continue
 // 		}
 
-// 		updateCounter(ctx, queries, periods.Hour, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
-// 		updateCounter(ctx, queries, periods.Day, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
-// 		updateCounter(ctx, queries, periods.Week, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
-// 		updateCounter(ctx, queries, periods.Month, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
-// 		updateCounter(ctx, queries, periods.Year, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
-// 		updateCounter(ctx, queries, ANALYTICS_PERIOD_TOTAL, id, store.ANALYTICS_VIEW_COUNTER_TYPE_BOOK, id, count, a.log)
+// 		updateCounter(ctx, queries, periods.Hour, id, store.ANALYTICS_VIEW_metric_BOOK, id, count, a.log)
+// 		updateCounter(ctx, queries, periods.Day, id, store.ANALYTICS_VIEW_metric_BOOK, id, count, a.log)
+// 		updateCounter(ctx, queries, periods.Week, id, store.ANALYTICS_VIEW_metric_BOOK, id, count, a.log)
+// 		updateCounter(ctx, queries, periods.Month, id, store.ANALYTICS_VIEW_metric_BOOK, id, count, a.log)
+// 		updateCounter(ctx, queries, periods.Year, id, store.ANALYTICS_VIEW_metric_BOOK, id, count, a.log)
+// 		updateCounter(ctx, queries, ANALYTICS_PERIOD_TOTAL, id, store.ANALYTICS_VIEW_metric_BOOK, id, count, a.log)
 // 	}
 // }
 

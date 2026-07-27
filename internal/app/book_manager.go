@@ -67,9 +67,9 @@ type ManagerGetBookQuery_Result struct {
 
 // go2tsdef:generate
 type ManagerBookDto_Stats struct {
-	Views   analytics.Views `json:"views"`
-	Reviews int32           `json:"reviews"`
-	Ratings int32           `json:"ratings"`
+	Views   analytics.MetricValues `json:"views"`
+	Reviews int32                  `json:"reviews"`
+	Ratings int32                  `json:"ratings"`
 }
 
 // go2tsdef:generate

@@ -26,7 +26,7 @@ type bookManagerService struct {
 	usersService       UserService
 	uploadService      *UploadService
 	bookReindexService BookReindexService
-	viewsService       analytics.ViewsService
+	metricService      analytics.MetricService
 }
 
 const (
@@ -73,7 +73,7 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input ManagerGetU
 
 	// load views
 	bookIDs := MapSlice(userBooks, func(b ManagerBookDto) int64 { return b.ID })
-	viewMappings, err := s.viewsService.GetBooksViews(ctx, bookIDs)
+	viewMappings, err := s.metricService.Get(ctx, analytics.MetricViews, bookIDs)
 	if err != nil {
 		return ManagerGetUserBooksQuery_Result{}, err
 	}
@@ -1002,7 +1002,7 @@ func (s *bookManagerService) authorizeChapterEdit(ctx context.Context, userID uu
 	return nil
 }
 
-func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService, bookReindexService BookReindexService, viewsService analytics.ViewsService) BookManagerService {
+func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService, bookReindexService BookReindexService, metricService analytics.MetricService) BookManagerService {
 	return &bookManagerService{
 		queries:            store.New(db),
 		tagsService:        tagsService,
@@ -1010,6 +1010,6 @@ func NewBookManagerService(db DB, tagsService TagsService, uploadService *Upload
 		uploadService:      uploadService,
 		usersService:       usersService,
 		bookReindexService: bookReindexService,
-		viewsService:       viewsService,
+		metricService:      metricService,
 	}
 }

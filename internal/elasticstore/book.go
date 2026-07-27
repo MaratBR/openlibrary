@@ -3,6 +3,7 @@ package elasticstore
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/k3a/html2text"
@@ -21,6 +22,14 @@ type BookIndex struct {
 	WordsPerChapter   int32     `json:"wordsPerChapter"`
 	IsPubliclyVisible bool      `json:"isPubliclyVisible"`
 	IsTrashed         bool      `json:"isTrashed"`
+	CreatedAt         time.Time `json:"createdAt"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+
+	Views          int64   `json:"views"`
+	Popularity     float64 `json:"popularity"`
+	ReadersCount   int64   `json:"readersCount"`
+	ReviewsCount   int64   `json:"reviewsCount"`
+	WeightedRating float64 `json:"weightedRating"`
 }
 
 func (c *BookIndex) Normalize() {

@@ -34,7 +34,7 @@ script replaceURLWith(s string) {
 
 templ BookPage(
     book app.BookDetailsDto,
-    views analytics.Views,
+    views analytics.MetricValue,
     ratingAndReview app.RatingAndReview,
     readingListStatus app.Nullable[app.BookReadingListDto],
     topReviews []app.ReviewDto,
@@ -178,7 +178,7 @@ func convertBookDetailsToAlpineState(book *app.BookDetailsDto, readingList app.N
     return string(bytes)
 }
 
-templ bookRating(book *app.BookDetailsDto, views analytics.Views) {
+templ bookRating(book *app.BookDetailsDto, views analytics.MetricValue) {
     {{ l := i18n.GetLocalizer(ctx) }}
     <div id="rating-card" class="book-page__rating-card">
         <div class="book-page__rating-summary">
@@ -199,7 +199,7 @@ templ bookRating(book *app.BookDetailsDto, views analytics.Views) {
             </span>
             <span class="book-page__stat" title={l.T("book.views")}>
                 <i class="fa-solid fa-eye" aria-hidden="true"></i>
-                <span>{formatInt32(int32(views.Total))}</span>
+                <span>{formatInt32(int32(views.Samples))}</span>
                 <span class="sr-only"> {l.T("book.views")}</span>
             </span>
         </div>

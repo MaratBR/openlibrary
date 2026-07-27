@@ -18,7 +18,7 @@ var (
 )
 
 func WrapUnexpectedAppError(err error) error {
-	return UnexpectedError.New(err.Error())
+	return UnexpectedError.New("%s", err.Error())
 }
 
 func WrapUnexpectedDBError(err error) error {

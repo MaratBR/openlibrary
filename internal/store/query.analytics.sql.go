@@ -9,13 +9,89 @@ import (
 	"context"
 )
 
-const analytics_IncrementBucketCounters = `-- name: Analytics_IncrementBucketCounters :exec
+const analytics_GetMetricValue = `-- name: Analytics_GetMetricValue :one
+select samples_count, value_sum
+from ol_analytics.bucket
+where bucket_type = $1 and book_id = $2 and metric = $3
+`
+
+type Analytics_GetMetricValueParams struct {
+	BucketType OlAnalyticsBucketPeriodType
+	BookID     int64
+	Metric     string
+}
+
+type Analytics_GetMetricValueRow struct {
+	SamplesCount int64
+	ValueSum     float64
+}
+
+func (q *Queries) Analytics_GetMetricValue(ctx context.Context, arg Analytics_GetMetricValueParams) (Analytics_GetMetricValueRow, error) {
+	row := q.db.QueryRow(ctx, analytics_GetMetricValue, arg.BucketType, arg.BookID, arg.Metric)
+	var i Analytics_GetMetricValueRow
+	err := row.Scan(&i.SamplesCount, &i.ValueSum)
+	return i, err
+}
+
+const analytics_GetMetricValues = `-- name: Analytics_GetMetricValues :many
+select book_id, metric, bucket_type, samples_count, value_sum
+from ol_analytics.bucket
+where book_id = ANY($2::int8[]) and metric = $1
+`
+
+type Analytics_GetMetricValuesParams struct {
+	Metric  string
+	BookIds []int64
+}
+
+type Analytics_GetMetricValuesRow struct {
+	BookID       int64
+	Metric       string
+	BucketType   OlAnalyticsBucketPeriodType
+	SamplesCount int64
+	ValueSum     float64
+}
+
+func (q *Queries) Analytics_GetMetricValues(ctx context.Context, arg Analytics_GetMetricValuesParams) ([]Analytics_GetMetricValuesRow, error) {
+	rows, err := q.db.Query(ctx, analytics_GetMetricValues, arg.Metric, arg.BookIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Analytics_GetMetricValuesRow
+	for rows.Next() {
+		var i Analytics_GetMetricValuesRow
+		if err := rows.Scan(
+			&i.BookID,
+			&i.Metric,
+			&i.BucketType,
+			&i.SamplesCount,
+			&i.ValueSum,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+type Analytics_InsertEventParams struct {
+	UserKey   string
+	BookID    int64
+	EventType string
+	Value     float64
+}
+
+const analytics_UpdateMetrics = `-- name: Analytics_UpdateMetrics :exec
 WITH 
     input_rows AS (
         SELECT
             ($1::bigint[])[i] AS book_id,
-            ($2::ol_analytics.counter_type[])[i] AS metric,
-            ($3::bigint[])[i] AS increment_value
+            ($2::text[])[i] AS metric,
+            ($3::double precision[])[i] AS increment_value
         FROM generate_subscripts(
             $1::bigint[],
             1
@@ -65,19 +141,21 @@ WITH
             buckets.bucket_type,
             buckets.bucket_start
     )
-INSERT INTO ol_analytics.bucket_counter (
+INSERT INTO ol_analytics.bucket (
     book_id,
     metric,
     bucket_type,
     bucket_start,
-    value
+    value_sum,
+    samples_count
 )
 SELECT
     book_id,
     metric,
     bucket_type,
     bucket_start,
-    increment_value
+    increment_value,
+    1
 FROM aggregated_buckets
 ON CONFLICT (
     book_id,
@@ -86,26 +164,20 @@ ON CONFLICT (
     bucket_start
 )
 DO UPDATE SET
-    value = ol_analytics.bucket_counter.value + EXCLUDED.value,
+    value = ol_analytics.bucket.value + EXCLUDED.value,
+    samples_count = ol_analytics.bucket.samples_count + 1,
     updated_at = now()
 `
 
-type Analytics_IncrementBucketCountersParams struct {
+type Analytics_UpdateMetricsParams struct {
 	BookIds []int64
-	Metrics []OlAnalyticsCounterType
-	Values  []int64
+	Metrics []string
+	Values  []float64
 }
 
-func (q *Queries) Analytics_IncrementBucketCounters(ctx context.Context, arg Analytics_IncrementBucketCountersParams) error {
-	_, err := q.db.Exec(ctx, analytics_IncrementBucketCounters, arg.BookIds, arg.Metrics, arg.Values)
+func (q *Queries) Analytics_UpdateMetrics(ctx context.Context, arg Analytics_UpdateMetricsParams) error {
+	_, err := q.db.Exec(ctx, analytics_UpdateMetrics, arg.BookIds, arg.Metrics, arg.Values)
 	return err
-}
-
-type Analytics_InsertEventParams struct {
-	UserKey   string
-	BookID    int64
-	EventType OlAnalyticsInteractionEventType
-	Value     float64
 }
 
 const analytics_UpdatePopularity = `-- name: Analytics_UpdatePopularity :exec
@@ -156,7 +228,7 @@ WITH
             event.book_id, event.event_type, event.created_at, event.bucket_type, event.bucket_start,
             existing.updated_at AS previous_updated_at
         FROM expanded_events AS event
-        LEFT JOIN ol_analytics.bucket_popularity AS existing
+        LEFT JOIN ol_analytics.book_popularity_bucket AS existing
             ON existing.book_id = event.book_id
         AND existing.bucket_type = event.bucket_type
         AND existing.bucket_start = event.bucket_start
@@ -204,7 +276,7 @@ WITH
             event.bucket_type,
             event.bucket_start
     )
-INSERT INTO ol_analytics.bucket_popularity (
+INSERT INTO ol_analytics.book_popularity_bucket (
     book_id,
     bucket_type,
     bucket_start,
@@ -226,13 +298,13 @@ ON CONFLICT (
 )
 DO UPDATE SET
     value =
-        ol_analytics.bucket_popularity.value
+        ol_analytics.book_popularity_bucket.value
         * POWER(
             0.5,
             EXTRACT(
                 EPOCH FROM (
                     EXCLUDED.updated_at
-                    - ol_analytics.bucket_popularity.updated_at
+                    - ol_analytics.book_popularity_bucket.updated_at
                 )
             )
             / $1::double precision

@@ -5,23 +5,14 @@ import "go.uber.org/fx"
 var FXModule = fx.Module(
 	"ol_app_analytics",
 
-	fx.Provide(
-		newEventBackgroundService,
-		newEventRepository,
-		fx.Private,
-	),
+	eventModule,
+	atomicModule,
+	metricModule,
 
 	fx.Provide(
 		NewAnalyticsCounters,
 		func() ViewsService {
 			return &analyticsViewsDummyService{}
 		},
-
-		NewAtomic,
-		newDedupedEventSink,
-	),
-
-	fx.Invoke(
-		func(*eventBackgroundService) {},
 	),
 )

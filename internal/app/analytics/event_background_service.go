@@ -52,13 +52,13 @@ loop:
 		case <-stopingCtx.Done():
 			break loop
 		case <-time.After(time.Second * 5):
-			err := svc.flushEvents(stopingCtx)
+			err := svc.flush(stopingCtx)
 			if err != nil {
 				svc.log.Errorw("failed to flush events in eventBackgroundService", "err", err)
 			} else if len(svc.queue) > 0 {
 				svc.log.Debugw("flushed events", "count", len(svc.queue))
 			}
-			svc.queue = svc.queue[:0]
+			svc.clear()
 		}
 
 	}
@@ -66,7 +66,7 @@ loop:
 	svc.wg.Done()
 }
 
-func (svc *eventBackgroundService) flushEvents(ctx context.Context) error {
+func (svc *eventBackgroundService) flush(ctx context.Context) error {
 	if len(svc.queue) == 0 {
 		return nil
 	}
@@ -80,6 +80,13 @@ func (svc *eventBackgroundService) flushEvents(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (svc *eventBackgroundService) clear() {
+	svc.queueMx.Lock()
+	defer svc.queueMx.Unlock()
+	svc.queue = svc.queue[:0]
+
 }
 
 func (svc *eventBackgroundService) stop(ctx context.Context) error {

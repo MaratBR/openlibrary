@@ -23,7 +23,7 @@ func (r *eventRepository) Insert(ctx context.Context, events []Event) error {
 
 	for i, event := range events {
 		rows[i] = store.Analytics_InsertEventParams{
-			EventType: event.EventType,
+			EventType: string(event.EventType),
 			UserKey:   event.UserKey,
 			BookID:    event.BookID,
 			Value:     event.Value,
@@ -37,20 +37,6 @@ func (r *eventRepository) Insert(ctx context.Context, events []Event) error {
 
 	if inserted != int64(len(rows)) {
 		r.log.Warnw("mismatch in number of inserted rows", "inserted", inserted, "rowsCount", len(rows))
-	}
-
-	err = queries.Analytics_UpdatePopularity(ctx, store.Analytics_UpdatePopularityParams{
-		BookViewScore:        1,
-		SearchClickScore:     1,
-		ChapterViewScore:     0.5,
-		StartedReadingScore:  2,
-		CompletedScore:       3,
-		DroppedScore:         -2.5,
-		FinishedChapterScore: 0.3,
-		HalfLifeSeconds:      7 * 24 * 60 * 60,
-	})
-	if err != nil {
-		r.log.Errorw("failed to call Analytics_UpdatePopularity", "err", err)
 	}
 
 	return nil

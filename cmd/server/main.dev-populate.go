@@ -19,7 +19,7 @@ func mainPopulate(config *koanf.Koanf) {
 	tagsService := app.NewTagsService(db)
 	uploadService := app.NewUploadServiceFromApplicationConfig(config)
 	userService := app.NewUserService(db)
-	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService, userService, app.NewDummyBookReindexService(), analytics.NewAnalyticsDummyViewsService())
+	bookManagerService := app.NewBookManagerService(db, tagsService, uploadService, userService, app.NewDummyBookReindexService(), analytics.NewDummyMetricService())
 	reviewsService := app.NewReviewsService(db, userService, app.NewDummyBookBackgroundService())
 	signUpService := app.NewSignUpService(db, config, siteConfig, email.NewBlackhole())
 

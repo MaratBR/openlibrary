@@ -3,13 +3,9 @@ package analytics
 import (
 	"context"
 	"net"
-	"runtime/debug"
-	"sync"
 	"time"
 
 	"github.com/gofrs/uuid"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 type AnalyticsPeriod int32
@@ -25,24 +21,18 @@ type AnalyticsPeriods struct {
 }
 
 // go2tsdef:generate
-type Views struct {
-	Total int64 `json:"total"`
-	Year  int64 `json:"year"`
-	Month int64 `json:"month"`
-	Week  int64 `json:"week"`
-	Day   int64 `json:"day"`
-	Hour  int64 `json:"hour"`
+type MetricValue struct {
+	Samples  int64   `json:"samples"`
+	ValueSum float64 `json:"valueSum"`
 }
 
-func TODO_VIEWS() Views {
-	return Views{
-		Total: 1234,
-		Year:  1234,
-		Month: 1234,
-		Week:  1234,
-		Day:   1234,
-		Hour:  1234,
-	}
+// go2tsdef:generate
+type MetricValues struct {
+	Total MetricValue `json:"total"`
+	Year  MetricValue `json:"year"`
+	Month MetricValue `json:"month"`
+	Week  MetricValue `json:"week"`
+	Day   MetricValue `json:"day"`
 }
 
 func CurrentAnalyticsPeriods(now time.Time) AnalyticsPeriods {
@@ -92,115 +82,5 @@ func (m ViewMetadata) UniqueID() string {
 
 // Deprecated: use EventSink instead
 type ViewsService interface {
-	IncrBookView(ctx context.Context, bookID int64, meta ViewMetadata) error
-	IncrChapterView(ctx context.Context, bookID, chapterID int64, meta ViewMetadata) error
-	GetBookViews(ctx context.Context, bookID int64) (Views, error)
-	GetBooksViews(ctx context.Context, bookIDs []int64) (map[int64]Views, error)
 	GetMostViewedBooks(ctx context.Context, period AnalyticsPeriod) ([]BookViewEntry, error)
-	CommitPendingViewsToDB(ctx context.Context)
-}
-
-type AnalyticsBackgroundService struct {
-	started        bool
-	mx             sync.Mutex
-	analytics      ViewsService
-	stopWg         sync.WaitGroup
-	stopRequested  bool
-	stopCh         chan struct{}
-	nextLaunchTime time.Time
-	parentCtx      context.Context
-	log            *zap.SugaredLogger
-}
-
-func NewAnalyticsBackgroundService(analytics ViewsService, log *zap.SugaredLogger, lc fx.Lifecycle) *AnalyticsBackgroundService {
-	srv := &AnalyticsBackgroundService{analytics: analytics, stopCh: make(chan struct{}), log: log}
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			srv.Start()
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			srv.Stop()
-			return nil
-		},
-	})
-	return srv
-}
-
-func (s *AnalyticsBackgroundService) Start() {
-	s.mx.Lock()
-	defer s.mx.Unlock()
-
-	if s.started {
-		return
-	}
-
-	s.started = true
-	go s.start()
-	s.log.Info("AnalyticsBackgroundService started")
-}
-
-func (s *AnalyticsBackgroundService) Stop() {
-	s.mx.Lock()
-	defer s.mx.Unlock()
-
-	if !s.started {
-		return
-	}
-
-	s.stopRequested = true
-	s.stopCh <- struct{}{}
-	s.stopWg.Wait()
-}
-
-func (s *AnalyticsBackgroundService) start() {
-	s.stopWg.Add(1)
-	defer s.stopWg.Done()
-
-	var cancel context.CancelFunc
-	s.parentCtx, cancel = context.WithCancel(context.Background())
-	defer cancel()
-
-forLoop:
-	for !s.stopRequested {
-		if s.itIsTime() {
-			s.nextLaunchTime = s.calculateNextLaunchTime()
-			s.process()
-		}
-
-		select {
-		case <-time.After(time.Second):
-		case <-s.stopCh:
-			break forLoop
-		}
-	}
-
-	s.log.Info("AnalyticsBackgroundService stopped")
-}
-
-func (s *AnalyticsBackgroundService) process() {
-	defer func() {
-		if rec := recover(); rec != nil {
-			s.log.Error("AnalyticsBackgroundService panicked")
-			debug.PrintStack()
-		}
-	}()
-
-	s.log.Debug("AnalyticsBackgroundService.process")
-	s.analytics.CommitPendingViewsToDB(s.parentCtx)
-}
-
-func (s *AnalyticsBackgroundService) itIsTime() bool {
-	if (s.nextLaunchTime == time.Time{}) {
-		return true
-	}
-
-	now := time.Now()
-	return s.nextLaunchTime.Before(now)
-}
-
-func (s *AnalyticsBackgroundService) calculateNextLaunchTime() time.Time {
-	now := time.Now().UTC()
-	nextHourStart := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, time.UTC).Add(time.Second * 2)
-	return nextHourStart
 }

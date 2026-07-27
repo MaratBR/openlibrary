@@ -26,7 +26,6 @@ type bookReindexService struct {
 }
 
 func NewBookFullReindexService(db store.DBTX, osClient *opensearchapi.Client, log *zap.SugaredLogger) BookReindexService {
-
 	return &bookReindexService{db: db, osClient: osClient, log: log}
 }
 
@@ -75,6 +74,16 @@ func (s *bookReindexService) Reindex(ctx context.Context, id int64) error {
 		WordsPerChapter: int32(getWordsPerChapter(
 			int(book.Words),
 			int(book.Chapters))),
+		IsPubliclyVisible: book.IsPubliclyVisible,
+		IsTrashed:         book.IsTrashed,
+		CreatedAt:         timeDbToDomain(book.CreatedAt),
+		UpdatedAt:         timeDbToDomain(book.CreatedAt), // TODO implement this properly
+
+		Views:          0,
+		Popularity:     0,
+		ReadersCount:   0,
+		ReviewsCount:   0,
+		WeightedRating: 0,
 	}
 	idx.Normalize()
 

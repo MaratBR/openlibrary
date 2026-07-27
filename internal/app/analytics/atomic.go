@@ -3,6 +3,8 @@ package analytics
 import (
 	"context"
 	"time"
+
+	"go.uber.org/fx"
 )
 
 // Atomic is its essense just a global store of booleans,
@@ -41,3 +43,7 @@ func NewPrefixedAtomic(inner Atomic, prefix string) Atomic {
 		prefix: prefix,
 	}
 }
+
+var atomicModule = fx.Module("ol_analytics_atomic", fx.Provide(
+	NewAtomic,
+))

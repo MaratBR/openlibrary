@@ -1,4 +1,4 @@
--- name: GetBook :one
+-- name: Book_Get :one
 select books.*, users.name as author_name
 from books
 join users on books.author_user_id = users.id

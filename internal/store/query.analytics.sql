@@ -4,13 +4,13 @@ insert into ol_analytics.interaction_event
     values
     ($1, $2, $3, $4);
 
--- name: Analytics_IncrementBucketCounters :exec
+-- name: Analytics_UpdateMetrics :exec
 WITH 
     input_rows AS (
         SELECT
             (sqlc.arg('book_ids')::bigint[])[i] AS book_id,
-            (sqlc.arg('metrics')::ol_analytics.counter_type[])[i] AS metric,
-            (sqlc.arg('values')::bigint[])[i] AS increment_value
+            (sqlc.arg('metrics')::text[])[i] AS metric,
+            (sqlc.arg('values')::double precision[])[i] AS increment_value
         FROM generate_subscripts(
             sqlc.arg('book_ids')::bigint[],
             1
@@ -60,19 +60,21 @@ WITH
             buckets.bucket_type,
             buckets.bucket_start
     )
-INSERT INTO ol_analytics.bucket_counter (
+INSERT INTO ol_analytics.bucket (
     book_id,
     metric,
     bucket_type,
     bucket_start,
-    value
+    value_sum,
+    samples_count
 )
 SELECT
     book_id,
     metric,
     bucket_type,
     bucket_start,
-    increment_value
+    increment_value,
+    1
 FROM aggregated_buckets
 ON CONFLICT (
     book_id,
@@ -81,7 +83,8 @@ ON CONFLICT (
     bucket_start
 )
 DO UPDATE SET
-    value = ol_analytics.bucket_counter.value + EXCLUDED.value,
+    value = ol_analytics.bucket.value + EXCLUDED.value,
+    samples_count = ol_analytics.bucket.samples_count + 1,
     updated_at = now();
 
 
@@ -133,7 +136,7 @@ WITH
             event.*,
             existing.updated_at AS previous_updated_at
         FROM expanded_events AS event
-        LEFT JOIN ol_analytics.bucket_popularity AS existing
+        LEFT JOIN ol_analytics.book_popularity_bucket AS existing
             ON existing.book_id = event.book_id
         AND existing.bucket_type = event.bucket_type
         AND existing.bucket_start = event.bucket_start
@@ -181,7 +184,7 @@ WITH
             event.bucket_type,
             event.bucket_start
     )
-INSERT INTO ol_analytics.bucket_popularity (
+INSERT INTO ol_analytics.book_popularity_bucket (
     book_id,
     bucket_type,
     bucket_start,
@@ -203,13 +206,13 @@ ON CONFLICT (
 )
 DO UPDATE SET
     value =
-        ol_analytics.bucket_popularity.value
+        ol_analytics.book_popularity_bucket.value
         * POWER(
             0.5,
             EXTRACT(
                 EPOCH FROM (
                     EXCLUDED.updated_at
-                    - ol_analytics.bucket_popularity.updated_at
+                    - ol_analytics.book_popularity_bucket.updated_at
                 )
             )
             / sqlc.arg('half_life_seconds')::double precision
@@ -218,3 +221,19 @@ DO UPDATE SET
     updated_at = EXCLUDED.updated_at;
 
 
+-- name: Analytics_GetMetricValue :one
+select samples_count, value_sum
+from ol_analytics.bucket
+where bucket_type = $1 and book_id = $2 and metric = $3;
+
+-- name: Analytics_GetMetricValues :many
+select book_id, metric, bucket_type, samples_count, value_sum
+from ol_analytics.bucket
+where book_id = ANY(sqlc.arg('book_ids')::int8[]) and metric = $1;
+
+
+-- name: Analytics_GetBook
+select metric, samples_count, value_sum
+from ol_analytics.bucket
+where book_id = $1
+group by book_id, metric;
