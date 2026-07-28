@@ -7,12 +7,10 @@ import (
 )
 
 func Setup(ctx context.Context, client *opensearchapi.Client) error {
-	var err error
-
-	err = createBookIndex(ctx, client)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return RunMigrations(ctx, client, []Migration{
+		{
+			Name: "0001_create_books_index",
+			Run:  createBookIndex,
+		},
+	})
 }

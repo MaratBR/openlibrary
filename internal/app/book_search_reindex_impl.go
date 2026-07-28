@@ -57,7 +57,7 @@ func (s *bookReindexService) ScheduleReindex(_ context.Context, id int64) {
 
 func (s *bookReindexService) Reindex(ctx context.Context, id int64) error {
 	queries := store.New(s.db)
-	book, err := queries.GetBook(ctx, id)
+	book, err := queries.Book_Get(ctx, id)
 	if err != nil {
 		return err
 	}

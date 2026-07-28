@@ -41,7 +41,15 @@ const (
 )
 
 func createBookIndex(ctx context.Context, client *opensearchapi.Client) error {
-	var err error
+	response, err := client.Indices.Exists(ctx, opensearchapi.IndicesExistsReq{
+		Indices: []string{BOOKS_INDEX_NAME},
+	})
+	if err == nil {
+		return nil
+	}
+	if response == nil || response.StatusCode != 404 {
+		return err
+	}
 
 	_, err = client.Indices.Create(ctx, opensearchapi.IndicesCreateReq{
 		Index: BOOKS_INDEX_NAME,
@@ -52,9 +60,6 @@ func createBookIndex(ctx context.Context, client *opensearchapi.Client) error {
   },
   "mappings": {
     "properties": {
-      "id": {
-        "type": "long"
-      },
       "name": {
         "type": "text"
       },
@@ -65,6 +70,9 @@ func createBookIndex(ctx context.Context, client *opensearchapi.Client) error {
         "type": "keyword"
       },
       "authorId": {
+        "type": "keyword"
+      },
+      "slug": {
         "type": "keyword"
       },
       "tags": {
@@ -78,6 +86,33 @@ func createBookIndex(ctx context.Context, client *opensearchapi.Client) error {
       },
       "wordsPerChapter": {
         "type": "integer"
+      },
+      "isPubliclyVisible": {
+        "type": "boolean"
+      },
+      "isTrashed": {
+        "type": "boolean"
+      },
+      "createdAt": {
+        "type": "date"
+      },
+      "updatedAt": {
+        "type": "date"
+      },
+      "views": {
+        "type": "long"
+      },
+      "popularity": {
+        "type": "double"
+      },
+      "readersCount": {
+        "type": "long"
+      },
+      "reviewsCount": {
+        "type": "long"
+      },
+      "weightedRating": {
+        "type": "double"
       }
     }
   }

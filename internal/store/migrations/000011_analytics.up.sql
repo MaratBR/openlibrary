@@ -48,3 +48,9 @@ create table ol_analytics.book_popularity_bucket (
         bucket_start
     )
 );
+
+create table ol_analytics.worker_state (
+    worker_name text primary key,
+    last_launch timestamptz not null default '-infinity',
+    last_cursor int8 not null default 0
+);

@@ -4,6 +4,7 @@ type FieldValue any
 
 type Query struct {
 	Term        map[string]TermQuery  `json:"term,omitempty"`
+	Match       map[string]MatchQuery `json:"match,omitempty"`
 	Bool        *BoolQuery            `json:"bool,omitempty"`
 	QueryString *QueryStringQuery     `json:"query_string,omitempty"`
 	Range       map[string]RangeQuery `json:"range,omitempty"`
@@ -22,6 +23,11 @@ type SortOption struct {
 
 type TermQuery struct {
 	Value FieldValue `json:"value"`
+}
+
+type MatchQuery struct {
+	Query     string `json:"query"`
+	Fuzziness string `json:"fuzziness,omitempty"`
 }
 
 type BoolQuery struct {

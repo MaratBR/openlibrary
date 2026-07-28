@@ -11,8 +11,5 @@ var FXModule = fx.Module(
 
 	fx.Provide(
 		NewAnalyticsCounters,
-		func() ViewsService {
-			return &analyticsViewsDummyService{}
-		},
 	),
 )

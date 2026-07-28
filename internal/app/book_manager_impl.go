@@ -91,7 +91,7 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input ManagerGetU
 }
 
 func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQuery) (ManagerGetBookQuery_Result, error) {
-	book, err := s.queries.GetBook(ctx, query.BookID)
+	book, err := s.queries.Book_Get(ctx, query.BookID)
 	if err != nil {
 		return ManagerGetBookQuery_Result{}, err
 	}

@@ -11,6 +11,71 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const book_Get = `-- name: Book_Get :one
+select books.id, books.name, books.slug, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.is_trashed, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned, users.name as author_name
+from books
+join users on books.author_user_id = users.id
+where books.id = $1
+limit 1
+`
+
+type Book_GetRow struct {
+	ID                 int64
+	Name               string
+	Slug               string
+	Summary            string
+	AuthorUserID       pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	AgeRating          AgeRating
+	IsPubliclyVisible  bool
+	IsBanned           bool
+	IsTrashed          bool
+	Words              int32
+	Chapters           int32
+	TagIds             []int64
+	CachedParentTagIds []int64
+	Cover              string
+	View               int32
+	Rating             pgtype.Float8
+	TotalReviews       int32
+	TotalRatings       int32
+	IsPinned           bool
+	IsPermRemoved      bool
+	IsShadowBanned     bool
+	AuthorName         string
+}
+
+func (q *Queries) Book_Get(ctx context.Context, id int64) (Book_GetRow, error) {
+	row := q.db.QueryRow(ctx, book_Get, id)
+	var i Book_GetRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Summary,
+		&i.AuthorUserID,
+		&i.CreatedAt,
+		&i.AgeRating,
+		&i.IsPubliclyVisible,
+		&i.IsBanned,
+		&i.IsTrashed,
+		&i.Words,
+		&i.Chapters,
+		&i.TagIds,
+		&i.CachedParentTagIds,
+		&i.Cover,
+		&i.View,
+		&i.Rating,
+		&i.TotalReviews,
+		&i.TotalRatings,
+		&i.IsPinned,
+		&i.IsPermRemoved,
+		&i.IsShadowBanned,
+		&i.AuthorName,
+	)
+	return i, err
+}
+
 const book_GetByIds = `-- name: Book_GetByIds :many
 select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned
 from books b
@@ -296,71 +361,6 @@ func (q *Queries) GetAllBooks(ctx context.Context, arg GetAllBooksParams) ([]Get
 		return nil, err
 	}
 	return items, nil
-}
-
-const getBook = `-- name: GetBook :one
-select books.id, books.name, books.slug, books.summary, books.author_user_id, books.created_at, books.age_rating, books.is_publicly_visible, books.is_banned, books.is_trashed, books.words, books.chapters, books.tag_ids, books.cached_parent_tag_ids, books.cover, books.view, books.rating, books.total_reviews, books.total_ratings, books.is_pinned, books.is_perm_removed, books.is_shadow_banned, users.name as author_name
-from books
-join users on books.author_user_id = users.id
-where books.id = $1
-limit 1
-`
-
-type GetBookRow struct {
-	ID                 int64
-	Name               string
-	Slug               string
-	Summary            string
-	AuthorUserID       pgtype.UUID
-	CreatedAt          pgtype.Timestamptz
-	AgeRating          AgeRating
-	IsPubliclyVisible  bool
-	IsBanned           bool
-	IsTrashed          bool
-	Words              int32
-	Chapters           int32
-	TagIds             []int64
-	CachedParentTagIds []int64
-	Cover              string
-	View               int32
-	Rating             pgtype.Float8
-	TotalReviews       int32
-	TotalRatings       int32
-	IsPinned           bool
-	IsPermRemoved      bool
-	IsShadowBanned     bool
-	AuthorName         string
-}
-
-func (q *Queries) GetBook(ctx context.Context, id int64) (GetBookRow, error) {
-	row := q.db.QueryRow(ctx, getBook, id)
-	var i GetBookRow
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Slug,
-		&i.Summary,
-		&i.AuthorUserID,
-		&i.CreatedAt,
-		&i.AgeRating,
-		&i.IsPubliclyVisible,
-		&i.IsBanned,
-		&i.IsTrashed,
-		&i.Words,
-		&i.Chapters,
-		&i.TagIds,
-		&i.CachedParentTagIds,
-		&i.Cover,
-		&i.View,
-		&i.Rating,
-		&i.TotalReviews,
-		&i.TotalRatings,
-		&i.IsPinned,
-		&i.IsPermRemoved,
-		&i.IsShadowBanned,
-		&i.AuthorName,
-	)
-	return i, err
 }
 
 const getBookChapterWithDetails = `-- name: GetBookChapterWithDetails :one

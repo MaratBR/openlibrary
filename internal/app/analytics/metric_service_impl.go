@@ -4,17 +4,19 @@ import (
 	"context"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type metricService struct {
 	queries *store.Queries
 }
 
-func (m *metricService) Get(ctx context.Context, metric string, bookIds []int64) (map[int64]MetricValues, error) {
+func (m *metricService) Get(ctx context.Context, metric MetricType, bookIds []int64) (map[int64]MetricValues, error) {
 	rows, err := m.queries.Analytics_GetMetricValues(ctx, store.Analytics_GetMetricValuesParams{
 		BookIds: bookIds,
-		Metric:  metric,
+		Metric:  string(metric),
 	})
 	if err != nil {
 		return nil, apperror.WrapUnexpectedDBError(err)
@@ -58,9 +60,9 @@ func (m *metricService) Get(ctx context.Context, metric string, bookIds []int64)
 	return mapping, nil
 }
 
-func (m *metricService) GetMetricValue(ctx context.Context, metric string, bookId int64, period store.OlAnalyticsBucketPeriodType) (MetricValue, error) {
+func (m *metricService) GetMetricValue(ctx context.Context, metric MetricType, bookId int64, period store.OlAnalyticsBucketPeriodType) (MetricValue, error) {
 	val, err := m.queries.Analytics_GetMetricValue(ctx, store.Analytics_GetMetricValueParams{
-		Metric:     metric,
+		Metric:     string(metric),
 		BookID:     bookId,
 		BucketType: period,
 	})
@@ -75,6 +77,27 @@ func (m *metricService) GetMetricValue(ctx context.Context, metric string, bookI
 		ValueSum: val.ValueSum,
 		Samples:  val.SamplesCount,
 	}, nil
+}
+
+func (m *metricService) GetTopBooks(ctx context.Context, query GetTopBooksByMetricQuery) ([]BookEntry, error) {
+	rows, err := m.queries.Analytics_GetTopBooksBySamplesCount(ctx, store.Analytics_GetTopBooksBySamplesCountParams{
+		BucketType:  query.Period,
+		BucketStart: pgtype.Timestamptz{Valid: true, Time: query.BucketStart},
+		Metric:      string(query.Metric),
+		Skip:        query.Offset,
+		Limit:       query.Limit,
+	})
+
+	if err != nil {
+		return nil, apperror.WrapUnexpectedDBError(err)
+	}
+
+	return commonutil.MapSlice(rows, func(row store.Analytics_GetTopBooksBySamplesCountRow) BookEntry {
+		return BookEntry{
+			BookID: row.BookID,
+			Value:  NewMetricValue(row.SamplesCount, row.ValueSum),
+		}
+	}), nil
 }
 
 func newMetricService(db store.DBTX) MetricService {

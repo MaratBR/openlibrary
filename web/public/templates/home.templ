@@ -1,8 +1,6 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
-import "strconv"
-import "github.com/MaratBR/openlibrary/internal/app/analytics"
 import "github.com/MaratBR/openlibrary/internal/auth"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
@@ -65,7 +63,6 @@ templ Home_MainHeroSection() {
 }
 
 templ Home_MostViewedBooks(
-    period analytics.AnalyticsPeriod,
     books []app.BookListDto,
     views map[int64]int64,
 ) {
@@ -85,7 +82,7 @@ templ Home_MostViewedBooks(
         </header>
 
         @webcomponents.Carousel() {
-            <ul class="book-recommendation-list overflow-x-hidden" data-period={strconv.FormatInt(int64(period), 10)}>
+            <ul class="book-recommendation-list overflow-x-hidden">
                 for _, book := range books {
                     {{
                         viewCount, _ := views[book.ID] 

@@ -7,26 +7,22 @@ import (
 )
 
 const (
-	MetricViews        = "views"
+	MetricViews        = "view"
 	MetricSearchClicks = "searchclick"
 	MetricImpressions  = "impression"
 )
 
-type Metric struct {
-	Type   string
-	Value  float64
-	BookID int64
-}
+type MetricType string
 
-func NewMetric(bookID int64, name string) Metric {
-	return Metric{
-		BookID: bookID,
-		Type:   MetricViews,
-	}
+type MetricRecord struct {
+	Type    MetricType
+	Value   float64
+	BookID  int64
+	Samples int64
 }
 
 type MetricSink interface {
-	SubmitMetric(ctx context.Context, metric Metric)
+	SubmitMetrics(ctx context.Context, metrics []MetricRecord)
 }
 
 var metricModule = fx.Module("ol_analytics",
@@ -43,3 +39,25 @@ var metricModule = fx.Module("ol_analytics",
 
 	fx.Invoke(func(*metricBackgroundService) {}),
 )
+
+// go2tsdef:generate
+type MetricValue struct {
+	Samples  int64   `json:"samples"`
+	ValueSum float64 `json:"valueSum"`
+}
+
+func NewMetricValue(samples int64, valueSum float64) MetricValue {
+	return MetricValue{
+		Samples:  samples,
+		ValueSum: valueSum,
+	}
+}
+
+// go2tsdef:generate
+type MetricValues struct {
+	Total MetricValue `json:"total"`
+	Year  MetricValue `json:"year"`
+	Month MetricValue `json:"month"`
+	Week  MetricValue `json:"week"`
+	Day   MetricValue `json:"day"`
+}

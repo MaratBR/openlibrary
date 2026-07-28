@@ -8,11 +8,11 @@ import (
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 )
 
-func GetAnalyticsViewMetadata(r *http.Request) analytics.ViewMetadata {
+func GetAnalyticsViewMetadata(r *http.Request) analytics.EventMetadata {
 	userID := auth.GetNullableUserID(r.Context())
 	ip := olhttp.GetIP(r)
 
-	return analytics.ViewMetadata{
+	return analytics.EventMetadata{
 		IP:     ip,
 		UserID: userID,
 	}

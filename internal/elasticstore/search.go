@@ -148,8 +148,11 @@ func Search(
 
 	if req.Query != "" {
 		must = append(must, Query{
-			QueryString: &QueryStringQuery{
-				Query: req.Query,
+			Match: map[string]MatchQuery{
+				"name": {
+					Query:     req.Query,
+					Fuzziness: "AUTO",
+				},
 			},
 		})
 	}

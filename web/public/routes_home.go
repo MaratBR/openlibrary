@@ -7,18 +7,19 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5"
 )
 
 type homeController struct {
-	viewsService analytics.ViewsService
-	bookService  app.BookService
+	metricService analytics.MetricService
+	bookService   app.BookService
 }
 
-func newHomeController(viewsService analytics.ViewsService, bookService app.BookService) *homeController {
-	return &homeController{viewsService: viewsService, bookService: bookService}
+func newHomeController(metricService analytics.MetricService, bookService app.BookService) *homeController {
+	return &homeController{metricService: metricService, bookService: bookService}
 }
 
 func (c *homeController) Register(r chi.Router) {
@@ -41,17 +42,20 @@ func (c *homeController) homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *homeController) renderMostViewedWidget(ctx context.Context) templ.Component {
-	period := analytics.ANALYTICS_PERIOD_TOTAL
-	books, views, err := c.getMostViewedBooks(ctx, period)
+	books, views, err := c.getMostViewedBooks(ctx)
 	if err != nil {
 		return templates.Home_WidgetError(err)
 	}
 
-	return templates.Home_MostViewedBooks(analytics.ANALYTICS_PERIOD_TOTAL, books, views)
+	return templates.Home_MostViewedBooks(books, views)
 }
 
-func (c *homeController) getMostViewedBooks(ctx context.Context, period analytics.AnalyticsPeriod) ([]app.BookListDto, map[int64]int64, error) {
-	bookViewData, err := c.viewsService.GetMostViewedBooks(ctx, period)
+func (c *homeController) getMostViewedBooks(ctx context.Context) ([]app.BookListDto, map[int64]int64, error) {
+	bookViewData, err := c.metricService.GetTopBooks(ctx, analytics.GetTopBooksByMetricQuery{
+		Metric: analytics.MetricViews,
+		Period: store.OlAnalyticsBucketPeriodTypeAll,
+		Limit:  10,
+	})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -61,7 +65,7 @@ func (c *homeController) getMostViewedBooks(ctx context.Context, period analytic
 
 	for _, entry := range bookViewData {
 		bookIds = append(bookIds, entry.BookID)
-		views[entry.BookID] = entry.Views
+		views[entry.BookID] = entry.Value.Samples
 	}
 
 	books, err := c.bookService.GetBooksById(ctx, bookIds)

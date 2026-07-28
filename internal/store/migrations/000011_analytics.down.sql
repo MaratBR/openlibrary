@@ -1,3 +1,4 @@
+drop table ol_analytics.worker_state;
 drop table ol_analytics.bucket;
 drop table ol_analytics.book_popularity_bucket;
 drop type ol_analytics.bucket_period_type;

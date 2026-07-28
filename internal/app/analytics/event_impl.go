@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"go.uber.org/zap"
 )
@@ -40,4 +41,24 @@ func (r *eventRepository) Insert(ctx context.Context, events []Event) error {
 	}
 
 	return nil
+}
+
+func (r *eventRepository) GetEvents(ctx context.Context, maxCount int, cursor int64) (int64, []Event, error) {
+	queries := store.New(r.db)
+	rows, err := queries.Analytics_GetEvents(ctx, cursor)
+	if err != nil {
+		return cursor, nil, apperror.WrapUnexpectedDBError(err)
+	}
+
+	if len(rows) == 0 {
+		return cursor, nil, nil
+	}
+
+	events := commonutil.MapSlice(rows, func(ev store.OlAnalyticsInteractionEvent) Event {
+		return newEvent(ev.BookID, ev.UserKey, EventType(ev.EventType), ev.Value, ev.CreatedAt.Time)
+	})
+
+	newCursor := rows[len(rows)-1].ID
+
+	return newCursor, events, nil
 }

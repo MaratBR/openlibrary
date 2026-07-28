@@ -7,7 +7,43 @@ package store
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const analytics_GetEvents = `-- name: Analytics_GetEvents :many
+select id, user_key, book_id, event_type, value, created_at 
+from ol_analytics.interaction_event
+where id > $1
+order by id asc
+`
+
+func (q *Queries) Analytics_GetEvents(ctx context.Context, id int64) ([]OlAnalyticsInteractionEvent, error) {
+	rows, err := q.db.Query(ctx, analytics_GetEvents, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []OlAnalyticsInteractionEvent
+	for rows.Next() {
+		var i OlAnalyticsInteractionEvent
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserKey,
+			&i.BookID,
+			&i.EventType,
+			&i.Value,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const analytics_GetMetricValue = `-- name: Analytics_GetMetricValue :one
 select samples_count, value_sum
@@ -78,11 +114,139 @@ func (q *Queries) Analytics_GetMetricValues(ctx context.Context, arg Analytics_G
 	return items, nil
 }
 
+const analytics_GetTopBooksBySamplesCount = `-- name: Analytics_GetTopBooksBySamplesCount :many
+select book_id, samples_count, value_sum
+from ol_analytics.bucket
+where bucket_type = $1 and metric = $2 and (bucket_start = $3 or $1 = 'all')
+order by samples_count desc
+offset $4 limit $5
+`
+
+type Analytics_GetTopBooksBySamplesCountParams struct {
+	BucketType  OlAnalyticsBucketPeriodType
+	Metric      string
+	BucketStart pgtype.Timestamptz
+	Skip        int32
+	Limit       int32
+}
+
+type Analytics_GetTopBooksBySamplesCountRow struct {
+	BookID       int64
+	SamplesCount int64
+	ValueSum     float64
+}
+
+func (q *Queries) Analytics_GetTopBooksBySamplesCount(ctx context.Context, arg Analytics_GetTopBooksBySamplesCountParams) ([]Analytics_GetTopBooksBySamplesCountRow, error) {
+	rows, err := q.db.Query(ctx, analytics_GetTopBooksBySamplesCount,
+		arg.BucketType,
+		arg.Metric,
+		arg.BucketStart,
+		arg.Skip,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Analytics_GetTopBooksBySamplesCountRow
+	for rows.Next() {
+		var i Analytics_GetTopBooksBySamplesCountRow
+		if err := rows.Scan(&i.BookID, &i.SamplesCount, &i.ValueSum); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const analytics_GetTopBooksByValueSum = `-- name: Analytics_GetTopBooksByValueSum :many
+select book_id, samples_count, value_sum
+from ol_analytics.bucket
+where bucket_type = $1 and metric = $2 and bucket_start = $3
+order by value_sum desc
+offset $4 limit $5
+`
+
+type Analytics_GetTopBooksByValueSumParams struct {
+	BucketType  OlAnalyticsBucketPeriodType
+	Metric      string
+	BucketStart pgtype.Timestamptz
+	Skip        int32
+	Limit       int32
+}
+
+type Analytics_GetTopBooksByValueSumRow struct {
+	BookID       int64
+	SamplesCount int64
+	ValueSum     float64
+}
+
+func (q *Queries) Analytics_GetTopBooksByValueSum(ctx context.Context, arg Analytics_GetTopBooksByValueSumParams) ([]Analytics_GetTopBooksByValueSumRow, error) {
+	rows, err := q.db.Query(ctx, analytics_GetTopBooksByValueSum,
+		arg.BucketType,
+		arg.Metric,
+		arg.BucketStart,
+		arg.Skip,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Analytics_GetTopBooksByValueSumRow
+	for rows.Next() {
+		var i Analytics_GetTopBooksByValueSumRow
+		if err := rows.Scan(&i.BookID, &i.SamplesCount, &i.ValueSum); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const analytics_GetWorkerState = `-- name: Analytics_GetWorkerState :one
+select worker_name, last_launch, last_cursor
+from ol_analytics.worker_state
+where worker_name = $1
+`
+
+func (q *Queries) Analytics_GetWorkerState(ctx context.Context, workerName string) (OlAnalyticsWorkerState, error) {
+	row := q.db.QueryRow(ctx, analytics_GetWorkerState, workerName)
+	var i OlAnalyticsWorkerState
+	err := row.Scan(&i.WorkerName, &i.LastLaunch, &i.LastCursor)
+	return i, err
+}
+
 type Analytics_InsertEventParams struct {
 	UserKey   string
 	BookID    int64
 	EventType string
 	Value     float64
+}
+
+const analytics_SetWorkerState = `-- name: Analytics_SetWorkerState :exec
+insert into ol_analytics.worker_state (worker_name, last_launch, last_cursor)
+values ($1, $2, $3)
+on conflict (worker_name) do update set
+    last_launch = $2,
+    last_cursor = $3
+`
+
+type Analytics_SetWorkerStateParams struct {
+	WorkerName string
+	LastLaunch pgtype.Timestamptz
+	LastCursor int64
+}
+
+func (q *Queries) Analytics_SetWorkerState(ctx context.Context, arg Analytics_SetWorkerStateParams) error {
+	_, err := q.db.Exec(ctx, analytics_SetWorkerState, arg.WorkerName, arg.LastLaunch, arg.LastCursor)
+	return err
 }
 
 const analytics_UpdateMetrics = `-- name: Analytics_UpdateMetrics :exec
@@ -91,7 +255,8 @@ WITH
         SELECT
             ($1::bigint[])[i] AS book_id,
             ($2::text[])[i] AS metric,
-            ($3::double precision[])[i] AS increment_value
+            ($3::double precision[])[i] AS increment_value,
+            ($4::bigint[])[i] AS increment_samples
         FROM generate_subscripts(
             $1::bigint[],
             1
@@ -132,7 +297,8 @@ WITH
             input.metric,
             buckets.bucket_type,
             buckets.bucket_start,
-            sum(input.increment_value) AS increment_value
+            sum(input.increment_value) AS increment_value,
+            sum(input.increment_samples) AS increment_samples
         FROM input_rows AS input
         CROSS JOIN bucket_definitions AS buckets
         GROUP BY
@@ -155,7 +321,7 @@ SELECT
     bucket_type,
     bucket_start,
     increment_value,
-    1
+    increment_samples
 FROM aggregated_buckets
 ON CONFLICT (
     book_id,
@@ -164,8 +330,8 @@ ON CONFLICT (
     bucket_start
 )
 DO UPDATE SET
-    value = ol_analytics.bucket.value + EXCLUDED.value,
-    samples_count = ol_analytics.bucket.samples_count + 1,
+    value_sum = ol_analytics.bucket.value_sum + EXCLUDED.value_sum,
+    samples_count = ol_analytics.bucket.samples_count + EXCLUDED.samples_count,
     updated_at = now()
 `
 
@@ -173,10 +339,16 @@ type Analytics_UpdateMetricsParams struct {
 	BookIds []int64
 	Metrics []string
 	Values  []float64
+	Samples []int64
 }
 
 func (q *Queries) Analytics_UpdateMetrics(ctx context.Context, arg Analytics_UpdateMetricsParams) error {
-	_, err := q.db.Exec(ctx, analytics_UpdateMetrics, arg.BookIds, arg.Metrics, arg.Values)
+	_, err := q.db.Exec(ctx, analytics_UpdateMetrics,
+		arg.BookIds,
+		arg.Metrics,
+		arg.Values,
+		arg.Samples,
+	)
 	return err
 }
 

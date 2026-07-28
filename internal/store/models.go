@@ -586,6 +586,12 @@ type OlAnalyticsInteractionEvent struct {
 	CreatedAt pgtype.Timestamptz
 }
 
+type OlAnalyticsWorkerState struct {
+	WorkerName string
+	LastLaunch pgtype.Timestamptz
+	LastCursor int64
+}
+
 type Rating struct {
 	UserID    pgtype.UUID
 	BookID    int64

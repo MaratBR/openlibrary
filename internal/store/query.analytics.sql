@@ -10,7 +10,8 @@ WITH
         SELECT
             (sqlc.arg('book_ids')::bigint[])[i] AS book_id,
             (sqlc.arg('metrics')::text[])[i] AS metric,
-            (sqlc.arg('values')::double precision[])[i] AS increment_value
+            (sqlc.arg('values')::double precision[])[i] AS increment_value,
+            (sqlc.arg('samples')::bigint[])[i] AS increment_samples
         FROM generate_subscripts(
             sqlc.arg('book_ids')::bigint[],
             1
@@ -51,7 +52,8 @@ WITH
             input.metric,
             buckets.bucket_type,
             buckets.bucket_start,
-            sum(input.increment_value) AS increment_value
+            sum(input.increment_value) AS increment_value,
+            sum(input.increment_samples) AS increment_samples
         FROM input_rows AS input
         CROSS JOIN bucket_definitions AS buckets
         GROUP BY
@@ -74,7 +76,7 @@ SELECT
     bucket_type,
     bucket_start,
     increment_value,
-    1
+    increment_samples
 FROM aggregated_buckets
 ON CONFLICT (
     book_id,
@@ -83,8 +85,8 @@ ON CONFLICT (
     bucket_start
 )
 DO UPDATE SET
-    value = ol_analytics.bucket.value + EXCLUDED.value,
-    samples_count = ol_analytics.bucket.samples_count + 1,
+    value_sum = ol_analytics.bucket.value_sum + EXCLUDED.value_sum,
+    samples_count = ol_analytics.bucket.samples_count + EXCLUDED.samples_count,
     updated_at = now();
 
 
@@ -231,9 +233,34 @@ select book_id, metric, bucket_type, samples_count, value_sum
 from ol_analytics.bucket
 where book_id = ANY(sqlc.arg('book_ids')::int8[]) and metric = $1;
 
-
--- name: Analytics_GetBook
-select metric, samples_count, value_sum
+-- name: Analytics_GetTopBooksBySamplesCount :many
+select book_id, samples_count, value_sum
 from ol_analytics.bucket
-where book_id = $1
-group by book_id, metric;
+where bucket_type = $1 and metric = $2 and (bucket_start = $3 or $1 = 'all')
+order by samples_count desc
+offset sqlc.arg('skip') limit sqlc.arg('limit');
+
+-- name: Analytics_GetTopBooksByValueSum :many
+select book_id, samples_count, value_sum
+from ol_analytics.bucket
+where bucket_type = $1 and metric = $2 and bucket_start = $3
+order by value_sum desc
+offset sqlc.arg('skip') limit sqlc.arg('limit');
+
+-- name: Analytics_GetEvents :many
+select * 
+from ol_analytics.interaction_event
+where id > $1
+order by id asc;
+
+-- name: Analytics_GetWorkerState :one
+select *
+from ol_analytics.worker_state
+where worker_name = $1;
+
+-- name: Analytics_SetWorkerState :exec
+insert into ol_analytics.worker_state (worker_name, last_launch, last_cursor)
+values ($1, $2, $3)
+on conflict (worker_name) do update set
+    last_launch = $2,
+    last_cursor = $3;

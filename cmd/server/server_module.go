@@ -56,7 +56,7 @@ func mainServer(
 
 		fx.Provide(
 			newHTTPServer,
-			zap.NewExample,
+			createRootLogger,
 			func(log *zap.Logger) *zap.SugaredLogger {
 				return log.Sugar()
 			},

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
@@ -16,12 +15,11 @@ type chaptersController struct {
 	service            app.BookService
 	readingListService app.ReadingListService
 	commentsService    app.CommentsService
-	viewsService       analytics.ViewsService
 	readerPreferences  app.ReaderPreferencesService
 }
 
-func newChaptersController(service app.BookService, readingListService app.ReadingListService, viewsService analytics.ViewsService, commentsService app.CommentsService, readerPreferences app.ReaderPreferencesService) *chaptersController {
-	return &chaptersController{service: service, readingListService: readingListService, viewsService: viewsService, commentsService: commentsService, readerPreferences: readerPreferences}
+func newChaptersController(service app.BookService, readingListService app.ReadingListService, commentsService app.CommentsService, readerPreferences app.ReaderPreferencesService) *chaptersController {
+	return &chaptersController{service: service, readingListService: readingListService, commentsService: commentsService, readerPreferences: readerPreferences}
 }
 
 func (c *chaptersController) Register(r chi.Router) {

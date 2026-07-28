@@ -11,13 +11,14 @@ import (
 )
 
 type eventBackgroundService struct {
-	log       *zap.SugaredLogger
-	repo      EventRepository
-	wg        sync.WaitGroup
-	cancelCtx context.CancelFunc
-	running   bool
-	queue     []Event
-	queueMx   sync.Mutex
+	log                        *zap.SugaredLogger
+	repo                       EventRepository
+	done                       chan struct{}
+	cancelCtx                  context.CancelFunc
+	running                    bool
+	queue                      []Event
+	queueMx                    sync.Mutex
+	eventProcessorWorkerHandle EventProcessorWorkerHandle
 }
 
 func (svc *eventBackgroundService) SubmitEvent(ctx context.Context, event Event) {
@@ -31,6 +32,7 @@ func (svc *eventBackgroundService) start(ctx context.Context) error {
 		return errors.New("eventBackgroundService is already running")
 	}
 	svc.running = true
+	svc.done = make(chan struct{})
 	var stopingCtx context.Context
 	stopingCtx, svc.cancelCtx = context.WithCancel(context.Background())
 	go svc.run(stopingCtx)
@@ -43,8 +45,6 @@ func (svc *eventBackgroundService) run(stopingCtx context.Context) {
 		return
 	}
 
-	svc.wg.Add(1)
-
 loop:
 	for {
 
@@ -52,27 +52,32 @@ loop:
 		case <-stopingCtx.Done():
 			break loop
 		case <-time.After(time.Second * 5):
-			err := svc.flush(stopingCtx)
-			if err != nil {
-				svc.log.Errorw("failed to flush events in eventBackgroundService", "err", err)
-			} else if len(svc.queue) > 0 {
-				svc.log.Debugw("flushed events", "count", len(svc.queue))
-			}
-			svc.clear()
+			svc.log.Debug("eventBackgroundService: woke up")
+			svc.process(stopingCtx)
 		}
-
 	}
 
-	svc.wg.Done()
+	close(svc.done)
+	svc.log.Debug("eventBackground service stopped")
+}
+
+func (svc *eventBackgroundService) process(ctx context.Context) {
+	svc.queueMx.Lock()
+	defer svc.queueMx.Unlock()
+	err := svc.flush(ctx)
+	if err != nil {
+		svc.log.Errorw("eventBackgroundService: failed to flush events", "err", err)
+	} else if len(svc.queue) > 0 {
+		svc.log.Debugw("eventBackgroundService: flushed events", "count", len(svc.queue))
+		svc.eventProcessorWorkerHandle.WakeUp()
+		svc.clear()
+	}
 }
 
 func (svc *eventBackgroundService) flush(ctx context.Context) error {
 	if len(svc.queue) == 0 {
 		return nil
 	}
-
-	svc.queueMx.Lock()
-	defer svc.queueMx.Unlock()
 
 	err := svc.repo.Insert(ctx, svc.queue)
 	if err != nil {
@@ -83,8 +88,6 @@ func (svc *eventBackgroundService) flush(ctx context.Context) error {
 }
 
 func (svc *eventBackgroundService) clear() {
-	svc.queueMx.Lock()
-	defer svc.queueMx.Unlock()
 	svc.queue = svc.queue[:0]
 
 }
@@ -94,18 +97,20 @@ func (svc *eventBackgroundService) stop(ctx context.Context) error {
 		return nil
 	}
 	svc.cancelCtx()
-	svc.wg.Wait() // TODO timeout?
+	<-svc.done
 	return nil
 }
 
 func newEventBackgroundService(
 	log *zap.SugaredLogger,
 	repo EventRepository,
+	eventProcessorWorkerHandle EventProcessorWorkerHandle,
 	lc fx.Lifecycle,
 ) *eventBackgroundService {
 	svc := &eventBackgroundService{
-		log:  log,
-		repo: repo,
+		log:                        log,
+		repo:                       repo,
+		eventProcessorWorkerHandle: eventProcessorWorkerHandle,
 	}
 
 	lc.Append(fx.Hook{
