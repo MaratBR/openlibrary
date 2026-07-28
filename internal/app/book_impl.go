@@ -53,7 +53,9 @@ func getWordsPerChapter(words, chapters int) int {
 	return words / chapters
 }
 
-func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (BookDetailsDto, error) {
+func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (result BookDetailsDto, err error) {
+	ctx, span := startSpan(ctx, "BookService.GetBookDetails")
+	defer func() { endSpan(span, err) }()
 	book, err := s.queries.Book_Get(ctx, query.ID)
 	if err != nil {
 		if err == store.ErrNoRows {
@@ -168,7 +170,9 @@ func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChapters
 	return chapterDtos, nil
 }
 
-func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQuery) (GetBookChapterResult, error) {
+func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQuery) (result GetBookChapterResult, err error) {
+	ctx, span := startSpan(ctx, "BookService.GetBookChapter")
+	defer func() { endSpan(span, err) }()
 	chapter, err := s.queries.GetBookChapterWithDetails(ctx, store.GetBookChapterWithDetailsParams{
 		ID:     query.ChapterID,
 		BookID: query.BookID,

@@ -42,7 +42,6 @@ func (d *deduplicationEventSink) submitEvent(ctx context.Context, event Event) e
 }
 
 func newDedupedEventSink(inner *eventBackgroundService, atomic Atomic, log *zap.SugaredLogger) EventSink {
-	log.Debug("calling NewDedupedEventSink")
 	return &deduplicationEventSink{
 		inner:       inner,
 		dedupAtomic: NewPrefixedAtomic(atomic, "evtdedup"),

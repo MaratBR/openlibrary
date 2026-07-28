@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/MaratBR/openlibrary/internal/commonutil"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type EventProcessor interface {
@@ -16,6 +17,9 @@ type simpleEventProcessor struct {
 
 // Process implements [EventProcessor].
 func (s *simpleEventProcessor) Process(ctx context.Context, events []Event) error {
+	ctx, span := tracer.Start(ctx, "simpleEventProcessor.Process")
+	span.SetAttributes(attribute.Int("analytics.event_count", len(events)))
+	defer span.End()
 	metrics := extractMetrics(events)
 	s.metricSink.SubmitMetrics(ctx, metrics)
 	return nil

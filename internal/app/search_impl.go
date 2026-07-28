@@ -13,6 +13,7 @@ import (
 	"github.com/MaratBR/openlibrary/lib/gset"
 	"github.com/gofrs/uuid"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type searchService struct {
@@ -111,7 +112,15 @@ func (s *searchService) ExplainSearchQuery(ctx context.Context, req BookSearchQu
 }
 
 // SearchBooks implements SearchService.
-func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*BookSearchResult, error) {
+func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (searchResult *BookSearchResult, err error) {
+	ctx, span := startSpan(ctx, "SearchService.SearchBooks")
+	span.SetAttributes(
+		attribute.Int("search.page_size", int(req.PageSize)),
+		attribute.Int("search.query_length", len(req.Query)),
+		attribute.Int("search.included_tags", len(req.IncludeTags)),
+		attribute.Int("search.excluded_tags", len(req.ExcludeTags)),
+	)
+	defer func() { endSpan(span, err) }()
 	if !req.Sort.IsImplemented() {
 		slog.WarnContext(ctx, "search sort is not implemented; using relevance order", "sort", req.Sort)
 	}
@@ -150,7 +159,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (*
 	totalPages := uint32(math.Ceil(float64(result.Total) / float64(req.PageSize)))
 
 	// construct search result
-	searchResult := &BookSearchResult{
+	searchResult = &BookSearchResult{
 		TookUSTotal: tookTotal,
 		TookUS:      result.TookMS * 1000,
 		Books:       make([]BookSearchItem, len(result.Hits)),

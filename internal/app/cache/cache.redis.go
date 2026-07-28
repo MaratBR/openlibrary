@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -52,8 +53,10 @@ func NewRedisCacheBackend(
 	url string,
 	fallback CacheBackend,
 ) CacheBackend {
+	client := redis.NewClient(&redis.Options{Addr: url, Password: "", DB: 0})
+	_ = redisotel.InstrumentTracing(client, redisotel.WithDBStatement(false))
 	return &redisCache{
 		fallback: fallback,
-		redis:    redis.NewClient(&redis.Options{Addr: url, Password: "", DB: 0}),
+		redis:    client,
 	}
 }

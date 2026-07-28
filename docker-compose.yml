@@ -35,6 +35,13 @@ services:
       xpack.security.enabled: false
       discovery.type: single-node
     mem_limit: 2g
+  jaeger:
+    image: jaegertracing/all-in-one
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
 
 volumes:
   s3_data:

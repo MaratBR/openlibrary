@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 
 	"github.com/knadh/koanf/v2"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type UploadConfig struct {
@@ -44,8 +46,9 @@ type UploadService struct {
 
 func NewUploadService(cfg UploadConfig) *UploadService {
 	client, err := minio.New(cfg.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
-		Secure: cfg.Secure,
+		Creds:     credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
+		Secure:    cfg.Secure,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	})
 	if err != nil {
 		slog.Error("failed to create minion client instance", "endpoint", cfg.Endpoint, "err", err.Error())

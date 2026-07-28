@@ -250,6 +250,8 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 
 // UploadBookCover implements BookManagerService.
 func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBookCoverCommand) (result UploadBookCoverCommand_Result, err error) {
+	ctx, span := startSpan(ctx, "BookManagerService.UploadBookCover")
+	defer func() { endSpan(span, err) }()
 	file, err := io.ReadAll(input.File)
 	if err != nil {
 		return
@@ -764,7 +766,9 @@ func (s *bookManagerService) DeleteDraft(ctx context.Context, cmd DeleteDraftCom
 }
 
 // PublishDraft implements BookManagerService.
-func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftCommand) error {
+func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftCommand) (err error) {
+	ctx, span := startSpan(ctx, "BookManagerService.PublishDraft")
+	defer func() { endSpan(span, err) }()
 
 	var (
 		bookID int64

@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v5"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -84,20 +86,42 @@ func (p *eventProcessorWorker) init(ctx context.Context) {
 }
 
 func (p *eventProcessorWorker) process(ctx context.Context) {
+	ctx, span := tracer.Start(ctx, "eventProcessorWorker.process")
+	defer span.End()
+
 	newCursor, events, err := p.eventRepo.GetEvents(ctx, 1000, p.currentCursor)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		p.log.Error("failed to fetch events", "err", err)
 		return
 	}
+	span.SetAttributes(attribute.Int("analytics.event_count", len(events)))
 
 	err = p.eventProcessor.Process(ctx, events)
 
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		p.log.Error("eventProcessorWorker: failed to process events with event processor")
 	} else {
 		p.log.Debugw("eventProcessorWorker: finished processing", "count", len(events), "newCursor", newCursor)
 	}
 	p.currentCursor = newCursor
+
+	err = retry.New(
+		retry.Attempts(5),
+		retry.MaxJitter(time.Millisecond*200),
+		retry.MaxDelay(time.Second*5),
+		retry.DelayType(retry.FullJitterBackoffDelay),
+	).Do(func() error {
+		return p.eventProcessorWorkerState.SaveCurrentCursor(ctx, newCursor)
+	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		p.log.Errorw("failed to update worker's state")
+	}
 }
 
 func (p *eventProcessorWorker) stop(ctx context.Context) error {

@@ -55,7 +55,9 @@ func (s *bookReindexService) ScheduleReindex(_ context.Context, id int64) {
 	}()
 }
 
-func (s *bookReindexService) Reindex(ctx context.Context, id int64) error {
+func (s *bookReindexService) Reindex(ctx context.Context, id int64) (err error) {
+	ctx, span := startSpan(ctx, "BookReindexService.Reindex")
+	defer func() { endSpan(span, err) }()
 	queries := store.New(s.db)
 	book, err := queries.Book_Get(ctx, id)
 	if err != nil {

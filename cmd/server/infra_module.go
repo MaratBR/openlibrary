@@ -24,7 +24,9 @@ import (
 	"github.com/mailgun/errors"
 	"github.com/opensearch-project/opensearch-go/v4"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/fx"
 	"golang.org/x/text/language"
 )
@@ -60,6 +62,9 @@ func newRedisClient(cfg *koanf.Koanf) *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr: cfg.String("redis.addr"),
 	})
+	if err := redisotel.InstrumentTracing(client, redisotel.WithDBStatement(false)); err != nil {
+		slog.Error("failed to instrument Redis tracing", "err", err)
+	}
 
 	return client
 }
@@ -165,11 +170,11 @@ func createOpensearch(config *koanf.Koanf) *opensearchapi.Client {
 
 	client, err := opensearchapi.NewClient(opensearchapi.Config{
 		Client: opensearch.Config{
-			Transport: &http.Transport{
+			Transport: otelhttp.NewTransport(&http.Transport{
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
 				},
-			},
+			}),
 			Addresses: []string{elasticsearchURL},
 			Username:  config.String("opensearch.user"),
 			Password:  config.String("opensearch.password"),

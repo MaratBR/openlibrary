@@ -24,6 +24,7 @@ import (
 	"github.com/MaratBR/openlibrary/web/webinfra"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -44,6 +45,20 @@ func mainServer(
 		app.GlobalFeatureFlags.DisableCache = true
 		slog.SetLogLoggerLevel(slog.LevelDebug)
 	}
+
+	tracerProvider, err := createTelemetry()
+
+	if err != nil {
+		// TODO proper handling
+		panic(err)
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := tracerProvider.Shutdown(ctx); err != nil {
+			slog.Error("failed to shut down tracing", "err", err)
+		}
+	}()
 
 	fx.New(
 		fx.Supply(cliParams),
@@ -111,6 +126,9 @@ func newRootMux(
 
 	// the area where all the fun happens
 	r.Group(func(r chi.Router) {
+		// Trace dynamic website and API traffic, but leave high-volume static assets
+		// out of the trace stream. Chi route patterns keep span names low-cardinality.
+		r.Use(otelhttp.NewMiddleware("HTTP request", otelhttp.WithSpanNameFormatter(routeSpanName)))
 		r.Use(session.Middleware(sessionStore))
 
 		for _, h := range handlers {
@@ -120,6 +138,14 @@ func newRootMux(
 	})
 
 	return r
+}
+
+func routeSpanName(_ string, r *http.Request) string {
+	pattern := chi.RouteContext(r.Context()).RoutePattern()
+	if pattern == "" {
+		pattern = "unmatched"
+	}
+	return r.Method + " " + pattern
 }
 
 type postInitParams struct {
