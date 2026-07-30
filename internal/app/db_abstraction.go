@@ -1,17 +1,8 @@
 package app
 
 import (
-	"context"
-
-	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/jackc/pgx/v5"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 )
 
-type txFactory interface {
-	Begin(ctx context.Context) (pgx.Tx, error)
-}
-
-type DB interface {
-	store.DBTX
-	txFactory
-}
+// Deprecated: use dal.DB instead
+type DB dal.DB

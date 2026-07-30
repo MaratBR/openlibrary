@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -21,7 +22,7 @@ func (r *contentModerationRepository) transaction(ctx context.Context, run func(
 		return apperror.WrapUnexpectedDBError(err)
 	}
 	if err = run(store.New(r.db).WithTx(tx)); err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return err
 	}
 	if err = tx.Commit(ctx); err != nil {

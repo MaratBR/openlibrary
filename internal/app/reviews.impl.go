@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 )
@@ -43,7 +44,7 @@ func (r *reviewsService) DeleteReview(ctx context.Context, cmd DeleteReviewComma
 		BookID: cmd.BookID,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
@@ -52,7 +53,7 @@ func (r *reviewsService) DeleteReview(ctx context.Context, cmd DeleteReviewComma
 		BookID: cmd.BookID,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
@@ -200,7 +201,7 @@ func (r *reviewsService) UpdateReview(ctx context.Context, cmd UpdateReviewComma
 		Content: cmd.Content,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return ReviewDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
@@ -210,7 +211,7 @@ func (r *reviewsService) UpdateReview(ctx context.Context, cmd UpdateReviewComma
 		Rating: cmd.Rating.ToUint16(),
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return ReviewDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 

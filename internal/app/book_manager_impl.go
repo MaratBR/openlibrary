@@ -13,6 +13,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
@@ -333,7 +334,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 
 	oldOrder, err := queries.GetChaptersOrder(ctx, input.BookID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return UpdateBookChapterOrdersCommand_Result{}, err
 	}
 	oldIndices := make(map[int64]int)
@@ -368,7 +369,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 			Order: int32(i + 1),
 		})
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return UpdateBookChapterOrdersCommand_Result{}, err
 		}
 	}
@@ -528,7 +529,7 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 	{
 		chapterOrders, err := queries.Book_GetChapterOrder(ctx, input.BookID)
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return err
 		}
 
@@ -548,11 +549,11 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 
 		for i, chapterID := range input.ChapterIDs {
 			if _, ok := oldChapterOrder[chapterID]; !ok {
-				rollbackTx(ctx, tx)
+				dal.RollbackTx(ctx, tx)
 				return fmt.Errorf("chapter %d does not exist", chapterID)
 			}
 			if _, ok := newChapterOrder[chapterID]; ok {
-				rollbackTx(ctx, tx)
+				dal.RollbackTx(ctx, tx)
 				return fmt.Errorf("chapter %d is duplicated", chapterID)
 			}
 
@@ -561,7 +562,7 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 	}
 
 	if len(newChapterOrder) < len(oldChapterOrder) {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return errors.New("not enough chapters provided")
 	}
 
@@ -574,7 +575,7 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 			Order: int32(newOrder),
 		})
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return err
 		}
 	}
@@ -812,13 +813,13 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 		IsPubliclyVisible: isChapterPublic,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = queries.Draft_MarkAsPublished(ctx, cmd.DraftID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
@@ -847,14 +848,14 @@ func (s *bookManagerService) ScheduleDraft(ctx context.Context, cmd ScheduleDraf
 	}
 	queries := s.queries.WithTx(tx)
 	if err = queries.Draft_ClearChapterSchedules(ctx, cmd.ChapterID); err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 	if err = queries.Draft_Schedule(ctx, store.Draft_ScheduleParams{
 		ID:          cmd.DraftID,
 		ScheduledAt: timeToTimestamptz(cmd.ScheduledAt),
 	}); err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 	if err = tx.Commit(ctx); err != nil {

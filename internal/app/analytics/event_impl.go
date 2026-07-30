@@ -6,6 +6,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
+	"github.com/jackc/pgx/v5/pgtype"
 	"go.uber.org/zap"
 )
 
@@ -28,6 +29,7 @@ func (r *eventRepository) Insert(ctx context.Context, events []Event) error {
 			UserKey:   event.UserKey,
 			BookID:    event.BookID,
 			Value:     event.Value,
+			CreatedAt: pgtype.Timestamptz{Valid: true, Time: event.CreatedAt},
 		}
 	}
 
@@ -45,7 +47,10 @@ func (r *eventRepository) Insert(ctx context.Context, events []Event) error {
 
 func (r *eventRepository) GetEvents(ctx context.Context, maxCount int, cursor int64) (int64, []Event, error) {
 	queries := store.New(r.db)
-	rows, err := queries.Analytics_GetEvents(ctx, cursor)
+	rows, err := queries.Analytics_GetEvents(ctx, store.Analytics_GetEventsParams{
+		Limit: int32(maxCount),
+		ID:    cursor,
+	})
 	if err != nil {
 		return cursor, nil, apperror.WrapUnexpectedDBError(err)
 	}

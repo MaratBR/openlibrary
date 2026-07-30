@@ -2,49 +2,62 @@ package analytics
 
 import (
 	"context"
+	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
+	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
+	"github.com/jackc/pgx/v5/pgtype"
 	"go.uber.org/zap"
 )
 
 type metricRepository struct {
-	db  store.DBTX
+	db  dal.DB
 	log *zap.SugaredLogger
 }
 
 // AddMetrics implements [MetricRepository].
-func (m *metricRepository) AddMetrics(ctx context.Context, metricRecords []MetricRecord) error {
-	queries := store.New(m.db)
+func (m *metricRepository) AddMetrics(ctx context.Context, tx store.DBTX, metricRecords []MetricRecord) error {
 
-	metrics := make([]string, len(metricRecords))
-	bookIds := make([]int64, len(metricRecords))
-	samples := make([]int64, len(metricRecords))
-	values := make([]float64, len(metricRecords))
+	groupedByDay := commonutil.GroupBy(metricRecords, func(m MetricRecord) time.Time {
+		return newBucketStartTime(m.OccurredAt).Day()
+	})
 
-	for i, metric := range metricRecords {
-		metrics[i] = string(metric.Type)
-		bookIds[i] = metric.BookID
-		values[i] = metric.Value
-		samples[i] = metric.Samples
-	}
+	queries := store.New(tx)
 
-	params := store.Analytics_UpdateMetricsParams{
-		Metrics: metrics,
-		BookIds: bookIds,
-		Values:  values,
-		Samples: samples,
-	}
-	m.log.Debugw("metricRepository: Analytics_UpdateMetrics", "params", params)
-	err := queries.Analytics_UpdateMetrics(ctx, params)
+	for dayStart, records := range groupedByDay {
+		metrics := make([]string, len(records))
+		bookIds := make([]int64, len(records))
+		samples := make([]int64, len(records))
+		values := make([]float64, len(records))
 
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
+		for i, metric := range records {
+			metrics[i] = string(metric.Type)
+			bookIds[i] = metric.BookID
+			values[i] = metric.Value
+			samples[i] = metric.Samples
+		}
+
+		params := store.Analytics_UpdateMetricsParams{
+			Metrics:  metrics,
+			BookIds:  bookIds,
+			Values:   values,
+			Samples:  samples,
+			DayStart: pgtype.Timestamptz{Valid: true, Time: dayStart},
+		}
+		m.log.Debugw("metricRepository: Analytics_UpdateMetrics", "params", params)
+		err := queries.Analytics_UpdateMetrics(ctx, params)
+
+		if err != nil {
+			return apperror.WrapUnexpectedDBError(err)
+		}
+
 	}
 
 	return nil
 }
 
-func newMetricRepository(db store.DBTX, log *zap.SugaredLogger) MetricRepository {
+func newMetricRepository(db dal.DB, log *zap.SugaredLogger) MetricRepository {
 	return &metricRepository{db: db, log: log}
 }

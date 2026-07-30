@@ -1,8 +1,8 @@
 -- name: Analytics_InsertEvent :copyfrom
 insert into ol_analytics.interaction_event 
-    (user_key, book_id, event_type, value)
+    (user_key, book_id, event_type, value, created_at)
     values
-    ($1, $2, $3, $4);
+    ($1, $2, $3, $4, $5);
 
 -- name: Analytics_UpdateMetrics :exec
 WITH 
@@ -26,25 +26,25 @@ WITH
 
         SELECT
             'year'::ol_analytics.bucket_period_type,
-            date_trunc('year', now(), 'UTC')
+            date_trunc('year', sqlc.arg(day_start)::timestamptz, 'UTC')
 
         UNION ALL
 
         SELECT
             'month'::ol_analytics.bucket_period_type,
-            date_trunc('month', now(), 'UTC')
+            date_trunc('month', sqlc.arg(day_start)::timestamptz, 'UTC')
 
         UNION ALL
 
         SELECT
             'week'::ol_analytics.bucket_period_type,
-            date_trunc('week', now(), 'UTC')
+            date_trunc('week', sqlc.arg(day_start)::timestamptz, 'UTC')
 
         UNION ALL
 
         SELECT
             'day'::ol_analytics.bucket_period_type,
-            date_trunc('day', now(), 'UTC')
+            date_trunc('day', sqlc.arg(day_start)::timestamptz, 'UTC')
     ),
     aggregated_buckets AS (
         SELECT
@@ -90,102 +90,14 @@ DO UPDATE SET
     updated_at = now();
 
 
--- name: Analytics_UpdatePopularity :exec
-WITH 
-    params AS (
-        SELECT statement_timestamp() AS run_at
-    ),
-    expanded_events AS (
-        SELECT
-            event.book_id,
-            event.event_type,
-            event.created_at,
-            event_bucket.bucket_type,
-            event_bucket.bucket_start
-        FROM ol_analytics.interaction_event AS event
-        CROSS JOIN LATERAL (
-            SELECT
-                'all'::ol_analytics.bucket_period_type AS bucket_type,
-                TIMESTAMPTZ '1970-01-01 00:00:00+00' AS bucket_start
-
-            UNION ALL
-
-            SELECT
-                'year'::ol_analytics.bucket_period_type,
-                date_trunc('year', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
-
-            UNION ALL
-
-            SELECT
-                'month'::ol_analytics.bucket_period_type,
-                date_trunc('month', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
-
-            UNION ALL
-
-            SELECT
-                'week'::ol_analytics.bucket_period_type,
-                date_trunc('week', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
-
-            UNION ALL
-
-            SELECT
-                'day'::ol_analytics.bucket_period_type,
-                date_trunc('day', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
-        ) AS event_bucket
-    ),
-    unprocessed_events AS (
-        SELECT
-            event.*,
-            existing.updated_at AS previous_updated_at
-        FROM expanded_events AS event
-        LEFT JOIN ol_analytics.book_popularity_bucket AS existing
-            ON existing.book_id = event.book_id
-        AND existing.bucket_type = event.bucket_type
-        AND existing.bucket_start = event.bucket_start
-        WHERE event.created_at > COALESCE(
-            existing.updated_at,
-            TIMESTAMPTZ '-infinity'
-        )
-    ),
-    new_scores AS (
-        SELECT
-            event.book_id,
-            event.bucket_type,
-            event.bucket_start,
-            SUM(
-                CASE event.event_type
-                    WHEN 'book_view'
-                        THEN sqlc.arg('book_view_score')::double precision
-                    WHEN 'search_click'
-                        THEN sqlc.arg('search_click_score')::double precision
-                    WHEN 'chapter_view'
-                        THEN sqlc.arg('chapter_view_score')::double precision
-                    WHEN 'started_reading'
-                        THEN sqlc.arg('started_reading_score')::double precision
-                    WHEN 'completed'
-                        THEN sqlc.arg('completed_score')::double precision
-                    WHEN 'dropped'
-                        THEN sqlc.arg('dropped_score')::double precision
-                    WHEN 'finished_chapter'
-                        THEN sqlc.arg('finished_chapter_score')::double precision
-                    ELSE 0
-                END
-                *
-                POWER(
-                    0.5,
-                    EXTRACT(
-                        EPOCH FROM params.run_at - event.created_at
-                    )
-                    / sqlc.arg('half_life_seconds')::double precision
-                )
-            ) AS value
-        FROM unprocessed_events AS event
-        CROSS JOIN params
-        GROUP BY
-            event.book_id,
-            event.bucket_type,
-            event.bucket_start
-    )
+-- name: Analytics_RecalculateBookPopularity :exec
+WITH metric_weights AS (
+    SELECT
+        mw.metric,
+        mw.weight_text::double precision AS weight
+    FROM jsonb_each_text(sqlc.arg(weights)::jsonb)
+        AS mw(metric, weight_text)
+)
 INSERT INTO ol_analytics.book_popularity_bucket (
     book_id,
     bucket_type,
@@ -194,34 +106,20 @@ INSERT INTO ol_analytics.book_popularity_bucket (
     updated_at
 )
 SELECT
-    score.book_id,
-    score.bucket_type,
-    score.bucket_start,
-    score.value,
-    params.run_at
-FROM new_scores AS score
-CROSS JOIN params
-ON CONFLICT (
-    book_id,
-    bucket_type,
-    bucket_start
-)
+    b.book_id,
+    b.bucket_type,
+    b.bucket_start,
+    SUM(b.value_sum * w.weight),
+    now()
+FROM ol_analytics.bucket AS b
+JOIN metric_weights AS w ON w.metric = b.metric
+WHERE b.bucket_type = sqlc.arg(bucket_type)
+AND b.bucket_start = sqlc.arg(bucket_start)
+GROUP BY b.book_id, b.bucket_type, b.bucket_start
+ON CONFLICT (book_id, bucket_type, bucket_start)
 DO UPDATE SET
-    value =
-        ol_analytics.book_popularity_bucket.value
-        * POWER(
-            0.5,
-            EXTRACT(
-                EPOCH FROM (
-                    EXCLUDED.updated_at
-                    - ol_analytics.book_popularity_bucket.updated_at
-                )
-            )
-            / sqlc.arg('half_life_seconds')::double precision
-        )
-        + EXCLUDED.value,
+    value = EXCLUDED.value,
     updated_at = EXCLUDED.updated_at;
-
 
 -- name: Analytics_GetMetricValue :one
 select samples_count, value_sum
@@ -251,7 +149,8 @@ offset sqlc.arg('skip') limit sqlc.arg('limit');
 select * 
 from ol_analytics.interaction_event
 where id > $1
-order by id asc;
+order by id asc
+limit $2;
 
 -- name: Analytics_GetWorkerState :one
 select *

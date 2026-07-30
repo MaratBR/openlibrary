@@ -12,6 +12,7 @@ import './scrollable'
 import './theme'
 import './util'
 import '@/http-client'
+import './ui'
 
 import './style'
 import './theme-content.css'

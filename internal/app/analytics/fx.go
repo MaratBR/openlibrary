@@ -8,6 +8,7 @@ var FXModule = fx.Module(
 	eventModule,
 	atomicModule,
 	metricModule,
+	popularityModule,
 
 	fx.Provide(
 		NewAnalyticsCounters,

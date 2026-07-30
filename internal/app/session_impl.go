@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
@@ -110,7 +111,7 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 
 	session, err := queries.Session_GetInfo(ctx, command.SessionID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		if err == store.ErrNoRows {
 			return nil, ErrSessionNotFound
 		}
@@ -118,7 +119,7 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 	}
 	err = queries.Session_Terminate(ctx, command.SessionID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 
@@ -132,7 +133,7 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 		CreatedAt: timeToTimestamptz(time.Now()),
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 

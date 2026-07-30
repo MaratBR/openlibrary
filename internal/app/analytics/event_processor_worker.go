@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/avast/retry-go/v5"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -23,6 +24,7 @@ type eventProcessorWorker struct {
 	eventProcessorWorkerState eventProcessorWorkerState
 	currentCursor             int64
 
+	db      dal.DB
 	running bool
 	done    chan struct{}
 	wakeUp  chan struct{}
@@ -69,12 +71,7 @@ loop:
 }
 
 func (p *eventProcessorWorker) init(ctx context.Context) {
-	err := retry.New(
-		retry.Attempts(6),
-		retry.DelayType(retry.FullJitterBackoffDelay),
-		retry.MaxDelay(time.Second*10),
-		retry.MaxJitter(time.Second),
-	).Do(func() error {
+	err := p.retry(func() error {
 		var err error
 		p.currentCursor, err = p.eventProcessorWorkerState.GetCurrentCursor(ctx)
 		return err
@@ -98,30 +95,59 @@ func (p *eventProcessorWorker) process(ctx context.Context) {
 	}
 	span.SetAttributes(attribute.Int("analytics.event_count", len(events)))
 
-	err = p.eventProcessor.Process(ctx, events)
+	if len(events) == 0 {
+		return
+	}
 
+	tx, err := p.db.Begin(ctx)
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+		p.log.Errorw("failed to open transaction in eventProcessorWorker.process", "err", err)
+		return
+	}
+
+	err = p.eventProcessor.Process(ctx, tx, events)
+
+	if err != nil {
+		dal.RollbackTx(ctx, tx)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		p.log.Error("eventProcessorWorker: failed to process events with event processor")
+		return
 	} else {
 		p.log.Debugw("eventProcessorWorker: finished processing", "count", len(events), "newCursor", newCursor)
 	}
-	p.currentCursor = newCursor
 
-	err = retry.New(
+	err = p.retry(func() error {
+		return p.eventProcessorWorkerState.SaveCurrentCursor(ctx, tx, newCursor)
+	})
+	if err != nil {
+		dal.RollbackTx(ctx, tx)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		p.log.Errorw("failed to update worker's state")
+		return
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		p.log.Errorw("failed to commit transaction")
+		return
+	}
+
+	p.currentCursor = newCursor
+}
+
+func (p *eventProcessorWorker) retry(fn func() error) error {
+	return retry.New(
 		retry.Attempts(5),
 		retry.MaxJitter(time.Millisecond*200),
 		retry.MaxDelay(time.Second*5),
 		retry.DelayType(retry.FullJitterBackoffDelay),
-	).Do(func() error {
-		return p.eventProcessorWorkerState.SaveCurrentCursor(ctx, newCursor)
-	})
-	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-		p.log.Errorw("failed to update worker's state")
-	}
+	).Do(fn)
 }
 
 func (p *eventProcessorWorker) stop(ctx context.Context) error {
@@ -135,12 +161,13 @@ func (p *eventProcessorWorker) stop(ctx context.Context) error {
 	return nil
 }
 
-func newEventProcessorWorker(log *zap.SugaredLogger, eventProcessor EventProcessor, eventRepo EventRepository, eventProcessorWorkerState eventProcessorWorkerState, lc fx.Lifecycle) *eventProcessorWorker {
+func newEventProcessorWorker(log *zap.SugaredLogger, eventProcessor EventProcessor, eventRepo EventRepository, db dal.DB, eventProcessorWorkerState eventProcessorWorkerState, lc fx.Lifecycle) *eventProcessorWorker {
 	svc := &eventProcessorWorker{
 		log:                       log,
 		eventProcessor:            eventProcessor,
 		eventRepo:                 eventRepo,
 		eventProcessorWorkerState: eventProcessorWorkerState,
+		db:                        db,
 	}
 
 	lc.Append(fx.Hook{

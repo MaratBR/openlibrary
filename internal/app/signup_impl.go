@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/app/email"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -78,7 +79,7 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 	if input.Email != "" {
 		userWithSameEmailExists, err := queries.User_ExistsByEmail(ctx, input.Username)
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return SignUpResult{}, apperror.WrapUnexpectedDBError(err)
 		}
 
@@ -89,18 +90,18 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 
 	userWithSameNameExists, err := queries.User_ExistsByUsername(ctx, input.Username)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return SignUpResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	if userWithSameNameExists {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return SignUpResult{}, ErrUsernameTaken
 	}
 
 	userID, err := createUser(ctx, queries, input.Username, input.Email, input.Password, RoleUser, false)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return SignUpResult{}, err
 	}
 
@@ -132,7 +133,7 @@ func (s *signUpService) verifyEmailRequest(ctx context.Context, email string, us
 	queries := store.New(s.db).WithTx(tx)
 	err = queries.EmailVerification_Delete(ctx, email)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return time.Time{}, apperror.WrapUnexpectedDBError(err)
 	}
 	err = queries.EmailVerification_Insert(ctx, store.EmailVerification_InsertParams{
@@ -142,14 +143,14 @@ func (s *signUpService) verifyEmailRequest(ctx context.Context, email string, us
 		VerificationCodeHash: hash,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return time.Time{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	// TODO some good looking message or something
 	err = s.emailService.Send(ctx, email, "OL verification code", fmt.Sprintf("Your verification code is %s\n\nIf you did not sign up, please just ignore this message and apologies for disturbance :)", code))
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return time.Time{}, err
 	}
 
@@ -220,7 +221,7 @@ func (s *signUpService) VerifyEmail(ctx context.Context, cmd VerifyEmailCommand)
 		}
 		return nil
 	} else {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return SignUpEmailVerificationInvalidCode.New("invalid verification code")
 	}
 

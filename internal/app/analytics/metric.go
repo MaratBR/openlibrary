@@ -1,7 +1,7 @@
 package analytics
 
 import (
-	"context"
+	"time"
 
 	"go.uber.org/fx"
 )
@@ -15,29 +15,37 @@ const (
 type MetricType string
 
 type MetricRecord struct {
-	Type    MetricType
-	Value   float64
-	BookID  int64
-	Samples int64
+	Type       MetricType
+	Value      float64
+	BookID     int64
+	Samples    int64
+	OccurredAt time.Time
 }
 
-type MetricSink interface {
-	SubmitMetrics(ctx context.Context, metrics []MetricRecord)
+func NewMetricRecord(
+	type_ MetricType,
+	value float64,
+	bookID int64,
+	occurredAt time.Time,
+) MetricRecord {
+	return MetricRecord{
+		Samples:    1,
+		Value:      value,
+		Type:       type_,
+		BookID:     bookID,
+		OccurredAt: occurredAt,
+	}
 }
 
 var metricModule = fx.Module("ol_analytics",
 	fx.Provide(
 		newMetricRepository,
-		newMetricBackgroundService,
 		fx.Private,
 	),
 
 	fx.Provide(
-		newMetricSink,
 		newMetricService,
 	),
-
-	fx.Invoke(func(*metricBackgroundService) {}),
 )
 
 // go2tsdef:generate

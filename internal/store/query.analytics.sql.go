@@ -16,10 +16,16 @@ select id, user_key, book_id, event_type, value, created_at
 from ol_analytics.interaction_event
 where id > $1
 order by id asc
+limit $2
 `
 
-func (q *Queries) Analytics_GetEvents(ctx context.Context, id int64) ([]OlAnalyticsInteractionEvent, error) {
-	rows, err := q.db.Query(ctx, analytics_GetEvents, id)
+type Analytics_GetEventsParams struct {
+	ID    int64
+	Limit int32
+}
+
+func (q *Queries) Analytics_GetEvents(ctx context.Context, arg Analytics_GetEventsParams) ([]OlAnalyticsInteractionEvent, error) {
+	rows, err := q.db.Query(ctx, analytics_GetEvents, arg.ID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -228,6 +234,50 @@ type Analytics_InsertEventParams struct {
 	BookID    int64
 	EventType string
 	Value     float64
+	CreatedAt pgtype.Timestamptz
+}
+
+const analytics_RecalculateBookPopularity = `-- name: Analytics_RecalculateBookPopularity :exec
+WITH metric_weights AS (
+    SELECT
+        mw.metric,
+        mw.weight_text::double precision AS weight
+    FROM jsonb_each_text($3::jsonb)
+        AS mw(metric, weight_text)
+)
+INSERT INTO ol_analytics.book_popularity_bucket (
+    book_id,
+    bucket_type,
+    bucket_start,
+    value,
+    updated_at
+)
+SELECT
+    b.book_id,
+    b.bucket_type,
+    b.bucket_start,
+    SUM(b.value_sum * w.weight),
+    now()
+FROM ol_analytics.bucket AS b
+JOIN metric_weights AS w ON w.metric = b.metric
+WHERE b.bucket_type = $1
+AND b.bucket_start = $2
+GROUP BY b.book_id, b.bucket_type, b.bucket_start
+ON CONFLICT (book_id, bucket_type, bucket_start)
+DO UPDATE SET
+    value = EXCLUDED.value,
+    updated_at = EXCLUDED.updated_at
+`
+
+type Analytics_RecalculateBookPopularityParams struct {
+	BucketType  OlAnalyticsBucketPeriodType
+	BucketStart pgtype.Timestamptz
+	Weights     []byte
+}
+
+func (q *Queries) Analytics_RecalculateBookPopularity(ctx context.Context, arg Analytics_RecalculateBookPopularityParams) error {
+	_, err := q.db.Exec(ctx, analytics_RecalculateBookPopularity, arg.BucketType, arg.BucketStart, arg.Weights)
+	return err
 }
 
 const analytics_SetWorkerState = `-- name: Analytics_SetWorkerState :exec
@@ -271,25 +321,25 @@ WITH
 
         SELECT
             'year'::ol_analytics.bucket_period_type,
-            date_trunc('year', now(), 'UTC')
+            date_trunc('year', $5::timestamptz, 'UTC')
 
         UNION ALL
 
         SELECT
             'month'::ol_analytics.bucket_period_type,
-            date_trunc('month', now(), 'UTC')
+            date_trunc('month', $5::timestamptz, 'UTC')
 
         UNION ALL
 
         SELECT
             'week'::ol_analytics.bucket_period_type,
-            date_trunc('week', now(), 'UTC')
+            date_trunc('week', $5::timestamptz, 'UTC')
 
         UNION ALL
 
         SELECT
             'day'::ol_analytics.bucket_period_type,
-            date_trunc('day', now(), 'UTC')
+            date_trunc('day', $5::timestamptz, 'UTC')
     ),
     aggregated_buckets AS (
         SELECT
@@ -336,10 +386,11 @@ DO UPDATE SET
 `
 
 type Analytics_UpdateMetricsParams struct {
-	BookIds []int64
-	Metrics []string
-	Values  []float64
-	Samples []int64
+	BookIds  []int64
+	Metrics  []string
+	Values   []float64
+	Samples  []int64
+	DayStart pgtype.Timestamptz
 }
 
 func (q *Queries) Analytics_UpdateMetrics(ctx context.Context, arg Analytics_UpdateMetricsParams) error {
@@ -348,164 +399,7 @@ func (q *Queries) Analytics_UpdateMetrics(ctx context.Context, arg Analytics_Upd
 		arg.Metrics,
 		arg.Values,
 		arg.Samples,
-	)
-	return err
-}
-
-const analytics_UpdatePopularity = `-- name: Analytics_UpdatePopularity :exec
-WITH 
-    params AS (
-        SELECT statement_timestamp() AS run_at
-    ),
-    expanded_events AS (
-        SELECT
-            event.book_id,
-            event.event_type,
-            event.created_at,
-            event_bucket.bucket_type,
-            event_bucket.bucket_start
-        FROM ol_analytics.interaction_event AS event
-        CROSS JOIN LATERAL (
-            SELECT
-                'all'::ol_analytics.bucket_period_type AS bucket_type,
-                TIMESTAMPTZ '1970-01-01 00:00:00+00' AS bucket_start
-
-            UNION ALL
-
-            SELECT
-                'year'::ol_analytics.bucket_period_type,
-                date_trunc('year', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
-
-            UNION ALL
-
-            SELECT
-                'month'::ol_analytics.bucket_period_type,
-                date_trunc('month', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
-
-            UNION ALL
-
-            SELECT
-                'week'::ol_analytics.bucket_period_type,
-                date_trunc('week', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
-
-            UNION ALL
-
-            SELECT
-                'day'::ol_analytics.bucket_period_type,
-                date_trunc('day', event.created_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
-        ) AS event_bucket
-    ),
-    unprocessed_events AS (
-        SELECT
-            event.book_id, event.event_type, event.created_at, event.bucket_type, event.bucket_start,
-            existing.updated_at AS previous_updated_at
-        FROM expanded_events AS event
-        LEFT JOIN ol_analytics.book_popularity_bucket AS existing
-            ON existing.book_id = event.book_id
-        AND existing.bucket_type = event.bucket_type
-        AND existing.bucket_start = event.bucket_start
-        WHERE event.created_at > COALESCE(
-            existing.updated_at,
-            TIMESTAMPTZ '-infinity'
-        )
-    ),
-    new_scores AS (
-        SELECT
-            event.book_id,
-            event.bucket_type,
-            event.bucket_start,
-            SUM(
-                CASE event.event_type
-                    WHEN 'book_view'
-                        THEN $2::double precision
-                    WHEN 'search_click'
-                        THEN $3::double precision
-                    WHEN 'chapter_view'
-                        THEN $4::double precision
-                    WHEN 'started_reading'
-                        THEN $5::double precision
-                    WHEN 'completed'
-                        THEN $6::double precision
-                    WHEN 'dropped'
-                        THEN $7::double precision
-                    WHEN 'finished_chapter'
-                        THEN $8::double precision
-                    ELSE 0
-                END
-                *
-                POWER(
-                    0.5,
-                    EXTRACT(
-                        EPOCH FROM params.run_at - event.created_at
-                    )
-                    / $1::double precision
-                )
-            ) AS value
-        FROM unprocessed_events AS event
-        CROSS JOIN params
-        GROUP BY
-            event.book_id,
-            event.bucket_type,
-            event.bucket_start
-    )
-INSERT INTO ol_analytics.book_popularity_bucket (
-    book_id,
-    bucket_type,
-    bucket_start,
-    value,
-    updated_at
-)
-SELECT
-    score.book_id,
-    score.bucket_type,
-    score.bucket_start,
-    score.value,
-    params.run_at
-FROM new_scores AS score
-CROSS JOIN params
-ON CONFLICT (
-    book_id,
-    bucket_type,
-    bucket_start
-)
-DO UPDATE SET
-    value =
-        ol_analytics.book_popularity_bucket.value
-        * POWER(
-            0.5,
-            EXTRACT(
-                EPOCH FROM (
-                    EXCLUDED.updated_at
-                    - ol_analytics.book_popularity_bucket.updated_at
-                )
-            )
-            / $1::double precision
-        )
-        + EXCLUDED.value,
-    updated_at = EXCLUDED.updated_at
-`
-
-type Analytics_UpdatePopularityParams struct {
-	HalfLifeSeconds      float64
-	BookViewScore        float64
-	SearchClickScore     float64
-	ChapterViewScore     float64
-	StartedReadingScore  float64
-	CompletedScore       float64
-	DroppedScore         float64
-	FinishedChapterScore float64
-}
-
-func (q *Queries) Analytics_UpdatePopularity(ctx context.Context, arg Analytics_UpdatePopularityParams) error {
-	_, err := q.db.Exec(ctx, analytics_UpdatePopularity,
-		arg.HalfLifeSeconds,
-		arg.BookViewScore,
-		arg.SearchClickScore,
-		arg.ChapterViewScore,
-		arg.StartedReadingScore,
-		arg.CompletedScore,
-		arg.DroppedScore,
-		arg.FinishedChapterScore,
+		arg.DayStart,
 	)
 	return err
 }

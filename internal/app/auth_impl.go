@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -73,13 +74,13 @@ func (s *authService) EnsureAdminUserExists(ctx context.Context) error {
 	}
 	queries := s.queries.WithTx(tx)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return err
 	}
 
 	if !adminExists {
 		if _, err = createUser(ctx, queries, "admin", "", "admin", RoleAdmin, true); err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return err
 		}
 	}
@@ -87,7 +88,7 @@ func (s *authService) EnsureAdminUserExists(ctx context.Context) error {
 		// System-owned anonymized records need a real foreign-key target. Its
 		// random password is never exposed, making interactive login impractical.
 		if _, err = createUser(ctx, queries, "system", "", uuidV4().String(), RoleSystem, true); err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return err
 		}
 	}
@@ -111,7 +112,7 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 	queries := s.queries.WithTx(tx)
 	user, err := queries.User_FindByLogin(ctx, input.Username)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		if err == pgx.ErrNoRows {
 			return SignInResult{}, ErrInvalidCredentials
 		}
@@ -120,12 +121,12 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 
 	match, err := verifyPassword(input.Password, user.PasswordHash)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return SignInResult{}, err
 	}
 
 	if !match {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return SignInResult{}, ErrInvalidCredentials
 	}
 
@@ -135,7 +136,7 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 			banErr = queries.Moderation_SetUserBanned(ctx, store.Moderation_SetUserBannedParams{ID: user.ID, IsBanned: false})
 		}
 		if banErr != nil || expiresAt.Time.After(time.Now()) {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return SignInResult{}, ErrUserBanned
 		}
 	}
@@ -143,7 +144,7 @@ func (s *authService) SignIn(ctx context.Context, input SignInCommand) (SignInRe
 	userID := uuidDbToDomain(user.ID)
 	sessionID, err := s.createNewSession(ctx, queries, userID, input.UserAgent, input.IpAddress)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return SignInResult{}, err
 	}
 

@@ -12,6 +12,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/app/email"
 	"github.com/MaratBR/openlibrary/internal/csrf"
 	elasticstore "github.com/MaratBR/openlibrary/internal/elasticstore"
@@ -34,6 +35,9 @@ import (
 var infraModule = fx.Module("infra", fx.Provide(
 	loadConfigOrPanic,
 	connectToDatabase,
+	func(db dal.DB) app.DB {
+		return db
+	},
 	newLocaleProvider,
 	createCache,
 	createMailService,
@@ -69,7 +73,7 @@ func newRedisClient(cfg *koanf.Koanf) *redis.Client {
 	return client
 }
 
-func connectToDatabase(config *koanf.Koanf) app.DB {
+func connectToDatabase(config *koanf.Koanf) dal.DB {
 	connectionString := config.String("database.url")
 	if connectionString == "" {
 		slog.Error("database.url is empty")

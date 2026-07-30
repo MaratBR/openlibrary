@@ -1,7 +1,11 @@
 package analytics
 
-import "context"
+import (
+	"context"
+
+	"github.com/MaratBR/openlibrary/internal/store"
+)
 
 type MetricRepository interface {
-	AddMetrics(ctx context.Context, metric []MetricRecord) error
+	AddMetrics(ctx context.Context, tx store.DBTX, metric []MetricRecord) error
 }

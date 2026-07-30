@@ -52,7 +52,6 @@ loop:
 		case <-stopingCtx.Done():
 			break loop
 		case <-time.After(time.Second * 5):
-			svc.log.Debug("eventBackgroundService: woke up")
 			svc.process(stopingCtx)
 		}
 	}

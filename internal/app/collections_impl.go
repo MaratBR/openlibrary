@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/lib/gset"
 	"github.com/gofrs/uuid"
@@ -87,7 +88,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 	// get all collections, then figure out which ones have to be added or removed
 	collections, err := queries.Collections_ListByID(ctx, cmd.CollectionID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 	bookCollections, err := queries.Collection_GetByBook(ctx, store.Collection_GetByBookParams{
@@ -95,7 +96,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 		BookID: cmd.BookID,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
@@ -132,7 +133,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 			CollectionID: colID,
 		})
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return apperror.WrapUnexpectedDBError(err)
 		}
 	}
@@ -143,7 +144,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 			CollectionID: colID,
 		})
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return apperror.WrapUnexpectedDBError(err)
 		}
 
@@ -153,7 +154,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 	for _, colID := range removeCollections {
 		err = queries.Collection_RecalculateCounter(ctx, colID)
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return apperror.WrapUnexpectedDBError(err)
 		}
 	}
@@ -161,7 +162,7 @@ func (c *collectionService) AddToCollections(ctx context.Context, cmd AddToColle
 	for _, colID := range addCollections {
 		err = queries.Collection_RecalculateCounter(ctx, colID)
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return apperror.WrapUnexpectedDBError(err)
 		}
 	}

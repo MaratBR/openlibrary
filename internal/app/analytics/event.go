@@ -24,6 +24,10 @@ type Event struct {
 	CreatedAt time.Time
 }
 
+func (ev Event) ToMetric() MetricRecord {
+	return NewMetricRecord(MetricType(ev.EventType), ev.Value, ev.BookID, ev.CreatedAt)
+}
+
 func newEvent(bookID int64, userKey string, eventType EventType, value float64, createdAt time.Time) Event {
 	return Event{
 		BookID:    bookID,

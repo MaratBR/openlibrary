@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/app/gravatar"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -218,7 +219,7 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 	if cmd.Password != "" {
 		hash, err := hashPassword(cmd.Password)
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return apperror.WrapUnexpectedAppError(err)
 		}
 
@@ -227,7 +228,7 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 			PasswordHash: hash,
 		})
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return apperror.WrapUnexpectedDBError(err)
 		}
 	}
@@ -238,14 +239,14 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 		Gender: cmd.Gender,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	if cmd.Role.Valid {
 		err = u.updateUserRole(ctx, queries, cmd.UserID, cmd.Role.Value)
 		if err != nil {
-			rollbackTx(ctx, tx)
+			dal.RollbackTx(ctx, tx)
 			return err
 		}
 	}

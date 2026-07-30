@@ -49,6 +49,9 @@ create table ol_analytics.book_popularity_bucket (
     )
 );
 
+create index ix_book_popularity_bucket__bucket_type__bucket_start__value 
+    on ol_analytics.book_popularity_bucket (bucket_type, bucket_start, value desc);
+
 create table ol_analytics.worker_state (
     worker_name text primary key,
     last_launch timestamptz not null default '-infinity',

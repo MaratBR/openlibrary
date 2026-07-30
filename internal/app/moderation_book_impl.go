@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -144,13 +145,13 @@ func (m *moderationBookService) BanBook(ctx context.Context, cmd ModerationPerfo
 		IsBanned: true,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeBan, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return err
 	}
 
@@ -196,22 +197,22 @@ func (m *moderationBookService) PermanentlyRemoveBook(ctx context.Context, cmd M
 	// The system user owns anonymized books after permanent removal.
 	systemUser, err := queries.User_FindByLogin(ctx, "system")
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 	if UserRole(systemUser.Role) != RoleSystem {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return ErrModerationForbidden
 	}
 	err = queries.ModPermRemoveBook(ctx, store.ModPermRemoveBookParams{ID: cmd.BookID, AuthorUserID: systemUser.ID})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypePermRemoval, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return err
 	}
 
@@ -244,13 +245,13 @@ func (m *moderationBookService) ShadowBanBook(ctx context.Context, cmd Moderatio
 		IsShadowBanned: true,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeShadowBan, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return err
 	}
 
@@ -283,13 +284,13 @@ func (m *moderationBookService) UnBanBook(ctx context.Context, cmd ModerationPer
 		IsBanned: false,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeUnBan, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return err
 	}
 
@@ -321,13 +322,13 @@ func (m *moderationBookService) UnShadowBanBook(ctx context.Context, cmd Moderat
 		IsShadowBanned: false,
 	})
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
 	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeUnShadowBan, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
-		rollbackTx(ctx, tx)
+		dal.RollbackTx(ctx, tx)
 		return err
 	}
 

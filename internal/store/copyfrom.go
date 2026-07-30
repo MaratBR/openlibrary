@@ -33,6 +33,7 @@ func (r iteratorForAnalytics_InsertEvent) Values() ([]interface{}, error) {
 		r.rows[0].BookID,
 		r.rows[0].EventType,
 		r.rows[0].Value,
+		r.rows[0].CreatedAt,
 	}, nil
 }
 
@@ -41,7 +42,7 @@ func (r iteratorForAnalytics_InsertEvent) Err() error {
 }
 
 func (q *Queries) Analytics_InsertEvent(ctx context.Context, arg []Analytics_InsertEventParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"ol_analytics", "interaction_event"}, []string{"user_key", "book_id", "event_type", "value"}, &iteratorForAnalytics_InsertEvent{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"ol_analytics", "interaction_event"}, []string{"user_key", "book_id", "event_type", "value", "created_at"}, &iteratorForAnalytics_InsertEvent{rows: arg})
 }
 
 // iteratorForInsertDefinedTagEnMasse implements pgx.CopyFromSource.

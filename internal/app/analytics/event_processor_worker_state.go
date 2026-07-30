@@ -14,7 +14,7 @@ const (
 
 type eventProcessorWorkerState interface {
 	GetCurrentCursor(ctx context.Context) (int64, error)
-	SaveCurrentCursor(ctx context.Context, cursor int64) error
+	SaveCurrentCursor(ctx context.Context, tx store.DBTX, cursor int64) error
 }
 
 type eventProcessorWorkerStateImpl struct {
@@ -35,8 +35,14 @@ func (e *eventProcessorWorkerStateImpl) GetCurrentCursor(ctx context.Context) (i
 }
 
 // SaveCurrentCursor implements [eventProcessorWorkerState].
-func (e *eventProcessorWorkerStateImpl) SaveCurrentCursor(ctx context.Context, cursor int64) error {
-	err := e.queries.Analytics_SetWorkerState(ctx, store.Analytics_SetWorkerStateParams{
+func (e *eventProcessorWorkerStateImpl) SaveCurrentCursor(ctx context.Context, tx store.DBTX, cursor int64) error {
+	var queries *store.Queries
+	if tx != nil {
+		queries = store.New(tx)
+	} else {
+		queries = e.queries
+	}
+	err := queries.Analytics_SetWorkerState(ctx, store.Analytics_SetWorkerStateParams{
 		WorkerName: eventProcessorStateName,
 		LastLaunch: pgtype.Timestamptz{Valid: true, Time: time.Now()},
 		LastCursor: cursor,

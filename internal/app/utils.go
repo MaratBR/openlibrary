@@ -1,13 +1,10 @@
 package app
 
 import (
-	"context"
 	"encoding/json"
-	"log/slog"
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -86,13 +83,6 @@ func ArrInt64StringToInt64(v []Int64String) []int64 {
 
 func int64NullableDomainToDb(v Nullable[int64]) pgtype.Int8 {
 	return pgtype.Int8{Valid: v.Valid, Int64: v.Value}
-}
-
-func rollbackTx(ctx context.Context, tx pgx.Tx) {
-	err := tx.Rollback(ctx)
-	if err != nil {
-		slog.Error("failed to rollback transaction", "err", err)
-	}
 }
 
 func MapSlice[T, U any](ts []T, f func(T) U) []U {
