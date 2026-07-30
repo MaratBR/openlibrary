@@ -51,6 +51,7 @@ func NewBookViewEvent(
 		UserKey:   meta.UniqueID(),
 		CreatedAt: time.Now(),
 		EventType: EventTypeView,
+		Value:     1,
 	}
 }
 

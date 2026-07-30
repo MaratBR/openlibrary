@@ -39,12 +39,8 @@ func NewMetricRecord(
 
 var metricModule = fx.Module("ol_analytics",
 	fx.Provide(
-		newMetricRepository,
-		fx.Private,
-	),
-
-	fx.Provide(
 		newMetricService,
+		newMetricRepository,
 	),
 )
 

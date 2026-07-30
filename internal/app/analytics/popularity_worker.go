@@ -63,7 +63,8 @@ func (w *popularityWorker) recalculate(ctx context.Context) {
 	startedAt := time.Now()
 
 	// recalculate buckets for each period
-	for _, item := range bucketStartTimes.Buckets() {
+	// we also recalculate previous buckets within 2 hours mark
+	for _, item := range bucketStartTimes.BucketsWithLookback(time.Hour * 2) {
 		err = queries.Analytics_RecalculateBookPopularity(ctx, store.Analytics_RecalculateBookPopularityParams{
 			BucketStart: pgtype.Timestamptz{Valid: true, Time: item.Start},
 			BucketType:  item.Type,
