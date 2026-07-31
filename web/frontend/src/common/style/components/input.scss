@@ -45,32 +45,23 @@ select.input {
 }
 
 .select {
-  @apply appearance-none border bg-surface px-3 pr-10 text-foreground
-    disabled:pointer-events-none disabled:opacity-60;
-  min-height: 2.75rem;
-  border-color: var(--border-strong);
+  @apply flex h-10 w-full items-center justify-between gap-2 border bg-surface px-3 py-2
+    text-sm text-surface-foreground outline-none
+    disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
+  border-color: var(--input);
   border-radius: var(--radius);
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--secondary-foreground) 50%),
-    linear-gradient(135deg, var(--secondary-foreground) 50%, transparent 50%);
-  background-position:
-    calc(100% - 1rem) 50%,
-    calc(100% - 0.7rem) 50%;
-  background-repeat: no-repeat;
-  background-size: 0.35rem 0.35rem;
-  box-shadow: inset 0 1px 1px rgb(23 37 31 / 3%);
+  box-shadow: var(--shadow-xs);
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast),
     background-color var(--transition-fast);
 
   &:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--border-strong), var(--foreground) 24%);
+    border-color: color-mix(in srgb, var(--input), var(--foreground) 24%);
   }
 
   &:focus-visible {
-    outline: 0;
-    border-color: var(--brass);
+    border-color: var(--ring);
     box-shadow: var(--focus-ring);
   }
 
@@ -80,8 +71,11 @@ select.input {
   }
 
   &--sm {
-    @apply py-1.5 pl-3 pr-9 text-sm;
-    min-height: 2.25rem;
+    @apply h-9 py-1.5;
+  }
+
+  > span {
+    @apply truncate;
   }
 
   option,
@@ -91,7 +85,23 @@ select.input {
   }
 }
 
-[dir='rtl'] .select {
+select.select {
+  @apply block appearance-none pr-10;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--secondary-foreground) 50%),
+    linear-gradient(135deg, var(--secondary-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1rem) 50%,
+    calc(100% - 0.7rem) 50%;
+  background-repeat: no-repeat;
+  background-size: 0.35rem 0.35rem;
+
+  &[class~='select--sm'] {
+    @apply pr-9;
+  }
+}
+
+[dir='rtl'] select.select {
   @apply pl-10 pr-3;
   background-position:
     1rem 50%,
@@ -103,10 +113,6 @@ textarea.input {
   resize: vertical;
 }
 
-.input-dropdown {
-  @apply hidden;
-}
-
 .label {
   @apply block text-sm text-foreground font-medium;
 
@@ -115,18 +121,18 @@ textarea.input {
   }
 }
 
-.dropdown {
+.input-dropdown {
   @apply border rounded-sm w-full bg-surface relative transition-all;
 
-  &__input {
+  .dropdown__input {
     @apply outline-none w-full h-10 px-3 mb-1 bg-transparent;
   }
 
-  &__menu {
+  .dropdown__menu {
     @apply hidden absolute left-[-1px] right-[-1px] top-full bg-surface z-30 border border-t-0 rounded-b-sm;
   }
 
-  &__chips {
+  .dropdown__chips {
     @apply flex flex-wrap items-center gap-1 m-2 empty:hidden;
   }
 
@@ -134,7 +140,7 @@ textarea.input {
     @apply rounded-b-none shadow-lg;
   }
 
-  &[data-open='true'] &__menu {
+  &[data-open='true'] .dropdown__menu {
     @apply shadow-lg;
   }
 
@@ -142,8 +148,53 @@ textarea.input {
     @apply hover:border-primary hover:ring-1 hover:ring-primary;
   }
 
-  &[data-open='true'] &__menu {
+  &[data-open='true'] .dropdown__menu {
     @apply block;
+  }
+}
+
+.dropdown {
+  @apply z-50 min-w-32 overflow-hidden border bg-surface p-1 text-sm text-surface-foreground;
+  border-color: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+
+  &__item,
+  &__sub-trigger {
+    @apply relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5
+      outline-none transition-colors
+      focus:bg-accent focus:text-accent-foreground
+      data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
+  }
+
+  &__sub-trigger[data-state='open'] {
+    @apply bg-accent text-accent-foreground;
+  }
+
+  &__item--inset,
+  &__sub-trigger--inset,
+  &__label--inset {
+    @apply pl-8;
+  }
+
+  &__item--choice {
+    @apply pl-8 pr-2;
+  }
+
+  &__indicator {
+    @apply absolute left-2 flex h-4 w-4 items-center justify-center;
+  }
+
+  &__label {
+    @apply px-2 py-1.5 font-semibold;
+  }
+
+  &__separator {
+    @apply -mx-1 my-1 h-px bg-border;
+  }
+
+  &__shortcut {
+    @apply ml-auto text-xs tracking-widest text-secondary-foreground;
   }
 }
 

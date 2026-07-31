@@ -1,5 +1,6 @@
 import { SubmitEvent, useMemo, useState } from 'react'
-import TagsInput from '../../components/TagsInput'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
+import TagsInput from '@/components/TagsInput'
 
 import RangeInput from './RangeInput'
 import { ReactIslandProps } from '../common/react-island'
@@ -16,6 +17,8 @@ const dataSchema = z
   })
   .nullable()
   .optional()
+
+const RELEVANCE_SORT_VALUE = 'relevance'
 
 export default function SearchFilters({ data }: ReactIslandProps) {
   const parsedData = useMemo(() => dataSchema.parse(data), [data])
@@ -46,26 +49,34 @@ export default function SearchFilters({ data }: ReactIslandProps) {
         <label htmlFor="search-sort" className="label font-semibold mb-2 text-md">
           {window._('search.sortBy')}
         </label>
-        <select
-          id="search-sort"
-          name="sort"
-          className="select"
-          value={filters.sort}
-          onChange={(event) =>
-            setFilters({ ...filters, sort: event.target.value as DetailedBookSearchQuery['sort'] })
+        <Select
+          value={filters.sort || RELEVANCE_SORT_VALUE}
+          onValueChange={(value) =>
+            setFilters({
+              ...filters,
+              sort:
+                value === RELEVANCE_SORT_VALUE ? '' : (value as DetailedBookSearchQuery['sort']),
+            })
           }
         >
-          <option value="">{window._('search.sortRelevance')}</option>
-          <option value="chapters">{window._('search.sortChapters')}</option>
-          <option value="words">{window._('search.sortWords')}</option>
-          <option value="words-per-chapter">{window._('search.sortWordsPerChapter')}</option>
-          <option value="last-updated">{window._('search.sortLastUpdated')}</option>
-          <option value="created-at">{window._('search.sortCreatedAt')}</option>
-          <option value="reviews">{window._('search.sortReviews')}</option>
-          <option value="readers">{window._('search.sortReaders')}</option>
-          <option value="weighted-rating">{window._('search.sortWeightedRating')}</option>
-          <option value="random">{window._('search.sortRandom')}</option>
-        </select>
+          <SelectTrigger id="search-sort">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={RELEVANCE_SORT_VALUE}>{window._('search.sortRelevance')}</SelectItem>
+            <SelectItem value="chapters">{window._('search.sortChapters')}</SelectItem>
+            <SelectItem value="words">{window._('search.sortWords')}</SelectItem>
+            <SelectItem value="words-per-chapter">
+              {window._('search.sortWordsPerChapter')}
+            </SelectItem>
+            <SelectItem value="last-updated">{window._('search.sortLastUpdated')}</SelectItem>
+            <SelectItem value="created-at">{window._('search.sortCreatedAt')}</SelectItem>
+            <SelectItem value="reviews">{window._('search.sortReviews')}</SelectItem>
+            <SelectItem value="readers">{window._('search.sortReaders')}</SelectItem>
+            <SelectItem value="weighted-rating">{window._('search.sortWeightedRating')}</SelectItem>
+            <SelectItem value="random">{window._('search.sortRandom')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="mb-4">
         <label className="label font-semibold mb-2 text-md">{window._('search.words')}</label>

@@ -8,6 +8,7 @@ import {
   httpUpdateComment,
 } from '@/api/comments'
 import UserContent from '@/components/UserContent'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import { RichTextInput, useOLEditor } from '@/components/rte'
 import type { ReactIslandProps } from '@/islands/common/react-island'
 import { SelfUserDtoSchema } from '@/api/auth/user'
@@ -86,7 +87,7 @@ export function Comments(_: ReactIslandProps) {
       <div className="ol-comments__toolbar">
         <div className="ol-comments__toolbar-label">
           <span className="ol-comments__toolbar-title">{window._('comments.discussion')}</span>
-          {!loading && (
+          {(!loading || total > 0) && (
             <span className="ol-comments__count">
               {window._('common.commentsCount', { Count: `${total}` })}
             </span>
@@ -95,20 +96,22 @@ export function Comments(_: ReactIslandProps) {
         <label className="sr-only" htmlFor="ChapterCommentsSort">
           {window._('comments.sort')}
         </label>
-        <select
-          id="ChapterCommentsSort"
-          className="select select--sm ol-comments__sort"
+        <Select
           value={sort}
           disabled={loading}
-          onChange={(event) => changeSort(event.target.value as CommentSort)}
+          onValueChange={(value) => changeSort(value as CommentSort)}
         >
-          <option value="newest">{window._('comments.newest')}</option>
-          <option value="oldest">{window._('comments.oldest')}</option>
-          <option value="popular">{window._('comments.popular')}</option>
-        </select>
+          <SelectTrigger id="ChapterCommentsSort" className="select--sm ol-comments__sort w-64">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">{window._('comments.newest')}</SelectItem>
+            <SelectItem value="oldest">{window._('comments.oldest')}</SelectItem>
+            <SelectItem value="popular">{window._('comments.popular')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="ol-comment-list">
-        {loading && <span className="loader mt-2" />}
         {!loading && comments.length === 0 && (
           <p className="ol-comments__empty">{window._('comments.empty')}</p>
         )}

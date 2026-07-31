@@ -45,7 +45,7 @@ export function DropdownCore({ slotProps = {}, slots = {}, ...props }: DropdownP
   const handleInputFocus = useCallback(() => setOpen(true), [])
 
   return (
-    <div ref={rootRef} className="dropdown" data-open={open} {...props}>
+    <div ref={rootRef} className="input-dropdown" data-open={open} {...props}>
       {slots.beforeInput}
       <input className="dropdown__input" onFocus={handleInputFocus} {...slotProps.input} />
 
