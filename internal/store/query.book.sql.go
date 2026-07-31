@@ -77,20 +77,47 @@ func (q *Queries) Book_Get(ctx context.Context, id int64) (Book_GetRow, error) {
 }
 
 const book_GetByIds = `-- name: Book_GetByIds :many
-select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned
+select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_rating, b.is_publicly_visible, b.is_banned, b.is_trashed, b.words, b.chapters, b.tag_ids, b.cached_parent_tag_ids, b.cover, b.view, b.rating, b.total_reviews, b.total_ratings, b.is_pinned, b.is_perm_removed, b.is_shadow_banned, u.name as author_name
 from books b
+join users u on u.id = b.author_user_id
 where b.id = ANY($1::int8[])
 `
 
-func (q *Queries) Book_GetByIds(ctx context.Context, ids []int64) ([]Book, error) {
+type Book_GetByIdsRow struct {
+	ID                 int64
+	Name               string
+	Slug               string
+	Summary            string
+	AuthorUserID       pgtype.UUID
+	CreatedAt          pgtype.Timestamptz
+	AgeRating          AgeRating
+	IsPubliclyVisible  bool
+	IsBanned           bool
+	IsTrashed          bool
+	Words              int32
+	Chapters           int32
+	TagIds             []int64
+	CachedParentTagIds []int64
+	Cover              string
+	View               int32
+	Rating             pgtype.Float8
+	TotalReviews       int32
+	TotalRatings       int32
+	IsPinned           bool
+	IsPermRemoved      bool
+	IsShadowBanned     bool
+	AuthorName         string
+}
+
+func (q *Queries) Book_GetByIds(ctx context.Context, ids []int64) ([]Book_GetByIdsRow, error) {
 	rows, err := q.db.Query(ctx, book_GetByIds, ids)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Book
+	var items []Book_GetByIdsRow
 	for rows.Next() {
-		var i Book
+		var i Book_GetByIdsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -114,6 +141,7 @@ func (q *Queries) Book_GetByIds(ctx context.Context, ids []int64) ([]Book, error
 			&i.IsPinned,
 			&i.IsPermRemoved,
 			&i.IsShadowBanned,
+			&i.AuthorName,
 		); err != nil {
 			return nil, err
 		}

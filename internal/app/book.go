@@ -87,16 +87,17 @@ type BookUserPermissions struct {
 }
 
 type BookListDto struct {
-	ID              int64     `json:"id,string"`
-	Slug            string    `json:"slug"`
-	Name            string    `json:"name"`
-	CreatedAt       time.Time `json:"createdAt"`
-	AgeRating       AgeRating `json:"ageRating"`
-	Words           int       `json:"words"`
-	WordsPerChapter int       `json:"wordsPerChapter"`
-	Chapters        int       `json:"chapters"`
-	Cover           BookCover `json:"cover"`
-	IsPinned        bool      `json:"isPinned"`
+	ID              int64                `json:"id,string"`
+	Slug            string               `json:"slug"`
+	Name            string               `json:"name"`
+	Author          BookDetailsAuthorDto `json:"-"`
+	CreatedAt       time.Time            `json:"createdAt"`
+	AgeRating       AgeRating            `json:"ageRating"`
+	Words           int                  `json:"words"`
+	WordsPerChapter int                  `json:"wordsPerChapter"`
+	Chapters        int                  `json:"chapters"`
+	Cover           BookCover            `json:"cover"`
+	IsPinned        bool                 `json:"isPinned"`
 }
 
 type ManagerGetUserBooksQuery struct {

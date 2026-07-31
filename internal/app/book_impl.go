@@ -263,9 +263,13 @@ func (s *bookService) GetBooksById(ctx context.Context, ids []int64) ([]BookList
 	books := make([]BookListDto, 0, len(rows))
 	for i := range rows {
 		books = append(books, BookListDto{
-			ID:        rows[i].ID,
-			Slug:      rows[i].Slug,
-			Name:      rows[i].Name,
+			ID:   rows[i].ID,
+			Slug: rows[i].Slug,
+			Name: rows[i].Name,
+			Author: BookDetailsAuthorDto{
+				ID:   uuidDbToDomain(rows[i].AuthorUserID),
+				Name: rows[i].AuthorName,
+			},
 			CreatedAt: rows[i].CreatedAt.Time,
 			AgeRating: ageRatingFromDbValue(rows[i].AgeRating),
 			Words:     int(rows[i].Words),

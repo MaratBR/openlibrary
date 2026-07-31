@@ -30,8 +30,9 @@ order by b.is_pinned desc, b.created_at asc
 limit $2 offset $3;
 
 -- name: Book_GetByIds :many
-select b.*
+select b.*, u.name as author_name
 from books b
+join users u on u.id = b.author_user_id
 where b.id = ANY(sqlc.arg('ids')::int8[]);
 
 -- name: GetBookCollectionData :many

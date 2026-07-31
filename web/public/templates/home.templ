@@ -101,7 +101,7 @@ templ Home_MostViewedBooks(
                                 </a>
                             </div>
                             <div>
-                                by <a class="link">{ "A. Lumen" }</a>
+                                by <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>{ book.Author.Name }</a>
                             </div>
                             <div>
                                 <i class="fa-solid fa-eye" />
