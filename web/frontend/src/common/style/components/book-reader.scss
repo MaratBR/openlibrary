@@ -27,7 +27,7 @@
   }
 
   &__settings-button {
-    @apply absolute md:right-4 md:top-4 z-20 right-6 top-6;
+    @apply fixed z-1 md:right-4 z-20 right-6 top-20;
   }
 
   &__settings-backdrop {

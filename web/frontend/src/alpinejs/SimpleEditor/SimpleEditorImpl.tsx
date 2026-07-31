@@ -49,10 +49,10 @@ export class SimpleEditor extends Editor {
 
   constructor(element: HTMLElement) {
     const html = element.innerHTML
-    element.classList.add('SimpleEditor')
+    element.classList.add('ol-simple-editor')
 
     const contentElement = document.createElement('div')
-    contentElement.classList.add('SimpleEditor__content')
+    contentElement.classList.add('ol-simple-editor__content')
     contentElement.classList.add('user-content')
 
     super({
@@ -146,7 +146,7 @@ export class SimpleEditor extends Editor {
     return {
       bold: this.isActive('bold'),
       italic: this.isActive('italic'),
-      strikethrough: this.isActive('strikethrough'),
+      strikethrough: this.isActive('strike'),
       color: textStyle.color || null,
       header: this.isActive('heading') ? this.getAttributes('heading').level : null,
       font: textStyle.fontFamily || null,
@@ -169,7 +169,7 @@ function Toolbar({ editor }: { editor: SimpleEditor }) {
   const { bold, italic, strikethrough, textAlign } = useSubject(editor.tiptapState)
 
   return (
-    <ul className="SimpleEditor__toolbar">
+    <ul className="ol-simple-editor__toolbar">
       <ToolbarButton active={bold} onClick={() => editor.chain().toggleBold().focus().run()}>
         <i className="fa-solid fa-bold" />
       </ToolbarButton>
@@ -182,7 +182,7 @@ function Toolbar({ editor }: { editor: SimpleEditor }) {
       >
         <i className="fa-solid fa-strikethrough" />
       </ToolbarButton>
-      <li className="SimpleEditor__delimiter" aria-hidden="true" />
+      <li className="ol-simple-editor__delimiter" aria-hidden="true" />
       <ToolbarButton
         active={textAlign === 'left'}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -223,7 +223,7 @@ function ToolbarButton({
   return (
     <li
       role="button"
-      className={`SimpleEditor__btn ${active ? 'SimpleEditor__btn--active' : ''}`}
+      className={`ol-simple-editor__btn ${active ? 'ol-simple-editor__btn--active' : ''}`}
       onClick={onClick}
     >
       {children}

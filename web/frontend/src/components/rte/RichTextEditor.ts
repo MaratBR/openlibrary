@@ -12,37 +12,42 @@ import Text from '@tiptap/extension-text'
 import History from '@tiptap/extension-history'
 import TextAlign from '@tiptap/extension-text-align'
 import { useEditor } from '@tiptap/react'
+import type { Extensions, UseEditorOptions } from '@tiptap/react'
 
 export type OLTiptapEditorOptions = {
   element?: HTMLElement
   content?: string
 }
 
-export type UseOLEditorOptions = {
-  content?: string
+export type UseOLEditorOptions = Omit<UseEditorOptions, 'extensions'> & {
+  extensions?: Extensions
 }
 
 export function useOLEditor(options: UseOLEditorOptions = {}) {
   return useEditor({
-    content: options.content,
-    extensions: [
-      Document,
-      History,
-      Paragraph,
-      Bold,
-      Italic,
-      Strike,
-      Underline,
-      Text,
-      TextStyle,
-      FontSize,
-      FontFamily,
-      Typography,
-      HorizontalRule,
-      Color,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-    ],
+    ...options,
+    extensions: options.extensions ?? createOLEditorExtensions(),
   })
+}
+
+export function createOLEditorExtensions(): Extensions {
+  return [
+    Document,
+    History,
+    Paragraph,
+    Bold,
+    Italic,
+    Strike,
+    Underline,
+    Text,
+    TextStyle,
+    FontSize,
+    FontFamily,
+    Typography,
+    HorizontalRule,
+    Color,
+    TextAlign.configure({
+      types: ['heading', 'paragraph'],
+    }),
+  ]
 }

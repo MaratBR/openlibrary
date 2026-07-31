@@ -1,37 +1,14 @@
-import StarterKit from '@tiptap/starter-kit'
-import { TextStyle } from '@tiptap/extension-text-style'
-import Typography from '@tiptap/extension-typography'
-import HorizontalRule from '@tiptap/extension-horizontal-rule'
-import { Editor, EditorOptions } from '@tiptap/core'
 import { httpGetReview, httpUpdateReview, ReviewDto } from './api'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
 import { ReactIslandProps } from '../common/react-island'
+import { RichTextInput, useOLEditor } from '@/components/rte'
 
 export default function ReviewEditor({ rootElement }: ReactIslandProps) {
-  const rootEl = useRef<HTMLDivElement | null>(null)
-  const editor = useRef<Editor | null>(null)
-  const [active, setActive] = useState({ bold: false, italic: false })
-  const [rating, setRating] = useState(0)
+  const [review] = useState(getExistingReviewData)
+  const editor = useOLEditor({ content: review?.content ?? '' })
+  const [rating, setRating] = useState(review?.rating ?? 0)
   const [saving, setSaving] = useState(false)
   const bookId = getBookId()
-
-  useEffect(() => {
-    const data = getExistingReviewData()
-
-    if (data) {
-      setRating(data.rating)
-    }
-
-    editor.current = createEditor(rootEl.current!, {
-      content: data?.content ?? '',
-      onTransaction: () => {
-        setActive({
-          bold: editor.current!.isActive('bold'),
-          italic: editor.current!.isActive('italic'),
-        })
-      },
-    })
-  }, [])
 
   useEffect(() => {
     httpGetReview(bookId).then((resp) => {
@@ -42,11 +19,11 @@ export default function ReviewEditor({ rootElement }: ReactIslandProps) {
   const formValid = rating !== 0
 
   function handleSave() {
-    if (saving || !formValid) return
+    if (saving || !formValid || !editor) return
     setSaving(true)
 
     httpUpdateReview(bookId, {
-      content: editor.current!.getHTML(),
+      content: editor.getHTML(),
       rating,
     })
       .then((review) => {
@@ -62,23 +39,7 @@ export default function ReviewEditor({ rootElement }: ReactIslandProps) {
     <div>
       <RatingInput scale={0.5} value={rating} onInput={setRating} />
 
-      <div className="review-editor__toolbar mt-4">
-        <button
-          className={active.bold ? 'active' : ''}
-          onClick={() => editor.current?.chain().focus().toggleBold().run()}
-        >
-          <i className="fa-solid fa-bold" />
-        </button>
-
-        <button
-          className={active.italic ? 'active' : ''}
-          onClick={() => editor.current?.chain().focus().toggleItalic().run()}
-        >
-          <i className="fa-solid fa-italic" />
-        </button>
-      </div>
-
-      <div ref={rootEl} className="review-editor__content user-content user-content--editor" />
+      {editor && <RichTextInput editor={editor} className="ol-simple-editor--review mt-4" />}
 
       <button
         className="btn btn--lg btn--default mt-3"
@@ -139,34 +100,6 @@ function RatingInput({
 
 function calcPerc(value: number): number {
   return ((500 * (value / 10) + Math.floor(value / 2) * 10) / 540) * 100
-}
-
-/**
- * Initializes and returns a new instance of the Editor with specified extensions and options.
- *
- * @param editorElement - The HTML element where the editor will be mounted.
- * @param options - Optional configuration settings to customize the editor instance.
- *
- * @returns An instance of Editor configured with a set of extensions and options.
- */
-function createEditor(editorElement: HTMLElement, options?: Partial<EditorOptions>) {
-  return new Editor({
-    element: editorElement,
-    content: '',
-    extensions: [
-      StarterKit.configure({
-        horizontalRule: false,
-        codeBlock: false,
-        heading: false,
-        code: { HTMLAttributes: { class: 'inline', spellcheck: 'false' } },
-        dropcursor: { width: 2, class: 'ProseMirror-dropcursor border' },
-      }),
-      TextStyle,
-      Typography,
-      HorizontalRule,
-    ],
-    ...options,
-  })
 }
 
 /**

@@ -49,7 +49,7 @@ function Logo() {
 function SidebarItem({ icon, label, to }: { icon?: JSX.Element; label: string; to: To }) {
   return (
     <li className="dashboard-sidebar-item">
-      <NavLink to={to}>
+      <NavLink to={to} className="dashboard-sidebar-item__container">
         <div className="dashboard-sidebar-item__icon">{icon}</div>
         <div className="dashboard-sidebar-item__label">{label}</div>
       </NavLink>

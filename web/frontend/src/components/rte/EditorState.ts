@@ -41,7 +41,7 @@ namespace EditorState {
     return {
       bold: editor.isActive('bold'),
       italic: editor.isActive('italic'),
-      strikethrough: editor.isActive('strikethrough'),
+      strikethrough: editor.isActive('strike'),
       color: textStyle.color || null,
       header: editor.isActive('heading') ? editor.getAttributes('heading').level : null,
       font: textStyle.fontFamily || null,

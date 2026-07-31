@@ -13,7 +13,7 @@ import (
 )
 
 const comment_CountByChapter = `-- name: Comment_CountByChapter :one
-select count(*) from comments where chapter_id = $1 and parent_id is null
+select count(*) from comments where chapter_id = $1 and deleted_at is null
 `
 
 func (q *Queries) Comment_CountByChapter(ctx context.Context, chapterID int64) (int64, error) {
@@ -30,7 +30,7 @@ join users on comments.user_id = users.id
 where chapter_id = $1 and parent_id is null
 order by
     case when $2::text = 'oldest' then comments.created_at end asc,
-    case when $2::text = 'popular' then comments.likes end desc,
+    case when $2::text = 'popular' then (select count(*) from comments_liked where comment_id = comments.id) end desc,
     case when $2::text in ('newest', 'popular') then comments.created_at end desc,
     comments.id desc
 limit $4 offset $3
@@ -386,8 +386,8 @@ func (q *Queries) Comment_GetWithUserByID(ctx context.Context, id int64) (Commen
 }
 
 const comment_Insert = `-- name: Comment_Insert :exec
-insert into comments (id, chapter_id, parent_id, user_id, content, created_at, updated_at) 
-values ($1, $2, $3, $4, $5, now(), now())
+insert into comments (id, chapter_id, parent_id, user_id, content, created_at)
+values ($1, $2, $3, $4, $5, now())
 `
 
 type Comment_InsertParams struct {
@@ -426,7 +426,7 @@ func (q *Queries) Comment_Like(ctx context.Context, arg Comment_LikeParams) erro
 
 const comment_RecalculateSubcomments = `-- name: Comment_RecalculateSubcomments :exec
 update comments 
-set subcomments = (select count(*) from comments c where c.parent_id = $1)
+set subcomments = (select count(*) from comments c where c.parent_id = $1 and c.deleted_at is null)
 where id = $1
 `
 

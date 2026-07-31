@@ -96,7 +96,7 @@
 
 :root {
   --dashboard-layout__sidebar-width: 220px;
-  --dashboard-sidebar-item-height: 38px;
+  --dashboard-sidebar-item-height: 48px;
   --dashboard-sidebar-item-icon-width: 38px;
   --dashboard-layout__sidebar-indicator-size: 16px;
 }
@@ -124,15 +124,18 @@
 
 .dashboard-sidebar-list {
   & > .dashboard-sidebar-item {
-    @apply mb-2;
   }
 }
 
 .dashboard-sidebar-item {
-  @apply cursor-pointer text-md text-secondary-foreground relative mx-1 rounded-md;
+  @apply relative cursor-pointer text-md text-secondary-foreground border-l-4;
   transition:
     color var(--transition-fast),
     background var(--transition-fast);
+
+  &__container {
+    @apply flex flex-row items-center;
+  }
 
   & > a {
     display: block;
@@ -140,16 +143,15 @@
 
   &--active,
   &:has(> a.active) {
-    @apply font-semibold text-primary;
-    background: var(--accent);
+    @apply text-primary bg-primary/10 border-primary;
   }
 
-  &:hover:not(&--active) {
+  &:hover:not(&--active, :has(> a.active)) {
     @apply text-foreground bg-highlight;
   }
 
   &__icon {
-    @apply text-center v-middle absolute left-0 top-0;
+    @apply absolute left-0 top-0 h-full text-center v-middle;
     height: var(--dashboard-sidebar-item-height);
     width: var(--dashboard-sidebar-item-icon-width);
 

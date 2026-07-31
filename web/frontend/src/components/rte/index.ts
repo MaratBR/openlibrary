@@ -1,3 +1,4 @@
 import { RichTextInput } from './RichTextInput'
+import { useOLEditor, createOLEditorExtensions } from './RichTextEditor'
 
-export { RichTextInput }
+export { RichTextInput, useOLEditor, createOLEditorExtensions }

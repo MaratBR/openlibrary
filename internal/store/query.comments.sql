@@ -5,13 +5,13 @@ join users on comments.user_id = users.id
 where chapter_id = $1 and parent_id is null
 order by
     case when sqlc.arg('sort')::text = 'oldest' then comments.created_at end asc,
-    case when sqlc.arg('sort')::text = 'popular' then comments.likes end desc,
+    case when sqlc.arg('sort')::text = 'popular' then (select count(*) from comments_liked where comment_id = comments.id) end desc,
     case when sqlc.arg('sort')::text in ('newest', 'popular') then comments.created_at end desc,
     comments.id desc
 limit sqlc.arg('page_limit') offset sqlc.arg('page_offset');
 
 -- name: Comment_CountByChapter :one
-select count(*) from comments where chapter_id = $1 and parent_id is null;
+select count(*) from comments where chapter_id = $1 and deleted_at is null;
 
 -- name: Comment_GetByChapterAfter :many
 select comments.*, users.name as user_name
@@ -47,13 +47,13 @@ from comments c
 join users u on c.user_id = u.id
 where c.id = $1;
 
--- name: Comment_Insert :exec 
-insert into comments (id, chapter_id, parent_id, user_id, content, created_at, updated_at) 
-values ($1, $2, $3, $4, $5, now(), now());
+-- name: Comment_Insert :exec
+insert into comments (id, chapter_id, parent_id, user_id, content, created_at)
+values ($1, $2, $3, $4, $5, now());
 
 -- name: Comment_RecalculateSubcomments :exec
 update comments 
-set subcomments = (select count(*) from comments c where c.parent_id = sqlc.arg('id'))
+set subcomments = (select count(*) from comments c where c.parent_id = sqlc.arg('id') and c.deleted_at is null)
 where id = sqlc.arg('id');
 
 

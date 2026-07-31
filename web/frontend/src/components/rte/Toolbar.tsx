@@ -6,7 +6,7 @@ export function Toolbar({ editor }: { editor: Editor }) {
   const { bold, italic, strikethrough, textAlign } = EditorState.useEditorState(editor)
 
   return (
-    <ul className="SimpleEditor__toolbar">
+    <ul className="ol-simple-editor__toolbar">
       <ToolbarButton active={bold} onClick={() => editor.chain().toggleBold().focus().run()}>
         <i className="fa-solid fa-bold" />
       </ToolbarButton>
@@ -19,7 +19,7 @@ export function Toolbar({ editor }: { editor: Editor }) {
       >
         <i className="fa-solid fa-strikethrough" />
       </ToolbarButton>
-      <li className="SimpleEditor__delimiter" aria-hidden="true" />
+      <li className="ol-simple-editor__delimiter" aria-hidden="true" />
       <ToolbarButton
         active={textAlign === 'left'}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -60,7 +60,7 @@ function ToolbarButton({
   return (
     <li
       role="button"
-      className={`SimpleEditor__btn ${active ? 'SimpleEditor__btn--active' : ''}`}
+      className={`ol-simple-editor__btn ${active ? 'ol-simple-editor__btn--active' : ''}`}
       onClick={onClick}
     >
       {children}

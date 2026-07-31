@@ -14,12 +14,11 @@ import (
 type chaptersController struct {
 	service            app.BookService
 	readingListService app.ReadingListService
-	commentsService    app.CommentsService
 	readerPreferences  app.ReaderPreferencesService
 }
 
-func newChaptersController(service app.BookService, readingListService app.ReadingListService, commentsService app.CommentsService, readerPreferences app.ReaderPreferencesService) *chaptersController {
-	return &chaptersController{service: service, readingListService: readingListService, commentsService: commentsService, readerPreferences: readerPreferences}
+func newChaptersController(service app.BookService, readingListService app.ReadingListService, readerPreferences app.ReaderPreferencesService) *chaptersController {
+	return &chaptersController{service: service, readingListService: readingListService, readerPreferences: readerPreferences}
 }
 
 func (c *chaptersController) Register(r chi.Router) {
@@ -135,8 +134,6 @@ func (c *chaptersController) chapterComments(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	cursor, _ := olhttp.URLQueryParamInt64(r, "cursor")
-
 	chapterResult, err := c.service.GetBookChapter(r.Context(), app.GetBookChapterQuery{BookID: bookID, ChapterID: chapterID})
 	if err != nil {
 		writeApplicationError(w, r, err)
@@ -147,49 +144,5 @@ func (c *chaptersController) chapterComments(w http.ResponseWriter, r *http.Requ
 		writeApplicationError(w, r, err)
 		return
 	}
-	sort := app.ParseCommentSort(r.URL.Query().Get("sort"))
-	result, err := c.commentsService.GetList(r.Context(), app.GetCommentsQuery{
-		ChapterID:   chapterID,
-		ActorUserID: auth.GetNullableUserID(r.Context()),
-		Limit:       30,
-		Cursor:      uint32(cursor),
-		Sort:        sort,
-	})
-	if err != nil {
-		writeApplicationError(w, r, err)
-		return
-	}
-	replies := make(map[int64]app.GetCommentRepliesResult, len(result.Comments))
-	for _, comment := range result.Comments {
-		if comment.Subcomments == 0 {
-			continue
-		}
-		replyResult, err := c.getInitialCommentReplies(r, comment.ID)
-		if err != nil {
-			writeApplicationError(w, r, err)
-			return
-		}
-		replies[comment.ID] = replyResult
-	}
-
-	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(chapterResult.Chapter, book, result, replies, sort))
-}
-
-func (c *chaptersController) getInitialCommentReplies(r *http.Request, commentID int64) (app.GetCommentRepliesResult, error) {
-	const pageSize = 2
-	result, err := c.commentsService.GetReplies(r.Context(), app.GetCommentRepliesQuery{
-		ActorUserID: auth.GetNullableUserID(r.Context()),
-		Limit:       pageSize + 1,
-		CommentID:   commentID,
-	})
-	if err != nil {
-		return result, err
-	}
-	if len(result.Comments) > pageSize {
-		result.Comments = result.Comments[:pageSize]
-		result.NextCursor = uint32(result.Comments[pageSize-1].CreatedAt.Unix())
-	} else {
-		result.NextCursor = 0
-	}
-	return result, nil
+	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(chapterResult.Chapter, book))
 }

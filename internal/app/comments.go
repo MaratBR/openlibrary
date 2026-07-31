@@ -85,9 +85,9 @@ type GetCommentRepliesQuery struct {
 }
 
 type GetCommentRepliesResult struct {
-	Cursor     uint32
-	NextCursor uint32
-	Comments   []CommentDto
+	Cursor     uint32       `json:"cursor"`
+	NextCursor uint32       `json:"nextCursor"`
+	Comments   []CommentDto `json:"comments"`
 }
 
 type AddCommentCommand struct {

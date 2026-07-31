@@ -23,14 +23,36 @@ func newAPICommentsController(
 }
 
 func (c *apiControllerComments) Register(r chi.Router) {
-	r.Route("/comments", func(r chi.Router) {
-		r.Get("/replies", c.replies)
-		r.Group(func(r chi.Router) {
-			r.Use(requiresAuthorizationMiddleware)
-			r.Post("/like", c.like)
-			r.Post("/add", c.add)
-		})
+	r.Get("/comments", c.list)
+	r.Get("/comments/replies", c.replies)
+	r.Group(func(r chi.Router) {
+		r.Use(requiresAuthorizationMiddleware)
+		r.Post("/comments/like", c.like)
+		r.Post("/comments/add", c.add)
 	})
+}
+
+func (c *apiControllerComments) list(w http.ResponseWriter, r *http.Request) {
+	chapterID, err := olhttp.URLQueryParamInt64(r, "chapterId")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	cursor, _ := olhttp.URLQueryParamInt64(r, "cursor")
+	result, err := c.commentsService.GetList(r.Context(), app.GetCommentsQuery{
+		ActorUserID: auth.GetNullableUserID(r.Context()),
+		ChapterID:   chapterID,
+		Limit:       30,
+		Cursor:      uint32(cursor),
+		Sort:        app.ParseCommentSort(r.URL.Query().Get("sort")),
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	olhttp.NewAPIResponse(map[string]any{
+		"cursor": result.Cursor, "nextCursor": result.NextCursor, "comments": result.Comments, "total": result.Total,
+	}).Write(w)
 }
 
 func (c *apiControllerComments) add(w http.ResponseWriter, r *http.Request) {

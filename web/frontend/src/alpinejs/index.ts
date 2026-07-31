@@ -19,7 +19,6 @@ import './TagsAutocomplete'
 import './Tabs'
 import './ImageUploader'
 import './Popover'
-import './Comment'
 import './Carousel'
 
 import './island'

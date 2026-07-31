@@ -14,3 +14,5 @@ Islands.register('search/filters', () => Promise.resolve(SearchFiltersIsland))
 Islands.register('book-card-preview', () => Promise.resolve(BookCardPreviewIsland))
 
 Islands.register('header-user-menu', () => Promise.resolve(UserMenuIsland))
+
+Islands.register('comments', () => import('@/islands/comments').then((module) => module.default))
