@@ -49,7 +49,7 @@ export default function SearchFilters({ data }: ReactIslandProps) {
         <select
           id="search-sort"
           name="sort"
-          className="input w-full"
+          className="select"
           value={filters.sort}
           onChange={(event) =>
             setFilters({ ...filters, sort: event.target.value as DetailedBookSearchQuery['sort'] })

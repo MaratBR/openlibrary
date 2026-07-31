@@ -23,6 +23,12 @@ export function httpReplyToComment(chapterId: string, parentCommentId: string, c
     .then((r) => OLAPIResponse.create<CommentDto>(r))
 }
 
+export function httpUpdateComment(commentId: string, content: string) {
+  return httpClient
+    .put(`/_api/comments/${encodeURIComponent(commentId)}`, { json: { content } })
+    .then((r) => OLAPIResponse.create<CommentDto>(r))
+}
+
 export function httpGetComments(chapterId: string, sort: string, cursor: number) {
   return httpClient.get('/_api/comments', { searchParams: { chapterId, sort, cursor } }).then((r) =>
     OLAPIResponse.create<{

@@ -73,7 +73,7 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
 
             <label class="reader-setting block">
                 <span class="reader-setting__label">{ l.T("reader.theme") }</span>
-                <select class="input w-full" x-model="readerTheme" @change="$nextTick(() => applyPreferences())">
+                <select class="select" x-model="readerTheme" @change="$nextTick(() => applyPreferences())">
                     <option value={ app.ReaderThemeSystem }>{ l.T("reader.themeWebsite") }</option>
                     <option value={ app.ReaderThemeLight }>{ l.T("reader.themeLight") }</option>
                     <option value={ app.ReaderThemeDark }>{ l.T("reader.themeDark") }</option>

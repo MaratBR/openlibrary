@@ -13,6 +13,7 @@ var (
 	CommentErrors                = apperror.AppErrors.NewSubNamespace("comment")
 	ErrTypeCommentNotFound       = CommentErrors.NewType("not_found", apperror.ErrTraitEntityNotFound)
 	ErrTypeCommentContentInvalid = CommentErrors.NewType("invalid_content", apperror.ErrTraitValidationError)
+	ErrCommentUpdateForbidden    = CommentErrors.NewType("update_forbidden", apperror.ErrTraitForbidden).New("only the comment author can edit this comment")
 	ErrCommentContentEmpty       = ErrTypeCommentContentInvalid.New("comment content is empty")
 	ErrCommentContentTooLarge    = ErrTypeCommentContentInvalid.New("comment content is too large")
 )
@@ -123,6 +124,15 @@ type UpdateCommentCommand struct {
 	ID      int64
 	Content string
 	UserID  uuid.UUID
+}
+
+func (c *UpdateCommentCommand) Validate() error {
+	add := AddCommentCommand{Content: c.Content}
+	if err := add.Validate(); err != nil {
+		return err
+	}
+	c.Content = add.Content
+	return nil
 }
 
 type UpdateCommentResult struct {

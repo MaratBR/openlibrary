@@ -197,18 +197,22 @@ func (c *commentsService) fillWithLikedAtData(ctx context.Context, queries *stor
 
 // UpdateComment implements CommentsService.
 func (c *commentsService) UpdateComment(ctx context.Context, command UpdateCommentCommand) (UpdateCommentResult, error) {
+	if err := command.Validate(); err != nil {
+		return UpdateCommentResult{}, err
+	}
 	queries := store.New(c.db)
 
 	result, err := queries.Comment_Update(ctx, store.Comment_UpdateParams{
 		ID:      command.ID,
 		Content: command.Content,
+		UserID:  uuidDomainToDb(command.UserID),
 	})
 	if err != nil {
 		return UpdateCommentResult{}, apperror.WrapUnexpectedDBError(err)
 	}
 
 	if result.RowsAffected() == 0 {
-		return UpdateCommentResult{}, ErrTypeCommentNotFound.New(fmt.Sprintf("comment with id %d not found", command.ID))
+		return UpdateCommentResult{}, ErrCommentUpdateForbidden
 	}
 
 	comment, err := c.getByID(ctx, command.ID, command.UserID)

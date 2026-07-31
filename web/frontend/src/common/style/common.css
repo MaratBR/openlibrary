@@ -69,10 +69,10 @@ b {
   @apply font-[600];
 }
 
-:focus-visible {
+/* :focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
-}
+} */
 
 @media (prefers-reduced-motion: reduce) {
   *,

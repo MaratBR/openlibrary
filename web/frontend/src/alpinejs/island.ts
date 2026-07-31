@@ -14,62 +14,86 @@ export namespace Islands {
   }
 }
 
-Alpine.data('Island', ({ name, data }: { name: string; data: unknown }) => ({
-  _mounted: null as null | OLIslandMounted,
-  _loading: false,
+Alpine.data(
+  'Island',
+  ({ name, data, lazy = false }: { name: string; data: unknown; lazy?: boolean }) => ({
+    _mounted: null as null | OLIslandMounted,
+    _observer: null as IntersectionObserver | null,
+    _started: false,
+    _loading: false,
 
-  init() {
-    const islandOrProvider = Islands.getByName(name)
+    init() {
+      if (lazy) {
+        this._observer = new IntersectionObserver(
+          (entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) this._load()
+          },
+          { rootMargin: '300px 0px' },
+        )
+        this._observer.observe(this.$root)
+        return
+      }
+      this._load()
+    },
 
-    if (!islandOrProvider) {
-      console.error(`[Islands] island ${name} not found`)
-    } else if (typeof islandOrProvider === 'function') {
-      this._loading = true
-      islandOrProvider()
-        .then((island) => {
-          this._loading = false
-          this._mount(island)
-        })
-        .catch((err) => {
-          this._loading = false
-          this._error = err
-        })
-    } else {
-      this._mount(islandOrProvider)
-    }
-  },
+    _load() {
+      if (this._started) return
+      this._started = true
+      this._observer?.disconnect()
+      this._observer = null
+      const islandOrProvider = Islands.getByName(name)
 
-  _mount(island: OLIsland) {
-    this._unmount()
-    try {
-      this._mounted = island.mount(this.$root, data)
-    } catch (err: unknown) {
-      this._error(err)
-    }
-    this.$el.dispatchEvent(new CustomEvent('island:mount'))
-  },
+      if (!islandOrProvider) {
+        console.error(`[Islands] island ${name} not found`)
+      } else if (typeof islandOrProvider === 'function') {
+        this._loading = true
+        islandOrProvider()
+          .then((island) => {
+            this._loading = false
+            this._mount(island)
+          })
+          .catch((err) => {
+            this._loading = false
+            this._error = err
+          })
+      } else {
+        this._mount(islandOrProvider)
+      }
+    },
 
-  _unmount() {
-    if (this._mounted) {
-      this._mounted.dispose()
+    _mount(island: OLIsland) {
+      this._unmount()
+      try {
+        this._mounted = island.mount(this.$root, data)
+      } catch (err: unknown) {
+        this._error(err)
+      }
+      this.$el.dispatchEvent(new CustomEvent('island:mount'))
+    },
+
+    _unmount() {
+      if (this._mounted) {
+        this._mounted.dispose()
+        this._mounted = null
+      }
+
+      while (this.$root.firstChild) {
+        this.$root.removeChild(this.$root.firstChild)
+      }
+    },
+
+    _error(err: unknown) {
+      console.error('Error in island', err)
+      this._mounted?.dispose()
       this._mounted = null
-    }
+    },
 
-    while (this.$root.firstChild) {
-      this.$root.removeChild(this.$root.firstChild)
-    }
-  },
-
-  _error(err: unknown) {
-    console.error('Error in island', err)
-    this._mounted?.dispose()
-    this._mounted = null
-  },
-
-  destroy() {
-    this._unmount()
-  },
-}))
+    destroy() {
+      this._observer?.disconnect()
+      this._unmount()
+    },
+  }),
+)
 
 Alpine.data('Frag', () => ({
   init() {

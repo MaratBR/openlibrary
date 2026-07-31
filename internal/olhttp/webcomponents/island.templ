@@ -51,13 +51,14 @@ type Island2Props struct {
     Name string
     Data any
     ShowLoader bool
+    Lazy bool
     Attributes templ.Attributes
 }
 
 templ Island2(props Island2Props) {
     {{
         dataJson, _ := templ.JSONString(props.Data)
-        xData := fmt.Sprintf("Island({name:%q,data:%s})", props.Name, dataJson)
+        xData := fmt.Sprintf("Island({name:%q,data:%s,lazy:%t})", props.Name, dataJson, props.Lazy)
     }}
     
     <div x-data={xData} { props.Attributes... }>

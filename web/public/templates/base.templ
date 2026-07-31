@@ -134,7 +134,7 @@ templ themeSwitcher() {
         <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
         <span class="sr-only">{ l.T("uiTheme.switchTheme") }</span>
         <select
-            class="input w-auto min-w-28"
+            class="select w-auto min-w-28"
             x-model="theme"
             @change="window.OLTheme.theme.set(theme)"
             aria-label={l.T("uiTheme.switchTheme")}

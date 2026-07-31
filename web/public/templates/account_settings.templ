@@ -139,7 +139,7 @@ templ aboutSettingsFields(l *i18n.Localizer) {
 			<textarea class="textarea min-h-40" x-model="settings.about" @input="requestSave()"></textarea>
 		}
 		@settingsField(l.T("accountSettings.about.gender"), l.T("accountSettings.about.genderDescription")) {
-			<select class="input" x-model="settings.gender" @change="requestSave()">
+			<select class="select" x-model="settings.gender" @change="requestSave()">
 				<option value="">{ l.T("gender.ratherNotSay") }</option>
 				<option value="m">{ l.T("gender.m") }</option>
 				<option value="f">{ l.T("gender.f") }</option>
@@ -172,7 +172,7 @@ templ moderationSettingsFields(l *i18n.Localizer) {
 			@settingsSwitch("settings.showAdultContent", l.T("accountSettings.moderation.showAdultContent"))
 		}
 		@settingsField(l.T("accountSettings.moderation.censoredTagsMode"), l.T("accountSettings.moderation.censoredTagsModeDescription")) {
-			<select class="input" x-model="settings.censoredTagsMode" @change="requestSave()">
+			<select class="select" x-model="settings.censoredTagsMode" @change="requestSave()">
 				<option value="none">{ l.T("accountSettings.moderation.censorModeNone") }</option>
 				<option value="hide">{ l.T("accountSettings.moderation.censorModeHide") }</option>
 				<option value="censor">{ l.T("accountSettings.moderation.censorModeCensor") }</option>
@@ -187,7 +187,7 @@ templ moderationSettingsFields(l *i18n.Localizer) {
 templ customizationSettingsFields(l *i18n.Localizer) {
 	<div>
 		@settingsField(l.T("accountSettings.customization.defaultTheme"), l.T("accountSettings.customization.defaultThemeDescription")) {
-			<select class="input" x-model="settings.defaultTheme" @change="requestSave();OLTheme.theme.set(settings.defaultTheme||'system')">
+			<select class="select" x-model="settings.defaultTheme" @change="requestSave();OLTheme.theme.set(settings.defaultTheme||'system')">
 				<option value="">{ l.T("uiTheme.system") }</option>
 				<option value="light">{ l.T("uiTheme.light") }</option>
 				<option value="dark">{ l.T("uiTheme.dark") }</option>

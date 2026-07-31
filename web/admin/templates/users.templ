@@ -173,7 +173,7 @@ templ User(user *app.UserDetailsDto) {
                                 <select 
                                     x-model="genderType" 
                                     name="gender" 
-                                    class="input">
+                                    class="select">
                                     <option
                                         if genderType == "" {
                                             selected
@@ -222,7 +222,7 @@ templ User(user *app.UserDetailsDto) {
                                 <label>{ l.T("admin.users.role") }</label>
                             </div>
                             <div class="admin-form-field__value">
-                                <select name="role" class="input">
+                                <select name="role" class="select">
                                     for _, role := range app.AllRoles {
                                         <option 
                                             if role == user.Role {

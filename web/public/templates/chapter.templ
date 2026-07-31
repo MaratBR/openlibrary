@@ -85,14 +85,9 @@ templ Chapter(
                         }
                     </nav>
 
-                    <div class="mt-8">
-                        <a class="btn btn--ghost btn--lg" href={ fmt.Sprintf("/book/%d/chapters/%d/comments", chapter.BookID, chapter.ID) }>
-                            <i class="fa-solid fa-comments"></i>
-                            { l.TData("common.commentsCount", map[string]int64{
-                                "Count": chapter.CommentsCount,
-                            }) }
-                        </a>
-                    </div>
+                    <section class="ol-comments mt-12" aria-label={ l.T("comments.title") }>
+                        @ChapterCommentsDiscussion(true)
+                    </section>
                 </div>
             </div>
 
@@ -214,19 +209,20 @@ templ ChapterComments(
                   <a class="link" href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.ID)) }>{ chapter.Name }</a>
                 </p>
               </div>
-              <span id="ChapterCommentsCount" class="ol-comments__count" aria-live="polite"></span>
             </header>
 
-            @ChapterCommentsDiscussion()
+            @ChapterCommentsDiscussion(false)
           </section>
         </main>
     }
 }
 
-templ ChapterCommentsDiscussion() {
+templ ChapterCommentsDiscussion(lazy bool) {
     @i18nKeysByPrefixAsScript("comments")
     @webcomponents.Island2(webcomponents.Island2Props{
         Name: "comments",
         ShowLoader: true,
+        Lazy: lazy,
+        Attributes: templ.Attributes{"class": "min-h-1"},
     })
 }

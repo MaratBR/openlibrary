@@ -268,7 +268,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                             <label for="type">{l.T("admin.tags.type")}</label>
                         </div>
                         <div class="admin-form-field__value">
-                            <select id="type" name="type" class="input">
+                            <select id="type" name="type" class="select">
                                 for _, cat := range app.TagsCategoryList {
                                     <option 
                                         if tag.Category == cat {

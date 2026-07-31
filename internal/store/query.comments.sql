@@ -58,7 +58,8 @@ where id = sqlc.arg('id');
 
 
 -- name: Comment_Update :execresult
-update comments set content = $2, updated_at = now() where id = $1;
+update comments set content = $2, updated_at = now()
+where id = $1 and user_id = sqlc.arg('user_id') and deleted_at is null;
 
 -- name: Comment_GetLikedComments :many
 select comment_id, liked_at

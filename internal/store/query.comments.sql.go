@@ -450,14 +450,16 @@ func (q *Queries) Comment_UnLike(ctx context.Context, arg Comment_UnLikeParams) 
 }
 
 const comment_Update = `-- name: Comment_Update :execresult
-update comments set content = $2, updated_at = now() where id = $1
+update comments set content = $2, updated_at = now()
+where id = $1 and user_id = $3 and deleted_at is null
 `
 
 type Comment_UpdateParams struct {
 	ID      int64
 	Content string
+	UserID  pgtype.UUID
 }
 
 func (q *Queries) Comment_Update(ctx context.Context, arg Comment_UpdateParams) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, comment_Update, arg.ID, arg.Content)
+	return q.db.Exec(ctx, comment_Update, arg.ID, arg.Content, arg.UserID)
 }

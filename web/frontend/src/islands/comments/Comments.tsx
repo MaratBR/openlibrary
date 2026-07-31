@@ -5,13 +5,13 @@ import {
   httpGetComments,
   httpLikeComment,
   httpReplyToComment,
+  httpUpdateComment,
 } from '@/api/comments'
 import UserContent from '@/components/UserContent'
 import { RichTextInput, useOLEditor } from '@/components/rte'
 import type { ReactIslandProps } from '@/islands/common/react-island'
 import { SelfUserDtoSchema } from '@/api/auth/user'
 import { FormEvent, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 
 type CommentSort = 'newest' | 'oldest' | 'popular'
 
@@ -74,12 +74,6 @@ export function Comments(_: ReactIslandProps) {
 
   return (
     <>
-      {!loading &&
-        document.getElementById('ChapterCommentsCount') &&
-        createPortal(
-          window._('common.commentsCount', { Count: `${total}` }),
-          document.getElementById('ChapterCommentsCount')!,
-        )}
       {user ? (
         <Composer chapterId={chapterId} avatar={user.avatar.md} />
       ) : (
@@ -90,13 +84,20 @@ export function Comments(_: ReactIslandProps) {
         </div>
       )}
       <div className="ol-comments__toolbar">
-        <span className="ol-comments__toolbar-title">{window._('comments.discussion')}</span>
+        <div className="ol-comments__toolbar-label">
+          <span className="ol-comments__toolbar-title">{window._('comments.discussion')}</span>
+          {!loading && (
+            <span className="ol-comments__count">
+              {window._('common.commentsCount', { Count: `${total}` })}
+            </span>
+          )}
+        </div>
         <label className="sr-only" htmlFor="ChapterCommentsSort">
           {window._('comments.sort')}
         </label>
         <select
           id="ChapterCommentsSort"
-          className="ol-comments__sort"
+          className="select select--sm ol-comments__sort"
           value={sort}
           disabled={loading}
           onChange={(event) => changeSort(event.target.value as CommentSort)}
@@ -117,6 +118,7 @@ export function Comments(_: ReactIslandProps) {
             comment={comment}
             chapterId={chapterId}
             authenticated={!!user}
+            currentUserId={user?.id}
           />
         ))}
         {nextCursor > 0 && (
@@ -171,16 +173,21 @@ function Comment({
   comment,
   chapterId,
   authenticated,
+  currentUserId,
   allowReply = true,
 }: {
   comment: CommentDto
   chapterId: string
   authenticated: boolean
+  currentUserId?: string
   allowReply?: boolean
 }) {
   const [liked, setLiked] = useState(!!comment.likedAt)
   const [likes, setLikes] = useState(realLikes(comment))
   const [replying, setReplying] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [content, setContent] = useState(comment.content)
+  const [updatedAt, setUpdatedAt] = useState(comment.updatedAt)
   const operation = useRef(0)
 
   async function toggleLike() {
@@ -208,13 +215,26 @@ function Comment({
             {comment.user.name}
           </a>
           <Time value={comment.createdAt} />
-          {isEdited(comment) && (
+          {isEdited(comment.createdAt, updatedAt) && (
             <span className="ol-comment__meta">{window._('comments.edited')}</span>
           )}
         </header>
-        <div className="ol-comment__content">
-          <UserContent value={comment.content} />
-        </div>
+        {editing ? (
+          <CommentEditor
+            commentId={comment.id}
+            content={content}
+            onCancel={() => setEditing(false)}
+            onUpdated={(updated) => {
+              setContent(updated.content)
+              setUpdatedAt(updated.updatedAt)
+              setEditing(false)
+            }}
+          />
+        ) : (
+          <div className="ol-comment__content">
+            <UserContent value={content} />
+          </div>
+        )}
         <div className="ol-comment__actions">
           <button
             className="ol-comment-action"
@@ -229,17 +249,34 @@ function Comment({
               <i className="fa-solid fa-reply" aria-hidden="true" /> {window._('common.reply')}
             </button>
           )}
+          {currentUserId === comment.user.id && !comment.deleted && !editing && (
+            <button className="ol-comment-action" onClick={() => setEditing(true)}>
+              <i className="fa-solid fa-pencil" aria-hidden="true" /> {window._('common.edit')}
+            </button>
+          )}
         </div>
         {replying && <ReplyComposer chapterId={chapterId} parentId={comment.id} />}
         {comment.subcomments > 0 && (
-          <Replies commentId={comment.id} authenticated={authenticated} />
+          <Replies
+            commentId={comment.id}
+            authenticated={authenticated}
+            currentUserId={currentUserId}
+          />
         )}
       </div>
     </article>
   )
 }
 
-function Replies({ commentId, authenticated }: { commentId: string; authenticated: boolean }) {
+function Replies({
+  commentId,
+  authenticated,
+  currentUserId,
+}: {
+  commentId: string
+  authenticated: boolean
+  currentUserId?: string
+}) {
   const [replies, setReplies] = useState<CommentDto[]>([])
   const [cursor, setCursor] = useState(0)
   const initialized = useRef(false)
@@ -273,6 +310,7 @@ function Replies({ commentId, authenticated }: { commentId: string; authenticate
           comment={reply}
           chapterId=""
           authenticated={authenticated}
+          currentUserId={currentUserId}
           allowReply={false}
         />
       ))}
@@ -315,6 +353,55 @@ function ReplyComposer({ chapterId, parentId }: { chapterId: string; parentId: s
   )
 }
 
+function CommentEditor({
+  commentId,
+  content: initialContent,
+  onCancel,
+  onUpdated,
+}: {
+  commentId: string
+  content: string
+  onCancel: () => void
+  onUpdated: (comment: CommentDto) => void
+}) {
+  const [content, setContent] = useState(initialContent)
+  const [saving, setSaving] = useState(false)
+  const editor = useOLEditor({
+    content: initialContent,
+    onUpdate: ({ editor }) => setContent(editor.getHTML()),
+  })
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    if (!editor || saving) return
+    setSaving(true)
+    try {
+      const response = await httpUpdateComment(commentId, content)
+      onUpdated(response.data)
+    } catch (error) {
+      window.toast.error(error)
+      setSaving(false)
+    }
+  }
+
+  return (
+    <form className="ol-comment-edit" onSubmit={submit}>
+      {editor && <RichTextInput editor={editor} />}
+      <div className="ol-comment-edit__actions">
+        <button type="button" className="btn btn--ghost" disabled={saving} onClick={onCancel}>
+          {window._('common.cancel')}
+        </button>
+        <button
+          className="btn btn--default"
+          disabled={saving || !editor || editor.isEmpty || content.length > 2000}
+        >
+          {window._('common.save')}
+        </button>
+      </div>
+    </form>
+  )
+}
+
 function Time({ value }: { value: string }) {
   return (
     <time className="ol-comment__meta" dateTime={value}>
@@ -330,11 +417,8 @@ function realLikes(comment: CommentDto) {
   )
 }
 
-function isEdited(comment: CommentDto) {
-  return (
-    !!comment.updatedAt &&
-    new Date(comment.updatedAt).getTime() > new Date(comment.createdAt).getTime()
-  )
+function isEdited(createdAt: string, updatedAt: string | null) {
+  return !!updatedAt && new Date(updatedAt).getTime() > new Date(createdAt).getTime()
 }
 
 function relativeTime(value: string) {

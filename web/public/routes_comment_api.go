@@ -29,7 +29,33 @@ func (c *apiControllerComments) Register(r chi.Router) {
 		r.Use(requiresAuthorizationMiddleware)
 		r.Post("/comments/like", c.like)
 		r.Post("/comments/add", c.add)
+		r.Put("/comments/{commentID}", c.update)
 	})
+}
+
+func (c *apiControllerComments) update(w http.ResponseWriter, r *http.Request) {
+	commentID, err := olhttp.URLParamInt64(r, "commentID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	var input struct {
+		Content string `json:"content"`
+	}
+	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 8192))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&input); err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	result, err := c.commentsService.UpdateComment(r.Context(), app.UpdateCommentCommand{
+		ID: commentID, Content: input.Content, UserID: auth.RequireSession(r.Context()).UserID,
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	olhttp.NewAPIResponse(result.Comment).Write(w)
 }
 
 func (c *apiControllerComments) list(w http.ResponseWriter, r *http.Request) {
