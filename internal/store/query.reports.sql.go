@@ -33,13 +33,24 @@ func (q *Queries) Report_CommentExists(ctx context.Context, id int64) (bool, err
 	return exists, err
 }
 
-const report_Create = `-- name: Report_Create :exec
-insert into reports (id, "time", reporter_user_id, target_type, target_id, reason, description)
-values ($1, $2, $3, $4, $5, $6, $7)
+const report_Create = `-- name: Report_Create :one
+with next_number as (
+    insert into report_number_counters ("day", counter)
+    values ((timezone('UTC', statement_timestamp()))::date, 1)
+    on conflict ("day") do update
+        set counter = report_number_counters.counter + 1
+    returning "day", counter
+)
+insert into reports (number, "time", reporter_user_id, target_type, target_id, reason, description)
+select
+    'R-' || to_char("day", 'YYYY-MMDD') || '-' || counter::text,
+    $1, $2, $3,
+    $4, $5, $6
+from next_number
+returning id, number
 `
 
 type Report_CreateParams struct {
-	ID             string
 	Time           pgtype.Timestamptz
 	ReporterUserID pgtype.UUID
 	TargetType     string
@@ -48,9 +59,13 @@ type Report_CreateParams struct {
 	Description    string
 }
 
-func (q *Queries) Report_Create(ctx context.Context, arg Report_CreateParams) error {
-	_, err := q.db.Exec(ctx, report_Create,
-		arg.ID,
+type Report_CreateRow struct {
+	ID     int64
+	Number string
+}
+
+func (q *Queries) Report_Create(ctx context.Context, arg Report_CreateParams) (Report_CreateRow, error) {
+	row := q.db.QueryRow(ctx, report_Create,
 		arg.Time,
 		arg.ReporterUserID,
 		arg.TargetType,
@@ -58,7 +73,9 @@ func (q *Queries) Report_Create(ctx context.Context, arg Report_CreateParams) er
 		arg.Reason,
 		arg.Description,
 	)
-	return err
+	var i Report_CreateRow
+	err := row.Scan(&i.ID, &i.Number)
+	return i, err
 }
 
 const report_UserExists = `-- name: Report_UserExists :one

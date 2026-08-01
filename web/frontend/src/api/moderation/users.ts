@@ -1,34 +1,77 @@
 import { httpClient, OLAPIResponse } from '@/http-client'
-import { UserLoginHistorySchema } from './schemas'
+import type {
+  ModerationUserBooksPageResponse,
+  ModerationUserCommentsPageResponse,
+  ModerationUserHistoryPageResponse,
+  ModerationUserReportsPageResponse,
+  ModerationUserResponse,
+  ModerationBanRequest,
+  ModerationReasonRequest,
+  ModerationValueRequest,
+  UserLoginHistoryResponse,
+} from '@/backend-types'
+
+export function getModerationUser(userId: string) {
+  return httpClient
+    .get(`/_api/moderation/users/${encodeURIComponent(userId)}`)
+    .then((response) => OLAPIResponse.create<ModerationUserResponse>(response))
+}
 
 export function banUser(userId: string, reason: string, until: Date | string) {
   const expiresAt = until instanceof Date ? until.toISOString() : until
-  return userAction(userId, 'ban', { reason, until: expiresAt })
+  const body: ModerationBanRequest = { reason, until: expiresAt }
+  return userAction(userId, 'ban', body)
 }
 
 export function permanentlyBanUser(userId: string, reason: string) {
-  return userAction(userId, 'permanent-ban', { reason })
+  return userAction(userId, 'permanent-ban', { reason } satisfies ModerationReasonRequest)
 }
 
 export function unbanUser(userId: string, reason: string) {
-  return userAction(userId, 'unban', { reason })
+  return userAction(userId, 'unban', { reason } satisfies ModerationReasonRequest)
 }
 
 export function renameUser(userId: string, value: string, reason: string) {
-  return userAction(userId, 'rename', { reason, value })
+  return userAction(userId, 'rename', { reason, value } satisfies ModerationValueRequest)
 }
 
 export function changeUserAbout(userId: string, value: string, reason: string) {
-  return userAction(userId, 'change-about', { reason, value })
+  return userAction(userId, 'change-about', { reason, value } satisfies ModerationValueRequest)
 }
 
-export function getUserLoginHistory(userId: string) {
+export function getUserLoginHistory(userId: string, page = 1, pageSize = 20) {
   return httpClient
-    .get(`/_api/moderation/users/${encodeURIComponent(userId)}/login-history`)
-    .then((response) => OLAPIResponse.create(response, UserLoginHistorySchema))
+    .get(`/_api/moderation/users/${encodeURIComponent(userId)}/login-history`, {
+      searchParams: { page, pageSize },
+    })
+    .then((response) => OLAPIResponse.create<UserLoginHistoryResponse>(response))
 }
 
-function userAction(userId: string, action: string, body: Record<string, string>) {
+function getUserPage<T>(userId: string, resource: string, page = 1, pageSize = 20) {
+  return httpClient
+    .get(`/_api/moderation/users/${encodeURIComponent(userId)}/${resource}`, {
+      searchParams: { page, pageSize },
+    })
+    .then((response) => OLAPIResponse.create<T>(response))
+}
+export function getModerationUserBooks(userId: string, page = 1, pageSize = 20) {
+  return getUserPage<ModerationUserBooksPageResponse>(userId, 'books', page, pageSize)
+}
+export function getModerationUserComments(userId: string, page = 1, pageSize = 20) {
+  return getUserPage<ModerationUserCommentsPageResponse>(userId, 'comments', page, pageSize)
+}
+export function getModerationUserHistory(userId: string, page = 1, pageSize = 20) {
+  return getUserPage<ModerationUserHistoryPageResponse>(userId, 'history', page, pageSize)
+}
+export function getModerationUserReports(userId: string, page = 1, pageSize = 20) {
+  return getUserPage<ModerationUserReportsPageResponse>(userId, 'reports', page, pageSize)
+}
+
+function userAction(
+  userId: string,
+  action: string,
+  body: ModerationBanRequest | ModerationReasonRequest | ModerationValueRequest,
+) {
   return httpClient
     .post(`/_api/moderation/users/${encodeURIComponent(userId)}/actions/${action}`, { json: body })
     .then((response) => OLAPIResponse.createNoBody(response))

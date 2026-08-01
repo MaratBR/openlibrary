@@ -1,5 +1,5 @@
 import { animate } from 'popmotion'
-import { JSX, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { JSX, useCallback, useLayoutEffect, useRef } from 'react'
 import { createEvent, Unsubscribe } from './event'
 import { RefCallback } from 'react'
 
@@ -153,6 +153,13 @@ export type UseAnimation = {
 
 export function useAnimation({ show, onAnimation, animation }: UseAnimationProps): UseAnimation {
   const animationInstanceRef = useRef<BinaryAnimation | null>(null)
+  const showRef = useRef(show)
+  const animationRef = useRef(animation)
+  const onAnimationRef = useRef(onAnimation)
+
+  showRef.current = show
+  animationRef.current = animation
+  onAnimationRef.current = onAnimation
 
   useLayoutEffect(() => {
     const { current: instance } = animationInstanceRef
@@ -160,26 +167,25 @@ export function useAnimation({ show, onAnimation, animation }: UseAnimationProps
     instance.setState(show)
   }, [show])
 
-  useEffect(() => {
-    const { current: instance } = animationInstanceRef
-    if (!instance || !onAnimation) return
-    return instance.subscribe(onAnimation)
-  }, [onAnimation])
-
   const initAnimation = useCallback((element: unknown) => {
     if (!(element instanceof HTMLElement)) return
 
-    const animationInstance = animation(element)
-    animationInstance.setState(show, {
+    const animationInstance = animationRef.current(element)
+    const unsubscribe = animationInstance.subscribe((event) => onAnimationRef.current?.(event))
+
+    animationInstance.setState(showRef.current, {
       duration: 0,
       force: true,
     })
     animationInstanceRef.current = animationInstance
 
     return () => {
+      unsubscribe()
       animationInstance.dispose()
+      if (animationInstanceRef.current === animationInstance) {
+        animationInstanceRef.current = null
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return {

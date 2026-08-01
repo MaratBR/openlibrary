@@ -4,7 +4,7 @@
 
 .book-recommendation-item {
   @apply 
-    rounded-xl bg-surface w-42 min-w-42 transition block mx-3 first:ml-0;
+    rounded-xl w-42 min-w-42 transition block mx-3 first:ml-0;
 
   &__img {
     @apply rounded-xl h-56 max-h-56 w-full transition;

@@ -43,15 +43,17 @@ func (r *reportRepository) TargetExists(ctx context.Context, targetType ReportTa
 	return exists, nil
 }
 
-func (r *reportRepository) Create(ctx context.Context, report Report) error {
-	err := store.New(r.db).Report_Create(ctx, store.Report_CreateParams{
-		ID: report.ID, Time: timeToTimestamptz(report.Time), ReporterUserID: uuidDomainToDb(report.ReporterUserID),
+func (r *reportRepository) Create(ctx context.Context, report Report) (Report, error) {
+	created, err := store.New(r.db).Report_Create(ctx, store.Report_CreateParams{
+		Time: timeToTimestamptz(report.Time), ReporterUserID: uuidDomainToDb(report.ReporterUserID),
 		TargetType: string(report.TargetType), TargetID: report.TargetID, Reason: report.Reason, Description: report.Description,
 	})
 	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
+		return Report{}, apperror.WrapUnexpectedDBError(err)
 	}
-	return nil
+	report.ID = created.ID
+	report.Number = created.Number
+	return report, nil
 }
 
 func NewReportRepository(db DB) ReportRepository { return &reportRepository{db: db} }

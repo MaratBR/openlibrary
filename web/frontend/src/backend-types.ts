@@ -196,19 +196,25 @@ export interface ManagerBookDto_Stats {
   ratings: number;
 }
 
-/** Generated from `internal/app/analytics/analytics_views.go`. */
+/** Generated from `internal/app/analytics/metric.go`. */
 export interface MetricValue {
   samples: number;
   valueSum: number;
 }
 
-/** Generated from `internal/app/analytics/analytics_views.go`. */
+/** Generated from `internal/app/analytics/metric.go`. */
 export interface MetricValues {
   total: MetricValue;
   year: MetricValue;
   month: MetricValue;
   week: MetricValue;
   day: MetricValue;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationBanRequest {
+  reason: string;
+  until: string;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
@@ -219,6 +225,114 @@ export interface ModerationBookResponse {
   isBanned: boolean;
   isShadowBanned: boolean;
   isPermanentlyRemoved: boolean;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationReasonRequest {
+  reason: string;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserBookResponse {
+  id: string;
+  name: string;
+  createdAt: string;
+  isPubliclyVisible: boolean;
+  isBanned: boolean;
+  isTrashed: boolean;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserBooksPageResponse {
+  entries: Array<ModerationUserBookResponse>;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserCommentResponse {
+  id: string;
+  chapterId: string;
+  bookId: string;
+  content: string;
+  chapterName: string;
+  bookName: string;
+  createdAt: string;
+  deleted: boolean;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserCommentsPageResponse {
+  entries: Array<ModerationUserCommentResponse>;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserHistoryPageResponse {
+  entries: Array<ModerationUserHistoryResponse>;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserHistoryResponse {
+  id: string;
+  time: string;
+  type: string;
+  reason: string;
+  actorUserId: string;
+  actorUserName: string;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserReportResponse {
+  id: string;
+  number: string;
+  time: string;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  description: string;
+  reporterUserId: string;
+  reporterUserName: string;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserReportsPageResponse {
+  entries: Array<ModerationUserReportResponse>;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserResponse {
+  id: string;
+  name: string;
+  email: string;
+  about: string;
+  avatar: string;
+  joinedAt: string;
+  role: string;
+  isBanned: boolean;
+  isEmailVerified: boolean;
+  booksTotal: number;
+  commentsTotal: number;
+  followersTotal: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationValueRequest {
+  reason: string;
+  value: string;
 }
 
 /** Generated from `internal/olhttp/notification.go`. */
@@ -263,7 +377,13 @@ export interface ReviewUserDto {
 export type TagsCategory = 'other' | 'warning' | 'fandom' | 'rel' | 'reltype' | 'unknown';
 
 /** Generated from `web/public/routes_moderation_api.go`. */
-export type UserLoginHistoryResponse = Array<LoginHistoryEntryResponse>;
+export interface UserLoginHistoryResponse {
+  entries: Array<LoginHistoryEntryResponse>;
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
 
 /** Generated from `internal/olhttp/json_response.go`. */
 export interface jsonErrorResponse {

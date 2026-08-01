@@ -511,13 +511,19 @@ type ReadingListHistory struct {
 }
 
 type Report struct {
-	ID             string
+	ID             int64
+	Number         string
 	Time           pgtype.Timestamptz
 	ReporterUserID pgtype.UUID
 	TargetType     string
 	TargetID       string
 	Reason         string
 	Description    string
+}
+
+type ReportNumberCounter struct {
+	Day     pgtype.Date
+	Counter int64
 }
 
 type Review struct {

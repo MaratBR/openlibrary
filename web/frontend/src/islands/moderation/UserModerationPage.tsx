@@ -1,0 +1,950 @@
+import { ErrorDisplay } from '@/components/error'
+import { DashboardContent } from '@/components/dashboard-layout-components'
+import { FormControl } from '@/components/FormControl'
+import Modal from '@/components/Modal'
+import {
+  banUser,
+  changeUserAbout,
+  getModerationUser,
+  getModerationUserBooks,
+  getModerationUserComments,
+  getModerationUserHistory,
+  getModerationUserReports,
+  getUserLoginHistory,
+  permanentlyBanUser,
+  renameUser,
+  unbanUser,
+} from '@/api/moderation'
+import type {
+  LoginHistoryEntry,
+  ModerationUser,
+  ModerationUserBooksPage,
+  ModerationUserCommentsPage,
+  ModerationUserHistoryPage,
+  ModerationUserReportsPage,
+} from '@/api/moderation'
+import { Pagination } from '@/components/Pagination'
+import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react'
+import { NavLink, useLocation, useParams, useSearchParams } from 'react-router'
+import SanitizeHTML from '@/common/SanitizeHTML'
+
+type Confirmation = {
+  title: string
+  description: string
+  destructive?: boolean
+  run: () => Promise<unknown>
+  onSuccess?: () => void
+}
+
+const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' })
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
+export default function UserModerationPage() {
+  const { userId = '' } = useParams()
+  const location = useLocation()
+  const [user, setUser] = useState<ModerationUser>()
+  const [error, setError] = useState<unknown>()
+  const [loading, setLoading] = useState(true)
+
+  const loadUser = useCallback(async () => {
+    setLoading(true)
+    setError(undefined)
+    try {
+      const response = await getModerationUser(userId)
+      response.throwIfError()
+      setUser(response.data)
+    } catch (loadError) {
+      setError(loadError)
+    } finally {
+      setLoading(false)
+    }
+  }, [userId])
+
+  useEffect(() => {
+    void loadUser()
+  }, [loadUser])
+
+  if (loading) {
+    return (
+      <DashboardContent.Root>
+        <div className="min-h-80 grid place-items-center">
+          <span className="loader" />
+        </div>
+      </DashboardContent.Root>
+    )
+  }
+  if (error || !user) {
+    return (
+      <DashboardContent.Root>
+        <DashboardContent.StickyHeader title={window._('moderationPortal.user.title')} />
+        <div className="card">
+          <ErrorDisplay error={error ?? new Error(window._('moderationPortal.user.loadError'))} />
+        </div>
+      </DashboardContent.Root>
+    )
+  }
+
+  const leaf = location.pathname.split('/').at(-1) ?? ''
+  const section = ['activity', 'history', 'reports', 'login-history'].includes(leaf)
+    ? 'activity'
+    : leaf === 'actions'
+      ? 'actions'
+      : 'overview'
+
+  return (
+    <DashboardContent.Root>
+      <div className="py-8 max-w-360 mx-auto">
+        <UserHeader user={user} />
+        <nav aria-label={window._('moderationPortal.user.navigation')}>
+          <ul className="tabs tabs--primary mt-4">
+            <UserTab active={section === 'overview'} end to={`/users/${user.id}`}>
+              {window._('moderationPortal.user.overview')}
+            </UserTab>
+            <UserTab active={section === 'activity'} to={`/users/${user.id}/activity`}>
+              {window._('moderationPortal.user.activity')}
+            </UserTab>
+            <UserTab active={section === 'actions'} to={`/users/${user.id}/actions`}>
+              {window._('moderationPortal.user.actions')}
+            </UserTab>
+          </ul>
+        </nav>
+        <div className="pt-5">
+          {leaf === user.id && <Overview user={user} />}
+          {leaf === 'activity' && <Activity userId={user.id} />}
+          {['history', 'reports', 'login-history', 'books', 'comments'].includes(leaf) && (
+            <ResourcePage userId={user.id} resource={leaf} />
+          )}
+          {leaf === 'actions' && <Actions user={user} onChanged={loadUser} />}
+        </div>
+      </div>
+    </DashboardContent.Root>
+  )
+}
+
+function UserTab({
+  children,
+  to,
+  end = false,
+  active,
+}: {
+  children: ReactNode
+  to: string
+  end?: boolean
+  active: boolean
+}) {
+  return (
+    <li>
+      <NavLink end={end} className={`tab ${active ? 'tab--active' : ''}`} to={to}>
+        {children}
+      </NavLink>
+    </li>
+  )
+}
+
+function UserHeader({ user }: { user: ModerationUser }) {
+  return (
+    <header className="card card--elevated">
+      <div className="flex flex-col xl:flex-row xl:items-center gap-6">
+        <div className="flex items-center gap-4 min-w-0 xl:min-w-96">
+          <img className="avatar flex-none" src={user.avatar} alt="" />
+          <div className="min-w-0">
+            <h1 className="text-3xl font-semibold truncate">{user.name}</h1>
+            <p className="text-sm text-secondary-foreground break-all">
+              {window._('moderationPortal.user.userId')}: {user.id}
+            </p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <span className="chip">{user.role}</span>
+              <span className={`chip ${user.isBanned ? 'chip--destructive' : 'chip--primary'}`}>
+                {user.isBanned
+                  ? window._('moderationPortal.user.banned')
+                  : window._('moderationPortal.user.active')}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
+          <Metric
+            icon="fa-calendar"
+            label={window._('moderationPortal.user.joined')}
+            value={dateFormatter.format(new Date(user.joinedAt))}
+          />
+          <Metric
+            icon="fa-book"
+            label={window._('moderationPortal.user.books')}
+            value={user.booksTotal}
+          />
+          <Metric
+            icon="fa-comments"
+            label={window._('moderationPortal.user.comments')}
+            value={user.commentsTotal}
+          />
+          <Metric
+            icon="fa-users"
+            label={window._('moderationPortal.user.followers')}
+            value={user.followersTotal}
+          />
+        </div>
+      </div>
+    </header>
+  )
+}
+
+function Metric({ icon, label, value }: { icon: string; label: string; value: ReactNode }) {
+  return (
+    <div className="border border-border rounded-lg p-3 min-w-0">
+      <div className="flex items-center gap-2 text-secondary-foreground text-sm">
+        <i className={`fa-solid ${icon}`} />
+        <span>{label}</span>
+      </div>
+      <div className="font-semibold mt-1 truncate">{value}</div>
+    </div>
+  )
+}
+
+function Overview({ user }: { user: ModerationUser }) {
+  const email = user.email.trim() || '--'
+  const emailDomain = user.email.includes('@') ? user.email.split('@').at(-1) || '--' : '--'
+  const accountAge = formatAccountAge(user.joinedAt)
+  return (
+    <div className="grid gap-5">
+      <section className="card">
+        <h2 className="text-xl font-semibold mb-4">{window._('moderationPortal.user.account')}</h2>
+        <dl className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <Signal
+            icon="fa-envelope"
+            label={window._('moderationPortal.user.email')}
+            value={email}
+          />
+          <Signal
+            icon="fa-at"
+            label={window._('moderationPortal.user.emailDomain')}
+            value={emailDomain}
+          />
+          <Signal
+            icon="fa-shield-halved"
+            label={window._('moderationPortal.user.emailVerification')}
+            value={
+              user.isEmailVerified
+                ? window._('moderationPortal.user.verified')
+                : window._('moderationPortal.user.notVerified')
+            }
+          />
+          <Signal
+            icon="fa-hourglass-half"
+            label={window._('moderationPortal.user.accountAge')}
+            value={accountAge}
+          />
+        </dl>
+      </section>
+      <section className="card">
+        <h2 className="text-xl font-semibold mb-4">
+          {window._('moderationPortal.user.accountSignals')}
+        </h2>
+        <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
+          {['lastActivity', 'loginLocations', 'passwordChanges', 'emailChanges', 'twoFactor'].map(
+            (key) => (
+              <UnavailableSignal key={key} label={window._(`moderationPortal.user.${key}`)} />
+            ),
+          )}
+        </div>
+      </section>
+      <RecentContent user={user} />
+    </div>
+  )
+}
+
+function RecentContent({ user }: { user: ModerationUser }) {
+  const [books, setBooks] = useState<ModerationUserBooksPage>()
+  const [comments, setComments] = useState<ModerationUserCommentsPage>()
+  useEffect(() => {
+    void getModerationUserBooks(user.id, 1, 4)
+      .then((r) => {
+        r.throwIfError()
+        setBooks(r.data)
+      })
+      .catch(window.toast.error)
+    void getModerationUserComments(user.id, 1, 4)
+      .then((r) => {
+        r.throwIfError()
+        setComments(r.data)
+      })
+      .catch(window.toast.error)
+  }, [user.id])
+  return (
+    <div className="grid lg:grid-cols-2 gap-5">
+      <PreviewCard
+        title={window._('moderationPortal.user.recentBooks')}
+        to={`/users/${user.id}/books`}
+        link={`${window._('moderationPortal.user.viewAll')} (${user.booksTotal})`}
+      >
+        {books?.entries.map((book) => (
+          <div key={book.id} className="py-3 border-b border-border last:border-0">
+            <div className="font-medium">{book.name}</div>
+            <div className="text-sm text-secondary-foreground">
+              {dateFormatter.format(new Date(book.createdAt))}
+            </div>
+          </div>
+        ))}
+      </PreviewCard>
+      <PreviewCard
+        title={window._('moderationPortal.user.recentComments')}
+        to={`/users/${user.id}/comments`}
+        link={window._('moderationPortal.user.viewAll')}
+      >
+        {comments?.entries.map((comment) => (
+          <div key={comment.id} className="py-3 border-b border-border last:border-0">
+            <div className="truncate">
+              <SanitizeHTML value={comment.content} />
+            </div>
+            <div className="text-sm text-secondary-foreground">
+              {comment.bookName} · {comment.chapterName}
+            </div>
+          </div>
+        ))}
+      </PreviewCard>
+    </div>
+  )
+}
+
+function PreviewCard({
+  title,
+  to,
+  link,
+  children,
+}: {
+  title: string
+  to: string
+  link: string
+  children: ReactNode
+}) {
+  return (
+    <section className="card">
+      <div className="flex justify-between items-center gap-4">
+        <h2 className="text-xl font-semibold">{title}</h2>
+        <NavLink className="link text-sm" to={to}>
+          {link}
+        </NavLink>
+      </div>
+      <div className="mt-2">{children}</div>
+    </section>
+  )
+}
+
+function Signal({ icon, label, value }: { icon: string; label: string; value: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-sm text-secondary-foreground flex items-center gap-2">
+        <i className={`fa-solid ${icon}`} />
+        {label}
+      </dt>
+      <dd className="mt-1 break-words">{value}</dd>
+    </div>
+  )
+}
+
+function UnavailableSignal({ label }: { label: string }) {
+  return (
+    <div className="border border-border rounded-lg p-3 bg-secondary/50">
+      <div className="font-medium">{label}</div>
+      <div className="text-sm text-secondary-foreground mt-1">
+        {window._('moderationPortal.user.notAvailable')}
+      </div>
+    </div>
+  )
+}
+
+function Activity({ userId }: { userId: string }) {
+  const [history, setHistory] = useState<ModerationUserHistoryPage>()
+  const [reports, setReports] = useState<ModerationUserReportsPage>()
+  const [logins, setLogins] = useState<LoginHistoryEntry[]>([])
+  const [error, setError] = useState<unknown>()
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    let current = true
+    Promise.all([
+      getModerationUserHistory(userId, 1, 4),
+      getModerationUserReports(userId, 1, 4),
+      getUserLoginHistory(userId, 1, 4),
+    ])
+      .then(([historyResponse, reportsResponse, loginResponse]) => {
+        historyResponse.throwIfError()
+        reportsResponse.throwIfError()
+        loginResponse.throwIfError()
+        if (current) {
+          setHistory(historyResponse.data)
+          setReports(reportsResponse.data)
+          setLogins(loginResponse.data.entries)
+        }
+      })
+      .catch((loadError) => current && setError(loadError))
+      .finally(() => current && setLoading(false))
+    return () => {
+      current = false
+    }
+  }, [userId])
+
+  return (
+    <div className="grid gap-5">
+      {loading ? (
+        <div className="min-h-32 grid place-items-center">
+          <span className="loader" />
+        </div>
+      ) : error ? (
+        <div className="card">
+          <ErrorDisplay error={error} />
+        </div>
+      ) : (
+        <>
+          <PreviewCard
+            title={window._('moderationPortal.user.moderationHistory')}
+            to={`/users/${userId}/history`}
+            link={window._('moderationPortal.user.showAll')}
+          >
+            {history?.entries.length ? (
+              history.entries.map((entry) => (
+                <div key={entry.id} className="py-3 border-b border-border last:border-0">
+                  <div className="font-medium">{formatAction(entry.type)}</div>
+                  <div className="text-sm text-secondary-foreground">
+                    {entry.reason || '--'} · {dateTimeFormatter.format(new Date(entry.time))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <EmptyState text={window._('moderationPortal.user.noModerationHistory')} />
+            )}
+          </PreviewCard>
+          <PreviewCard
+            title={window._('moderationPortal.user.reports')}
+            to={`/users/${userId}/reports`}
+            link={window._('moderationPortal.user.showAll')}
+          >
+            {reports?.entries.map((report) => (
+              <div key={report.id} className="py-3 border-b border-border last:border-0">
+                <div className="font-medium">
+                  {report.number} · {report.reason}
+                </div>
+                <div className="text-sm text-secondary-foreground">
+                  {report.targetType} · {dateTimeFormatter.format(new Date(report.time))}
+                </div>
+              </div>
+            ))}
+          </PreviewCard>
+          <PreviewCard
+            title={window._('moderationPortal.user.loginHistory')}
+            to={`/users/${userId}/login-history`}
+            link={window._('moderationPortal.user.showAll')}
+          >
+            {logins.length ? (
+              logins.map((entry, index) => (
+                <div
+                  key={`${entry.loggedInAt}-${index}`}
+                  className="py-3 border-b border-border last:border-0 grid sm:grid-cols-[12rem_10rem_1fr] gap-2"
+                >
+                  <span>{dateTimeFormatter.format(new Date(entry.loggedInAt))}</span>
+                  <span className="font-mono text-sm">{entry.ipAddress}</span>
+                  <span className="truncate text-secondary-foreground">{entry.userAgent}</span>
+                </div>
+              ))
+            ) : (
+              <EmptyState text={window._('moderationPortal.user.noLoginHistory')} />
+            )}
+          </PreviewCard>
+        </>
+      )}
+    </div>
+  )
+}
+
+function EmptyState({ text }: { text: string }) {
+  return <div className="p-8 text-center text-secondary-foreground">{text}</div>
+}
+
+type PageResult<T> = {
+  entries: T[]
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+function ResourcePage({ userId, resource }: { userId: string; resource: string }) {
+  switch (resource) {
+    case 'books':
+      return (
+        <PagedList
+          title={window._('moderationPortal.user.books')}
+          load={(p) => getModerationUserBooks(userId, p)}
+          render={(book: ModerationUserBooksPage['entries'][number]) => (
+            <div>
+              <div className="font-medium">{book.name}</div>
+              <div className="text-sm text-secondary-foreground">
+                {dateFormatter.format(new Date(book.createdAt))}
+              </div>
+            </div>
+          )}
+        />
+      )
+    case 'comments':
+      return (
+        <PagedList
+          title={window._('moderationPortal.user.comments')}
+          load={(p) => getModerationUserComments(userId, p)}
+          render={(comment: ModerationUserCommentsPage['entries'][number]) => (
+            <div>
+              <div>{comment.content}</div>
+              <div className="text-sm text-secondary-foreground">
+                {comment.bookName} · {comment.chapterName}
+              </div>
+            </div>
+          )}
+        />
+      )
+    case 'history':
+      return (
+        <PagedList
+          title={window._('moderationPortal.user.moderationHistory')}
+          load={(p) => getModerationUserHistory(userId, p)}
+          render={(entry: ModerationUserHistoryPage['entries'][number]) => (
+            <div>
+              <div className="font-medium">{formatAction(entry.type)}</div>
+              <div className="text-sm text-secondary-foreground">
+                {entry.reason || '--'} ·{' '}
+                {entry.actorUserName || window._('moderationPortal.user.system')} ·{' '}
+                {dateTimeFormatter.format(new Date(entry.time))}
+              </div>
+            </div>
+          )}
+        />
+      )
+    case 'reports':
+      return (
+        <PagedList
+          title={window._('moderationPortal.user.reports')}
+          load={(p) => getModerationUserReports(userId, p)}
+          render={(report: ModerationUserReportsPage['entries'][number]) => (
+            <div>
+              <div className="font-medium">
+                {report.number} · {report.reason}
+              </div>
+              <div>{report.description}</div>
+              <div className="text-sm text-secondary-foreground">
+                {report.targetType} · {dateTimeFormatter.format(new Date(report.time))}
+              </div>
+            </div>
+          )}
+        />
+      )
+    default:
+      return (
+        <PagedList
+          title={window._('moderationPortal.user.loginHistory')}
+          load={async (p) => {
+            const response = await getUserLoginHistory(userId, p)
+            response.throwIfError()
+            return response.data
+          }}
+          render={(entry: LoginHistoryEntry) => (
+            <div className="grid sm:grid-cols-[12rem_10rem_1fr] gap-2">
+              <span>{dateTimeFormatter.format(new Date(entry.loggedInAt))}</span>
+              <span className="font-mono text-sm">{entry.ipAddress}</span>
+              <span>{entry.userAgent}</span>
+            </div>
+          )}
+        />
+      )
+  }
+}
+
+function PagedList<T>({
+  title,
+  load,
+  render,
+}: {
+  title: string
+  load: (
+    page: number,
+  ) => Promise<{ data: PageResult<T>; throwIfError?: () => void } | PageResult<T>>
+  render: (entry: T) => ReactNode
+}) {
+  const [params] = useSearchParams()
+  const page = Math.max(1, Number(params.get('page')) || 1)
+  const [data, setData] = useState<PageResult<T>>()
+  const [error, setError] = useState<unknown>()
+  useEffect(() => {
+    setData(undefined)
+    setError(undefined)
+    void load(page)
+      .then((result) => {
+        if ('data' in result) {
+          result.throwIfError?.()
+          setData(result.data)
+        } else setData(result)
+      })
+      .catch(setError)
+  }, [load, page])
+  return (
+    <section className="card card--nopad overflow-hidden">
+      <div className="p-6 border-b border-border">
+        <h2 className="text-xl font-semibold">{title}</h2>
+      </div>
+      {error ? (
+        <div className="p-6">
+          <ErrorDisplay error={error} />
+        </div>
+      ) : !data ? (
+        <div className="min-h-32 grid place-items-center">
+          <span className="loader" />
+        </div>
+      ) : data.entries.length === 0 ? (
+        <EmptyState text={window._('moderationPortal.user.noEntries')} />
+      ) : (
+        <div>
+          {data.entries.map((entry, index) => (
+            <div className="p-4 border-b border-border last:border-0" key={index}>
+              {render(entry)}
+            </div>
+          ))}
+          <div className="p-4 flex justify-center">
+            <Pagination.Facade page={data.page} totalPages={data.totalPages} size={7} />
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
+function formatAction(value: string) {
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (letter: string) => letter.toUpperCase())
+}
+
+function Actions({ user, onChanged }: { user: ModerationUser; onChanged: () => Promise<void> }) {
+  const [confirmation, setConfirmation] = useState<Confirmation>()
+  const [pending, setPending] = useState(false)
+  const [action, setAction] = useState(user.isBanned ? 'unban' : 'temporary-ban')
+
+  useEffect(() => {
+    if (user.isBanned && action !== 'unban' && action !== 'rename' && action !== 'change-about')
+      setAction('unban')
+    if (!user.isBanned && action === 'unban') setAction('temporary-ban')
+  }, [action, user.isBanned])
+
+  const confirm = async () => {
+    if (!confirmation) return
+    setPending(true)
+    try {
+      const response = (await confirmation.run()) as { throwIfError?: () => void }
+      response.throwIfError?.()
+      confirmation.onSuccess?.()
+      window.toast({ title: window._('moderationPortal.user.actionComplete') })
+      setConfirmation(undefined)
+      await onChanged()
+    } catch (actionError) {
+      window.toast.error(actionError)
+    } finally {
+      setPending(false)
+    }
+  }
+
+  let actionForm: ReactNode
+  if (action === 'temporary-ban')
+    actionForm = <TemporaryBanCard userId={user.id} request={setConfirmation} />
+  else if (action === 'permanent-ban')
+    actionForm = (
+      <ReasonActionCard
+        title={window._('moderationPortal.user.permanentBan')}
+        description={window._('moderationPortal.user.permanentBanDescription')}
+        destructive
+        submitLabel={window._('moderationPortal.user.permanentBan')}
+        onSubmit={(reason, onSuccess) =>
+          setConfirmation({
+            title: window._('moderationPortal.user.confirmPermanentBan'),
+            description: window._('moderationPortal.user.confirmPermanentBanDescription'),
+            destructive: true,
+            run: () => permanentlyBanUser(user.id, reason),
+            onSuccess,
+          })
+        }
+      />
+    )
+  else if (action === 'unban')
+    actionForm = (
+      <ReasonActionCard
+        title={window._('moderationPortal.user.unban')}
+        description={window._('moderationPortal.user.unbanDescription')}
+        submitLabel={window._('moderationPortal.user.unban')}
+        onSubmit={(reason, onSuccess) =>
+          setConfirmation({
+            title: window._('moderationPortal.user.confirmUnban'),
+            description: window._('moderationPortal.user.confirmUnbanDescription'),
+            run: () => unbanUser(user.id, reason),
+            onSuccess,
+          })
+        }
+      />
+    )
+  else if (action === 'rename')
+    actionForm = (
+      <ValueActionCard
+        title={window._('moderationPortal.user.rename')}
+        description={window._('moderationPortal.user.renameDescription')}
+        initialValue={user.name}
+        multiline={false}
+        onSubmit={(value, reason, onSuccess) =>
+          setConfirmation({
+            title: window._('moderationPortal.user.confirmRename'),
+            description: window._('moderationPortal.user.confirmProfileChangeDescription'),
+            run: () => renameUser(user.id, value, reason),
+            onSuccess,
+          })
+        }
+      />
+    )
+  else
+    actionForm = (
+      <ValueActionCard
+        title={window._('moderationPortal.user.changeAbout')}
+        description={window._('moderationPortal.user.changeAboutDescription')}
+        initialValue={user.about}
+        multiline
+        onSubmit={(value, reason, onSuccess) =>
+          setConfirmation({
+            title: window._('moderationPortal.user.confirmChangeAbout'),
+            description: window._('moderationPortal.user.confirmProfileChangeDescription'),
+            run: () => changeUserAbout(user.id, value, reason),
+            onSuccess,
+          })
+        }
+      />
+    )
+
+  return (
+    <>
+      <div className="grid lg:grid-cols-[18rem_minmax(0,1fr)] gap-5 items-start">
+        <section className="card">
+          <FormControl label={window._('moderationPortal.user.selectAction')}>
+            <select
+              className="select w-full"
+              value={action}
+              onChange={(event) => setAction(event.target.value)}
+            >
+              {user.isBanned ? (
+                <option value="unban">{window._('moderationPortal.user.unban')}</option>
+              ) : (
+                <>
+                  <option value="temporary-ban">
+                    {window._('moderationPortal.user.temporaryBan')}
+                  </option>
+                  <option value="permanent-ban">
+                    {window._('moderationPortal.user.permanentBan')}
+                  </option>
+                </>
+              )}
+              <option value="rename">{window._('moderationPortal.user.rename')}</option>
+              <option value="change-about">{window._('moderationPortal.user.changeAbout')}</option>
+            </select>
+          </FormControl>
+        </section>
+        <div>{actionForm}</div>
+      </div>
+      <Modal open={Boolean(confirmation)} onClose={() => !pending && setConfirmation(undefined)}>
+        <div className="max-w-128">
+          <h2 className="text-xl font-semibold">{confirmation?.title}</h2>
+          <p className="my-3 text-secondary-foreground">{confirmation?.description}</p>
+          <div className="flex justify-end gap-2 mt-5">
+            <button
+              disabled={pending}
+              className="btn btn--default"
+              onClick={() => setConfirmation(undefined)}
+            >
+              {window._('common.cancel')}
+            </button>
+            <button
+              disabled={pending}
+              className={`btn ${confirmation?.destructive ? 'btn--destructive' : 'btn--primary'}`}
+              onClick={() => void confirm()}
+            >
+              {pending && <span className="circle-loader mr-2" />}
+              {window._('moderationPortal.user.confirm')}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </>
+  )
+}
+
+function ActionCard({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description: string
+  children: ReactNode
+}) {
+  return (
+    <section className="card">
+      <h2 className="text-xl font-semibold">{title}</h2>
+      <p className="text-secondary-foreground mt-1 mb-5">{description}</p>
+      {children}
+    </section>
+  )
+}
+
+function ReasonActionCard({
+  title,
+  description,
+  submitLabel,
+  destructive = false,
+  onSubmit,
+}: {
+  title: string
+  description: string
+  submitLabel: string
+  destructive?: boolean
+  onSubmit: (reason: string, onSuccess: () => void) => void
+}) {
+  const [reason, setReason] = useState('')
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    if (reason.trim()) onSubmit(reason.trim(), () => setReason(''))
+  }
+  return (
+    <ActionCard title={title} description={description}>
+      <form onSubmit={submit}>
+        <FormControl label={window._('moderationPortal.user.reason')}>
+          <textarea
+            className="input min-h-24"
+            required
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+          />
+        </FormControl>
+        <button className={`btn mt-4 ${destructive ? 'btn--destructive' : 'btn--primary'}`}>
+          {submitLabel}
+        </button>
+      </form>
+    </ActionCard>
+  )
+}
+
+function TemporaryBanCard({
+  userId,
+  request,
+}: {
+  userId: string
+  request: (confirmation: Confirmation) => void
+}) {
+  const [days, setDays] = useState('7')
+  const [reason, setReason] = useState('')
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    if (!reason.trim()) return
+    const until = new Date(Date.now() + Number(days) * 24 * 60 * 60 * 1000)
+    request({
+      title: window._('moderationPortal.user.confirmTemporaryBan'),
+      description: window._('moderationPortal.user.confirmTemporaryBanDescription'),
+      destructive: true,
+      run: () => banUser(userId, reason.trim(), until),
+      onSuccess: () => setReason(''),
+    })
+  }
+  return (
+    <ActionCard
+      title={window._('moderationPortal.user.temporaryBan')}
+      description={window._('moderationPortal.user.temporaryBanDescription')}
+    >
+      <form onSubmit={submit} className="grid gap-4">
+        <FormControl label={window._('moderationPortal.user.duration')}>
+          <select
+            className="select w-full"
+            value={days}
+            onChange={(event) => setDays(event.target.value)}
+          >
+            <option value="1">{window._('moderationPortal.user.oneDay')}</option>
+            <option value="7">{window._('moderationPortal.user.sevenDays')}</option>
+            <option value="30">{window._('moderationPortal.user.thirtyDays')}</option>
+          </select>
+        </FormControl>
+        <FormControl label={window._('moderationPortal.user.reason')}>
+          <textarea
+            className="input min-h-24"
+            required
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+          />
+        </FormControl>
+        <button className="btn btn--destructive justify-self-start">
+          {window._('moderationPortal.user.temporaryBan')}
+        </button>
+      </form>
+    </ActionCard>
+  )
+}
+
+function ValueActionCard({
+  title,
+  description,
+  initialValue,
+  multiline,
+  onSubmit,
+}: {
+  title: string
+  description: string
+  initialValue: string
+  multiline: boolean
+  onSubmit: (value: string, reason: string, onSuccess: () => void) => void
+}) {
+  const [value, setValue] = useState(initialValue)
+  const [reason, setReason] = useState('')
+  useEffect(() => setValue(initialValue), [initialValue])
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    if (value.trim() && reason.trim()) {
+      onSubmit(value.trim(), reason.trim(), () => setReason(''))
+    }
+  }
+  const control = multiline ? (
+    <textarea
+      className="input min-h-32"
+      required
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+    />
+  ) : (
+    <input
+      className="input"
+      required
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+    />
+  )
+  return (
+    <ActionCard title={title} description={description}>
+      <form onSubmit={submit} className="grid gap-4">
+        <FormControl label={window._('moderationPortal.user.newValue')}>{control}</FormControl>
+        <FormControl label={window._('moderationPortal.user.reason')}>
+          <textarea
+            className="input min-h-20"
+            required
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+          />
+        </FormControl>
+        <button className="btn btn--primary justify-self-start">
+          {window._('moderationPortal.user.reviewChange')}
+        </button>
+      </form>
+    </ActionCard>
+  )
+}
+
+function formatAccountAge(joinedAt: string) {
+  const days = Math.max(0, Math.floor((Date.now() - new Date(joinedAt).getTime()) / 86_400_000))
+  if (days < 30) return `${days} ${window._('moderationPortal.user.days')}`
+  const months = Math.floor(days / 30)
+  if (months < 24) return `${months} ${window._('moderationPortal.user.months')}`
+  return `${Math.floor(months / 12)} ${window._('moderationPortal.user.years')}`
+}

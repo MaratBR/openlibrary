@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"strconv"
 	"strings"
 	"time"
 
@@ -25,7 +24,8 @@ var (
 )
 
 type Report struct {
-	ID             string
+	ID             int64
+	Number         string
 	Time           time.Time
 	ReporterUserID uuid.UUID
 	TargetType     ReportTargetType
@@ -44,7 +44,7 @@ type CreateReportCommand struct {
 
 type ReportRepository interface {
 	TargetExists(context.Context, ReportTargetType, string) (bool, error)
-	Create(context.Context, Report) error
+	Create(context.Context, Report) (Report, error)
 }
 
 type ReportService interface {
@@ -77,10 +77,11 @@ func (s *reportService) Create(ctx context.Context, cmd CreateReportCommand) (Re
 		return Report{}, ErrReportTargetMissing
 	}
 	report := Report{
-		ID: strconv.FormatInt(GenID(), 10), Time: s.now(), ReporterUserID: cmd.ReporterUserID,
+		Time: s.now(), ReporterUserID: cmd.ReporterUserID,
 		TargetType: cmd.TargetType, TargetID: cmd.TargetID, Reason: cmd.Reason, Description: cmd.Description,
 	}
-	if err := s.repo.Create(ctx, report); err != nil {
+	report, err = s.repo.Create(ctx, report)
+	if err != nil {
 		return Report{}, err
 	}
 	return report, nil

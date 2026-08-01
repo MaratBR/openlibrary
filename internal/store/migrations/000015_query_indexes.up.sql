@@ -25,6 +25,7 @@ create index ix_drafts_chapter_latest
 
 -- Comments and reviews.
 create index ix_comments_live_chapter on comments (chapter_id) where deleted_at is null;
+create index ix_comments_user_created_at on comments (user_id, created_at desc);
 create index ix_comments_liked_user_comment on comments_liked (user_id, comment_id);
 create index ix_ratings_book_id on ratings (book_id);
 create index ix_reviews_book_created_at on reviews (book_id, created_at desc);

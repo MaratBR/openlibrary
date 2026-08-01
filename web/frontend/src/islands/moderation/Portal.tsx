@@ -3,6 +3,7 @@ import { RouterProvider } from 'react-router/dom'
 import { ReactIslandProps } from '../common/react-island'
 import ModerationLayout from './ModerationLayout'
 import PlaceholderPage from './PlaceholderPage'
+import UserModerationPage from './UserModerationPage'
 
 const routes = [
   ['overview', 'moderationPortal.overview'],
@@ -31,6 +32,22 @@ const router = createHashRouter([
       ...routes.map(([path, translationKey]) => ({
         path: `/${path}`,
         element: <PlaceholderPage title={window._(translationKey)} />,
+      })),
+      {
+        path: '/users/:userId',
+        element: <UserModerationPage />,
+      },
+      {
+        path: '/users/:userId/activity',
+        element: <UserModerationPage />,
+      },
+      {
+        path: '/users/:userId/actions',
+        element: <UserModerationPage />,
+      },
+      ...['history', 'reports', 'login-history', 'books', 'comments'].map((resource) => ({
+        path: `/users/:userId/${resource}`,
+        element: <UserModerationPage />,
       })),
       {
         path: '*',

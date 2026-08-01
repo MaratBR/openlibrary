@@ -5,6 +5,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ UserNotFound() {
     {{ l := i18n.GetLocalizer(ctx) }}
@@ -66,11 +67,13 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetPinnedUserBooksResult) {
                         <p>{ l.T("profile.noBooks") }</p>
                     </div>
                 } else {
-                    <ul class="profile-books-grid">
-                        for _, book := range pinnedBooks.Books {
-                            <li>@userProfilePinnedBookCard(book.ID, book.Name, book.Cover)</li>
-                        }
-                    </ul>
+                    @webcomponents.Carousel(webcomponents.CarouselProps{OnBackgroundColor: true}) {
+                        <ul class="book-recommendation-list overflow-x-hidden">
+                            for _, book := range pinnedBooks.Books {
+                                @userProfilePinnedBookCard(book.ID, book.Name, book.Cover)
+                            }
+                        </ul>
+                    }
                     if pinnedBooks.HasMore {
                         <div class="mt-7 flex justify-center">
                             <a class="btn btn--outline" href={ templ.SafeURL(fmt.Sprintf("/users/%s/books", user.ID)) }>
@@ -93,11 +96,21 @@ templ profileStat(value, label string) {
 }
 
 templ userProfilePinnedBookCard(bookID int64, name string, cover app.BookCover) {
-    <a
-        href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) }
-        class="profile-book-card-sm"
-        data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
-        @bookCover(cover.URL, name, 300)
-        <div class="profile-book-card-sm__title">{ name }</div>
-    </a>
+    <li class="book-recommendation-item">
+        <a
+            href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) }
+            data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
+            <img
+                loading="lazy"
+                src={ cover.URL }
+                alt={ name }
+                class="book-recommendation-item__img"
+            />
+        </a>
+        <div class="book-recommendation-item__summary">
+            <div class="book-recommendation-item__name">
+                <a class="link" href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) }>{ name }</a>
+            </div>
+        </div>
+    </li>
 }

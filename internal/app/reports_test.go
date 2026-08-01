@@ -15,9 +15,12 @@ type reportRepoStub struct {
 func (r *reportRepoStub) TargetExists(context.Context, ReportTargetType, string) (bool, error) {
 	return r.exists, nil
 }
-func (r *reportRepoStub) Create(_ context.Context, report Report) error {
+
+func (r *reportRepoStub) Create(_ context.Context, report Report) (Report, error) {
+	report.ID = 123
+	report.Number = "R-2026-0712-1"
 	r.created = report
-	return nil
+	return report, nil
 }
 
 func TestReportServiceCreatesServerIDAndNormalizesText(t *testing.T) {
@@ -30,8 +33,8 @@ func TestReportServiceCreatesServerIDAndNormalizesText(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if report.ID == "" || report.ID != repo.created.ID {
-		t.Fatalf("expected a server-generated persisted ID, got %q", report.ID)
+	if report.ID == 0 || report.ID != repo.created.ID || report.Number != "R-2026-0712-1" {
+		t.Fatalf("expected database-generated identity and number, got %#v", report)
 	}
 	if report.TargetID != "42" || report.Reason != "spam" || report.Description != "repeated links" {
 		t.Fatalf("report text was not normalized: %#v", report)

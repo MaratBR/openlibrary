@@ -81,7 +81,7 @@ templ Home_MostViewedBooks(
             <div class="home-header-container__hr" />
         </header>
 
-        @webcomponents.Carousel() {
+        @webcomponents.Carousel(webcomponents.CarouselProps{}) {
             <ul class="book-recommendation-list overflow-x-hidden">
                 for _, book := range books {
                     {{

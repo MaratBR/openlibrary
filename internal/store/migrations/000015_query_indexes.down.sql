@@ -12,6 +12,7 @@ drop index if exists ix_user_follower_followed_id;
 drop index if exists ix_reviews_book_created_at;
 drop index if exists ix_ratings_book_id;
 drop index if exists ix_comments_liked_user_comment;
+drop index if exists ix_comments_user_created_at;
 drop index if exists ix_comments_live_chapter;
 
 drop index if exists ix_drafts_chapter_latest;

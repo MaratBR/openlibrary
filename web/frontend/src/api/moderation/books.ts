@@ -1,5 +1,9 @@
 import { httpClient, OLAPIResponse } from '@/http-client'
-import { BookModerationLogSchema, ModerationBookSchema } from './schemas'
+import type {
+  BookModerationLogResponse,
+  ModerationBookResponse,
+  ModerationReasonRequest,
+} from '@/backend-types'
 
 export type BookModerationAction =
   | 'ban'
@@ -11,7 +15,7 @@ export type BookModerationAction =
 export function getModerationBook(bookId: string) {
   return httpClient
     .get(`/_api/moderation/books/${encodeURIComponent(bookId)}`)
-    .then((response) => OLAPIResponse.create(response, ModerationBookSchema))
+    .then((response) => OLAPIResponse.create<ModerationBookResponse>(response))
 }
 
 export function getBookModerationLog(
@@ -25,7 +29,7 @@ export function getBookModerationLog(
         pageSize: options.pageSize ?? 25,
       },
     })
-    .then((response) => OLAPIResponse.create(response, BookModerationLogSchema))
+    .then((response) => OLAPIResponse.create<BookModerationLogResponse>(response))
 }
 
 export function performBookModerationAction(
@@ -33,9 +37,10 @@ export function performBookModerationAction(
   action: BookModerationAction,
   reason: string,
 ) {
+  const body: ModerationReasonRequest = { reason }
   return httpClient
     .post(`/_api/moderation/books/${encodeURIComponent(bookId)}/actions/${action}`, {
-      json: { reason },
+      json: body,
     })
     .then((response) => OLAPIResponse.createNoBody(response))
 }

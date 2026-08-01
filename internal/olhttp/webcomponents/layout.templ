@@ -1,7 +1,17 @@
 package webcomponents
 
-templ Carousel() {
-    <div class="carousel" x-data="Carousel" data-can-scroll-l="false">
+type CarouselProps struct {
+    OnBackgroundColor bool
+}
+
+templ Carousel(props CarouselProps) {
+    <div
+        if props.OnBackgroundColor {
+            class="carousel carousel--on-background"
+        } else {
+            class="carousel"
+        }
+        x-data="Carousel" data-can-scroll-l="false">
         <button class="carousel__button carousel__button--left" x-bind="btnL">
             <i class="fa-solid fa-chevron-left" />
         </button>

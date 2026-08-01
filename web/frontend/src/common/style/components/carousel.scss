@@ -1,5 +1,9 @@
 .carousel {
     @apply relative;
+
+    &--on-background &__curtain {
+        @apply from-background;   
+    }
     
     &__curtain {
         @apply transition-opacity absolute top-0 bottom-0 pointer-events-none from-surface to-transparent w-24;
