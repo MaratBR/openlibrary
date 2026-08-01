@@ -12,14 +12,16 @@ import (
 )
 
 const modAddBookLog = `-- name: ModAddBookLog :exec
-insert into book_logs (id, "time", book_id, action_type, payload, actor_user_id, reason) values ($1, $2, $3, $4, $5, $6, $7)
+insert into moderation_logs (id, "time", "type", target_type, target_id, payload, actor_user_id, reason)
+values ($1, $2, $3, 'book', $4::bigint::text,
+        $5, $6, $7)
 `
 
 type ModAddBookLogParams struct {
 	ID          int64
 	Time        pgtype.Timestamptz
-	BookID      int64
-	ActionType  BookActionType
+	Type        string
+	TargetID    int64
 	Payload     []byte
 	ActorUserID pgtype.UUID
 	Reason      string
@@ -29,8 +31,8 @@ func (q *Queries) ModAddBookLog(ctx context.Context, arg ModAddBookLogParams) er
 	_, err := q.db.Exec(ctx, modAddBookLog,
 		arg.ID,
 		arg.Time,
-		arg.BookID,
-		arg.ActionType,
+		arg.Type,
+		arg.TargetID,
 		arg.Payload,
 		arg.ActorUserID,
 		arg.Reason,
@@ -40,16 +42,16 @@ func (q *Queries) ModAddBookLog(ctx context.Context, arg ModAddBookLogParams) er
 
 const modCountBookLogFiltered = `-- name: ModCountBookLogFiltered :one
 select count(*)
-from book_logs
-join users on users.id = book_logs.actor_user_id
+from moderation_logs
+join users on users.id = moderation_logs.actor_user_id
 where 
-    book_id = $1 and 
-    (action_type = ANY(CAST($2 as book_action_type[])) or $2 is null)
+    target_type = 'book' and target_id = $1::bigint::text and
+    ("type" = ANY(CAST($2 as text[])) or $2 is null)
 `
 
 type ModCountBookLogFilteredParams struct {
 	BookID      int64
-	ActionTypes []BookActionType
+	ActionTypes []string
 }
 
 func (q *Queries) ModCountBookLogFiltered(ctx context.Context, arg ModCountBookLogFilteredParams) (int64, error) {
@@ -86,71 +88,30 @@ func (q *Queries) ModGetBookInfo(ctx context.Context, id int64) (ModGetBookInfoR
 	return i, err
 }
 
-const modGetBookLog = `-- name: ModGetBookLog :many
-select id, time, book_id, action_type, payload, actor_user_id, reason
-from book_logs
-where book_id = $1
-order by "time" desc
-limit $2 offset $3
-`
-
-type ModGetBookLogParams struct {
-	BookID int64
-	Limit  int32
-	Offset int32
-}
-
-func (q *Queries) ModGetBookLog(ctx context.Context, arg ModGetBookLogParams) ([]BookLog, error) {
-	rows, err := q.db.Query(ctx, modGetBookLog, arg.BookID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []BookLog
-	for rows.Next() {
-		var i BookLog
-		if err := rows.Scan(
-			&i.ID,
-			&i.Time,
-			&i.BookID,
-			&i.ActionType,
-			&i.Payload,
-			&i.ActorUserID,
-			&i.Reason,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const modGetBookLogFiltered = `-- name: ModGetBookLogFiltered :many
-select book_logs.id, book_logs.time, book_logs.book_id, book_logs.action_type, book_logs.payload, book_logs.actor_user_id, book_logs.reason, users.name as actor_user_name
-from book_logs
-join users on users.id = book_logs.actor_user_id
+select moderation_logs.id, moderation_logs.time, moderation_logs.type, moderation_logs.target_type, moderation_logs.target_id, moderation_logs.payload, moderation_logs.actor_user_id, moderation_logs.reason, users.name as actor_user_name
+from moderation_logs
+join users on users.id = moderation_logs.actor_user_id
 where 
-    book_id = $1 and 
-    (action_type = ANY(CAST($4 as book_action_type[])) or $4 is null)
+    target_type = 'book' and target_id = $1::bigint::text and
+    ("type" = ANY(CAST($2 as text[])) or $2 is null)
 order by "time" desc
-limit $2 offset $3
+limit $4 offset $3
 `
 
 type ModGetBookLogFilteredParams struct {
 	BookID      int64
-	Limit       int32
+	ActionTypes []string
 	Offset      int32
-	ActionTypes []BookActionType
+	Limit       int32
 }
 
 type ModGetBookLogFilteredRow struct {
 	ID            int64
 	Time          pgtype.Timestamptz
-	BookID        int64
-	ActionType    BookActionType
+	Type          string
+	TargetType    string
+	TargetID      string
 	Payload       []byte
 	ActorUserID   pgtype.UUID
 	Reason        string
@@ -160,9 +121,9 @@ type ModGetBookLogFilteredRow struct {
 func (q *Queries) ModGetBookLogFiltered(ctx context.Context, arg ModGetBookLogFilteredParams) ([]ModGetBookLogFilteredRow, error) {
 	rows, err := q.db.Query(ctx, modGetBookLogFiltered,
 		arg.BookID,
-		arg.Limit,
-		arg.Offset,
 		arg.ActionTypes,
+		arg.Offset,
+		arg.Limit,
 	)
 	if err != nil {
 		return nil, err
@@ -174,60 +135,13 @@ func (q *Queries) ModGetBookLogFiltered(ctx context.Context, arg ModGetBookLogFi
 		if err := rows.Scan(
 			&i.ID,
 			&i.Time,
-			&i.BookID,
-			&i.ActionType,
+			&i.Type,
+			&i.TargetType,
+			&i.TargetID,
 			&i.Payload,
 			&i.ActorUserID,
 			&i.Reason,
 			&i.ActorUserName,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const modGetBookLogOfType = `-- name: ModGetBookLogOfType :many
-select id, time, book_id, action_type, payload, actor_user_id, reason
-from book_logs
-where book_id = $1 and action_type = $4
-order by "time" desc
-limit $2 offset $3
-`
-
-type ModGetBookLogOfTypeParams struct {
-	BookID     int64
-	Limit      int32
-	Offset     int32
-	ActionType BookActionType
-}
-
-func (q *Queries) ModGetBookLogOfType(ctx context.Context, arg ModGetBookLogOfTypeParams) ([]BookLog, error) {
-	rows, err := q.db.Query(ctx, modGetBookLogOfType,
-		arg.BookID,
-		arg.Limit,
-		arg.Offset,
-		arg.ActionType,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []BookLog
-	for rows.Next() {
-		var i BookLog
-		if err := rows.Scan(
-			&i.ID,
-			&i.Time,
-			&i.BookID,
-			&i.ActionType,
-			&i.Payload,
-			&i.ActorUserID,
-			&i.Reason,
 		); err != nil {
 			return nil, err
 		}

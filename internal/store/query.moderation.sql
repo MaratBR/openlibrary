@@ -10,9 +10,9 @@ set deleted_at = case when sqlc.arg('removed')::bool then now() else null end,
     updated_at = now()
 where id = $1;
 
--- name: Moderation_AddCommentLog :exec
-insert into comment_logs (id, "time", comment_id, action_type, payload, actor_user_id, reason)
-values ($1, $2, $3, $4, $5, $6, $7);
+-- name: Moderation_AddLog :exec
+insert into moderation_logs (id, "time", "type", target_type, target_id, payload, actor_user_id, reason)
+values ($1, $2, $3, $4, $5, $6, $7, $8);
 
 -- name: Moderation_SetUserBanned :exec
 update users set is_banned = $2 where id = $1;
@@ -29,10 +29,6 @@ update users set name = $2 where id = $1;
 
 -- name: Moderation_ChangeUserAbout :exec
 update users set about = $2 where id = $1;
-
--- name: Moderation_AddUserLog :exec
-insert into user_logs (id, user_id, actor_user_id, action_type, payload, "time", reason)
-values ($1, $2, $3, $4, $5, $6, $7);
 
 -- name: Moderation_GetUserLoginHistory :many
 select id, user_id, created_at, user_agent, ip_address

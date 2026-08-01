@@ -52,9 +52,9 @@ func (r *contentModerationRepository) SetChapterVisibilityAndLog(ctx context.Con
 }
 
 func addPersistedBookLog(ctx context.Context, q *store.Queries, bookID int64, log ModerationAuditEntry, payload []byte) error {
-	err := q.ModAddBookLog(ctx, store.ModAddBookLogParams{
-		ID: log.ID, Time: timeToTimestamptz(log.Time), BookID: bookID,
-		ActionType: store.BookActionTypeSignificantUpdate, Payload: payload,
+	err := q.Moderation_AddLog(ctx, store.Moderation_AddLogParams{
+		ID: log.ID, Time: timeToTimestamptz(log.Time), Type: string(log.Action),
+		TargetType: log.TargetType, TargetID: log.TargetID, Payload: payload,
 		ActorUserID: uuidDomainToDb(log.ActorUserID), Reason: log.Reason,
 	})
 	if err != nil {
@@ -74,9 +74,9 @@ func (r *contentModerationRepository) SetCommentRemovedAndLog(ctx context.Contex
 		if err := q.Moderation_SetCommentRemoved(ctx, store.Moderation_SetCommentRemovedParams{ID: commentID, Removed: removed}); err != nil {
 			return apperror.WrapUnexpectedDBError(err)
 		}
-		err := q.Moderation_AddCommentLog(ctx, store.Moderation_AddCommentLogParams{
-			ID: log.ID, Time: timeToTimestamptz(log.Time), CommentID: commentID,
-			ActionType: string(log.Action), Payload: log.Payload,
+		err := q.Moderation_AddLog(ctx, store.Moderation_AddLogParams{
+			ID: log.ID, Time: timeToTimestamptz(log.Time), Type: string(log.Action),
+			TargetType: log.TargetType, TargetID: log.TargetID, Payload: log.Payload,
 			ActorUserID: uuidDomainToDb(log.ActorUserID), Reason: log.Reason,
 		})
 		if err != nil {
@@ -151,9 +151,9 @@ func addPersistedUserLog(ctx context.Context, q *store.Queries, userID uuid.UUID
 	if err != nil {
 		return apperror.WrapUnexpectedAppError(err)
 	}
-	err = q.Moderation_AddUserLog(ctx, store.Moderation_AddUserLogParams{
-		ID: log.ID, UserID: uuidDomainToDb(userID), ActorUserID: uuidDomainToDb(log.ActorUserID),
-		ActionType: string(log.Action), Payload: payload, Time: timeToTimestamptz(log.Time), Reason: log.Reason,
+	err = q.Moderation_AddLog(ctx, store.Moderation_AddLogParams{
+		ID: log.ID, ActorUserID: uuidDomainToDb(log.ActorUserID), Type: string(log.Action),
+		TargetType: log.TargetType, TargetID: log.TargetID, Payload: payload, Time: timeToTimestamptz(log.Time), Reason: log.Reason,
 	})
 	if err != nil {
 		return apperror.WrapUnexpectedDBError(err)

@@ -3,6 +3,7 @@ import { NavLink, To } from 'react-router'
 
 const navigation = [
   { to: '/overview', icon: 'fa-solid fa-gauge-high', label: 'moderationPortal.overview' },
+  { to: '/search', icon: 'fa-solid fa-search', label: 'moderationPortal.search' },
   { to: '/books', icon: 'fa-solid fa-book', label: 'moderationPortal.books' },
   { to: '/chapters', icon: 'fa-solid fa-file-lines', label: 'moderationPortal.chapters' },
   { to: '/comments', icon: 'fa-solid fa-comments', label: 'moderationPortal.comments' },

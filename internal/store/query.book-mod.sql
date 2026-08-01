@@ -20,21 +20,9 @@ from books
 where id = $1;
 
 -- name: ModAddBookLog :exec
-insert into book_logs (id, "time", book_id, action_type, payload, actor_user_id, reason) values ($1, $2, $3, $4, $5, $6, $7);
-
--- name: ModGetBookLog :many
-select *
-from book_logs
-where book_id = $1
-order by "time" desc
-limit $2 offset $3;
-
--- name: ModGetBookLogOfType :many
-select *
-from book_logs
-where book_id = $1 and action_type = $4
-order by "time" desc
-limit $2 offset $3;
+insert into moderation_logs (id, "time", "type", target_type, target_id, payload, actor_user_id, reason)
+values (sqlc.arg('id'), sqlc.arg('time'), sqlc.arg('type'), 'book', sqlc.arg('targetID')::bigint::text,
+        sqlc.arg('payload'), sqlc.arg('actorUserID'), sqlc.arg('reason'));
 
 -- name: ModPermRemoveBook :exec
 update books
@@ -62,19 +50,19 @@ delete from book_view where book_id = $1;
 
 
 -- name: ModGetBookLogFiltered :many
-select book_logs.*, users.name as actor_user_name
-from book_logs
-join users on users.id = book_logs.actor_user_id
+select moderation_logs.*, users.name as actor_user_name
+from moderation_logs
+join users on users.id = moderation_logs.actor_user_id
 where 
-    book_id = $1 and 
-    (action_type = ANY(CAST(sqlc.arg('actionTypes') as book_action_type[])) or sqlc.arg('actionTypes') is null)
+    target_type = 'book' and target_id = sqlc.arg('bookID')::bigint::text and
+    ("type" = ANY(CAST(sqlc.arg('actionTypes') as text[])) or sqlc.arg('actionTypes') is null)
 order by "time" desc
-limit $2 offset $3;
+limit sqlc.arg('limit') offset sqlc.arg('offset');
 
 -- name: ModCountBookLogFiltered :one
 select count(*)
-from book_logs
-join users on users.id = book_logs.actor_user_id
+from moderation_logs
+join users on users.id = moderation_logs.actor_user_id
 where 
-    book_id = $1 and 
-    (action_type = ANY(CAST(sqlc.arg('actionTypes') as book_action_type[])) or sqlc.arg('actionTypes') is null);
+    target_type = 'book' and target_id = sqlc.arg('bookID')::bigint::text and
+    ("type" = ANY(CAST(sqlc.arg('actionTypes') as text[])) or sqlc.arg('actionTypes') is null);

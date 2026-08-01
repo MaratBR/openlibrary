@@ -104,6 +104,7 @@ comments = "Comments"
 users = "Users"
 loginHistory = "Login history"
 auditLog = "Audit log"
+search = "Search"
 
 [footer]
 navigationLabel = "Footer navigation"

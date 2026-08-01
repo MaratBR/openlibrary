@@ -2,8 +2,6 @@ drop index if exists ix_defined_tags_synonym_of;
 drop index if exists ix_defined_tags_type_lowercased_name;
 drop index if exists ix_defined_tags_lowercased_name;
 
-drop index if exists ix_book_logs_book_action_time;
-drop index if exists ix_book_logs_book_time;
 drop index if exists ix_user_bans_user_created_at;
 drop index if exists ix_sessions_user_created_at;
 drop index if exists ix_sessions_sid;

@@ -37,8 +37,6 @@ create index ix_user_2fa_uninitialized_created_at
 create index ix_sessions_sid on sessions (sid);
 create index ix_sessions_user_created_at on sessions (user_id, created_at desc);
 create index ix_user_bans_user_created_at on user_bans (user_id, created_at desc);
-create index ix_book_logs_book_time on book_logs (book_id, "time" desc);
-create index ix_book_logs_book_action_time on book_logs (book_id, action_type, "time" desc);
 
 -- Tag search and cleanup.
 create index ix_defined_tags_lowercased_name

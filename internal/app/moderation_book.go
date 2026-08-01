@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 )
 
@@ -48,7 +47,7 @@ type BookModerationInfo struct {
 
 type BookModerationLog struct {
 	Time          time.Time
-	Action        store.BookActionType
+	Action        BookActionType
 	Payload       json.RawMessage
 	Reason        string
 	ActorUserID   uuid.UUID
@@ -58,10 +57,20 @@ type BookModerationLog struct {
 type GetBookLogQuery struct {
 	Page        uint32
 	PageSize    uint32
-	OfTypes     []store.BookActionType
+	OfTypes     []BookActionType
 	BookID      int64
 	ActorUserID uuid.UUID
 }
+
+type BookActionType string
+
+const (
+	BookActionTypeBan         BookActionType = "ban"
+	BookActionTypeShadowBan   BookActionType = "shadow_ban"
+	BookActionTypePermRemoval BookActionType = "perm_removal"
+	BookActionTypeUnBan       BookActionType = "un_ban"
+	BookActionTypeUnShadowBan BookActionType = "un_shadow_ban"
+)
 
 type BookLogResult struct {
 	Entries         []BookModerationLog

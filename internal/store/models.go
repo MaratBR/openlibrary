@@ -57,56 +57,6 @@ func (ns NullAgeRating) Value() (driver.Value, error) {
 	return string(ns.AgeRating), nil
 }
 
-type BookActionType string
-
-const (
-	BookActionTypeSignificantUpdate BookActionType = "significant_update"
-	BookActionTypeAuthorTransfer    BookActionType = "author_transfer"
-	BookActionTypeCoauthorAdded     BookActionType = "coauthor_added"
-	BookActionTypeCoauthorRemoved   BookActionType = "coauthor_removed"
-	BookActionTypeBan               BookActionType = "ban"
-	BookActionTypeShadowBan         BookActionType = "shadow_ban"
-	BookActionTypePermRemoval       BookActionType = "perm_removal"
-	BookActionTypeUnBan             BookActionType = "un_ban"
-	BookActionTypeUnShadowBan       BookActionType = "un_shadow_ban"
-	BookActionTypeReindex           BookActionType = "reindex"
-)
-
-func (e *BookActionType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = BookActionType(s)
-	case string:
-		*e = BookActionType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for BookActionType: %T", src)
-	}
-	return nil
-}
-
-type NullBookActionType struct {
-	BookActionType BookActionType
-	Valid          bool // Valid is true if BookActionType is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullBookActionType) Scan(value interface{}) error {
-	if value == nil {
-		ns.BookActionType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.BookActionType.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullBookActionType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.BookActionType), nil
-}
-
 type CensorMode string
 
 const (
@@ -328,52 +278,6 @@ func (ns NullTypeOf2fa) Value() (driver.Value, error) {
 	return string(ns.TypeOf2fa), nil
 }
 
-type UserActionType string
-
-const (
-	UserActionTypeSecPasswordReset UserActionType = "sec_password_reset"
-	UserActionTypeSec2faUmbrella   UserActionType = "sec_2fa_umbrella"
-	UserActionTypeBan              UserActionType = "ban"
-	UserActionTypeUnban            UserActionType = "unban"
-	UserActionTypeMute             UserActionType = "mute"
-	UserActionTypeUnmute           UserActionType = "unmute"
-)
-
-func (e *UserActionType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = UserActionType(s)
-	case string:
-		*e = UserActionType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for UserActionType: %T", src)
-	}
-	return nil
-}
-
-type NullUserActionType struct {
-	UserActionType UserActionType
-	Valid          bool // Valid is true if UserActionType is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullUserActionType) Scan(value interface{}) error {
-	if value == nil {
-		ns.UserActionType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.UserActionType.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullUserActionType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.UserActionType), nil
-}
-
 type UserRole string
 
 const (
@@ -457,16 +361,6 @@ type BookChapter struct {
 	IsPubliclyVisible bool
 }
 
-type BookLog struct {
-	ID          int64
-	Time        pgtype.Timestamptz
-	BookID      int64
-	ActionType  BookActionType
-	Payload     []byte
-	ActorUserID pgtype.UUID
-	Reason      string
-}
-
 type Collection struct {
 	ID            int64
 	Name          string
@@ -498,16 +392,6 @@ type Comment struct {
 	Subcomments         int32
 	Likes               int32
 	LikesRecalculatedAt pgtype.Timestamptz
-}
-
-type CommentLog struct {
-	ID          int64
-	Time        pgtype.Timestamptz
-	CommentID   int64
-	ActionType  string
-	Payload     []byte
-	ActorUserID pgtype.UUID
-	Reason      string
 }
 
 type CommentsLiked struct {
@@ -557,6 +441,17 @@ type EmailVerification struct {
 	VerificationCodeHash string
 	CreatedAt            pgtype.Timestamptz
 	ValidThrough         pgtype.Timestamptz
+}
+
+type ModerationLog struct {
+	ID          int64
+	Time        pgtype.Timestamptz
+	Type        string
+	TargetType  string
+	TargetID    string
+	Payload     []byte
+	ActorUserID pgtype.UUID
+	Reason      string
 }
 
 type OlAnalyticsBookPopularityBucket struct {
@@ -613,6 +508,16 @@ type ReadingListHistory struct {
 	ChapterID       int64
 	FinishedReading bool
 	Progress        int32
+}
+
+type Report struct {
+	ID             string
+	Time           pgtype.Timestamptz
+	ReporterUserID pgtype.UUID
+	TargetType     string
+	TargetID       string
+	Reason         string
+	Description    string
 }
 
 type Review struct {
@@ -687,16 +592,6 @@ type UserFollower struct {
 	FollowerID pgtype.UUID
 	FollowedID pgtype.UUID
 	CreatedAt  pgtype.Timestamptz
-}
-
-type UserLog struct {
-	ID          int64
-	UserID      pgtype.UUID
-	ActorUserID pgtype.UUID
-	ActionType  string
-	Payload     []byte
-	Time        pgtype.Timestamptz
-	Reason      string
 }
 
 type UserReaderPreference struct {

@@ -7,6 +7,7 @@ import PlaceholderPage from './PlaceholderPage'
 const routes = [
   ['overview', 'moderationPortal.overview'],
   ['books', 'moderationPortal.books'],
+  ['search', 'moderationPortal.search'],
   ['chapters', 'moderationPortal.chapters'],
   ['comments', 'moderationPortal.comments'],
   ['users', 'moderationPortal.users'],

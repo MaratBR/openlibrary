@@ -1,5 +1,3 @@
-drop table if exists user_logs;
-drop type if exists user_action_type;
-drop table if exists book_logs;
-drop type if exists book_action_type;
+drop table if exists reports;
+drop table if exists moderation_logs;
 alter table books drop column if exists is_perm_removed;

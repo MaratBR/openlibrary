@@ -78,7 +78,7 @@ func (m *moderationBookService) GetBookLog(ctx context.Context, query GetBookLog
 
 	rows, err := queries.ModGetBookLogFiltered(ctx, store.ModGetBookLogFilteredParams{
 		BookID:      query.BookID,
-		ActionTypes: query.OfTypes,
+		ActionTypes: bookActionTypesToStrings(query.OfTypes),
 		Limit:       pageSize + 1,
 		Offset:      (page - 1) * pageSize,
 	})
@@ -88,7 +88,7 @@ func (m *moderationBookService) GetBookLog(ctx context.Context, query GetBookLog
 
 	count, err := queries.ModCountBookLogFiltered(ctx, store.ModCountBookLogFilteredParams{
 		BookID:      query.BookID,
-		ActionTypes: query.OfTypes,
+		ActionTypes: bookActionTypesToStrings(query.OfTypes),
 	})
 	if err != nil {
 		return BookLogResult{}, apperror.WrapUnexpectedDBError(err)
@@ -114,7 +114,7 @@ func (m *moderationBookService) GetBookLog(ctx context.Context, query GetBookLog
 	for _, row := range rows {
 		result.Entries = append(result.Entries, BookModerationLog{
 			Time:          row.Time.Time,
-			Action:        row.ActionType,
+			Action:        BookActionType(row.Type),
 			Payload:       row.Payload,
 			Reason:        row.Reason,
 			ActorUserID:   uuidDbToDomain(row.ActorUserID),
@@ -123,6 +123,17 @@ func (m *moderationBookService) GetBookLog(ctx context.Context, query GetBookLog
 	}
 
 	return result, nil
+}
+
+func bookActionTypesToStrings(types []BookActionType) []string {
+	if types == nil {
+		return nil
+	}
+	result := make([]string, len(types))
+	for i, actionType := range types {
+		result[i] = string(actionType)
+	}
+	return result
 }
 
 // BanBook implements ModerationBookService.
@@ -149,7 +160,7 @@ func (m *moderationBookService) BanBook(ctx context.Context, cmd ModerationPerfo
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
-	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeBan, cmd.Reason, cmd.ActorUserID)
+	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypeBan, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
 		dal.RollbackTx(ctx, tx)
 		return err
@@ -163,14 +174,14 @@ func (m *moderationBookService) BanBook(ctx context.Context, cmd ModerationPerfo
 	return nil
 }
 
-func (m *moderationBookService) addBookLog(ctx context.Context, queries *store.Queries, bookID int64, actionType store.BookActionType, reason string, actorUserID uuid.UUID) error {
+func (m *moderationBookService) addBookLog(ctx context.Context, queries *store.Queries, bookID int64, actionType BookActionType, reason string, actorUserID uuid.UUID) error {
 	err := queries.ModAddBookLog(ctx, store.ModAddBookLogParams{
 		ID:          GenID(),
-		BookID:      bookID,
+		TargetID:    bookID,
 		Reason:      reason,
 		Payload:     nil,
 		Time:        pgtype.Timestamptz{Valid: true, Time: time.Now()},
-		ActionType:  actionType,
+		Type:        string(actionType),
 		ActorUserID: uuidDomainToDb(actorUserID),
 	})
 	if err != nil {
@@ -210,7 +221,7 @@ func (m *moderationBookService) PermanentlyRemoveBook(ctx context.Context, cmd M
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
-	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypePermRemoval, cmd.Reason, cmd.ActorUserID)
+	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypePermRemoval, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
 		dal.RollbackTx(ctx, tx)
 		return err
@@ -249,7 +260,7 @@ func (m *moderationBookService) ShadowBanBook(ctx context.Context, cmd Moderatio
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
-	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeShadowBan, cmd.Reason, cmd.ActorUserID)
+	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypeShadowBan, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
 		dal.RollbackTx(ctx, tx)
 		return err
@@ -288,7 +299,7 @@ func (m *moderationBookService) UnBanBook(ctx context.Context, cmd ModerationPer
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
-	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeUnBan, cmd.Reason, cmd.ActorUserID)
+	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypeUnBan, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
 		dal.RollbackTx(ctx, tx)
 		return err
@@ -326,7 +337,7 @@ func (m *moderationBookService) UnShadowBanBook(ctx context.Context, cmd Moderat
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
-	err = m.addBookLog(ctx, queries, cmd.BookID, store.BookActionTypeUnShadowBan, cmd.Reason, cmd.ActorUserID)
+	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypeUnShadowBan, cmd.Reason, cmd.ActorUserID)
 	if err != nil {
 		dal.RollbackTx(ctx, tx)
 		return err

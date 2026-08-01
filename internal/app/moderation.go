@@ -75,8 +75,7 @@ type ModerationAuditEntry struct {
 
 // ContentModerationRepository is the persistence port for application-level
 // moderation. Every mutation must update its target and append its audit entry
-// atomically. Store adapters should use book_logs for chapter actions and
-// user_logs (or a generalized moderation log) for comment/user actions.
+// atomically in the generalized moderation log.
 type ContentModerationRepository interface {
 	SetChapterVisibilityAndLog(ctx context.Context, chapterID int64, visible bool, log ModerationAuditEntry) error
 	SetCommentRemovedAndLog(ctx context.Context, commentID int64, removed bool, log ModerationAuditEntry) error

@@ -11,27 +11,29 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const moderation_AddCommentLog = `-- name: Moderation_AddCommentLog :exec
-insert into comment_logs (id, "time", comment_id, action_type, payload, actor_user_id, reason)
-values ($1, $2, $3, $4, $5, $6, $7)
+const moderation_AddLog = `-- name: Moderation_AddLog :exec
+insert into moderation_logs (id, "time", "type", target_type, target_id, payload, actor_user_id, reason)
+values ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
-type Moderation_AddCommentLogParams struct {
+type Moderation_AddLogParams struct {
 	ID          int64
 	Time        pgtype.Timestamptz
-	CommentID   int64
-	ActionType  string
+	Type        string
+	TargetType  string
+	TargetID    string
 	Payload     []byte
 	ActorUserID pgtype.UUID
 	Reason      string
 }
 
-func (q *Queries) Moderation_AddCommentLog(ctx context.Context, arg Moderation_AddCommentLogParams) error {
-	_, err := q.db.Exec(ctx, moderation_AddCommentLog,
+func (q *Queries) Moderation_AddLog(ctx context.Context, arg Moderation_AddLogParams) error {
+	_, err := q.db.Exec(ctx, moderation_AddLog,
 		arg.ID,
 		arg.Time,
-		arg.CommentID,
-		arg.ActionType,
+		arg.Type,
+		arg.TargetType,
+		arg.TargetID,
 		arg.Payload,
 		arg.ActorUserID,
 		arg.Reason,
@@ -61,34 +63,6 @@ func (q *Queries) Moderation_AddUserBan(ctx context.Context, arg Moderation_AddU
 		arg.BannedByUserID,
 		arg.Note,
 		arg.ExpiresAt,
-	)
-	return err
-}
-
-const moderation_AddUserLog = `-- name: Moderation_AddUserLog :exec
-insert into user_logs (id, user_id, actor_user_id, action_type, payload, "time", reason)
-values ($1, $2, $3, $4, $5, $6, $7)
-`
-
-type Moderation_AddUserLogParams struct {
-	ID          int64
-	UserID      pgtype.UUID
-	ActorUserID pgtype.UUID
-	ActionType  string
-	Payload     []byte
-	Time        pgtype.Timestamptz
-	Reason      string
-}
-
-func (q *Queries) Moderation_AddUserLog(ctx context.Context, arg Moderation_AddUserLogParams) error {
-	_, err := q.db.Exec(ctx, moderation_AddUserLog,
-		arg.ID,
-		arg.UserID,
-		arg.ActorUserID,
-		arg.ActionType,
-		arg.Payload,
-		arg.Time,
-		arg.Reason,
 	)
 	return err
 }
