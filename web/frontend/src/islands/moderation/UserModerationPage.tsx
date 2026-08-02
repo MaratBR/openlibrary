@@ -24,9 +24,18 @@ import type {
   ModerationUserReportsPage,
 } from '@/api/moderation'
 import { Pagination } from '@/components/Pagination'
-import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react'
-import { NavLink, useLocation, useParams, useSearchParams } from 'react-router'
+import { FormEvent, ReactNode, useEffect, useState } from 'react'
+import {
+  LoaderFunctionArgs,
+  NavLink,
+  useLoaderData,
+  useLocation,
+  useRevalidator,
+  useRouteError,
+} from 'react-router'
 import SanitizeHTML from '@/common/SanitizeHTML'
+import { queryClient } from '@/preact/queryCache'
+import { OLAPIResponse } from '@/http-client'
 
 type Confirmation = {
   title: string
@@ -42,50 +51,66 @@ const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   timeStyle: 'short',
 })
 
+type PageResult<T> = {
+  entries: T[]
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
+async function responseData<T>(request: Promise<OLAPIResponse<T>>) {
+  const response = await request
+  response.throwIfError()
+  return response.data
+}
+
+export const userModerationRouteLoader = async ({ params, request }: LoaderFunctionArgs) => {
+  const userId = params.userId
+  if (!userId) throw new Error(window._('moderationPortal.user.loadError'))
+
+  const url = new URL(request.url)
+  const leaf = url.pathname.split('/').at(-1) ?? ''
+  const page = Math.max(1, Number(url.searchParams.get('page')) || 1)
+  const user = await responseData(
+    queryClient.fetchQuery({
+      queryFn: () => getModerationUser(userId),
+      queryKey: ['mod', 'user', userId],
+      staleTime: 5000,
+    }),
+  )
+
+  let books: ModerationUserBooksPage | undefined
+  let comments: ModerationUserCommentsPage | undefined
+  let history: ModerationUserHistoryPage | undefined
+  let reports: ModerationUserReportsPage | undefined
+  let logins: PageResult<LoginHistoryEntry> | undefined
+
+  if (leaf === userId) {
+    ;[books, comments] = await Promise.all([
+      responseData(getModerationUserBooks(userId, 1, 4)),
+      responseData(getModerationUserComments(userId, 1, 4)),
+    ])
+  } else if (leaf === 'activity') {
+    ;[history, reports, logins] = await Promise.all([
+      responseData(getModerationUserHistory(userId, 1, 4)),
+      responseData(getModerationUserReports(userId, 1, 4)),
+      responseData(getUserLoginHistory(userId, 1, 4)),
+    ])
+  } else if (leaf === 'books') books = await responseData(getModerationUserBooks(userId, page))
+  else if (leaf === 'comments')
+    comments = await responseData(getModerationUserComments(userId, page))
+  else if (leaf === 'history') history = await responseData(getModerationUserHistory(userId, page))
+  else if (leaf === 'reports') reports = await responseData(getModerationUserReports(userId, page))
+  else if (leaf === 'login-history') logins = await responseData(getUserLoginHistory(userId, page))
+
+  return { user, books, comments, history, reports, logins }
+}
+
 export default function UserModerationPage() {
-  const { userId = '' } = useParams()
+  const data = useLoaderData<Awaited<ReturnType<typeof userModerationRouteLoader>>>()
+  const { user } = data
   const location = useLocation()
-  const [user, setUser] = useState<ModerationUser>()
-  const [error, setError] = useState<unknown>()
-  const [loading, setLoading] = useState(true)
-
-  const loadUser = useCallback(async () => {
-    setLoading(true)
-    setError(undefined)
-    try {
-      const response = await getModerationUser(userId)
-      response.throwIfError()
-      setUser(response.data)
-    } catch (loadError) {
-      setError(loadError)
-    } finally {
-      setLoading(false)
-    }
-  }, [userId])
-
-  useEffect(() => {
-    void loadUser()
-  }, [loadUser])
-
-  if (loading) {
-    return (
-      <DashboardContent.Root>
-        <div className="min-h-80 grid place-items-center">
-          <span className="loader" />
-        </div>
-      </DashboardContent.Root>
-    )
-  }
-  if (error || !user) {
-    return (
-      <DashboardContent.Root>
-        <DashboardContent.StickyHeader title={window._('moderationPortal.user.title')} />
-        <div className="card">
-          <ErrorDisplay error={error ?? new Error(window._('moderationPortal.user.loadError'))} />
-        </div>
-      </DashboardContent.Root>
-    )
-  }
 
   const leaf = location.pathname.split('/').at(-1) ?? ''
   const section = ['activity', 'history', 'reports', 'login-history'].includes(leaf)
@@ -112,13 +137,25 @@ export default function UserModerationPage() {
           </ul>
         </nav>
         <div className="pt-5">
-          {leaf === user.id && <Overview user={user} />}
-          {leaf === 'activity' && <Activity userId={user.id} />}
+          {leaf === user.id && <Overview user={user} data={data} />}
+          {leaf === 'activity' && <Activity userId={user.id} data={data} />}
           {['history', 'reports', 'login-history', 'books', 'comments'].includes(leaf) && (
-            <ResourcePage userId={user.id} resource={leaf} />
+            <ResourcePage resource={leaf} data={data} />
           )}
-          {leaf === 'actions' && <Actions user={user} onChanged={loadUser} />}
+          {leaf === 'actions' && <Actions user={user} />}
         </div>
+      </div>
+    </DashboardContent.Root>
+  )
+}
+
+export function UserModerationErrorPage() {
+  const error = useRouteError()
+  return (
+    <DashboardContent.Root>
+      <DashboardContent.StickyHeader title={window._('moderationPortal.user.title')} />
+      <div className="card">
+        <ErrorDisplay error={error} />
       </div>
     </DashboardContent.Root>
   )
@@ -204,7 +241,13 @@ function Metric({ icon, label, value }: { icon: string; label: string; value: Re
   )
 }
 
-function Overview({ user }: { user: ModerationUser }) {
+function Overview({
+  user,
+  data,
+}: {
+  user: ModerationUser
+  data: Awaited<ReturnType<typeof userModerationRouteLoader>>
+}) {
   const email = user.email.trim() || '--'
   const emailDomain = user.email.includes('@') ? user.email.split('@').at(-1) || '--' : '--'
   const accountAge = formatAccountAge(user.joinedAt)
@@ -251,28 +294,20 @@ function Overview({ user }: { user: ModerationUser }) {
           )}
         </div>
       </section>
-      <RecentContent user={user} />
+      <RecentContent user={user} books={data.books} comments={data.comments} />
     </div>
   )
 }
 
-function RecentContent({ user }: { user: ModerationUser }) {
-  const [books, setBooks] = useState<ModerationUserBooksPage>()
-  const [comments, setComments] = useState<ModerationUserCommentsPage>()
-  useEffect(() => {
-    void getModerationUserBooks(user.id, 1, 4)
-      .then((r) => {
-        r.throwIfError()
-        setBooks(r.data)
-      })
-      .catch(window.toast.error)
-    void getModerationUserComments(user.id, 1, 4)
-      .then((r) => {
-        r.throwIfError()
-        setComments(r.data)
-      })
-      .catch(window.toast.error)
-  }, [user.id])
+function RecentContent({
+  user,
+  books,
+  comments,
+}: {
+  user: ModerationUser
+  books?: ModerationUserBooksPage
+  comments?: ModerationUserCommentsPage
+}) {
   return (
     <div className="grid lg:grid-cols-2 gap-5">
       <PreviewCard
@@ -356,104 +391,72 @@ function UnavailableSignal({ label }: { label: string }) {
   )
 }
 
-function Activity({ userId }: { userId: string }) {
-  const [history, setHistory] = useState<ModerationUserHistoryPage>()
-  const [reports, setReports] = useState<ModerationUserReportsPage>()
-  const [logins, setLogins] = useState<LoginHistoryEntry[]>([])
-  const [error, setError] = useState<unknown>()
-  const [loading, setLoading] = useState(true)
-  useEffect(() => {
-    let current = true
-    Promise.all([
-      getModerationUserHistory(userId, 1, 4),
-      getModerationUserReports(userId, 1, 4),
-      getUserLoginHistory(userId, 1, 4),
-    ])
-      .then(([historyResponse, reportsResponse, loginResponse]) => {
-        historyResponse.throwIfError()
-        reportsResponse.throwIfError()
-        loginResponse.throwIfError()
-        if (current) {
-          setHistory(historyResponse.data)
-          setReports(reportsResponse.data)
-          setLogins(loginResponse.data.entries)
-        }
-      })
-      .catch((loadError) => current && setError(loadError))
-      .finally(() => current && setLoading(false))
-    return () => {
-      current = false
-    }
-  }, [userId])
-
+function Activity({
+  userId,
+  data,
+}: {
+  userId: string
+  data: Awaited<ReturnType<typeof userModerationRouteLoader>>
+}) {
+  const { history, reports, logins } = data
   return (
     <div className="grid gap-5">
-      {loading ? (
-        <div className="min-h-32 grid place-items-center">
-          <span className="loader" />
-        </div>
-      ) : error ? (
-        <div className="card">
-          <ErrorDisplay error={error} />
-        </div>
-      ) : (
-        <>
-          <PreviewCard
-            title={window._('moderationPortal.user.moderationHistory')}
-            to={`/users/${userId}/history`}
-            link={window._('moderationPortal.user.showAll')}
-          >
-            {history?.entries.length ? (
-              history.entries.map((entry) => (
-                <div key={entry.id} className="py-3 border-b border-border last:border-0">
-                  <div className="font-medium">{formatAction(entry.type)}</div>
-                  <div className="text-sm text-secondary-foreground">
-                    {entry.reason || '--'} · {dateTimeFormatter.format(new Date(entry.time))}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <EmptyState text={window._('moderationPortal.user.noModerationHistory')} />
-            )}
-          </PreviewCard>
-          <PreviewCard
-            title={window._('moderationPortal.user.reports')}
-            to={`/users/${userId}/reports`}
-            link={window._('moderationPortal.user.showAll')}
-          >
-            {reports?.entries.map((report) => (
-              <div key={report.id} className="py-3 border-b border-border last:border-0">
-                <div className="font-medium">
-                  {report.number} · {report.reason}
-                </div>
+      <>
+        <PreviewCard
+          title={window._('moderationPortal.user.moderationHistory')}
+          to={`/users/${userId}/history`}
+          link={window._('moderationPortal.user.showAll')}
+        >
+          {history?.entries.length ? (
+            history.entries.map((entry) => (
+              <div key={entry.id} className="py-3 border-b border-border last:border-0">
+                <div className="font-medium">{formatAction(entry.type)}</div>
                 <div className="text-sm text-secondary-foreground">
-                  {report.targetType} · {dateTimeFormatter.format(new Date(report.time))}
+                  {entry.reason || '--'} · {dateTimeFormatter.format(new Date(entry.time))}
                 </div>
               </div>
-            ))}
-          </PreviewCard>
-          <PreviewCard
-            title={window._('moderationPortal.user.loginHistory')}
-            to={`/users/${userId}/login-history`}
-            link={window._('moderationPortal.user.showAll')}
-          >
-            {logins.length ? (
-              logins.map((entry, index) => (
-                <div
-                  key={`${entry.loggedInAt}-${index}`}
-                  className="py-3 border-b border-border last:border-0 grid sm:grid-cols-[12rem_10rem_1fr] gap-2"
-                >
-                  <span>{dateTimeFormatter.format(new Date(entry.loggedInAt))}</span>
-                  <span className="font-mono text-sm">{entry.ipAddress}</span>
-                  <span className="truncate text-secondary-foreground">{entry.userAgent}</span>
-                </div>
-              ))
-            ) : (
-              <EmptyState text={window._('moderationPortal.user.noLoginHistory')} />
-            )}
-          </PreviewCard>
-        </>
-      )}
+            ))
+          ) : (
+            <EmptyState text={window._('moderationPortal.user.noModerationHistory')} />
+          )}
+        </PreviewCard>
+        <PreviewCard
+          title={window._('moderationPortal.user.reports')}
+          to={`/users/${userId}/reports`}
+          link={window._('moderationPortal.user.showAll')}
+        >
+          {reports?.entries.map((report) => (
+            <div key={report.id} className="py-3 border-b border-border last:border-0">
+              <div className="font-medium">
+                {report.number} · {report.reason}
+              </div>
+              <div className="text-sm text-secondary-foreground">
+                {report.targetType} · {dateTimeFormatter.format(new Date(report.time))}
+              </div>
+            </div>
+          ))}
+        </PreviewCard>
+        <PreviewCard
+          title={window._('moderationPortal.user.loginHistory')}
+          to={`/users/${userId}/login-history`}
+          link={window._('moderationPortal.user.showAll')}
+        >
+          {logins?.entries.length ? (
+            logins.entries.map((entry, index) => (
+              <div
+                key={`${entry.loggedInAt}-${index}`}
+                className="py-3 border-b border-border last:border-0 grid sm:grid-cols-[12rem_10rem_1fr] gap-2"
+              >
+                <span>{dateTimeFormatter.format(new Date(entry.loggedInAt))}</span>
+                <span className="font-mono text-sm">{entry.ipAddress}</span>
+                <span className="truncate text-secondary-foreground">{entry.userAgent}</span>
+              </div>
+            ))
+          ) : (
+            <EmptyState text={window._('moderationPortal.user.noLoginHistory')} />
+          )}
+        </PreviewCard>
+      </>
     </div>
   )
 }
@@ -462,20 +465,19 @@ function EmptyState({ text }: { text: string }) {
   return <div className="p-8 text-center text-secondary-foreground">{text}</div>
 }
 
-type PageResult<T> = {
-  entries: T[]
-  page: number
-  pageSize: number
-  total: number
-  totalPages: number
-}
-function ResourcePage({ userId, resource }: { userId: string; resource: string }) {
+function ResourcePage({
+  resource,
+  data,
+}: {
+  resource: string
+  data: Awaited<ReturnType<typeof userModerationRouteLoader>>
+}) {
   switch (resource) {
     case 'books':
       return (
         <PagedList
           title={window._('moderationPortal.user.books')}
-          load={(p) => getModerationUserBooks(userId, p)}
+          data={data.books}
           render={(book: ModerationUserBooksPage['entries'][number]) => (
             <div>
               <div className="font-medium">{book.name}</div>
@@ -490,7 +492,7 @@ function ResourcePage({ userId, resource }: { userId: string; resource: string }
       return (
         <PagedList
           title={window._('moderationPortal.user.comments')}
-          load={(p) => getModerationUserComments(userId, p)}
+          data={data.comments}
           render={(comment: ModerationUserCommentsPage['entries'][number]) => (
             <div>
               <div>{comment.content}</div>
@@ -505,7 +507,7 @@ function ResourcePage({ userId, resource }: { userId: string; resource: string }
       return (
         <PagedList
           title={window._('moderationPortal.user.moderationHistory')}
-          load={(p) => getModerationUserHistory(userId, p)}
+          data={data.history}
           render={(entry: ModerationUserHistoryPage['entries'][number]) => (
             <div>
               <div className="font-medium">{formatAction(entry.type)}</div>
@@ -522,7 +524,7 @@ function ResourcePage({ userId, resource }: { userId: string; resource: string }
       return (
         <PagedList
           title={window._('moderationPortal.user.reports')}
-          load={(p) => getModerationUserReports(userId, p)}
+          data={data.reports}
           render={(report: ModerationUserReportsPage['entries'][number]) => (
             <div>
               <div className="font-medium">
@@ -540,11 +542,7 @@ function ResourcePage({ userId, resource }: { userId: string; resource: string }
       return (
         <PagedList
           title={window._('moderationPortal.user.loginHistory')}
-          load={async (p) => {
-            const response = await getUserLoginHistory(userId, p)
-            response.throwIfError()
-            return response.data
-          }}
+          data={data.logins}
           render={(entry: LoginHistoryEntry) => (
             <div className="grid sm:grid-cols-[12rem_10rem_1fr] gap-2">
               <span>{dateTimeFormatter.format(new Date(entry.loggedInAt))}</span>
@@ -559,41 +557,19 @@ function ResourcePage({ userId, resource }: { userId: string; resource: string }
 
 function PagedList<T>({
   title,
-  load,
+  data,
   render,
 }: {
   title: string
-  load: (
-    page: number,
-  ) => Promise<{ data: PageResult<T>; throwIfError?: () => void } | PageResult<T>>
+  data?: PageResult<T>
   render: (entry: T) => ReactNode
 }) {
-  const [params] = useSearchParams()
-  const page = Math.max(1, Number(params.get('page')) || 1)
-  const [data, setData] = useState<PageResult<T>>()
-  const [error, setError] = useState<unknown>()
-  useEffect(() => {
-    setData(undefined)
-    setError(undefined)
-    void load(page)
-      .then((result) => {
-        if ('data' in result) {
-          result.throwIfError?.()
-          setData(result.data)
-        } else setData(result)
-      })
-      .catch(setError)
-  }, [load, page])
   return (
     <section className="card card--nopad overflow-hidden">
       <div className="p-6 border-b border-border">
         <h2 className="text-xl font-semibold">{title}</h2>
       </div>
-      {error ? (
-        <div className="p-6">
-          <ErrorDisplay error={error} />
-        </div>
-      ) : !data ? (
+      {!data ? (
         <div className="min-h-32 grid place-items-center">
           <span className="loader" />
         </div>
@@ -619,7 +595,8 @@ function formatAction(value: string) {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (letter: string) => letter.toUpperCase())
 }
 
-function Actions({ user, onChanged }: { user: ModerationUser; onChanged: () => Promise<void> }) {
+function Actions({ user }: { user: ModerationUser }) {
+  const revalidator = useRevalidator()
   const [confirmation, setConfirmation] = useState<Confirmation>()
   const [pending, setPending] = useState(false)
   const [action, setAction] = useState(user.isBanned ? 'unban' : 'temporary-ban')
@@ -639,7 +616,7 @@ function Actions({ user, onChanged }: { user: ModerationUser; onChanged: () => P
       confirmation.onSuccess?.()
       window.toast({ title: window._('moderationPortal.user.actionComplete') })
       setConfirmation(undefined)
-      await onChanged()
+      await revalidator.revalidate()
     } catch (actionError) {
       window.toast.error(actionError)
     } finally {
