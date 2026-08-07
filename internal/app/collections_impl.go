@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"log/slog"
+	"go.uber.org/zap"
 	"math"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
@@ -17,6 +17,7 @@ type collectionService struct {
 	queries       *store.Queries
 	uploadService *UploadService
 	tagsService   TagsService
+	log           *zap.SugaredLogger
 }
 
 func collectionBelongsTo(col *store.Collection, userID uuid.UUID) bool {
@@ -192,7 +193,7 @@ func (c *collectionService) RemoveFromCollection(ctx context.Context, cmd Remove
 
 	err = c.queries.Collection_RecalculateCounter(ctx, cmd.CollectionID)
 	if err != nil {
-		slog.Warn("failed to recalculate collection book counter", "err", err)
+		c.log.Warnw("failed to recalculate collection book counter", "err", err)
 	}
 
 	return nil
@@ -333,7 +334,7 @@ func (c *collectionService) GetCollectionBooksMap(ctx context.Context, collectio
 	for _, col := range collections {
 		books, err := c.getCollectionBooksList(ctx, col.ID, 1, 6)
 		if err != nil {
-			slog.Error("failed to get collection books", "collectionID", col.ID, "err", err)
+			c.log.Errorw("failed to get collection books", "collectionID", col.ID, "err", err)
 			continue
 		}
 		m[col.ID] = books
@@ -363,11 +364,12 @@ func (c *collectionService) DeleteCollection(ctx context.Context, cmd DeleteColl
 	return nil
 }
 
-func NewCollectionsService(db DB, tagsService TagsService, uploadService *UploadService) CollectionService {
+func NewCollectionsService(db DB, tagsService TagsService, uploadService *UploadService, log *zap.SugaredLogger) CollectionService {
 	return &collectionService{
 		db:            db,
 		queries:       store.New(db),
 		uploadService: uploadService,
 		tagsService:   tagsService,
+		log:           log,
 	}
 }

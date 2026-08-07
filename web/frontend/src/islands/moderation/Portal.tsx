@@ -9,6 +9,8 @@ import UserModerationPage, {
   userModerationRouteLoader,
 } from './UserModerationPage'
 import ModerationUsers, { ModerationUsersErrorPage, moderationUsersLoader } from './ModerationUsers'
+import ReportPage, { ReportErrorPage, reportRouteLoader } from './ReportPage'
+import ReportsPage, { ReportsErrorPage, reportsSearchLoader } from './ReportsPage'
 
 const routes = [
   ['overview', 'moderationPortal.overview'],
@@ -52,6 +54,22 @@ function createModerationRouter(roles: string[]) {
           element: <UserModerationPage />,
           errorElement: <UserModerationErrorPage />,
           loader: userModerationRouteLoader,
+        },
+        {
+          path: '/reports',
+          element: <ReportsPage view="overview" />,
+        },
+        {
+          path: '/reports/search',
+          element: <ReportsPage view="search" />,
+          errorElement: <ReportsErrorPage />,
+          loader: reportsSearchLoader,
+        },
+        {
+          path: '/reports/:reportId',
+          element: <ReportPage />,
+          errorElement: <ReportErrorPage />,
+          loader: reportRouteLoader,
         },
         {
           path: '/users/:userId/activity',

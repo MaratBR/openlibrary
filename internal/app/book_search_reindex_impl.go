@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
+
 	"strconv"
 	"strings"
 	"sync"
@@ -50,7 +50,7 @@ func (s *bookReindexService) ScheduleReindex(_ context.Context, id int64) {
 		ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(time.Second*10))
 		err := s.Reindex(ctx, id)
 		if err != nil {
-			slog.Error("failed to reindex book", "err", err)
+			s.log.Errorw("failed to reindex book", "err", err)
 		}
 	}()
 }
@@ -125,7 +125,7 @@ func (s *bookReindexService) reindexAll(ctx context.Context, batchSize int) {
 	queries := store.New(s.db)
 	num := 1
 
-	slog.Debug("reindexing all books", "logger", "BookFullReindexService")
+	s.log.Debug("reindexing all books")
 
 	body := make(map[string]any, batchSize)
 
@@ -141,7 +141,7 @@ func (s *bookReindexService) reindexAll(ctx context.Context, batchSize int) {
 			ID:    cursor,
 		})
 		if err != nil {
-			slog.Error("failed to get all books", "logger", "BookFullReindexService", "err", err)
+			s.log.Errorw("failed to get all books", "err", err)
 			return
 		}
 
@@ -197,11 +197,11 @@ func (s *bookReindexService) reindexAll(ctx context.Context, batchSize int) {
 		_, err = s.osClient.Bulk(ctx, req)
 
 		if err != nil {
-			slog.Error("failed to index books batch", "logger", "BookFullReindexService", "err", err)
+			s.log.Errorw("failed to index books batch", "err", err)
 			return
 		}
 
-		slog.Debug("indexed books batch", "num", num, "logger", "BookFullReindexService", "count", len(books))
+		s.log.Debugw("indexed books batch", "num", num, "count", len(books))
 		num++
 	}
 }

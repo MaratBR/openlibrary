@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"log/slog"
+	"go.uber.org/zap"
 	"math"
 	"time"
 
@@ -23,6 +23,7 @@ type searchService struct {
 	uploadService *UploadService
 	userService   UserService
 	osClient      *opensearchapi.Client
+	log           *zap.SugaredLogger
 }
 
 // ExplainSearchQuery implements SearchService.
@@ -122,7 +123,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (s
 	)
 	defer func() { endSpan(span, err) }()
 	if !req.Sort.IsImplemented() {
-		slog.WarnContext(ctx, "search sort is not implemented; using relevance order", "sort", req.Sort)
+		s.log.Warnw("search sort is not implemented; using relevance order", "sort", req.Sort)
 	}
 
 	// convert to elastic request
@@ -270,7 +271,7 @@ func (s *searchService) GetBookExtremes(ctx context.Context) (*BookExtremes, err
 	}, nil
 }
 
-func NewSearchService(db store.DBTX, tagsService TagsService, uploadService *UploadService, userService UserService, osClient *opensearchapi.Client) SearchService {
+func NewSearchService(db store.DBTX, tagsService TagsService, uploadService *UploadService, userService UserService, osClient *opensearchapi.Client, log *zap.SugaredLogger) SearchService {
 	return &searchService{
 		db:            db,
 		queries:       store.New(db),
@@ -278,5 +279,6 @@ func NewSearchService(db store.DBTX, tagsService TagsService, uploadService *Upl
 		uploadService: uploadService,
 		userService:   userService,
 		osClient:      osClient,
+		log:           log,
 	}
 }

@@ -2,7 +2,7 @@ package public
 
 import (
 	"errors"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 	"net/url"
 	"time"
@@ -25,10 +25,11 @@ type authController struct {
 	csrfHandler   *csrf.Handler
 	siteConfig    *app.SiteConfig
 	cfg           *koanf.Koanf
+	log           *zap.SugaredLogger
 }
 
-func newAuthController(authService app.AuthService, signUpService app.SignUpService, userService app.UserService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig, cfg *koanf.Koanf) *authController {
-	return &authController{authService: authService, csrfHandler: csrfHandler, siteConfig: siteConfig, userService: userService, cfg: cfg, signUpService: signUpService}
+func newAuthController(authService app.AuthService, signUpService app.SignUpService, userService app.UserService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig, cfg *koanf.Koanf, log *zap.SugaredLogger) *authController {
+	return &authController{authService: authService, csrfHandler: csrfHandler, siteConfig: siteConfig, userService: userService, cfg: cfg, signUpService: signUpService, log: log}
 }
 
 func (c *authController) Register(r chi.Router) {
@@ -165,7 +166,7 @@ func (c *authController) signIn(username string, password string, w http.Respons
 func (c *authController) applyCustomizationSettings(w http.ResponseWriter, r *http.Request, userID uuid.UUID) {
 	customizationSettings, err := c.userService.GetUserCustomizationSettings(r.Context(), userID)
 	if err != nil {
-		slog.Error("failed to load customization settings during sign-in flow", "err", err, "userID", userID)
+		c.log.Errorw("failed to load customization settings during sign-in flow", "err", err, "userID", userID)
 		return
 	}
 
@@ -181,7 +182,7 @@ func redirectToNext(w http.ResponseWriter, r *http.Request) {
 
 	u, err := url.Parse(next)
 	if err != nil {
-		slog.Warn("failed to parse next param", "err", err)
+		zap.S().Warnw("failed to parse next param", "err", err)
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}

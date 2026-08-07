@@ -171,6 +171,7 @@ as json_set (
     created_at timestamptz, 
     tag_type tag_type, 
     synonym_of int8)
+order by name
 on conflict (name) do update set
     tag_type = excluded.tag_type,
     is_adult = excluded.is_adult,

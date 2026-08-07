@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"log/slog"
+	"go.uber.org/zap"
 
 	"github.com/MaratBR/openlibrary/internal/app/cache"
 )
@@ -11,6 +11,7 @@ import (
 type cachedReviewsService struct {
 	inner ReviewsService
 	cache *cache.Cache
+	log   *zap.SugaredLogger
 }
 
 // UpdateRating implements ReviewsService.
@@ -63,13 +64,14 @@ func (c *cachedReviewsService) UpdateReview(ctx context.Context, cmd UpdateRevie
 func (c *cachedReviewsService) invalidate(ctx context.Context, bookID int64) {
 	_, err := c.cache.Remove(ctx, fmt.Sprintf("GetBookReviews:%d:1:20", bookID))
 	if err != nil {
-		slog.Error("failed to remove GetBookReviews from cache", "err", err)
+		c.log.Errorw("failed to remove GetBookReviews from cache", "err", err)
 	}
 }
 
-func NewCachedReviewsService(inner ReviewsService, cache *cache.Cache) ReviewsService {
+func NewCachedReviewsService(inner ReviewsService, cache *cache.Cache, log *zap.SugaredLogger) ReviewsService {
 	return &cachedReviewsService{
 		inner: inner,
 		cache: cache,
+		log:   log,
 	}
 }

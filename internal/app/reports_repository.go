@@ -7,6 +7,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type reportRepository struct{ db DB }
@@ -54,6 +55,33 @@ func (r *reportRepository) Create(ctx context.Context, report Report) (Report, e
 	report.ID = created.ID
 	report.Number = created.Number
 	return report, nil
+}
+
+func (r *reportRepository) GetByID(ctx context.Context, reportID int64) (Report, string, error) {
+	row, err := store.New(r.db).Report_GetByID(ctx, reportID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return Report{}, "", ErrReportNotFound
+		}
+		return Report{}, "", apperror.WrapUnexpectedDBError(err)
+	}
+	return Report{ID: row.ID, Number: row.Number, Time: timeDbToDomain(row.Time), ReporterUserID: uuidDbToDomain(row.ReporterUserID), TargetType: ReportTargetType(row.TargetType), TargetID: row.TargetID, Reason: row.Reason, Description: row.Description}, row.ReporterUserName.String, nil
+}
+
+func (r *reportRepository) Search(ctx context.Context, search, targetType string, limit, offset int32) ([]ModerationReportListEntry, int64, error) {
+	queries := store.New(r.db)
+	total, err := queries.Report_CountSearch(ctx, store.Report_CountSearchParams{Search: search, TargetType: targetType})
+	if err != nil {
+		return nil, 0, apperror.WrapUnexpectedDBError(err)
+	}
+	rows, err := queries.Report_Search(ctx, store.Report_SearchParams{Search: search, TargetType: targetType, PageLimit: limit, PageOffset: offset})
+	if err != nil {
+		return nil, 0, apperror.WrapUnexpectedDBError(err)
+	}
+	entries := MapSlice(rows, func(row store.Report_SearchRow) ModerationReportListEntry {
+		return ModerationReportListEntry{Report: Report{ID: row.ID, Number: row.Number, Time: timeDbToDomain(row.Time), ReporterUserID: uuidDbToDomain(row.ReporterUserID), TargetType: ReportTargetType(row.TargetType), TargetID: row.TargetID, Reason: row.Reason, Description: row.Description}, ReporterUserName: row.ReporterUserName.String}
+	})
+	return entries, total, nil
 }
 
 func NewReportRepository(db DB) ReportRepository { return &reportRepository{db: db} }

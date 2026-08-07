@@ -8,7 +8,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 )
 
-const MaxChapterNameLength = 70
+const MaxChapterNameLength = 200
 
 var (
 	ErrEmptyBookName   = errors.New("empty book name")
@@ -38,7 +38,7 @@ func validateChapterName(name string) error {
 		return apperror.ValidationError.New("chapter name is required")
 	}
 	if utf8.RuneCountInString(name) > MaxChapterNameLength {
-		return apperror.ValidationError.New("chapter name cannot exceed 70 characters")
+		return apperror.ValidationError.New("chapter name cannot exceed %d characters", MaxChapterNameLength)
 	}
 	return nil
 }

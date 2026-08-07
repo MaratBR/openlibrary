@@ -2,6 +2,7 @@ import { ErrorDisplay } from '@/components/error'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { FormControl } from '@/components/FormControl'
 import Modal from '@/components/Modal'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import {
   banUser,
   changeUserAbout,
@@ -478,9 +479,9 @@ function Activity({
         >
           {reports?.entries.map((report) => (
             <div key={report.id} className="py-3 border-b border-border last:border-0">
-              <div className="font-medium">
+              <NavLink className="link font-medium" to={`/reports/${report.id}`}>
                 {report.number} · {report.reason}
-              </div>
+              </NavLink>
               <div className="text-sm text-secondary-foreground">
                 {report.targetType} · {dateTimeFormatter.format(new Date(report.time))}
               </div>
@@ -578,9 +579,9 @@ function ResourcePage({
           data={data.reports}
           render={(report: ModerationUserReportsPage['entries'][number]) => (
             <div>
-              <div className="font-medium">
+              <NavLink className="link font-medium" to={`/reports/${report.id}`}>
                 {report.number} · {report.reason}
-              </div>
+              </NavLink>
               <div>{report.description}</div>
               <div className="text-sm text-secondary-foreground">
                 {report.targetType} · {dateTimeFormatter.format(new Date(report.time))}
@@ -751,27 +752,33 @@ function Actions({ user }: { user: ModerationUser }) {
     <>
       <div className="grid lg:grid-cols-[18rem_minmax(0,1fr)] gap-5 items-start">
         <section className="card">
-          <FormControl label={window._('moderationPortal.user.selectAction')}>
-            <select
-              className="select w-full"
-              value={action}
-              onChange={(event) => setAction(event.target.value)}
-            >
-              {user.isBanned ? (
-                <option value="unban">{window._('moderationPortal.user.unban')}</option>
-              ) : (
-                <>
-                  <option value="temporary-ban">
-                    {window._('moderationPortal.user.temporaryBan')}
-                  </option>
-                  <option value="permanent-ban">
-                    {window._('moderationPortal.user.permanentBan')}
-                  </option>
-                </>
-              )}
-              <option value="rename">{window._('moderationPortal.user.rename')}</option>
-              <option value="change-about">{window._('moderationPortal.user.changeAbout')}</option>
-            </select>
+          <FormControl
+            label={window._('moderationPortal.user.selectAction')}
+            htmlFor="moderation-user-action"
+          >
+            <Select value={action} onValueChange={setAction}>
+              <SelectTrigger id="moderation-user-action" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {user.isBanned ? (
+                  <SelectItem value="unban">{window._('moderationPortal.user.unban')}</SelectItem>
+                ) : (
+                  <>
+                    <SelectItem value="temporary-ban">
+                      {window._('moderationPortal.user.temporaryBan')}
+                    </SelectItem>
+                    <SelectItem value="permanent-ban">
+                      {window._('moderationPortal.user.permanentBan')}
+                    </SelectItem>
+                  </>
+                )}
+                <SelectItem value="rename">{window._('moderationPortal.user.rename')}</SelectItem>
+                <SelectItem value="change-about">
+                  {window._('moderationPortal.user.changeAbout')}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </FormControl>
         </section>
         <div>{actionForm}</div>
@@ -885,16 +892,20 @@ function TemporaryBanCard({
       description={window._('moderationPortal.user.temporaryBanDescription')}
     >
       <form onSubmit={submit} className="grid gap-4">
-        <FormControl label={window._('moderationPortal.user.duration')}>
-          <select
-            className="select w-full"
-            value={days}
-            onChange={(event) => setDays(event.target.value)}
-          >
-            <option value="1">{window._('moderationPortal.user.oneDay')}</option>
-            <option value="7">{window._('moderationPortal.user.sevenDays')}</option>
-            <option value="30">{window._('moderationPortal.user.thirtyDays')}</option>
-          </select>
+        <FormControl
+          label={window._('moderationPortal.user.duration')}
+          htmlFor="temporary-ban-duration"
+        >
+          <Select value={days} onValueChange={setDays}>
+            <SelectTrigger id="temporary-ban-duration" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">{window._('moderationPortal.user.oneDay')}</SelectItem>
+              <SelectItem value="7">{window._('moderationPortal.user.sevenDays')}</SelectItem>
+              <SelectItem value="30">{window._('moderationPortal.user.thirtyDays')}</SelectItem>
+            </SelectContent>
+          </Select>
         </FormControl>
         <FormControl label={window._('moderationPortal.user.reason')}>
           <textarea

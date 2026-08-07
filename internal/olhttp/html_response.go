@@ -2,7 +2,7 @@ package olhttp
 
 import (
 	"context"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/a-h/templ"
@@ -11,7 +11,7 @@ import (
 func WriteTemplate(w http.ResponseWriter, ctx context.Context, t templ.Component) {
 	err := t.Render(ctx, w)
 	if err != nil {
-		slog.Error("error while writing to the client", "err", err)
+		zap.S().Errorw("error while writing to the client", "err", err)
 		return
 	}
 	//	w.Write([]byte(`

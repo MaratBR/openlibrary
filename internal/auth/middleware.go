@@ -2,7 +2,7 @@ package auth
 
 import (
 	"encoding/json"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -23,6 +23,7 @@ func NewAuthorizationMiddleware(
 	sessionService app.SessionService,
 	userService app.UserService,
 	options MiddlewareOptions,
+	log *zap.SugaredLogger,
 ) func(http.Handler) http.Handler {
 	if options.OnFail == nil {
 		options.OnFail = defaultAuthorizationFailedHandler
@@ -61,7 +62,7 @@ func NewAuthorizationMiddleware(
 							session.ResetSession(r, w)
 							next.ServeHTTP(w, r)
 						} else {
-							slog.Error("unexpected error when trying to retrieve user's session", "err", err)
+							log.Errorw("unexpected error when trying to retrieve user's session", "err", err)
 							options.OnFail(w, r, err)
 						}
 						return
@@ -71,7 +72,7 @@ func NewAuthorizationMiddleware(
 						sessionInstance.Put(_CTX_SESSION_INFO_SESSION_KEY, string(b))
 						err = sessionInstance.Save(r.Context())
 						if err != nil {
-							slog.Error("error while saving session", "err", err)
+							log.Errorw("error while saving session", "err", err)
 						}
 					}
 				} else {
@@ -79,7 +80,7 @@ func NewAuthorizationMiddleware(
 					err = json.Unmarshal([]byte(stringValue), sessionInfo)
 					if err != nil {
 						// perhaps session was corrupted or the schema changed
-						slog.Error("error while parsing session info", "err", err)
+						log.Errorw("error while parsing session info", "err", err)
 						next.ServeHTTP(w, r)
 						return
 					}
@@ -91,12 +92,12 @@ func NewAuthorizationMiddleware(
 				if err == store.ErrNoRows {
 					// user with this ID does not exist and session info was likely
 					// retrieved from expired cache
-					slog.Warn("detected expired cache data, resetting user session", "userID", sessionInfo.UserID)
+					log.Warnw("detected expired cache data, resetting user session", "userID", sessionInfo.UserID)
 					session.ResetSession(r, w)
 					next.ServeHTTP(w, r)
 					return
 				}
-				slog.Error("unexpected error when trying to retrieve user's data", "err", err)
+				log.Errorw("unexpected error when trying to retrieve user's data", "err", err)
 				options.OnFail(w, r, err)
 				return
 			}

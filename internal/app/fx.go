@@ -41,6 +41,7 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 		NewModerationUserService,
 		NewReportRepository,
 		NewReportService,
+		NewModerationReportService,
 		NewTagsService,
 
 		// alias for DB -> DBTX

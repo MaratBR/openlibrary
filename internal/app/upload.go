@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/knadh/koanf/v2"
@@ -51,7 +51,7 @@ func NewUploadService(cfg UploadConfig) *UploadService {
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	})
 	if err != nil {
-		slog.Error("failed to create minion client instance", "endpoint", cfg.Endpoint, "err", err.Error())
+		zap.S().Errorw("failed to create minion client instance", "endpoint", cfg.Endpoint, "err", err.Error())
 		panic(err)
 	}
 

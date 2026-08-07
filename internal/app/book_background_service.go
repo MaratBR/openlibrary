@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"log/slog"
+
 	"sync"
 	"time"
 
@@ -33,6 +33,7 @@ func NewDummyBookBackgroundService() BookBackgroundService {
 
 type bookBackgroundService struct {
 	db      DB
+	log     *zap.SugaredLogger
 	mutex   sync.Mutex
 	wg      sync.WaitGroup
 	queue   chan int64
@@ -40,7 +41,7 @@ type bookBackgroundService struct {
 }
 
 func NewBookBackgroundService(db DB, lc fx.Lifecycle, log *zap.SugaredLogger) BookBackgroundService {
-	srv := &bookBackgroundService{db: db}
+	srv := &bookBackgroundService{db: db, log: log}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -118,7 +119,7 @@ func (c *bookBackgroundService) worker(baseCtx context.Context) {
 
 				err := queries.RecalculateBookRating(ctx, bookID)
 				if err != nil {
-					slog.Error("failed to recalculate favorites for book", "err", err.Error())
+					c.log.Errorw("failed to recalculate favorites for book", "err", err)
 				}
 			}
 			clear(books)

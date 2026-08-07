@@ -1,7 +1,6 @@
 package public
 
 import (
-	"log/slog"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -155,7 +154,7 @@ func (b *bookController) bookTOC(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		status, err := b.readingListService.GetStatus(r.Context(), s.UserID, bookID)
 		if err != nil {
-			slog.Error("failed to get reading list status", "userID", s.UserID, "bookID", bookID, "err", err)
+			b.log.Errorw("failed to get reading list status", "userID", s.UserID, "bookID", bookID, "err", err)
 		} else if status.Valid && status.Value.ChapterID.Valid {
 			activeChapterID = int64(status.Value.ChapterID.Value)
 		}

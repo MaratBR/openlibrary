@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"strings"
@@ -50,7 +50,7 @@ var infraModule = fx.Module("infra", fx.Provide(
 	upload.NewFileValidator,
 ))
 
-func newLocaleProvider(cliParams cliParams) *i18n.LocaleProvider {
+func newLocaleProvider(cliParams cliParams, _ *zap.SugaredLogger) *i18n.LocaleProvider {
 	return i18n.NewLocaleProvider(
 		language.English,
 		cliParams.Dev,
@@ -62,21 +62,21 @@ func newLocaleProvider(cliParams cliParams) *i18n.LocaleProvider {
 	)
 }
 
-func newRedisClient(cfg *koanf.Koanf) *redis.Client {
+func newRedisClient(cfg *koanf.Koanf, log *zap.SugaredLogger) *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr: cfg.String("redis.addr"),
 	})
 	if err := redisotel.InstrumentTracing(client, redisotel.WithDBStatement(false)); err != nil {
-		slog.Error("failed to instrument Redis tracing", "err", err)
+		log.Errorw("failed to instrument Redis tracing", "err", err)
 	}
 
 	return client
 }
 
-func connectToDatabase(config *koanf.Koanf) dal.DB {
+func connectToDatabase(config *koanf.Koanf, log *zap.SugaredLogger) dal.DB {
 	connectionString := config.String("database.url")
 	if connectionString == "" {
-		slog.Error("database.url is empty")
+		log.Error("database.url is empty")
 		os.Exit(1)
 	}
 	var (
@@ -88,7 +88,7 @@ func connectToDatabase(config *koanf.Koanf) dal.DB {
 	for {
 		db, err = store.Connect(context.Background(), connectionString)
 		if err != nil {
-			slog.Error("failed to connect to DB", "err", err, "sleeping", sleeping)
+			log.Errorw("failed to connect to DB", "err", err, "retryIn", sleeping)
 			time.Sleep(sleeping)
 			if sleeping < time.Second*60 {
 				sleeping *= 2
@@ -101,7 +101,7 @@ func connectToDatabase(config *koanf.Koanf) dal.DB {
 	return db
 }
 
-func createMailService(cfg *koanf.Koanf) (email.Service, error) {
+func createMailService(cfg *koanf.Koanf, log *zap.SugaredLogger) (email.Service, error) {
 	type_ := cfg.String("mail.type")
 
 	switch type_ {
@@ -115,7 +115,7 @@ func createMailService(cfg *koanf.Koanf) (email.Service, error) {
 			if key == "" {
 			}
 
-			slog.Debug("mailgun is being used as email service of choice", "domain", domain, "key", "[REDACTED... DUH]")
+			log.Debugw("mailgun is being used as email service of choice", "domain", domain)
 
 			mg, err := email.NewMailgunEmailService(domain, key, senderName, isEU)
 			if err != nil {
@@ -126,7 +126,7 @@ func createMailService(cfg *koanf.Koanf) (email.Service, error) {
 	case "console":
 		return email.NewConsole(), nil
 	case "":
-		slog.Warn("empty mail.type value - falling back to 'console' email service")
+		log.Warn("empty mail.type value - falling back to console email service")
 		return email.NewConsole(), nil
 	default:
 		return nil, fmt.Errorf("unknown email type: %s", type_)
@@ -165,10 +165,10 @@ func createCache(config *koanf.Koanf) *cache.Cache {
 	return cacheInstance
 }
 
-func createOpensearch(config *koanf.Koanf) *opensearchapi.Client {
+func createOpensearch(config *koanf.Koanf, log *zap.SugaredLogger) *opensearchapi.Client {
 	elasticsearchURL := config.String("elasticsearch.url")
 	if elasticsearchURL == "" {
-		slog.Error("elasticsearch.url is empty")
+		log.Error("elasticsearch.url is empty")
 		os.Exit(1)
 	}
 
@@ -191,7 +191,7 @@ func createOpensearch(config *koanf.Koanf) *opensearchapi.Client {
 	go func() {
 		err = elasticstore.Setup(context.Background(), client)
 		if err != nil {
-			slog.Error("FAILED TO SETUP ELASTIC", "err", err)
+			log.Errorw("failed to set up OpenSearch", "err", err)
 		}
 	}()
 

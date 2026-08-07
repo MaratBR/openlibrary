@@ -2,7 +2,7 @@ package i18n
 
 import (
 	"context"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"sync"
@@ -192,7 +192,7 @@ func (p *LocaleProvider) statChanged() bool {
 		for _, file := range files {
 			fileInfo, err := os.Stat(file)
 			if err != nil {
-				slog.Error("failed to stat i18n file", "file", file, "err", err)
+				zap.S().Errorw("failed to stat i18n file", "file", file, "err", err)
 				continue
 			}
 

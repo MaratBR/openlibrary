@@ -11,6 +11,8 @@ import type {
   ModerationValueRequest,
   UserLoginHistoryResponse,
   LoginLocationResponse,
+  ModerationReportDetailResponse,
+  ModerationReportsSearchResponse,
 } from '@/backend-types'
 
 export function searchModerationUsers(
@@ -65,6 +67,18 @@ export function getUserLoginLocations(userId: string) {
   return httpClient
     .get(`/_api/moderation/users/${encodeURIComponent(userId)}/login-locations`)
     .then((response) => OLAPIResponse.create<LoginLocationResponse[]>(response))
+}
+
+export function getModerationReport(reportId: string) {
+  return httpClient
+    .get(`/_api/moderation/reports/${encodeURIComponent(reportId)}`)
+    .then((response) => OLAPIResponse.create<ModerationReportDetailResponse>(response))
+}
+
+export function searchModerationReports(search = '', targetType = '', page = 1, pageSize = 20) {
+  return httpClient
+    .get('/_api/moderation/reports', { searchParams: { search, targetType, page, pageSize } })
+    .then((response) => OLAPIResponse.create<ModerationReportsSearchResponse>(response))
 }
 
 function getUserPage<T>(userId: string, resource: string, page = 1, pageSize = 20) {

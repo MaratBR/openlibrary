@@ -1,7 +1,7 @@
 package templates
 
 import (
-	"log/slog"
+	"go.uber.org/zap"
 	"math"
 	"regexp"
 	"strings"
@@ -25,7 +25,7 @@ func approximateLines(width, textSize int, html string) int {
 
 	took := time.Now().Sub(t)
 	if took.Milliseconds() > 3 {
-		slog.Warn("approximateLines took too long", "took", took.Milliseconds())
+		zap.S().Warnw("approximateLines took too long", "took", took.Milliseconds())
 	}
 
 	return numLines

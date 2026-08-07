@@ -1,7 +1,7 @@
 package public
 
 import (
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -15,10 +15,11 @@ type chaptersController struct {
 	service            app.BookService
 	readingListService app.ReadingListService
 	readerPreferences  app.ReaderPreferencesService
+	log                *zap.SugaredLogger
 }
 
-func newChaptersController(service app.BookService, readingListService app.ReadingListService, readerPreferences app.ReaderPreferencesService) *chaptersController {
-	return &chaptersController{service: service, readingListService: readingListService, readerPreferences: readerPreferences}
+func newChaptersController(service app.BookService, readingListService app.ReadingListService, readerPreferences app.ReaderPreferencesService, log *zap.SugaredLogger) *chaptersController {
+	return &chaptersController{service: service, readingListService: readingListService, readerPreferences: readerPreferences, log: log}
 }
 
 func (c *chaptersController) Register(r chi.Router) {
@@ -101,7 +102,7 @@ func (c *chaptersController) getChapterProgressTrackerOptions(r *http.Request, c
 		if rl == "1" {
 			readingListStatus, err := c.readingListService.GetStatus(r.Context(), session.UserID, chapter.BookID)
 			if err != nil {
-				slog.Warn("readingListService.GetStatus error", "err", err)
+				c.log.Warnw("readingListService.GetStatus error", "err", err)
 			} else {
 				if !readingListStatus.Valid || readingListStatus.Value.Status == app.ReadingListStatusWantToRead || readingListStatus.Value.Status == app.ReadingListStatusReading {
 					err = c.readingListService.MarkAsReadingWithChapterID(
@@ -111,7 +112,7 @@ func (c *chaptersController) getChapterProgressTrackerOptions(r *http.Request, c
 						chapter.ID,
 					)
 					if err != nil {
-						slog.Warn("readingListService.MarkAsReadingWithChapterID error", "err", err)
+						c.log.Warnw("readingListService.MarkAsReadingWithChapterID error", "err", err)
 					}
 				}
 			}

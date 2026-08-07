@@ -241,6 +241,57 @@ export interface ModerationReasonRequest {
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationReportActivityResponse {
+  time: string;
+  actor: string;
+  description: string;
+  kind: string;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationReportDetailResponse {
+  id: string;
+  number: string;
+  time: string;
+  reporterUserId: string;
+  reporterUserName: string;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  description: string;
+  status: string;
+  priority: string;
+  assignedTo: string;
+  assignedTeam: string;
+  channel: string;
+  slaDeadline: string;
+  tags: Array<string>;
+  activities: Array<ModerationReportActivityResponse>;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationReportListEntryResponse {
+  id: string;
+  number: string;
+  time: string;
+  reporterUserId: string;
+  reporterUserName: string;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  description: string;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationReportsSearchResponse {
+  entries: Array<ModerationReportListEntryResponse>;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationUserBookResponse {
   id: string;
   name: string;

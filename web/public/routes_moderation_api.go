@@ -18,10 +18,11 @@ type apiControllerModeration struct {
 	content      app.ContentModerationService
 	loginHistory app.LoginHistoryService
 	users        app.ModerationUserService
+	reports      app.ModerationReportService
 }
 
-func newAPIModerationController(books app.ModerationBookService, content app.ContentModerationService, loginHistory app.LoginHistoryService, users app.ModerationUserService) *apiControllerModeration {
-	return &apiControllerModeration{books: books, content: content, loginHistory: loginHistory, users: users}
+func newAPIModerationController(books app.ModerationBookService, content app.ContentModerationService, loginHistory app.LoginHistoryService, users app.ModerationUserService, reports app.ModerationReportService) *apiControllerModeration {
+	return &apiControllerModeration{books: books, content: content, loginHistory: loginHistory, users: users, reports: reports}
 }
 
 func (c *apiControllerModeration) Register(r chi.Router) {
@@ -32,6 +33,8 @@ func (c *apiControllerModeration) Register(r chi.Router) {
 		r.Post("/books/{bookID}/actions/{action}", c.bookAction)
 		r.Post("/chapters/{chapterID}/actions/{action}", c.chapterAction)
 		r.Post("/comments/{commentID}/actions/{action}", c.commentAction)
+		r.Get("/reports", c.searchReports)
+		r.Get("/reports/{reportID}", c.getReport)
 		r.Get("/users", c.searchUsers)
 		r.Get("/users/{userID}", c.getUser)
 		r.Get("/users/{userID}/books", c.getUserBooks)
@@ -47,6 +50,57 @@ func (c *apiControllerModeration) Register(r chi.Router) {
 // go2tsdef:generate
 type ModerationReasonRequest struct {
 	Reason string `json:"reason"`
+}
+
+// go2tsdef:generate
+type ModerationReportActivityResponse struct {
+	Time        time.Time `json:"time"`
+	Actor       string    `json:"actor"`
+	Description string    `json:"description"`
+	Kind        string    `json:"kind"`
+}
+
+// go2tsdef:generate
+type ModerationReportDetailResponse struct {
+	ID               string                             `json:"id"`
+	Number           string                             `json:"number"`
+	Time             time.Time                          `json:"time"`
+	ReporterUserID   string                             `json:"reporterUserId"`
+	ReporterUserName string                             `json:"reporterUserName"`
+	TargetType       string                             `json:"targetType"`
+	TargetID         string                             `json:"targetId"`
+	Reason           string                             `json:"reason"`
+	Description      string                             `json:"description"`
+	Status           string                             `json:"status"`
+	Priority         string                             `json:"priority"`
+	AssignedTo       string                             `json:"assignedTo"`
+	AssignedTeam     string                             `json:"assignedTeam"`
+	Channel          string                             `json:"channel"`
+	SLADeadline      time.Time                          `json:"slaDeadline"`
+	Tags             []string                           `json:"tags"`
+	Activities       []ModerationReportActivityResponse `json:"activities"`
+}
+
+// go2tsdef:generate
+type ModerationReportListEntryResponse struct {
+	ID               string    `json:"id"`
+	Number           string    `json:"number"`
+	Time             time.Time `json:"time"`
+	ReporterUserID   string    `json:"reporterUserId"`
+	ReporterUserName string    `json:"reporterUserName"`
+	TargetType       string    `json:"targetType"`
+	TargetID         string    `json:"targetId"`
+	Reason           string    `json:"reason"`
+	Description      string    `json:"description"`
+}
+
+// go2tsdef:generate
+type ModerationReportsSearchResponse struct {
+	Entries    []ModerationReportListEntryResponse `json:"entries"`
+	Page       uint32                              `json:"page"`
+	PageSize   uint32                              `json:"pageSize"`
+	TotalPages uint32                              `json:"totalPages"`
+	Total      int64                               `json:"total"`
 }
 
 // go2tsdef:generate
@@ -238,6 +292,46 @@ func decodeModerationJSON(w http.ResponseWriter, r *http.Request, value any) err
 	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64*1024))
 	decoder.DisallowUnknownFields()
 	return decoder.Decode(value)
+}
+
+func (c *apiControllerModeration) getReport(w http.ResponseWriter, r *http.Request) {
+	reportID, err := olhttp.URLParamInt64(r, "reportID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	result, err := c.reports.GetReport(r.Context(), app.GetModerationReportQuery{ActorUserID: auth.RequireSession(r.Context()).UserID, ReportID: reportID})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	activities := app.MapSlice(result.Activities, func(activity app.ModerationReportActivity) ModerationReportActivityResponse {
+		return ModerationReportActivityResponse{Time: activity.Time, Actor: activity.Actor, Description: activity.Description, Kind: activity.Kind}
+	})
+	olhttp.NewAPIResponse(ModerationReportDetailResponse{
+		ID: strconv.FormatInt(result.ID, 10), Number: result.Number, Time: result.Time,
+		ReporterUserID: result.ReporterUserID.String(), ReporterUserName: result.ReporterUserName,
+		TargetType: string(result.TargetType), TargetID: result.TargetID, Reason: result.Reason, Description: result.Description,
+		Status: result.Status, Priority: result.Priority, AssignedTo: result.AssignedTo, AssignedTeam: result.AssignedTeam,
+		Channel: result.Channel, SLADeadline: result.SLADeadline, Tags: result.Tags, Activities: activities,
+	}).Write(w)
+}
+
+func (c *apiControllerModeration) searchReports(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	result, err := c.reports.SearchReports(r.Context(), app.SearchModerationReportsQuery{
+		ActorUserID: auth.RequireSession(r.Context()).UserID,
+		Search:      params.Get("search"), TargetType: params.Get("targetType"),
+		Page: olhttp.GetPage(params, "page"), PageSize: olhttp.GetPageSize(params, "pageSize", 1, 100, 20),
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	entries := app.MapSlice(result.Entries, func(entry app.ModerationReportListEntry) ModerationReportListEntryResponse {
+		return ModerationReportListEntryResponse{ID: strconv.FormatInt(entry.ID, 10), Number: entry.Number, Time: entry.Time, ReporterUserID: entry.ReporterUserID.String(), ReporterUserName: entry.ReporterUserName, TargetType: string(entry.TargetType), TargetID: entry.TargetID, Reason: entry.Reason, Description: entry.Description}
+	})
+	olhttp.NewAPIResponse(ModerationReportsSearchResponse{Entries: entries, Page: result.Page, PageSize: result.PageSize, Total: result.Total, TotalPages: result.TotalPages}).Write(w)
 }
 
 func (c *apiControllerModeration) searchUsers(w http.ResponseWriter, r *http.Request) {

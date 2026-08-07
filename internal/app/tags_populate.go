@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"hash/fnv"
 	"io"
-	"log/slog"
+
 	"os"
 	"path"
 	"time"
@@ -41,7 +41,7 @@ func startTagsPopulateService(db store.DBTX, lc fx.Lifecycle, cfg *koanf.Koanf, 
 func (t *tagsPopulateService) importTags(ctx context.Context, dir string) {
 	tags, err := t.loadTags(dir)
 	if err != nil {
-		slog.Error("failed to load tags", "err", err, "dir", dir)
+		t.log.Errorw("failed to load tags", "err", err, "dir", dir)
 		return
 	}
 

@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -10,6 +12,39 @@ import (
 type reportRepoStub struct {
 	exists  bool
 	created Report
+	result  Report
+	getErr  error
+}
+
+func (r *reportRepoStub) GetByID(context.Context, int64) (Report, string, error) {
+	return r.result, "reporter", r.getErr
+}
+
+func (r *reportRepoStub) Search(context.Context, string, string, int32, int32) ([]ModerationReportListEntry, int64, error) {
+	return nil, 0, nil
+}
+
+func TestModerationReportUsesRealReportAndPlaceholderWorkflow(t *testing.T) {
+	createdAt := time.Date(2026, 8, 7, 12, 0, 0, 0, time.UTC)
+	repo := &reportRepoStub{result: Report{ID: 42, Number: "R-2026-0807-42", Time: createdAt, TargetType: ReportTargetComment, TargetID: "99", Reason: "Harassment"}}
+	result, err := NewModerationReportService(moderationAuthStub{}, repo).GetReport(context.Background(), GetModerationReportQuery{ReportID: 42})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.ID != 42 || result.Status == "" || result.AssignedTo == "" || len(result.Activities) == 0 {
+		t.Fatalf("expected report core and placeholder workflow, got %#v", result)
+	}
+	if !result.SLADeadline.Equal(createdAt.Add(24 * time.Hour)) {
+		t.Fatalf("unexpected SLA deadline: %s", result.SLADeadline)
+	}
+}
+
+func TestModerationReportRequiresModerator(t *testing.T) {
+	repo := &reportRepoStub{getErr: errors.New("repository should not be called")}
+	_, err := NewModerationReportService(moderationAuthStub{err: ErrModerationForbidden}, repo).GetReport(context.Background(), GetModerationReportQuery{})
+	if !errors.Is(err, ErrModerationForbidden) {
+		t.Fatalf("expected forbidden error, got %v", err)
+	}
 }
 
 func (r *reportRepoStub) TargetExists(context.Context, ReportTargetType, string) (bool, error) {

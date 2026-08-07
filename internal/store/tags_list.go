@@ -2,7 +2,7 @@ package store
 
 import (
 	"context"
-	"log/slog"
+	"go.uber.org/zap"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
@@ -96,7 +96,7 @@ func ListTags(
 	rows, err := db.Query(ctx, sql, params...)
 	defer rows.Close()
 	if err != nil {
-		slog.Error("failed to execute search query", "err", err, "sql", sql)
+		zap.S().Errorw("failed to execute search query", "err", err, "sql", sql)
 		return nil, err
 	}
 
@@ -134,7 +134,7 @@ func CountTags(
 	rows, err := db.Query(ctx, sql, params...)
 	defer rows.Close()
 	if err != nil {
-		slog.Error("failed to execute search query", "err", err, "sql", sql)
+		zap.S().Errorw("failed to execute search query", "err", err, "sql", sql)
 		return 0, err
 	}
 

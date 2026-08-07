@@ -27,6 +27,8 @@ The implementation is currently uncommitted. Relevant files are:
 - Sessions now persist placeholder IP geolocation (`country`, `region`, and `city`) through `IPLocationService`; migration `000016_session_location` adds the columns. The service intentionally returns random sample locations and contains the TODO for a real provider.
 - The overview loads `GET /_api/moderation/users/:userId/login-locations`, which returns the three newest distinct non-empty session locations.
 - Recent book names open `/book/:id` in a new tab and have a moderation link to the TODO `/books/:bookId` route. Recent comments link to the TODO `/comments/:commentId` route.
+- Report rows link to `/reports/:reportId`. `ModerationReportService` loads the real report record but currently supplies placeholder ticket workflow fields (status, priority, assignment, SLA, tags, and activity); the TODO in that service marks the future persistence work.
+- Reports are a sidebar section. `/reports` is an intentionally empty overview and `/reports/search` provides paginated search across report number, reason, description, and target ID, plus target-type filtering.
 
 ## Verification baseline
 

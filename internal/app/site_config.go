@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
+	"go.uber.org/zap"
 	"reflect"
 	"regexp"
 	"strings"
@@ -103,7 +103,7 @@ func NewSiteConfig(db DB, staticCfg *koanf.Koanf) *SiteConfig {
 	}
 	err := cfg.loadDefault()
 	if err != nil {
-		slog.Error("failed to load default site config", "err", err)
+		zap.S().Errorw("failed to load default site config", "err", err)
 	}
 	return cfg
 }

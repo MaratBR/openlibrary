@@ -2,7 +2,7 @@ package session
 
 import (
 	"context"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -16,6 +16,7 @@ const CookieName = "sid"
 
 func Middleware(
 	store Store,
+	log *zap.SugaredLogger,
 ) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +24,7 @@ func Middleware(
 			if err != nil {
 				if err != http.ErrNoCookie {
 					// some kind of weird error
-					slog.Error("unknown error while trying to get session id", "cookie", CookieName)
+					log.Errorw("unknown error while trying to get session id", "cookie", CookieName, "err", err)
 				}
 
 				// no cookie - just continue
@@ -43,7 +44,7 @@ func Middleware(
 
 			if err != nil {
 				if err != ErrNoSession {
-					slog.Error("unknown error while trying to get a session info", "err", err)
+					log.Errorw("unknown error while trying to get a session info", "err", err)
 				}
 
 				next.ServeHTTP(w, r)
@@ -55,7 +56,7 @@ func Middleware(
 
 			err = session.Save(r.Context())
 			if err != nil {
-				slog.Error("failed to save session", "err", err)
+				log.Errorw("failed to save session", "err", err)
 			}
 		})
 	}

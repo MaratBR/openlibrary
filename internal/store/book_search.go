@@ -2,7 +2,7 @@ package store
 
 import (
 	"context"
-	"log/slog"
+	"go.uber.org/zap"
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
@@ -201,7 +201,7 @@ func SearchBooks(ctx context.Context, db DBTX, req BookSearchRequest) ([]BookSea
 	rows, err := db.Query(ctx, sql, params...)
 	defer rows.Close()
 	if err != nil {
-		slog.Error("failed to execute search query", "err", err, "sql", sql)
+		zap.S().Errorw("failed to execute search query", "err", err, "sql", sql)
 		return nil, err
 	}
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"log/slog"
 	"net"
 	"net/http"
 	"reflect"
@@ -43,7 +42,6 @@ func mainServer(
 ) {
 	if cliParams.Dev {
 		app.GlobalFeatureFlags.DisableCache = true
-		slog.SetLogLoggerLevel(slog.LevelDebug)
 	}
 
 	tracerProvider, err := createTelemetry()
@@ -56,7 +54,7 @@ func mainServer(
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		if err := tracerProvider.Shutdown(ctx); err != nil {
-			slog.Error("failed to shut down tracing", "err", err)
+			zap.S().Errorw("failed to shut down tracing", "err", err)
 		}
 	}()
 
@@ -99,7 +97,7 @@ func newRootMux(
 ) http.Handler {
 
 	r := chi.NewRouter()
-	r.Use(olhttp.MakeRecoveryMiddleware())
+	r.Use(olhttp.MakeRecoveryMiddleware(log))
 	r.Use(reqid.New())
 	r.Use(olhttp.ReqCtxMiddleware)
 	r.Use(csrfHandler.Middleware)
@@ -129,7 +127,7 @@ func newRootMux(
 		// Trace dynamic website and API traffic, but leave high-volume static assets
 		// out of the trace stream. Chi route patterns keep span names low-cardinality.
 		r.Use(otelhttp.NewMiddleware("HTTP request", otelhttp.WithSpanNameFormatter(routeSpanName)))
-		r.Use(session.Middleware(sessionStore))
+		r.Use(session.Middleware(sessionStore, log))
 
 		for _, h := range handlers {
 			log.Infow("registering mounted handler", "at", h.MountAt(), "type", reflect.TypeOf(h).String())

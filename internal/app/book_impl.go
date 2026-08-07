@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"log/slog"
+	"go.uber.org/zap"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -15,6 +15,7 @@ type bookService struct {
 	uploadService      *UploadService
 	readingListService ReadingListService
 	reviewService      ReviewsService
+	log                *zap.SugaredLogger
 }
 
 // GetRandomBookID implements BookService.
@@ -35,6 +36,7 @@ func NewBookService(
 	uploadService *UploadService,
 	readingListService ReadingListService,
 	reviewService ReviewsService,
+	log *zap.SugaredLogger,
 ) BookService {
 	return &bookService{
 		queries:            store.New(db),
@@ -42,6 +44,7 @@ func NewBookService(
 		uploadService:      uploadService,
 		readingListService: readingListService,
 		reviewService:      reviewService,
+		log:                log,
 	}
 }
 
@@ -85,7 +88,7 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 	firstChapterIDInt, err := s.queries.Book_GetFirstChapterID(ctx, book.ID)
 	if err != nil {
 		if err != store.ErrNoRows {
-			slog.Warn("failed to execute Book_GetFirstChapterID", "err", err)
+			s.log.Warnw("failed to execute Book_GetFirstChapterID", "err", err)
 		}
 	} else {
 		firstChapterID = Value(firstChapterIDInt)

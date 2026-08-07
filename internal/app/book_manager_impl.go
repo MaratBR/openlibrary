@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"io"
-	"log/slog"
 	"math"
 	"slices"
 	"time"
@@ -28,6 +28,7 @@ type bookManagerService struct {
 	uploadService      *UploadService
 	bookReindexService BookReindexService
 	metricService      analytics.MetricService
+	log                *zap.SugaredLogger
 }
 
 const (
@@ -347,7 +348,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 	for _, modification := range input.Modifications {
 		_, ok := MoveItem(newOrder, modification.ChapterID, modification.NewPositionIndex)
 		if !ok {
-			slog.Error("failed to apply chapter modification", "ChapterID", modification.ChapterID, "NewPositionIndex", modification.NewPositionIndex)
+			s.log.Errorw("failed to apply chapter modification", "chapterID", modification.ChapterID, "newPositionIndex", modification.NewPositionIndex)
 			continue
 		}
 	}
@@ -363,7 +364,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 
 		modifiedPositions[chapterID] = i + 1
 
-		slog.Debug("updating position of the chapter", "ChapterID", chapterID, "Index", i)
+		s.log.Debugw("updating position of the chapter", "chapterID", chapterID, "index", i)
 		err = queries.Book_SetChapterOrder(ctx, store.Book_SetChapterOrderParams{
 			ID:    chapterID,
 			Order: int32(i + 1),
@@ -867,7 +868,7 @@ func (s *bookManagerService) ScheduleDraft(ctx context.Context, cmd ScheduleDraf
 func (s *bookManagerService) recalculateBookStats(ctx context.Context, bookID int64) {
 	err := s.queries.RecalculateBookStats(ctx, bookID)
 	if err != nil {
-		slog.Error("failed to recalculate book stats", "err", err, "bookID", bookID)
+		s.log.Errorw("failed to recalculate book stats", "err", err, "bookID", bookID)
 	}
 }
 
@@ -1007,7 +1008,7 @@ func (s *bookManagerService) authorizeChapterEdit(ctx context.Context, userID uu
 	return nil
 }
 
-func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService, bookReindexService BookReindexService, metricService analytics.MetricService) BookManagerService {
+func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService, bookReindexService BookReindexService, metricService analytics.MetricService, log *zap.SugaredLogger) BookManagerService {
 	return &bookManagerService{
 		queries:            store.New(db),
 		tagsService:        tagsService,
@@ -1016,5 +1017,6 @@ func NewBookManagerService(db DB, tagsService TagsService, uploadService *Upload
 		usersService:       usersService,
 		bookReindexService: bookReindexService,
 		metricService:      metricService,
+		log:                log,
 	}
 }

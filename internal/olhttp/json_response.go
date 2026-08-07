@@ -2,7 +2,7 @@ package olhttp
 
 import (
 	"encoding/json"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/joomcode/errorx"
@@ -12,7 +12,7 @@ func writeJSON(w http.ResponseWriter, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(v)
 	if err != nil {
-		slog.Error("error while writing to the client", "err", err)
+		zap.S().Errorw("error while writing to the client", "err", err)
 	}
 }
 

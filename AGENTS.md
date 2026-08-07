@@ -75,7 +75,7 @@ Prerequisites and libvips setup are documented in `README.md`. Common commands:
 
 ```sh
 docker compose up -d
-make migrate-db
+make migrate_db
 make ui_watch
 make main_watch
 ```

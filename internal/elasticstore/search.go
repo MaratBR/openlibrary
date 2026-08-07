@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"log/slog"
+	"go.uber.org/zap"
 	"strconv"
 
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
@@ -283,16 +283,16 @@ func Search(
 func onSearchFail(req opensearchapi.SearchReq, err error) {
 	jsonText, err_ := json.Marshal(req)
 	if err_ != nil {
-		slog.Error("failed to serialize elastic request to JSON", "err", err_)
-		slog.Error("failed to execute elastic request", "err", err)
+		zap.S().Errorw("failed to serialize elastic request to JSON", "err", err_)
+		zap.S().Errorw("failed to execute elastic request", "err", err)
 	} else {
-		slog.Error("failed to execute elastic request", "err", err, "req", string(jsonText))
+		zap.S().Errorw("failed to execute elastic request", "err", err, "req", string(jsonText))
 	}
 }
 
 func onSearchEmpty(req opensearchapi.SearchReq) {
 	jsonText, err := json.Marshal(req)
 	if err == nil {
-		slog.Debug("empty search result", "req", string(jsonText))
+		zap.S().Debugw("empty search result", "req", string(jsonText))
 	}
 }

@@ -3,6 +3,23 @@
 // Displays error information/description
 
 .error {
-  @apply p-2 rounded-sm bg-destructive text-destructive-foreground text-sm;
-  box-shadow: var(--shadow-md);
+  @apply flex items-start gap-3 p-3 text-sm;
+  color: var(--destructive);
+  background: var(--destructive-soft);
+  border: 1px solid color-mix(in srgb, var(--destructive), transparent 76%);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-xs);
+
+  &__icon {
+    @apply shrink-0;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.0625rem;
+  }
+
+  &__message {
+    @apply min-w-0;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
 }

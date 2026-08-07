@@ -1,9 +1,11 @@
 import { searchModerationUsers } from '@/api/moderation'
 import type { ModerationUserListEntry } from '@/api/moderation'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'
 import { Pagination } from '@/components/Pagination'
 import { OLAPIResponse } from '@/http-client'
+import { useEffect, useState } from 'react'
 import { Form, Link, LoaderFunctionArgs, useLoaderData, useRouteError } from 'react-router'
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' })
@@ -11,6 +13,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
   timeStyle: 'short',
 })
+
+const EMPTY_FILTER_VALUE = 'all'
 
 async function responseData<T>(request: Promise<OLAPIResponse<T>>) {
   const response = await request
@@ -140,17 +144,33 @@ function FilterSelect({
   value: string
   options: [string, string][]
 }) {
+  const [selectedValue, setSelectedValue] = useState(value || EMPTY_FILTER_VALUE)
+
+  useEffect(() => setSelectedValue(value || EMPTY_FILTER_VALUE), [value])
+
   return (
-    <label className="block">
-      <span className="block text-sm font-medium mb-1.5">{label}</span>
-      <select className="input w-full" name={name} defaultValue={value}>
-        {options.map(([key, text]) => (
-          <option key={key} value={key}>
-            {text}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="block">
+      <label className="block text-sm font-medium mb-1.5" htmlFor={`users-filter-${name}`}>
+        {label}
+      </label>
+      <input
+        type="hidden"
+        name={name}
+        value={selectedValue === EMPTY_FILTER_VALUE ? '' : selectedValue}
+      />
+      <Select value={selectedValue} onValueChange={setSelectedValue}>
+        <SelectTrigger id={`users-filter-${name}`} className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map(([key, text]) => (
+            <SelectItem key={key || EMPTY_FILTER_VALUE} value={key || EMPTY_FILTER_VALUE}>
+              {text}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }
 

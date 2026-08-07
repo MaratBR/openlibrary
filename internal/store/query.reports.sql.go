@@ -33,6 +33,30 @@ func (q *Queries) Report_CommentExists(ctx context.Context, id int64) (bool, err
 	return exists, err
 }
 
+const report_CountSearch = `-- name: Report_CountSearch :one
+select count(*)
+from reports
+where
+    ($1::text = ''
+        or reports.number ilike '%' || $1 || '%'
+        or reports.reason ilike '%' || $1 || '%'
+        or reports.description ilike '%' || $1 || '%'
+        or reports.target_id ilike '%' || $1 || '%')
+    and ($2::text = '' or reports.target_type = $2)
+`
+
+type Report_CountSearchParams struct {
+	Search     string
+	TargetType string
+}
+
+func (q *Queries) Report_CountSearch(ctx context.Context, arg Report_CountSearchParams) (int64, error) {
+	row := q.db.QueryRow(ctx, report_CountSearch, arg.Search, arg.TargetType)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const report_Create = `-- name: Report_Create :one
 with next_number as (
     insert into report_number_counters ("day", counter)
@@ -76,6 +100,111 @@ func (q *Queries) Report_Create(ctx context.Context, arg Report_CreateParams) (R
 	var i Report_CreateRow
 	err := row.Scan(&i.ID, &i.Number)
 	return i, err
+}
+
+const report_GetByID = `-- name: Report_GetByID :one
+select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, users.name as reporter_user_name
+from reports
+left join users on users.id = reports.reporter_user_id
+where reports.id = $1
+`
+
+type Report_GetByIDRow struct {
+	ID               int64
+	Number           string
+	Time             pgtype.Timestamptz
+	ReporterUserID   pgtype.UUID
+	TargetType       string
+	TargetID         string
+	Reason           string
+	Description      string
+	ReporterUserName pgtype.Text
+}
+
+func (q *Queries) Report_GetByID(ctx context.Context, id int64) (Report_GetByIDRow, error) {
+	row := q.db.QueryRow(ctx, report_GetByID, id)
+	var i Report_GetByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Number,
+		&i.Time,
+		&i.ReporterUserID,
+		&i.TargetType,
+		&i.TargetID,
+		&i.Reason,
+		&i.Description,
+		&i.ReporterUserName,
+	)
+	return i, err
+}
+
+const report_Search = `-- name: Report_Search :many
+select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, users.name as reporter_user_name
+from reports
+left join users on users.id = reports.reporter_user_id
+where
+    ($1::text = ''
+        or reports.number ilike '%' || $1 || '%'
+        or reports.reason ilike '%' || $1 || '%'
+        or reports.description ilike '%' || $1 || '%'
+        or reports.target_id ilike '%' || $1 || '%')
+    and ($2::text = '' or reports.target_type = $2)
+order by reports."time" desc, reports.id desc
+limit $4 offset $3
+`
+
+type Report_SearchParams struct {
+	Search     string
+	TargetType string
+	PageOffset int32
+	PageLimit  int32
+}
+
+type Report_SearchRow struct {
+	ID               int64
+	Number           string
+	Time             pgtype.Timestamptz
+	ReporterUserID   pgtype.UUID
+	TargetType       string
+	TargetID         string
+	Reason           string
+	Description      string
+	ReporterUserName pgtype.Text
+}
+
+func (q *Queries) Report_Search(ctx context.Context, arg Report_SearchParams) ([]Report_SearchRow, error) {
+	rows, err := q.db.Query(ctx, report_Search,
+		arg.Search,
+		arg.TargetType,
+		arg.PageOffset,
+		arg.PageLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Report_SearchRow
+	for rows.Next() {
+		var i Report_SearchRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Number,
+			&i.Time,
+			&i.ReporterUserID,
+			&i.TargetType,
+			&i.TargetID,
+			&i.Reason,
+			&i.Description,
+			&i.ReporterUserName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const report_UserExists = `-- name: Report_UserExists :one

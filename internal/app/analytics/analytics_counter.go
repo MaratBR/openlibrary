@@ -3,7 +3,7 @@ package analytics
 import (
 	"context"
 	"fmt"
-	"log/slog"
+
 	"strconv"
 	"time"
 
@@ -134,7 +134,7 @@ func (c *redisCountersNamespace) PullPendingCounters(ctx context.Context, delete
 		if delete {
 			_, err = c.redisClient.Del(ctx, keys...).Result()
 			if err != nil {
-				slog.Error("failed to deleted pending keys", "keys", keys, "err", err, "ns", c.ns)
+				c.log.Errorw("failed to delete pending keys", "keys", keys, "err", err, "namespace", c.ns)
 			}
 		}
 

@@ -3,7 +3,7 @@ package public
 import (
 	_ "embed"
 	"errors"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 	"net/url"
 
@@ -83,6 +83,7 @@ func newHandler(
 	apiControllerI18N *apiControllerI18N,
 
 	flashMiddleware flash.Middleware,
+	log *zap.SugaredLogger,
 ) webinfra.MountableHandler {
 	h := &handler{}
 
@@ -97,7 +98,7 @@ func newHandler(
 		OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
 			olhttp.Write500(w, r, err)
 		},
-	}))
+	}, log))
 
 	homeController.Register(h.r)
 	authController.Register(h.r)
@@ -176,7 +177,7 @@ func redirectWithNextParameter(w http.ResponseWriter, r *http.Request, path stri
 
 	u, err := url.Parse(path)
 	if err != nil {
-		slog.Error("failed to parse redirect url")
+		zap.S().Errorw("failed to parse redirect url")
 	} else {
 		// TODO remove next param is next is the same as the URL we are redirecting too, for some reason
 		q := u.Query()

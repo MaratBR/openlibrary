@@ -15,6 +15,7 @@ import (
 	"github.com/knadh/koanf/v2"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 var FXModule = fx.Module("http_admin", fx.Provide(
@@ -44,6 +45,7 @@ func newHandler(
 	booksController *booksController,
 
 	flashMiddleware flash.Middleware,
+	log *zap.SugaredLogger,
 ) *Handler {
 	h := &Handler{
 		r: chi.NewRouter(),
@@ -56,7 +58,7 @@ func newHandler(
 			OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
 				olhttp.Write500(w, r, err)
 			},
-		}))
+		}, log))
 
 		// anonymous area
 		h.r.HandleFunc("/login", loginController.Login)

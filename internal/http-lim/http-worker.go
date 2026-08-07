@@ -2,7 +2,7 @@ package httplim
 
 import (
 	"context"
-	"log/slog"
+	"go.uber.org/zap"
 	"net/http"
 	"sync"
 
@@ -70,17 +70,17 @@ func (w *HttpWorker) worker(id int) {
 	defer w.wg.Done()
 	ctx := context.Background()
 
-	slog.Info("starting worker", "worker_id", id)
+	zap.S().Infow("starting worker", "worker_id", id)
 	for envelope := range w.requestsQueue {
 		err := w.Limiter.Wait(ctx)
 		if err != nil {
-			slog.Error("error while waiting for rate limiter", "err", err, "worker_id", id)
+			zap.S().Errorw("error while waiting for rate limiter", "err", err, "worker_id", id)
 			break
 		}
 
 		resp, err := w.client.Do(envelope.req)
 		if resp != nil && resp.StatusCode >= 400 {
-			slog.Error("got non-200 response", "worker_id", id, "status", resp.StatusCode)
+			zap.S().Errorw("got non-200 response", "worker_id", id, "status", resp.StatusCode)
 		}
 
 		envelope.responseQueue <- httpResponseEnvelope{
@@ -89,7 +89,7 @@ func (w *HttpWorker) worker(id int) {
 		}
 	}
 
-	slog.Info("worker exited", "worker_id", id)
+	zap.S().Infow("worker exited", "worker_id", id)
 }
 
 func (w *HttpWorker) Run() {

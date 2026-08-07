@@ -8,6 +8,7 @@ const navigation = [
   { to: '/chapters', icon: 'fa-solid fa-file-lines', label: 'moderationPortal.chapters' },
   { to: '/comments', icon: 'fa-solid fa-comments', label: 'moderationPortal.comments' },
   { to: '/users', icon: 'fa-solid fa-users', label: 'moderationPortal.users' },
+  { to: '/reports', icon: 'fa-solid fa-flag', label: 'moderationPortal.reports' },
   {
     to: '/login-history',
     icon: 'fa-solid fa-clock-rotate-left',

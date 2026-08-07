@@ -21,6 +21,7 @@ var (
 	ErrInvalidReportTarget = apperror.AppErrors.NewType("invalid_report_target").New("report target must be a user, book, or comment")
 	ErrReportReason        = apperror.AppErrors.NewType("report_reason_required").New("a report reason is required")
 	ErrReportTargetMissing = apperror.AppErrors.NewType("report_target_not_found", apperror.ErrTraitEntityNotFound).New("report target not found")
+	ErrReportNotFound      = apperror.AppErrors.NewType("report_not_found", apperror.ErrTraitEntityNotFound).New("report not found")
 )
 
 type Report struct {
@@ -45,6 +46,8 @@ type CreateReportCommand struct {
 type ReportRepository interface {
 	TargetExists(context.Context, ReportTargetType, string) (bool, error)
 	Create(context.Context, Report) (Report, error)
+	GetByID(context.Context, int64) (Report, string, error)
+	Search(context.Context, string, string, int32, int32) ([]ModerationReportListEntry, int64, error)
 }
 
 type ReportService interface {
