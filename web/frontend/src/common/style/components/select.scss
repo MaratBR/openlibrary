@@ -1,0 +1,43 @@
+.select__icon {
+  transition: transform var(--transition-fast);
+}
+
+.select[data-state='open'] .select__icon {
+  transform: rotate(180deg);
+}
+
+.select__content {
+  transform-origin: var(--radix-select-content-transform-origin);
+
+  &[data-state='open'] {
+    animation: select-content-open 140ms ease-out;
+  }
+
+  &[data-state='closed'] {
+    animation: select-content-close 100ms ease-in;
+  }
+}
+
+@keyframes select-content-open {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes select-content-close {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+
+  to {
+    opacity: 0;
+    scale: 0.96;
+  }
+}

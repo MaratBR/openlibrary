@@ -60,7 +60,7 @@ export function SelectTrigger({
     <SelectPrimitive.Trigger className={cn('select', className)} {...props}>
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="h-4 w-4 shrink-0 opacity-60" />
+        <ChevronDownIcon className="select__icon h-4 w-4 shrink-0 opacity-60" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -76,7 +76,7 @@ export function SelectContent({
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         className={cn(
-          'relative z-50 max-h-[var(--radix-select-content-available-height)] min-w-32 overflow-hidden rounded-md border border-border bg-surface text-surface-foreground shadow-md',
+          'select__content relative z-50 max-h-[var(--radix-select-content-available-height)] min-w-32 overflow-hidden rounded-md border border-border bg-surface text-surface-foreground shadow-md',
           position === 'popper' &&
             'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
           className,

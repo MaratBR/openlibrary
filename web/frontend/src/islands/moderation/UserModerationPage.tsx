@@ -532,7 +532,19 @@ function ResourcePage({
           data={data.books}
           render={(book: ModerationUserBooksPage['entries'][number]) => (
             <div>
-              <div className="font-medium">{book.name}</div>
+              <div className="flex items-center justify-between gap-3">
+                <a
+                  className="link font-medium truncate"
+                  href={`/book/${book.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {book.name}
+                </a>
+                <NavLink className="link text-sm shrink-0" to={`/books/${book.id}`}>
+                  {window._('moderationPortal.user.moderate')}
+                </NavLink>
+              </div>
               <div className="text-sm text-secondary-foreground">
                 {dateFormatter.format(new Date(book.createdAt))}
               </div>
@@ -546,8 +558,13 @@ function ResourcePage({
           title={window._('moderationPortal.user.comments')}
           data={data.comments}
           render={(comment: ModerationUserCommentsPage['entries'][number]) => (
-            <div>
-              <div>{comment.content}</div>
+            <div className="relative hover:text-primary">
+              <NavLink
+                className="absolute inset-0"
+                to={`/comments/${comment.id}`}
+                aria-label={window._('moderationPortal.user.moderateComment')}
+              />
+              <SanitizeHTML className="truncate pointer-events-none" value={comment.content} />
               <div className="text-sm text-secondary-foreground">
                 {comment.bookName} · {comment.chapterName}
               </div>

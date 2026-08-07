@@ -1,5 +1,6 @@
 import { getModerationReport } from '@/api/moderation'
 import type { ModerationReportDetail } from '@/api/moderation'
+import { Timeline } from '@/components'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'
 import { OLAPIResponse } from '@/http-client'
@@ -108,34 +109,29 @@ export default function ReportPage() {
               <h2 className="text-xl font-semibold mb-5">
                 {window._('moderationPortal.report.activity')}
               </h2>
-              <ol className="grid gap-0">
-                {report.activities.map((activity, index) => (
-                  <li
+              <Timeline.Root>
+                {report.activities.map((activity) => (
+                  <Timeline.Item
                     key={`${activity.time}-${activity.kind}`}
-                    className="grid grid-cols-[2rem_1fr] gap-3"
+                    marker={
+                      <i
+                        className={`fa-solid ${activityIcon(activity.kind)} text-xs`}
+                        aria-hidden="true"
+                      />
+                    }
                   >
-                    <div className="flex flex-col items-center">
-                      <span className="w-8 h-8 rounded-full bg-secondary grid place-items-center text-secondary-foreground">
-                        <i className={`fa-solid ${activityIcon(activity.kind)} text-xs`} />
-                      </span>
-                      {index < report.activities.length - 1 && (
-                        <span className="w-px flex-1 bg-border min-h-8" />
-                      )}
-                    </div>
-                    <div className="pb-5">
-                      <p>
-                        <span className="font-semibold">
-                          {activity.actor || window._('moderationPortal.report.system')}
-                        </span>{' '}
-                        {activity.description}
-                      </p>
-                      <time className="text-sm text-secondary-foreground">
-                        {dateTimeFormatter.format(new Date(activity.time))}
-                      </time>
-                    </div>
-                  </li>
+                    <p>
+                      <span className="font-semibold">
+                        {activity.actor || window._('moderationPortal.report.system')}
+                      </span>{' '}
+                      {activity.description}
+                    </p>
+                    <time className="text-sm text-secondary-foreground">
+                      {dateTimeFormatter.format(new Date(activity.time))}
+                    </time>
+                  </Timeline.Item>
                 ))}
-              </ol>
+              </Timeline.Root>
             </section>
           </main>
 
