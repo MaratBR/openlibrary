@@ -12,6 +12,36 @@ import (
 
 type moderationUserRepository struct{ queries *store.Queries }
 
+func (r *moderationUserRepository) SearchUsers(ctx context.Context, search string, searchID *uuid.UUID, banned, role string, limit, offset int32) ([]ModerationUserListEntry, int64, error) {
+	dbSearchID := uuidDomainToDb(uuid.Nil)
+	if searchID != nil {
+		dbSearchID = uuidDomainToDb(*searchID)
+	} else {
+		dbSearchID.Valid = false
+	}
+	total, err := r.queries.Moderation_CountUsers(ctx, store.Moderation_CountUsersParams{Search: search, SearchID: dbSearchID, BannedStatus: banned, Role: role})
+	if err != nil {
+		return nil, 0, apperror.WrapUnexpectedDBError(err)
+	}
+	rows, err := r.queries.Moderation_SearchUsers(ctx, store.Moderation_SearchUsersParams{Search: search, SearchID: dbSearchID, BannedStatus: banned, Role: role, PageLimit: limit, PageOffset: offset})
+	if err != nil {
+		return nil, 0, apperror.WrapUnexpectedDBError(err)
+	}
+	entries := MapSlice(rows, func(row store.Moderation_SearchUsersRow) ModerationUserListEntry {
+		entry := ModerationUserListEntry{ID: uuidDbToDomain(row.ID), Name: row.Name, Avatar: getUserAvatar(row.Name, 128), JoinedAt: timeDbToDomain(row.JoinedAt), Role: UserRole(row.Role), IsBanned: row.IsBanned, BanReason: row.BanReason}
+		if row.LastVisitAt.Valid {
+			value := timeDbToDomain(row.LastVisitAt)
+			entry.LastVisitAt = &value
+		}
+		if row.BannedAt.Valid {
+			value := timeDbToDomain(row.BannedAt)
+			entry.BannedAt = &value
+		}
+		return entry
+	})
+	return entries, total, nil
+}
+
 func (r *moderationUserRepository) GetUserInfo(ctx context.Context, userID uuid.UUID) (ModerationUserInfo, error) {
 	row, err := r.queries.Moderation_GetUserInfo(ctx, uuidDomainToDb(userID))
 	if err != nil {

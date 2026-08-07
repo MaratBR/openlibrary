@@ -14,6 +14,12 @@ type moderationUserRepoStub struct {
 	called       bool
 	reportsTotal int64
 	seeded       int
+	searchID     *uuid.UUID
+}
+
+func (r *moderationUserRepoStub) SearchUsers(_ context.Context, _ string, searchID *uuid.UUID, _, _ string, _, _ int32) ([]ModerationUserListEntry, int64, error) {
+	r.searchID = searchID
+	return nil, 0, nil
 }
 
 func (r *moderationUserRepoStub) GetUserInfo(context.Context, uuid.UUID) (ModerationUserInfo, error) {
@@ -71,5 +77,17 @@ func TestModerationUserServiceReturnsRepositoryData(t *testing.T) {
 	}
 	if got != want {
 		t.Fatalf("expected %#v, got %#v", want, got)
+	}
+}
+
+func TestModerationUserSearchRecognizesExactUUID(t *testing.T) {
+	repo := &moderationUserRepoStub{}
+	svc := NewModerationUserService(moderationAuthStub{}, repo)
+	want := uuid.Must(uuid.NewV4())
+	if _, err := svc.SearchUsers(context.Background(), ModerationUsersQuery{Search: want.String(), Page: 1, PageSize: 20}); err != nil {
+		t.Fatal(err)
+	}
+	if repo.searchID == nil || *repo.searchID != want {
+		t.Fatalf("expected exact UUID search %s, got %v", want, repo.searchID)
 	}
 }

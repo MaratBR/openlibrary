@@ -116,7 +116,7 @@ func (q *Queries) GetUserPrivacySettings(ctx context.Context, id pgtype.UUID) (G
 }
 
 const session_GetInfo = `-- name: Session_GetInfo :one
-select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.name as user_name, u.joined_at as user_joined_at, u."role" as user_role, u.is_banned as user_is_banned
+select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, s.location_country, s.location_region, s.location_city, u.name as user_name, u.joined_at as user_joined_at, u."role" as user_role, u.is_banned as user_is_banned
 from sessions s
 join users u on s.user_id = u.id
 where s.sid = $1
@@ -125,18 +125,21 @@ where s.sid = $1
 `
 
 type Session_GetInfoRow struct {
-	ID           int64
-	Sid          string
-	UserID       pgtype.UUID
-	CreatedAt    pgtype.Timestamptz
-	UserAgent    string
-	IpAddress    string
-	ExpiresAt    pgtype.Timestamptz
-	IsTerminated bool
-	UserName     string
-	UserJoinedAt pgtype.Timestamptz
-	UserRole     UserRole
-	UserIsBanned bool
+	ID              int64
+	Sid             string
+	UserID          pgtype.UUID
+	CreatedAt       pgtype.Timestamptz
+	UserAgent       string
+	IpAddress       string
+	ExpiresAt       pgtype.Timestamptz
+	IsTerminated    bool
+	LocationCountry string
+	LocationRegion  string
+	LocationCity    string
+	UserName        string
+	UserJoinedAt    pgtype.Timestamptz
+	UserRole        UserRole
+	UserIsBanned    bool
 }
 
 func (q *Queries) Session_GetInfo(ctx context.Context, sid string) (Session_GetInfoRow, error) {
@@ -151,6 +154,9 @@ func (q *Queries) Session_GetInfo(ctx context.Context, sid string) (Session_GetI
 		&i.IpAddress,
 		&i.ExpiresAt,
 		&i.IsTerminated,
+		&i.LocationCountry,
+		&i.LocationRegion,
+		&i.LocationCity,
 		&i.UserName,
 		&i.UserJoinedAt,
 		&i.UserRole,
@@ -160,24 +166,27 @@ func (q *Queries) Session_GetInfo(ctx context.Context, sid string) (Session_GetI
 }
 
 const session_GetUserSessions = `-- name: Session_GetUserSessions :many
-select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, u.id as user_id, u.name as user_name, u.joined_at as user_joined_at
+select s.id, s.sid, s.user_id, s.created_at, s.user_agent, s.ip_address, s.expires_at, s.is_terminated, s.location_country, s.location_region, s.location_city, u.id as user_id, u.name as user_name, u.joined_at as user_joined_at
 from sessions s
 join users u on s.user_id = u.id
 where s.user_id = $1
 `
 
 type Session_GetUserSessionsRow struct {
-	ID           int64
-	Sid          string
-	UserID       pgtype.UUID
-	CreatedAt    pgtype.Timestamptz
-	UserAgent    string
-	IpAddress    string
-	ExpiresAt    pgtype.Timestamptz
-	IsTerminated bool
-	UserID_2     pgtype.UUID
-	UserName     string
-	UserJoinedAt pgtype.Timestamptz
+	ID              int64
+	Sid             string
+	UserID          pgtype.UUID
+	CreatedAt       pgtype.Timestamptz
+	UserAgent       string
+	IpAddress       string
+	ExpiresAt       pgtype.Timestamptz
+	IsTerminated    bool
+	LocationCountry string
+	LocationRegion  string
+	LocationCity    string
+	UserID_2        pgtype.UUID
+	UserName        string
+	UserJoinedAt    pgtype.Timestamptz
 }
 
 func (q *Queries) Session_GetUserSessions(ctx context.Context, userID pgtype.UUID) ([]Session_GetUserSessionsRow, error) {
@@ -198,6 +207,9 @@ func (q *Queries) Session_GetUserSessions(ctx context.Context, userID pgtype.UUI
 			&i.IpAddress,
 			&i.ExpiresAt,
 			&i.IsTerminated,
+			&i.LocationCountry,
+			&i.LocationRegion,
+			&i.LocationCity,
 			&i.UserID_2,
 			&i.UserName,
 			&i.UserJoinedAt,
@@ -214,18 +226,21 @@ func (q *Queries) Session_GetUserSessions(ctx context.Context, userID pgtype.UUI
 
 const session_Insert = `-- name: Session_Insert :exec
 insert into sessions
-(id, sid, user_id, created_at, user_agent, ip_address, expires_at)
-values ($1, $2, $3, $4, $5, $6, $7)
+(id, sid, user_id, created_at, user_agent, ip_address, expires_at, location_country, location_region, location_city)
+values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `
 
 type Session_InsertParams struct {
-	ID        int64
-	Sid       string
-	UserID    pgtype.UUID
-	CreatedAt pgtype.Timestamptz
-	UserAgent string
-	IpAddress string
-	ExpiresAt pgtype.Timestamptz
+	ID              int64
+	Sid             string
+	UserID          pgtype.UUID
+	CreatedAt       pgtype.Timestamptz
+	UserAgent       string
+	IpAddress       string
+	ExpiresAt       pgtype.Timestamptz
+	LocationCountry string
+	LocationRegion  string
+	LocationCity    string
 }
 
 func (q *Queries) Session_Insert(ctx context.Context, arg Session_InsertParams) error {
@@ -237,6 +252,9 @@ func (q *Queries) Session_Insert(ctx context.Context, arg Session_InsertParams) 
 		arg.UserAgent,
 		arg.IpAddress,
 		arg.ExpiresAt,
+		arg.LocationCountry,
+		arg.LocationRegion,
+		arg.LocationCity,
 	)
 	return err
 }

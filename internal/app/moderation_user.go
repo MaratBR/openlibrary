@@ -30,6 +30,27 @@ type GetModerationUserQuery struct {
 	UserID      uuid.UUID
 }
 
+type ModerationUsersQuery struct {
+	ActorUserID uuid.UUID
+	Search      string
+	Banned      string
+	Role        string
+	Page        uint32
+	PageSize    uint32
+}
+
+type ModerationUserListEntry struct {
+	ID          uuid.UUID
+	Name        string
+	Avatar      string
+	JoinedAt    time.Time
+	Role        UserRole
+	IsBanned    bool
+	LastVisitAt *time.Time
+	BannedAt    *time.Time
+	BanReason   string
+}
+
 type ModerationUserPageQuery struct {
 	ActorUserID uuid.UUID
 	UserID      uuid.UUID
@@ -80,6 +101,7 @@ type ModerationUserReport struct {
 }
 
 type ModerationUserRepository interface {
+	SearchUsers(context.Context, string, *uuid.UUID, string, string, int32, int32) ([]ModerationUserListEntry, int64, error)
 	GetUserInfo(context.Context, uuid.UUID) (ModerationUserInfo, error)
 	GetBooks(context.Context, uuid.UUID, int32, int32) ([]ModerationUserBook, error)
 	GetComments(context.Context, uuid.UUID, int32, int32) ([]ModerationUserComment, error)
@@ -89,11 +111,28 @@ type ModerationUserRepository interface {
 }
 
 type ModerationUserService interface {
+	SearchUsers(context.Context, ModerationUsersQuery) (ModerationPage[ModerationUserListEntry], error)
 	GetUserInfo(context.Context, GetModerationUserQuery) (ModerationUserInfo, error)
 	GetBooks(context.Context, ModerationUserPageQuery) (ModerationPage[ModerationUserBook], error)
 	GetComments(context.Context, ModerationUserPageQuery) (ModerationPage[ModerationUserComment], error)
 	GetHistory(context.Context, ModerationUserPageQuery) (ModerationPage[ModerationUserHistoryEntry], error)
 	GetReports(context.Context, ModerationUserPageQuery) (ModerationPage[ModerationUserReport], error)
+}
+
+func (s *moderationUserService) SearchUsers(ctx context.Context, query ModerationUsersQuery) (ModerationPage[ModerationUserListEntry], error) {
+	if err := s.auth.AuthorizeModerator(ctx, query.ActorUserID); err != nil {
+		return ModerationPage[ModerationUserListEntry]{}, err
+	}
+	page, size, limit, offset := normalizeModerationPage(query.Page, query.PageSize)
+	var searchID *uuid.UUID
+	if parsed, err := uuid.FromString(query.Search); err == nil {
+		searchID = &parsed
+	}
+	entries, total, err := s.repo.SearchUsers(ctx, query.Search, searchID, query.Banned, query.Role, limit, offset)
+	if err != nil {
+		return ModerationPage[ModerationUserListEntry]{}, err
+	}
+	return moderationPage(entries, page, size, total), nil
 }
 
 func normalizeModerationPage(page, pageSize uint32) (uint32, uint32, int32, int32) {

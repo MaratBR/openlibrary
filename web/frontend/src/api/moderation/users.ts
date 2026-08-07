@@ -5,11 +5,25 @@ import type {
   ModerationUserHistoryPageResponse,
   ModerationUserReportsPageResponse,
   ModerationUserResponse,
+  ModerationUsersPageResponse,
   ModerationBanRequest,
   ModerationReasonRequest,
   ModerationValueRequest,
   UserLoginHistoryResponse,
+  LoginLocationResponse,
 } from '@/backend-types'
+
+export function searchModerationUsers(
+  search = '',
+  banned = '',
+  role = '',
+  page = 1,
+  pageSize = 20,
+) {
+  return httpClient
+    .get('/_api/moderation/users', { searchParams: { search, banned, role, page, pageSize } })
+    .then((response) => OLAPIResponse.create<ModerationUsersPageResponse>(response))
+}
 
 export function getModerationUser(userId: string) {
   return httpClient
@@ -45,6 +59,12 @@ export function getUserLoginHistory(userId: string, page = 1, pageSize = 20) {
       searchParams: { page, pageSize },
     })
     .then((response) => OLAPIResponse.create<UserLoginHistoryResponse>(response))
+}
+
+export function getUserLoginLocations(userId: string) {
+  return httpClient
+    .get(`/_api/moderation/users/${encodeURIComponent(userId)}/login-locations`)
+    .then((response) => OLAPIResponse.create<LoginLocationResponse[]>(response))
 }
 
 function getUserPage<T>(userId: string, resource: string, page = 1, pageSize = 20) {

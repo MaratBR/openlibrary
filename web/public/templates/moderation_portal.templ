@@ -1,5 +1,6 @@
 package templates
 
+import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
@@ -11,6 +12,9 @@ templ ModerationPortal() {
 		@i18nExtractKeysByPrefix(l, "moderationPortal")
 		@webcomponents.Island2(webcomponents.Island2Props{
 			Name: "moderation/Portal",
+			Data: struct {
+				Roles []app.UserRole `json:"roles"`
+			}{Roles: app.AllRoles},
 		})
 	}
 }

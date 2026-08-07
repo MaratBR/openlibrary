@@ -42,6 +42,34 @@ func (q *Queries) Moderation_CountUserReports(ctx context.Context, userID pgtype
 	return count, err
 }
 
+const moderation_CountUsers = `-- name: Moderation_CountUsers :one
+select count(*)
+from users
+where
+    ($1::text = '' or ($2::uuid is not null and users.id = $2) or ($2::uuid is null and users.name ilike '%' || $1 || '%'))
+    and ($3::text = '' or users.is_banned = ($3 = 'banned'))
+    and ($4::text = '' or users.role::text = $4)
+`
+
+type Moderation_CountUsersParams struct {
+	Search       string
+	SearchID     pgtype.UUID
+	BannedStatus string
+	Role         string
+}
+
+func (q *Queries) Moderation_CountUsers(ctx context.Context, arg Moderation_CountUsersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, moderation_CountUsers,
+		arg.Search,
+		arg.SearchID,
+		arg.BannedStatus,
+		arg.Role,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const moderation_GetRandomUserID = `-- name: Moderation_GetRandomUserID :one
 select id from users order by random() limit 1
 `
@@ -321,6 +349,88 @@ func (q *Queries) Moderation_GetUserReports(ctx context.Context, arg Moderation_
 			&i.Reason,
 			&i.Description,
 			&i.ReporterUserName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const moderation_SearchUsers = `-- name: Moderation_SearchUsers :many
+select
+    users.id,
+    users.name,
+    users.joined_at,
+    users.role,
+    users.is_banned,
+    (select sessions.created_at from sessions where sessions.user_id = users.id order by sessions.created_at desc limit 1) as last_visit_at,
+    latest_ban.created_at as banned_at,
+    coalesce(latest_ban.note, '') as ban_reason
+from users
+left join lateral (
+    select user_bans.created_at, user_bans.note
+    from user_bans
+    where user_bans.user_id = users.id
+    order by user_bans.created_at desc
+    limit 1
+) latest_ban on true
+where
+    ($1::text = '' or ($2::uuid is not null and users.id = $2) or ($2::uuid is null and users.name ilike '%' || $1 || '%'))
+    and ($3::text = '' or users.is_banned = ($3 = 'banned'))
+    and ($4::text = '' or users.role::text = $4)
+order by users.name, users.id
+limit $6 offset $5
+`
+
+type Moderation_SearchUsersParams struct {
+	Search       string
+	SearchID     pgtype.UUID
+	BannedStatus string
+	Role         string
+	PageOffset   int32
+	PageLimit    int32
+}
+
+type Moderation_SearchUsersRow struct {
+	ID          pgtype.UUID
+	Name        string
+	JoinedAt    pgtype.Timestamptz
+	Role        UserRole
+	IsBanned    bool
+	LastVisitAt pgtype.Timestamptz
+	BannedAt    pgtype.Timestamptz
+	BanReason   string
+}
+
+func (q *Queries) Moderation_SearchUsers(ctx context.Context, arg Moderation_SearchUsersParams) ([]Moderation_SearchUsersRow, error) {
+	rows, err := q.db.Query(ctx, moderation_SearchUsers,
+		arg.Search,
+		arg.SearchID,
+		arg.BannedStatus,
+		arg.Role,
+		arg.PageOffset,
+		arg.PageLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Moderation_SearchUsersRow
+	for rows.Next() {
+		var i Moderation_SearchUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.JoinedAt,
+			&i.Role,
+			&i.IsBanned,
+			&i.LastVisitAt,
+			&i.BannedAt,
+			&i.BanReason,
 		); err != nil {
 			return nil, err
 		}

@@ -44,8 +44,8 @@ where id = $2;
 
 -- name: Session_Insert :exec
 insert into sessions
-(id, sid, user_id, created_at, user_agent, ip_address, expires_at)
-values ($1, $2, $3, $4, $5, $6, $7);
+(id, sid, user_id, created_at, user_agent, ip_address, expires_at, location_country, location_region, location_city)
+values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 
 -- name: Session_Terminate :exec
 update sessions

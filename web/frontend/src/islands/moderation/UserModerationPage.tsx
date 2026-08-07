@@ -11,12 +11,14 @@ import {
   getModerationUserHistory,
   getModerationUserReports,
   getUserLoginHistory,
+  getUserLoginLocations,
   permanentlyBanUser,
   renameUser,
   unbanUser,
 } from '@/api/moderation'
 import type {
   LoginHistoryEntry,
+  LoginLocation,
   ModerationUser,
   ModerationUserBooksPage,
   ModerationUserCommentsPage,
@@ -85,11 +87,13 @@ export const userModerationRouteLoader = async ({ params, request }: LoaderFunct
   let history: ModerationUserHistoryPage | undefined
   let reports: ModerationUserReportsPage | undefined
   let logins: PageResult<LoginHistoryEntry> | undefined
+  let locations: LoginLocation[] | undefined
 
   if (leaf === userId) {
-    ;[books, comments] = await Promise.all([
+    ;[books, comments, locations] = await Promise.all([
       responseData(getModerationUserBooks(userId, 1, 4)),
       responseData(getModerationUserComments(userId, 1, 4)),
+      responseData(getUserLoginLocations(userId)),
     ])
   } else if (leaf === 'activity') {
     ;[history, reports, logins] = await Promise.all([
@@ -104,7 +108,7 @@ export const userModerationRouteLoader = async ({ params, request }: LoaderFunct
   else if (leaf === 'reports') reports = await responseData(getModerationUserReports(userId, page))
   else if (leaf === 'login-history') logins = await responseData(getUserLoginHistory(userId, page))
 
-  return { user, books, comments, history, reports, logins }
+  return { user, books, comments, history, reports, logins, locations }
 }
 
 export default function UserModerationPage() {
@@ -286,12 +290,11 @@ function Overview({
         <h2 className="text-xl font-semibold mb-4">
           {window._('moderationPortal.user.accountSignals')}
         </h2>
-        <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
-          {['lastActivity', 'loginLocations', 'passwordChanges', 'emailChanges', 'twoFactor'].map(
-            (key) => (
-              <UnavailableSignal key={key} label={window._(`moderationPortal.user.${key}`)} />
-            ),
-          )}
+        <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          <LoginLocations locations={data.locations ?? []} />
+          {['lastActivity', 'passwordChanges', 'emailChanges', 'twoFactor'].map((key) => (
+            <UnavailableSignal key={key} label={window._(`moderationPortal.user.${key}`)} />
+          ))}
         </div>
       </section>
       <RecentContent user={user} books={data.books} comments={data.comments} />
@@ -317,7 +320,19 @@ function RecentContent({
       >
         {books?.entries.map((book) => (
           <div key={book.id} className="py-3 border-b border-border last:border-0">
-            <div className="font-medium">{book.name}</div>
+            <div className="flex items-center justify-between gap-3">
+              <a
+                className="link font-medium truncate"
+                href={`/book/${book.id}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {book.name}
+              </a>
+              <NavLink className="link text-sm shrink-0" to={`/books/${book.id}`}>
+                {window._('moderationPortal.user.moderate')}
+              </NavLink>
+            </div>
             <div className="text-sm text-secondary-foreground">
               {dateFormatter.format(new Date(book.createdAt))}
             </div>
@@ -330,10 +345,16 @@ function RecentContent({
         link={window._('moderationPortal.user.viewAll')}
       >
         {comments?.entries.map((comment) => (
-          <div key={comment.id} className="py-3 border-b border-border last:border-0">
-            <div className="truncate">
-              <SanitizeHTML value={comment.content} />
-            </div>
+          <div
+            key={comment.id}
+            className="relative py-3 border-b border-border last:border-0 hover:text-primary"
+          >
+            <NavLink
+              className="absolute inset-0"
+              to={`/comments/${comment.id}`}
+              aria-label={window._('moderationPortal.user.moderateComment')}
+            />
+            <SanitizeHTML className="truncate pointer-events-none" value={comment.content} />
             <div className="text-sm text-secondary-foreground">
               {comment.bookName} · {comment.chapterName}
             </div>
@@ -387,6 +408,36 @@ function UnavailableSignal({ label }: { label: string }) {
       <div className="text-sm text-secondary-foreground mt-1">
         {window._('moderationPortal.user.notAvailable')}
       </div>
+    </div>
+  )
+}
+
+function LoginLocations({ locations }: { locations: LoginLocation[] }) {
+  return (
+    <div className="border border-border rounded-lg p-3 bg-secondary/50 sm:col-span-2">
+      <div className="font-medium mb-2">{window._('moderationPortal.user.loginLocations')}</div>
+      {locations.length ? (
+        <ul className="grid gap-2">
+          {locations.map((location) => (
+            <li
+              key={`${location.country}-${location.region}-${location.city}`}
+              className="flex items-center gap-2 text-sm"
+            >
+              <i className="fa-solid fa-location-dot text-secondary-foreground" />
+              <span className="font-medium">
+                {[location.city, location.region, location.country].filter(Boolean).join(', ')}
+              </span>
+              <span className="text-secondary-foreground ml-auto">
+                {dateFormatter.format(new Date(location.lastSeenAt))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="text-sm text-secondary-foreground">
+          {window._('moderationPortal.user.noLoginLocations')}
+        </div>
+      )}
     </div>
   )
 }

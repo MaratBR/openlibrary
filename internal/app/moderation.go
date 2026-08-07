@@ -199,12 +199,20 @@ func NewContentModerationService(auth ModerationAuthorizer, repo ContentModerati
 
 type LoginHistoryEntry struct {
 	IPAddress, UserAgent string
+	Location             IPLocation
 	LoggedInAt           time.Time
+}
+
+type LoginLocation struct {
+	IPLocation
+	LastSeenAt time.Time
 }
 type GetLoginHistoryQuery struct{ ActorUserID, UserID uuid.UUID }
 type LoginHistoryService interface {
 	GetUserLoginHistory(context.Context, GetLoginHistoryQuery) ([]LoginHistoryEntry, error)
+	GetRecentLoginLocations(context.Context, GetLoginHistoryQuery) ([]LoginLocation, error)
 }
+
 type loginHistoryService struct {
 	auth     ModerationAuthorizer
 	sessions SessionService
@@ -220,11 +228,35 @@ func (s *loginHistoryService) GetUserLoginHistory(ctx context.Context, q GetLogi
 	}
 	result := make([]LoginHistoryEntry, len(rows))
 	for i, row := range rows {
-		result[i] = LoginHistoryEntry{IPAddress: row.IpAddress, UserAgent: row.UserAgent, LoggedInAt: row.CreatedAt}
+		result[i] = LoginHistoryEntry{IPAddress: row.IpAddress, UserAgent: row.UserAgent, Location: row.Location, LoggedInAt: row.CreatedAt}
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].LoggedInAt.After(result[j].LoggedInAt) })
 	return result, nil
 }
+
+func (s *loginHistoryService) GetRecentLoginLocations(ctx context.Context, q GetLoginHistoryQuery) ([]LoginLocation, error) {
+	history, err := s.GetUserLoginHistory(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]LoginLocation, 0, 3)
+	seen := make(map[IPLocation]struct{}, 3)
+	for _, entry := range history {
+		if entry.Location == (IPLocation{}) {
+			continue
+		}
+		if _, exists := seen[entry.Location]; exists {
+			continue
+		}
+		seen[entry.Location] = struct{}{}
+		result = append(result, LoginLocation{IPLocation: entry.Location, LastSeenAt: entry.LoggedInAt})
+		if len(result) == 3 {
+			break
+		}
+	}
+	return result, nil
+}
+
 func NewLoginHistoryService(auth ModerationAuthorizer, sessions SessionService) LoginHistoryService {
 	return &loginHistoryService{auth: auth, sessions: sessions}
 }

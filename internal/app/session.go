@@ -14,16 +14,17 @@ var (
 )
 
 type SessionInfo struct {
-	ID           int64     `json:"id"`
-	SID          string    `json:"sid"`
-	CreatedAt    time.Time `json:"createdAt"`
-	ExpiresAt    time.Time `json:"expiresAt"`
-	UserID       uuid.UUID `json:"userId"`
-	UserAgent    string    `json:"userAgent"`
-	IpAddress    string    `json:"ipAddr"`
-	UserName     string    `json:"userName"`
-	UserJoinedAt time.Time `json:"userJoinedAt"`
-	UserRole     UserRole  `json:"userRole"`
+	ID           int64      `json:"id"`
+	SID          string     `json:"sid"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	ExpiresAt    time.Time  `json:"expiresAt"`
+	UserID       uuid.UUID  `json:"userId"`
+	UserAgent    string     `json:"userAgent"`
+	IpAddress    string     `json:"ipAddr"`
+	Location     IPLocation `json:"location"`
+	UserName     string     `json:"userName"`
+	UserJoinedAt time.Time  `json:"userJoinedAt"`
+	UserRole     UserRole   `json:"userRole"`
 }
 
 type CreateSessionCommand struct {
@@ -51,6 +52,7 @@ type SessionPublicInfo struct {
 	ID        int64         `json:"id,string"`
 	UserAgent UserAgentInfo `json:"userAgent"`
 	IpAddress string        `json:"ipAddress"`
+	Location  IPLocation    `json:"location"`
 	CreatedAt time.Time     `json:"createdAt"`
 	ExpiresAt time.Time     `json:"expiresAt"`
 }
@@ -67,6 +69,7 @@ func NewSessionPublicInfo(session SessionInfo) SessionPublicInfo {
 			Version: ua.Version,
 		},
 		IpAddress: session.IpAddress,
+		Location:  session.Location,
 		CreatedAt: session.CreatedAt.UTC(),
 		ExpiresAt: session.ExpiresAt.UTC(),
 	}

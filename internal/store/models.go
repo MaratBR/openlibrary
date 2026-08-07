@@ -536,14 +536,17 @@ type Review struct {
 }
 
 type Session struct {
-	ID           int64
-	Sid          string
-	UserID       pgtype.UUID
-	CreatedAt    pgtype.Timestamptz
-	UserAgent    string
-	IpAddress    string
-	ExpiresAt    pgtype.Timestamptz
-	IsTerminated bool
+	ID              int64
+	Sid             string
+	UserID          pgtype.UUID
+	CreatedAt       pgtype.Timestamptz
+	UserAgent       string
+	IpAddress       string
+	ExpiresAt       pgtype.Timestamptz
+	IsTerminated    bool
+	LocationCountry string
+	LocationRegion  string
+	LocationCity    string
 }
 
 type SiteConfig struct {

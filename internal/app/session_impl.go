@@ -12,8 +12,9 @@ import (
 )
 
 type sessionService struct {
-	db      DB
-	queries *store.Queries
+	db          DB
+	queries     *store.Queries
+	ipLocations IPLocationService
 }
 
 // GetByUserID implements SessionService.
@@ -34,6 +35,7 @@ func (s *sessionService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]S
 			UserID:       uuidDbToDomain(s.UserID),
 			UserAgent:    s.UserAgent,
 			IpAddress:    s.IpAddress,
+			Location:     IPLocation{Country: s.LocationCountry, Region: s.LocationRegion, City: s.LocationCity},
 			UserName:     s.UserName,
 			UserJoinedAt: timeDbToDomain(s.UserJoinedAt),
 		}
@@ -46,15 +48,22 @@ func (s *sessionService) Create(ctx context.Context, command CreateSessionComman
 	if err != nil {
 		return nil, err
 	}
+	location, err := s.ipLocations.Locate(ctx, command.IpAddress)
+	if err != nil {
+		return nil, err
+	}
 
 	err = s.queries.Session_Insert(ctx, store.Session_InsertParams{
-		ID:        GenID(),
-		Sid:       sessionID,
-		UserID:    uuidDomainToDb(command.UserID),
-		UserAgent: command.UserAgent,
-		IpAddress: command.IpAddress,
-		ExpiresAt: timeToTimestamptz(time.Now().Add(90 * 24 * time.Hour)),
-		CreatedAt: timeToTimestamptz(time.Now()),
+		ID:              GenID(),
+		Sid:             sessionID,
+		UserID:          uuidDomainToDb(command.UserID),
+		UserAgent:       command.UserAgent,
+		IpAddress:       command.IpAddress,
+		ExpiresAt:       timeToTimestamptz(time.Now().Add(90 * 24 * time.Hour)),
+		CreatedAt:       timeToTimestamptz(time.Now()),
+		LocationCountry: location.Country,
+		LocationRegion:  location.Region,
+		LocationCity:    location.City,
 	})
 	if err != nil {
 		return nil, apperror.WrapUnexpectedDBError(err)
@@ -94,6 +103,7 @@ func (s *sessionService) get(ctx context.Context, sessionID string) (SessionInfo
 		UserID:       uuidDbToDomain(result.UserID),
 		UserAgent:    result.UserAgent,
 		IpAddress:    result.IpAddress,
+		Location:     IPLocation{Country: result.LocationCountry, Region: result.LocationRegion, City: result.LocationCity},
 		UserName:     result.UserName,
 		UserJoinedAt: timeDbToDomain(result.UserJoinedAt),
 		UserRole:     UserRole(result.UserRole),
@@ -102,6 +112,10 @@ func (s *sessionService) get(ctx context.Context, sessionID string) (SessionInfo
 
 // Renew implements SessionService.
 func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand) (*SessionInfo, error) {
+	location, err := s.ipLocations.Locate(ctx, command.IpAddress)
+	if err != nil {
+		return nil, err
+	}
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
 		return nil, err
@@ -124,13 +138,16 @@ func (s *sessionService) Renew(ctx context.Context, command RenewSessionCommand)
 	}
 
 	err = queries.Session_Insert(ctx, store.Session_InsertParams{
-		ID:        GenID(),
-		Sid:       command.SessionID,
-		UserID:    session.UserID,
-		UserAgent: command.UserAgent,
-		IpAddress: command.IpAddress,
-		ExpiresAt: timeToTimestamptz(time.Now().Add(90 * 24 * time.Hour)),
-		CreatedAt: timeToTimestamptz(time.Now()),
+		ID:              GenID(),
+		Sid:             command.SessionID,
+		UserID:          session.UserID,
+		UserAgent:       command.UserAgent,
+		IpAddress:       command.IpAddress,
+		ExpiresAt:       timeToTimestamptz(time.Now().Add(90 * 24 * time.Hour)),
+		CreatedAt:       timeToTimestamptz(time.Now()),
+		LocationCountry: location.Country,
+		LocationRegion:  location.Region,
+		LocationCity:    location.City,
 	})
 	if err != nil {
 		dal.RollbackTx(ctx, tx)
@@ -168,9 +185,10 @@ func (s *sessionService) TerminateBySID(ctx context.Context, sessionID string) e
 	return nil
 }
 
-func NewSessionService(db DB) SessionService {
+func NewSessionService(db DB, ipLocations IPLocationService) SessionService {
 	return &sessionService{
-		db:      db,
-		queries: store.New(db),
+		db:          db,
+		queries:     store.New(db),
+		ipLocations: ipLocations,
 	}
 }

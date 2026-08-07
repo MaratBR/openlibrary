@@ -14,6 +14,39 @@ select
 from users
 where users.id = $1;
 
+-- name: Moderation_SearchUsers :many
+select
+    users.id,
+    users.name,
+    users.joined_at,
+    users.role,
+    users.is_banned,
+    (select sessions.created_at from sessions where sessions.user_id = users.id order by sessions.created_at desc limit 1) as last_visit_at,
+    latest_ban.created_at as banned_at,
+    coalesce(latest_ban.note, '') as ban_reason
+from users
+left join lateral (
+    select user_bans.created_at, user_bans.note
+    from user_bans
+    where user_bans.user_id = users.id
+    order by user_bans.created_at desc
+    limit 1
+) latest_ban on true
+where
+    (sqlc.arg('search')::text = '' or (sqlc.narg('search_id')::uuid is not null and users.id = sqlc.narg('search_id')) or (sqlc.narg('search_id')::uuid is null and users.name ilike '%' || sqlc.arg('search') || '%'))
+    and (sqlc.arg('banned_status')::text = '' or users.is_banned = (sqlc.arg('banned_status') = 'banned'))
+    and (sqlc.arg('role')::text = '' or users.role::text = sqlc.arg('role'))
+order by users.name, users.id
+limit sqlc.arg('page_limit') offset sqlc.arg('page_offset');
+
+-- name: Moderation_CountUsers :one
+select count(*)
+from users
+where
+    (sqlc.arg('search')::text = '' or (sqlc.narg('search_id')::uuid is not null and users.id = sqlc.narg('search_id')) or (sqlc.narg('search_id')::uuid is null and users.name ilike '%' || sqlc.arg('search') || '%'))
+    and (sqlc.arg('banned_status')::text = '' or users.is_banned = (sqlc.arg('banned_status') = 'banned'))
+    and (sqlc.arg('role')::text = '' or users.role::text = sqlc.arg('role'));
+
 -- name: Moderation_GetUserBooks :many
 select id, name, created_at, is_publicly_visible, is_banned, is_trashed
 from books

@@ -32,6 +32,7 @@ func (c *apiControllerModeration) Register(r chi.Router) {
 		r.Post("/books/{bookID}/actions/{action}", c.bookAction)
 		r.Post("/chapters/{chapterID}/actions/{action}", c.chapterAction)
 		r.Post("/comments/{commentID}/actions/{action}", c.commentAction)
+		r.Get("/users", c.searchUsers)
 		r.Get("/users/{userID}", c.getUser)
 		r.Get("/users/{userID}/books", c.getUserBooks)
 		r.Get("/users/{userID}/comments", c.getUserComments)
@@ -39,6 +40,7 @@ func (c *apiControllerModeration) Register(r chi.Router) {
 		r.Get("/users/{userID}/reports", c.getUserReports)
 		r.Post("/users/{userID}/actions/{action}", c.userAction)
 		r.Get("/users/{userID}/login-history", c.getLoginHistory)
+		r.Get("/users/{userID}/login-locations", c.getLoginLocations)
 	})
 }
 
@@ -97,6 +99,14 @@ type LoginHistoryEntryResponse struct {
 }
 
 // go2tsdef:generate
+type LoginLocationResponse struct {
+	Country    string    `json:"country"`
+	Region     string    `json:"region"`
+	City       string    `json:"city"`
+	LastSeenAt time.Time `json:"lastSeenAt"`
+}
+
+// go2tsdef:generate
 type UserLoginHistoryResponse struct {
 	Entries    []LoginHistoryEntryResponse `json:"entries"`
 	Page       uint32                      `json:"page"`
@@ -119,6 +129,28 @@ type ModerationUserResponse struct {
 	BooksTotal      int64     `json:"booksTotal"`
 	CommentsTotal   int64     `json:"commentsTotal"`
 	FollowersTotal  int64     `json:"followersTotal"`
+}
+
+// go2tsdef:generate
+type ModerationUserListEntryResponse struct {
+	ID          string                  `json:"id"`
+	Name        string                  `json:"name"`
+	Avatar      string                  `json:"avatar"`
+	JoinedAt    time.Time               `json:"joinedAt"`
+	Role        string                  `json:"role"`
+	IsBanned    bool                    `json:"isBanned"`
+	LastVisitAt app.Nullable[time.Time] `json:"lastVisitAt"`
+	BannedAt    app.Nullable[time.Time] `json:"bannedAt"`
+	BanReason   string                  `json:"banReason"`
+}
+
+// go2tsdef:generate
+type ModerationUsersPageResponse struct {
+	Entries    []ModerationUserListEntryResponse `json:"entries"`
+	Page       uint32                            `json:"page"`
+	PageSize   uint32                            `json:"pageSize"`
+	TotalPages uint32                            `json:"totalPages"`
+	Total      int64                             `json:"total"`
 }
 
 // go2tsdef:generate
@@ -206,6 +238,23 @@ func decodeModerationJSON(w http.ResponseWriter, r *http.Request, value any) err
 	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64*1024))
 	decoder.DisallowUnknownFields()
 	return decoder.Decode(value)
+}
+
+func (c *apiControllerModeration) searchUsers(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	result, err := c.users.SearchUsers(r.Context(), app.ModerationUsersQuery{
+		ActorUserID: auth.RequireSession(r.Context()).UserID,
+		Search:      params.Get("search"), Banned: params.Get("banned"), Role: params.Get("role"),
+		Page: olhttp.GetPage(params, "page"), PageSize: olhttp.GetPageSize(params, "pageSize", 1, 100, 20),
+	})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	entries := app.MapSlice(result.Entries, func(entry app.ModerationUserListEntry) ModerationUserListEntryResponse {
+		return ModerationUserListEntryResponse{ID: entry.ID.String(), Name: entry.Name, Avatar: entry.Avatar, JoinedAt: entry.JoinedAt, Role: string(entry.Role), IsBanned: entry.IsBanned, LastVisitAt: app.NullableFromPtr(entry.LastVisitAt), BannedAt: app.NullableFromPtr(entry.BannedAt), BanReason: entry.BanReason}
+	})
+	olhttp.NewAPIResponse(ModerationUsersPageResponse{Entries: entries, Page: result.Page, PageSize: result.PageSize, Total: result.Total, TotalPages: result.TotalPages}).Write(w)
 }
 
 func (c *apiControllerModeration) getUser(w http.ResponseWriter, r *http.Request) {
@@ -496,6 +545,23 @@ func (c *apiControllerModeration) getLoginHistory(w http.ResponseWriter, r *http
 		totalPages = uint32((len(entries) + int(pageSize) - 1) / int(pageSize))
 	}
 	olhttp.NewAPIResponse(UserLoginHistoryResponse{Entries: entries[start:end], Page: page, PageSize: pageSize, Total: len(entries), TotalPages: totalPages}).Write(w)
+}
+
+func (c *apiControllerModeration) getLoginLocations(w http.ResponseWriter, r *http.Request) {
+	userID, err := olhttp.URLParamUUID(r, "userID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	result, err := c.loginHistory.GetRecentLoginLocations(r.Context(), app.GetLoginHistoryQuery{ActorUserID: auth.RequireSession(r.Context()).UserID, UserID: userID})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	response := app.MapSlice(result, func(location app.LoginLocation) LoginLocationResponse {
+		return LoginLocationResponse{Country: location.Country, Region: location.Region, City: location.City, LastSeenAt: location.LastSeenAt}
+	})
+	olhttp.NewAPIResponse(response).Write(w)
 }
 
 func writeModerationActionResult(w http.ResponseWriter, err error) {

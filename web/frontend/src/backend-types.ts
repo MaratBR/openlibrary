@@ -137,6 +137,14 @@ export interface LoginHistoryEntryResponse {
   loggedInAt: string;
 }
 
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface LoginLocationResponse {
+  country: string;
+  region: string;
+  city: string;
+  lastSeenAt: string;
+}
+
 /** Generated from `internal/app/book_manager.go`. */
 export interface ManagerBookChapterDto {
   id: string;
@@ -292,6 +300,19 @@ export interface ModerationUserHistoryResponse {
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUserListEntryResponse {
+  id: string;
+  name: string;
+  avatar: string;
+  joinedAt: string;
+  role: string;
+  isBanned: boolean;
+  lastVisitAt: Nullable<string>;
+  bannedAt: Nullable<string>;
+  banReason: string;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationUserReportResponse {
   id: string;
   number: string;
@@ -327,6 +348,15 @@ export interface ModerationUserResponse {
   booksTotal: number;
   commentsTotal: number;
   followersTotal: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationUsersPageResponse {
+  entries: Array<ModerationUserListEntryResponse>;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */

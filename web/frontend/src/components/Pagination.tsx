@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { ComponentProps, ComponentType, HTMLAttributes, JSX, ReactNode } from 'react'
 import React, { ForwardedRef, forwardRef, useMemo } from 'react'
-import { NavLink } from 'react-router'
+import { NavLink, To } from 'react-router'
 
 const Pagination_Root = forwardRef(
   (
@@ -49,14 +49,21 @@ const Pagination_Item = forwardRef(
   },
 ) as <T extends ElementType = 'button'>(props: PaginationItemProps<T>) => JSX.Element
 
-type PaginatioFacadeProps = {
+type PaginationFacadeProps = {
   page: number
   totalPages: number
   size: number
   disabled?: boolean
+  getTo?: (page: number) => To
 }
 
-function Pagination_Facade({ page, totalPages, size, disabled = false }: PaginatioFacadeProps) {
+function Pagination_Facade({
+  page,
+  totalPages,
+  size,
+  disabled = false,
+  getTo = (targetPage) => ({ search: `?page=${targetPage}` }),
+}: PaginationFacadeProps) {
   const order = useMemo(() => getPaginationOrder(page, totalPages, size), [page, totalPages, size])
 
   return (
@@ -67,12 +74,7 @@ function Pagination_Facade({ page, totalPages, size, disabled = false }: Paginat
             {p}
           </Pagination.Item>
         ) : (
-          <Pagination.Item
-            key={`${p}`}
-            to={{ search: `?page=${p}` }}
-            as={NavLink}
-            disabled={disabled}
-          >
+          <Pagination.Item key={`${p}`} to={getTo(p)} as={NavLink} disabled={disabled}>
             {p}
           </Pagination.Item>
         ),

@@ -13,7 +13,7 @@ import (
 func mainPopulate(config *koanf.Koanf) {
 	db := connectToDatabase(config)
 	siteConfig := app.NewSiteConfig(db, config)
-	sessionService := app.NewSessionService(db)
+	sessionService := app.NewSessionService(db, app.NewIPLocationService())
 	authService := app.NewAuthService(db, sessionService)
 
 	tagsService := app.NewTagsService(db)
