@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -38,11 +37,6 @@ type ModerationReportDetail struct {
 	ReporterUserName string
 	Status           string
 	Priority         string
-	AssignedTo       string
-	AssignedTeam     string
-	Channel          string
-	SLADeadline      time.Time
-	Tags             []string
 	Activities       []ModerationReportActivity
 	BookContext      *ModerationReportBookContext
 }
@@ -80,8 +74,9 @@ func (s *moderationReportService) SearchReports(ctx context.Context, query Searc
 }
 
 type moderationReportService struct {
-	auth ModerationAuthorizer
-	repo ReportRepository
+	auth    ModerationAuthorizer
+	repo    ReportRepository
+	uploads *UploadService
 }
 
 func (s *moderationReportService) GetReport(ctx context.Context, query GetModerationReportQuery) (ModerationReportDetail, error) {
@@ -93,44 +88,74 @@ func (s *moderationReportService) GetReport(ctx context.Context, query GetModera
 		return ModerationReportDetail{}, err
 	}
 
-	// TODO: Persist report workflow fields and activities instead of returning placeholder support-ticket data.
 	detail := ModerationReportDetail{
 		Report: report, ReporterUserName: reporterName,
-		Status: "unreviewed", Priority: "medium", AssignedTo: "", AssignedTeam: "Trust & Safety",
-		Channel: "In-product report", SLADeadline: report.Time.Add(24 * time.Hour),
-		Tags: []string{"needs-review", string(report.TargetType), "community-safety"},
+		Status: report.Status, Priority: report.Priority,
 		Activities: []ModerationReportActivity{
 			{Time: report.Time, Actor: reporterName, Description: "submitted this report", Kind: "created"},
-			{Time: report.Time.Add(12 * time.Minute), Actor: "Triage automation", Description: "set severity to Medium", Kind: "priority"},
-			{Time: report.Time.Add(18 * time.Minute), Actor: "Triage automation", Description: "added this report to the review queue", Kind: "assignment"},
 		},
 	}
 	if report.TargetType == ReportTargetBook {
-		// TODO: Replace this book snapshot with persisted report-time content metadata.
-		detail.BookContext = &ModerationReportBookContext{
-			Scope: "book",
-			Title: "Ashes of the Northern Crown", Author: "Mira Vale",
-			CoverURL: fmt.Sprintf("/_/embed-assets/cover/%d.h300.webp", (report.ID%5)+1),
-			Chapter:  "Chapter 18 · The Siege",
-			Excerpt:  "He brought the axe down in a single, sickening arc. The guard's head split open, blood and bone spraying across the stones. Mira stumbled back, her hands over her mouth. Another soldier fell, crushed beneath the battering ram.",
-			Rating:   "Teen", Warnings: []string{}, PublicationState: "Published",
-			LastUpdated: report.Time.Add(-2 * time.Hour), RelatedReports: 3,
-			EditedAfter: 24 * time.Minute,
-		}
-		switch report.ID % 3 {
-		case 1:
-			detail.BookContext.Scope = "chapter"
-			detail.BookContext.Excerpt = ""
-		case 2:
-			detail.BookContext.Scope = "text"
-		default:
-			detail.BookContext.Chapter = ""
-			detail.BookContext.Excerpt = ""
+		err = s.loadBookReportContext(ctx, report, &detail)
+		if err != nil {
+			return ModerationReportDetail{}, err
 		}
 	}
 	return detail, nil
 }
 
-func NewModerationReportService(auth ModerationAuthorizer, repo ReportRepository) ModerationReportService {
-	return &moderationReportService{auth: auth, repo: repo}
+func (s *moderationReportService) loadBookReportContext(ctx context.Context, report Report, detail *ModerationReportDetail) error {
+	book, err := s.repo.GetBookContext(ctx, report.ID)
+	if err != nil {
+		return err
+	}
+	if book != nil {
+		scope := "book"
+		if book.ChapterID.Valid {
+			scope = "chapter"
+			if book.Excerpt != "" {
+				scope = "text"
+			}
+		}
+		publicationState := "Unpublished"
+		switch {
+		case book.IsPermanentlyRemoved:
+			publicationState = "Permanently removed"
+		case book.IsBanned:
+			publicationState = "Banned"
+		case book.IsTrashed:
+			publicationState = "Trashed"
+		case book.IsPubliclyVisible:
+			publicationState = "Published"
+		}
+		lastUpdated := book.BookCreatedAt
+		for _, candidate := range []Nullable[time.Time]{book.ChapterCreatedAt, book.ChapterContentUpdatedAt, book.ChapterUpdatedAt} {
+			if candidate.Valid && candidate.Value.After(lastUpdated) {
+				lastUpdated = candidate.Value
+			}
+		}
+		editedAfter := lastUpdated.Sub(report.Time)
+		if editedAfter < 0 {
+			editedAfter = 0
+		}
+		detail.BookContext = &ModerationReportBookContext{
+			Scope:            scope,
+			Title:            book.Title,
+			Author:           book.Author,
+			CoverURL:         getBookCover(s.uploads, book.CoverID, book.BookID).URL,
+			Chapter:          book.Chapter.Value,
+			Excerpt:          book.Excerpt,
+			Rating:           book.Rating,
+			Warnings:         book.Warnings,
+			PublicationState: publicationState,
+			LastUpdated:      lastUpdated,
+			RelatedReports:   book.RelatedReports,
+			EditedAfter:      editedAfter,
+		}
+	}
+	return nil
+}
+
+func NewModerationReportService(auth ModerationAuthorizer, repo ReportRepository, uploads *UploadService) ModerationReportService {
+	return &moderationReportService{auth: auth, repo: repo, uploads: uploads}
 }

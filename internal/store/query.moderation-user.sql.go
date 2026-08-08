@@ -297,7 +297,7 @@ func (q *Queries) Moderation_GetUserInfo(ctx context.Context, id pgtype.UUID) (M
 }
 
 const moderation_GetUserReports = `-- name: Moderation_GetUserReports :many
-select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, users.name as reporter_user_name
+select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, reports.book_chapter_id, reports.book_excerpt, reports.status, reports.priority, users.name as reporter_user_name
 from reports
 left join users on users.id = reports.reporter_user_id
 where
@@ -327,6 +327,10 @@ type Moderation_GetUserReportsRow struct {
 	TargetID         string
 	Reason           string
 	Description      string
+	BookChapterID    pgtype.Int8
+	BookExcerpt      string
+	Status           string
+	Priority         string
 	ReporterUserName pgtype.Text
 }
 
@@ -348,6 +352,10 @@ func (q *Queries) Moderation_GetUserReports(ctx context.Context, arg Moderation_
 			&i.TargetID,
 			&i.Reason,
 			&i.Description,
+			&i.BookChapterID,
+			&i.BookExcerpt,
+			&i.Status,
+			&i.Priority,
 			&i.ReporterUserName,
 		); err != nil {
 			return nil, err

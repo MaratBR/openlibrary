@@ -33,6 +33,22 @@ type Report struct {
 	TargetID       string
 	Reason         string
 	Description    string
+	Status         string
+	Priority       string
+}
+
+type ModerationReportBookContextData struct {
+	Title, Author, CoverID, Excerpt, Rating   string
+	BookID                                    int64
+	ChapterID                                 Nullable[int64]
+	Chapter                                   Nullable[string]
+	Warnings                                  []string
+	IsPermanentlyRemoved, IsBanned, IsTrashed bool
+	IsPubliclyVisible                         bool
+	BookCreatedAt                             time.Time
+	ChapterCreatedAt, ChapterUpdatedAt        Nullable[time.Time]
+	ChapterContentUpdatedAt                   Nullable[time.Time]
+	RelatedReports                            int
 }
 
 type CreateReportCommand struct {
@@ -47,6 +63,7 @@ type ReportRepository interface {
 	TargetExists(context.Context, ReportTargetType, string) (bool, error)
 	Create(context.Context, Report) (Report, error)
 	GetByID(context.Context, int64) (Report, string, error)
+	GetBookContext(context.Context, int64) (*ModerationReportBookContextData, error)
 	Search(context.Context, string, string, int32, int32) ([]ModerationReportListEntry, int64, error)
 }
 

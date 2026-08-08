@@ -65,7 +65,45 @@ func (r *reportRepository) GetByID(ctx context.Context, reportID int64) (Report,
 		}
 		return Report{}, "", apperror.WrapUnexpectedDBError(err)
 	}
-	return Report{ID: row.ID, Number: row.Number, Time: timeDbToDomain(row.Time), ReporterUserID: uuidDbToDomain(row.ReporterUserID), TargetType: ReportTargetType(row.TargetType), TargetID: row.TargetID, Reason: row.Reason, Description: row.Description}, row.ReporterUserName.String, nil
+	return Report{
+		ID:             row.ID,
+		Number:         row.Number,
+		Time:           timeDbToDomain(row.Time),
+		ReporterUserID: uuidDbToDomain(row.ReporterUserID),
+		TargetType:     ReportTargetType(row.TargetType),
+		TargetID:       row.TargetID,
+		Reason:         row.Reason,
+		Description:    row.Description,
+		Status:         row.Status,
+		Priority:       row.Priority,
+	}, row.ReporterUserName, nil
+
+}
+
+func (r *reportRepository) GetBookContext(ctx context.Context, reportID int64) (*ModerationReportBookContextData, error) {
+	row, err := store.New(r.db).Report_GetBookContext(ctx, reportID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, apperror.WrapUnexpectedDBError(err)
+	}
+	chapterID := Null[int64]()
+	if row.BookChapterID.Valid {
+		chapterID = Value(row.BookChapterID.Int64)
+	}
+	chapter := Null[string]()
+	if row.Chapter.Valid {
+		chapter = Value(row.Chapter.String)
+	}
+	return &ModerationReportBookContextData{
+		BookID: row.BookID, ChapterID: chapterID, Title: row.Title, Author: row.Author,
+		CoverID: row.Cover, Chapter: chapter, Excerpt: row.BookExcerpt, Rating: string(row.AgeRating), Warnings: row.Warnings,
+		IsPermanentlyRemoved: row.IsPermRemoved, IsBanned: row.IsBanned, IsTrashed: row.IsTrashed, IsPubliclyVisible: row.IsPubliclyVisible,
+		BookCreatedAt: timeDbToDomain(row.BookCreatedAt), ChapterCreatedAt: timeNullableDbToDomain(row.ChapterCreatedAt),
+		ChapterUpdatedAt: timeNullableDbToDomain(row.ChapterUpdatedAt), ChapterContentUpdatedAt: timeNullableDbToDomain(row.ChapterContentUpdatedAt),
+		RelatedReports: int(row.RelatedReports),
+	}, nil
 }
 
 func (r *reportRepository) Search(ctx context.Context, search, targetType string, limit, offset int32) ([]ModerationReportListEntry, int64, error) {
@@ -79,7 +117,7 @@ func (r *reportRepository) Search(ctx context.Context, search, targetType string
 		return nil, 0, apperror.WrapUnexpectedDBError(err)
 	}
 	entries := MapSlice(rows, func(row store.Report_SearchRow) ModerationReportListEntry {
-		return ModerationReportListEntry{Report: Report{ID: row.ID, Number: row.Number, Time: timeDbToDomain(row.Time), ReporterUserID: uuidDbToDomain(row.ReporterUserID), TargetType: ReportTargetType(row.TargetType), TargetID: row.TargetID, Reason: row.Reason, Description: row.Description}, ReporterUserName: row.ReporterUserName.String}
+		return ModerationReportListEntry{Report: Report{ID: row.ID, Number: row.Number, Time: timeDbToDomain(row.Time), ReporterUserID: uuidDbToDomain(row.ReporterUserID), TargetType: ReportTargetType(row.TargetType), TargetID: row.TargetID, Reason: row.Reason, Description: row.Description}, ReporterUserName: row.ReporterUserName}
 	})
 	return entries, total, nil
 }

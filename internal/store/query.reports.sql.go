@@ -102,10 +102,86 @@ func (q *Queries) Report_Create(ctx context.Context, arg Report_CreateParams) (R
 	return i, err
 }
 
-const report_GetByID = `-- name: Report_GetByID :one
-select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, users.name as reporter_user_name
+const report_GetBookContext = `-- name: Report_GetBookContext :one
+select
+    reports.book_chapter_id,
+    reports.book_excerpt,
+    books.id as book_id,
+    books.name as title,
+    authors.name as author,
+    books.cover,
+    book_chapters.name as chapter,
+    books.age_rating,
+    coalesce(array_agg(distinct defined_tags.name) filter (where defined_tags.id is not null), '{}')::text[] as warnings,
+    books.is_perm_removed,
+    books.is_banned,
+    books.is_trashed,
+    books.is_publicly_visible,
+    books.created_at as book_created_at,
+    book_chapters.created_at as chapter_created_at,
+    book_chapters.updated_at as chapter_updated_at,
+    book_chapters.content_updated_at as chapter_content_updated_at,
+    (select count(*) from reports related where related.target_type = 'book' and related.target_id = reports.target_id)::int as related_reports
 from reports
-left join users on users.id = reports.reporter_user_id
+join books on books.id::text = reports.target_id
+join users authors on authors.id = books.author_user_id
+left join book_chapters on book_chapters.id = reports.book_chapter_id and book_chapters.book_id = books.id
+left join defined_tags on defined_tags.id = any(books.tag_ids) and defined_tags.tag_type = 'warning'
+where reports.id = $1 and reports.target_type = 'book'
+group by reports.id, books.id, authors.name, book_chapters.id
+`
+
+type Report_GetBookContextRow struct {
+	BookChapterID           pgtype.Int8
+	BookExcerpt             string
+	BookID                  int64
+	Title                   string
+	Author                  string
+	Cover                   string
+	Chapter                 pgtype.Text
+	AgeRating               AgeRating
+	Warnings                []string
+	IsPermRemoved           bool
+	IsBanned                bool
+	IsTrashed               bool
+	IsPubliclyVisible       bool
+	BookCreatedAt           pgtype.Timestamptz
+	ChapterCreatedAt        pgtype.Timestamptz
+	ChapterUpdatedAt        pgtype.Timestamptz
+	ChapterContentUpdatedAt pgtype.Timestamptz
+	RelatedReports          int32
+}
+
+func (q *Queries) Report_GetBookContext(ctx context.Context, id int64) (Report_GetBookContextRow, error) {
+	row := q.db.QueryRow(ctx, report_GetBookContext, id)
+	var i Report_GetBookContextRow
+	err := row.Scan(
+		&i.BookChapterID,
+		&i.BookExcerpt,
+		&i.BookID,
+		&i.Title,
+		&i.Author,
+		&i.Cover,
+		&i.Chapter,
+		&i.AgeRating,
+		&i.Warnings,
+		&i.IsPermRemoved,
+		&i.IsBanned,
+		&i.IsTrashed,
+		&i.IsPubliclyVisible,
+		&i.BookCreatedAt,
+		&i.ChapterCreatedAt,
+		&i.ChapterUpdatedAt,
+		&i.ChapterContentUpdatedAt,
+		&i.RelatedReports,
+	)
+	return i, err
+}
+
+const report_GetByID = `-- name: Report_GetByID :one
+select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, reports.book_chapter_id, reports.book_excerpt, reports.status, reports.priority, users.name as reporter_user_name
+from reports
+join users on users.id = reports.reporter_user_id
 where reports.id = $1
 `
 
@@ -118,7 +194,11 @@ type Report_GetByIDRow struct {
 	TargetID         string
 	Reason           string
 	Description      string
-	ReporterUserName pgtype.Text
+	BookChapterID    pgtype.Int8
+	BookExcerpt      string
+	Status           string
+	Priority         string
+	ReporterUserName string
 }
 
 func (q *Queries) Report_GetByID(ctx context.Context, id int64) (Report_GetByIDRow, error) {
@@ -133,15 +213,19 @@ func (q *Queries) Report_GetByID(ctx context.Context, id int64) (Report_GetByIDR
 		&i.TargetID,
 		&i.Reason,
 		&i.Description,
+		&i.BookChapterID,
+		&i.BookExcerpt,
+		&i.Status,
+		&i.Priority,
 		&i.ReporterUserName,
 	)
 	return i, err
 }
 
 const report_Search = `-- name: Report_Search :many
-select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, users.name as reporter_user_name
+select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, reports.book_chapter_id, reports.book_excerpt, reports.status, reports.priority, users.name as reporter_user_name
 from reports
-left join users on users.id = reports.reporter_user_id
+join users on users.id = reports.reporter_user_id
 where
     ($1::text = ''
         or reports.number ilike '%' || $1 || '%'
@@ -169,7 +253,11 @@ type Report_SearchRow struct {
 	TargetID         string
 	Reason           string
 	Description      string
-	ReporterUserName pgtype.Text
+	BookChapterID    pgtype.Int8
+	BookExcerpt      string
+	Status           string
+	Priority         string
+	ReporterUserName string
 }
 
 func (q *Queries) Report_Search(ctx context.Context, arg Report_SearchParams) ([]Report_SearchRow, error) {
@@ -195,6 +283,10 @@ func (q *Queries) Report_Search(ctx context.Context, arg Report_SearchParams) ([
 			&i.TargetID,
 			&i.Reason,
 			&i.Description,
+			&i.BookChapterID,
+			&i.BookExcerpt,
+			&i.Status,
+			&i.Priority,
 			&i.ReporterUserName,
 		); err != nil {
 			return nil, err

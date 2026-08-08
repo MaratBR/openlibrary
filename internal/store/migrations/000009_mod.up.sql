@@ -21,11 +21,15 @@ create table reports (
     id bigint generated always as identity primary key,
     number text not null unique,
     "time" timestamptz not null,
-    reporter_user_id uuid null references users (id),
+    reporter_user_id uuid not null references users (id),
     target_type text not null check (target_type in ('user', 'book', 'comment')),
     target_id text not null,
     reason text not null,
-    description text not null
+    description text not null,
+    book_chapter_id int8 null references book_chapters (id),
+    book_excerpt text not null default '',
+    status text not null default 'unreviewed',
+    priority text not null default 'medium'
 );
 
 create table report_number_counters (

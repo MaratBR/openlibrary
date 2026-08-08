@@ -277,11 +277,6 @@ export interface ModerationReportDetailResponse {
   description: string;
   status: string;
   priority: string;
-  assignedTo: string;
-  assignedTeam: string;
-  channel: string;
-  slaDeadline: string;
-  tags: Array<string>;
   activities: Array<ModerationReportActivityResponse>;
   bookContext: ModerationReportBookContextResponse | null;
 }

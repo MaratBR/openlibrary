@@ -519,6 +519,10 @@ type Report struct {
 	TargetID       string
 	Reason         string
 	Description    string
+	BookChapterID  pgtype.Int8
+	BookExcerpt    string
+	Status         string
+	Priority       string
 }
 
 type ReportNumberCounter struct {

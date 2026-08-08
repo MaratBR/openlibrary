@@ -17,13 +17,41 @@ returning id, number;
 -- name: Report_GetByID :one
 select reports.*, users.name as reporter_user_name
 from reports
-left join users on users.id = reports.reporter_user_id
+join users on users.id = reports.reporter_user_id
 where reports.id = $1;
+
+-- name: Report_GetBookContext :one
+select
+    reports.book_chapter_id,
+    reports.book_excerpt,
+    books.id as book_id,
+    books.name as title,
+    authors.name as author,
+    books.cover,
+    book_chapters.name as chapter,
+    books.age_rating,
+    coalesce(array_agg(distinct defined_tags.name) filter (where defined_tags.id is not null), '{}')::text[] as warnings,
+    books.is_perm_removed,
+    books.is_banned,
+    books.is_trashed,
+    books.is_publicly_visible,
+    books.created_at as book_created_at,
+    book_chapters.created_at as chapter_created_at,
+    book_chapters.updated_at as chapter_updated_at,
+    book_chapters.content_updated_at as chapter_content_updated_at,
+    (select count(*) from reports related where related.target_type = 'book' and related.target_id = reports.target_id)::int as related_reports
+from reports
+join books on books.id::text = reports.target_id
+join users authors on authors.id = books.author_user_id
+left join book_chapters on book_chapters.id = reports.book_chapter_id and book_chapters.book_id = books.id
+left join defined_tags on defined_tags.id = any(books.tag_ids) and defined_tags.tag_type = 'warning'
+where reports.id = $1 and reports.target_type = 'book'
+group by reports.id, books.id, authors.name, book_chapters.id;
 
 -- name: Report_Search :many
 select reports.*, users.name as reporter_user_name
 from reports
-left join users on users.id = reports.reporter_user_id
+join users on users.id = reports.reporter_user_id
 where
     (sqlc.arg('search')::text = ''
         or reports.number ilike '%' || sqlc.arg('search') || '%'

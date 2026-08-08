@@ -73,11 +73,6 @@ type ModerationReportDetailResponse struct {
 	Description      string                               `json:"description"`
 	Status           string                               `json:"status"`
 	Priority         string                               `json:"priority"`
-	AssignedTo       string                               `json:"assignedTo"`
-	AssignedTeam     string                               `json:"assignedTeam"`
-	Channel          string                               `json:"channel"`
-	SLADeadline      time.Time                            `json:"slaDeadline"`
-	Tags             []string                             `json:"tags"`
 	Activities       []ModerationReportActivityResponse   `json:"activities"`
 	BookContext      *ModerationReportBookContextResponse `json:"bookContext" go2tsdef:"ModerationReportBookContextResponse | null"`
 }
@@ -339,8 +334,7 @@ func (c *apiControllerModeration) getReport(w http.ResponseWriter, r *http.Reque
 		ID: strconv.FormatInt(result.ID, 10), Number: result.Number, Time: result.Time,
 		ReporterUserID: result.ReporterUserID.String(), ReporterUserName: result.ReporterUserName,
 		TargetType: string(result.TargetType), TargetID: result.TargetID, Reason: result.Reason, Description: result.Description,
-		Status: result.Status, Priority: result.Priority, AssignedTo: result.AssignedTo, AssignedTeam: result.AssignedTeam,
-		Channel: result.Channel, SLADeadline: result.SLADeadline, Tags: result.Tags, Activities: activities, BookContext: bookContext,
+		Status: result.Status, Priority: result.Priority, Activities: activities, BookContext: bookContext,
 	}).Write(w)
 }
 

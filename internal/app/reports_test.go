@@ -13,6 +13,7 @@ type reportRepoStub struct {
 	exists  bool
 	created Report
 	result  Report
+	book    *ModerationReportBookContextData
 	getErr  error
 }
 
@@ -20,53 +21,49 @@ func (r *reportRepoStub) GetByID(context.Context, int64) (Report, string, error)
 	return r.result, "reporter", r.getErr
 }
 
+func (r *reportRepoStub) GetBookContext(context.Context, int64) (*ModerationReportBookContextData, error) {
+	return r.book, nil
+}
+
 func (r *reportRepoStub) Search(context.Context, string, string, int32, int32) ([]ModerationReportListEntry, int64, error) {
 	return nil, 0, nil
 }
 
-func TestModerationReportUsesRealReportAndPlaceholderWorkflow(t *testing.T) {
+func TestModerationReportUsesPersistedWorkflow(t *testing.T) {
 	createdAt := time.Date(2026, 8, 7, 12, 0, 0, 0, time.UTC)
-	repo := &reportRepoStub{result: Report{ID: 42, Number: "R-2026-0807-42", Time: createdAt, TargetType: ReportTargetComment, TargetID: "99", Reason: "Harassment"}}
-	result, err := NewModerationReportService(moderationAuthStub{}, repo).GetReport(context.Background(), GetModerationReportQuery{ReportID: 42})
+	repo := &reportRepoStub{result: Report{ID: 42, Number: "R-2026-0807-42", Time: createdAt, TargetType: ReportTargetComment, TargetID: "99", Reason: "Harassment", Status: "reviewing", Priority: "high"}}
+	result, err := NewModerationReportService(moderationAuthStub{}, repo, nil).GetReport(context.Background(), GetModerationReportQuery{ReportID: 42})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.ID != 42 || result.Status == "" || result.AssignedTeam == "" || len(result.Activities) == 0 {
-		t.Fatalf("expected report core and placeholder workflow, got %#v", result)
+	if result.ID != 42 || result.Status != "reviewing" || result.Priority != "high" || len(result.Activities) != 1 {
+		t.Fatalf("expected report core and persisted workflow, got %#v", result)
 	}
 	if result.BookContext != nil {
 		t.Fatalf("comment report should not include book context, got %#v", result.BookContext)
-	}
-	if !result.SLADeadline.Equal(createdAt.Add(24 * time.Hour)) {
-		t.Fatalf("unexpected SLA deadline: %s", result.SLADeadline)
-	}
-}
-
-func TestModerationBookReportIncludesPlaceholderBookScopes(t *testing.T) {
-	createdAt := time.Date(2026, 8, 7, 12, 0, 0, 0, time.UTC)
-	for _, test := range []struct {
-		id      int64
-		scope   string
-		chapter bool
-		excerpt bool
-	}{{42, "book", false, false}, {43, "chapter", true, false}, {44, "text", true, true}} {
-		repo := &reportRepoStub{result: Report{ID: test.id, Time: createdAt, TargetType: ReportTargetBook, TargetID: "99"}}
-		result, err := NewModerationReportService(moderationAuthStub{}, repo).GetReport(context.Background(), GetModerationReportQuery{ReportID: test.id})
-		if err != nil {
-			t.Fatal(err)
-		}
-		book := result.BookContext
-		if book == nil || book.Title == "" || book.Scope != test.scope || (book.Chapter != "") != test.chapter || (book.Excerpt != "") != test.excerpt {
-			t.Fatalf("expected %s placeholder scope, got %#v", test.scope, book)
-		}
 	}
 }
 
 func TestModerationReportRequiresModerator(t *testing.T) {
 	repo := &reportRepoStub{getErr: errors.New("repository should not be called")}
-	_, err := NewModerationReportService(moderationAuthStub{err: ErrModerationForbidden}, repo).GetReport(context.Background(), GetModerationReportQuery{})
+	_, err := NewModerationReportService(moderationAuthStub{err: ErrModerationForbidden}, repo, nil).GetReport(context.Background(), GetModerationReportQuery{})
 	if !errors.Is(err, ErrModerationForbidden) {
 		t.Fatalf("expected forbidden error, got %v", err)
+	}
+}
+
+func TestModerationWholeBookReportHandlesMissingChapterData(t *testing.T) {
+	createdAt := time.Date(2026, 8, 7, 12, 0, 0, 0, time.UTC)
+	repo := &reportRepoStub{
+		result: Report{ID: 42, Time: createdAt, TargetType: ReportTargetBook, TargetID: "99"},
+		book:   &ModerationReportBookContextData{BookID: 99, Title: "Book", BookCreatedAt: createdAt.Add(-time.Hour)},
+	}
+	result, err := NewModerationReportService(moderationAuthStub{}, repo, nil).GetReport(context.Background(), GetModerationReportQuery{ReportID: 42})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.BookContext == nil || result.BookContext.Scope != "book" || !result.BookContext.LastUpdated.Equal(createdAt.Add(-time.Hour)) {
+		t.Fatalf("unexpected whole-book context: %#v", result.BookContext)
 	}
 }
 
