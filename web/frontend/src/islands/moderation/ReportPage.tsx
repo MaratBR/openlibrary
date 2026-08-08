@@ -1,15 +1,13 @@
 import { getModerationReport } from '@/api/moderation'
 import type { ModerationReportDetail } from '@/api/moderation'
-import { Timeline } from '@/components'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Timeline } from '@/components'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'
 import { OLAPIResponse } from '@/http-client'
+import { useState } from 'react'
 import { LoaderFunctionArgs, NavLink, useLoaderData, useRouteError } from 'react-router'
 
-const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-})
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 
 async function responseData<T>(request: Promise<OLAPIResponse<T>>) {
   const response = await request
@@ -30,215 +28,167 @@ export default function ReportPage() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader
         title={
-          <div className="flex items-center gap-3">
-            <span>{window._('moderationPortal.report.title')}</span>
-            <span className="font-mono text-sm font-normal text-secondary-foreground">
-              {report.number}
-            </span>
+          <div>
+            <div className="text-sm font-normal text-secondary-foreground mb-1">
+              <NavLink className="link" to="/reports/search">{window._('moderationPortal.reports')}</NavLink>
+              <span className="mx-2">/</span>{report.number}
+            </div>
+            <span>{report.reason}</span>
           </div>
         }
       >
-        <span className="rounded-full bg-amber-500/12 text-amber-700 dark:text-amber-300 px-3 py-1 text-sm font-semibold capitalize">
-          {report.status}
+        <span className="btn btn--outline pointer-events-none">
+          <i className="fa-solid fa-circle text-secondary-foreground text-xs mr-2" />
+          {capitalize(report.status)}
         </span>
       </DashboardContent.StickyHeader>
 
-      <div className="w-full max-w-360 mx-auto px-4 md:px-8 py-7">
-        <div className="grid xl:grid-cols-[minmax(0,1fr)_22rem] gap-5 items-start">
-          <main className="grid gap-5">
-            <section className="card card--elevated overflow-hidden">
-              <div className="flex items-start gap-4 border-b border-border pb-5">
-                <div className="w-11 h-11 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 grid place-items-center shrink-0">
-                  <i className={`fa-solid ${target.icon}`} />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-secondary-foreground">
-                      {target.label}
-                    </span>
-                    <span className="rounded-full bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 text-xs font-medium capitalize">
-                      {report.priority} {window._('moderationPortal.report.priority')}
-                    </span>
-                  </div>
-                  <h1 className="text-2xl font-semibold leading-tight">{report.reason}</h1>
-                  <p className="text-sm text-secondary-foreground mt-2">
-                    {window._('moderationPortal.report.reportedBy')}{' '}
-                    <NavLink className="link" to={`/users/${report.reporterUserId}`}>
-                      {report.reporterUserName ||
-                        window._('moderationPortal.report.unknownReporter')}
-                    </NavLink>{' '}
-                    · {dateTimeFormatter.format(new Date(report.time))}
-                  </p>
-                </div>
-              </div>
-              <div className="pt-5">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-secondary-foreground mb-2">
-                  {window._('moderationPortal.report.description')}
-                </h2>
-                <p className="leading-7 whitespace-pre-wrap">
-                  {report.description || window._('moderationPortal.report.noDescription')}
-                </p>
-              </div>
-            </section>
-
-            <section className="card">
-              <div className="flex items-center justify-between gap-4 mb-4">
-                <h2 className="text-xl font-semibold">
-                  {window._('moderationPortal.report.reportedContent')}
-                </h2>
-                <NavLink className="btn btn--outline" to={target.to}>
-                  {window._('moderationPortal.report.openTarget')}
-                  <i className="fa-solid fa-arrow-up-right-from-square ml-2" />
-                </NavLink>
-              </div>
-              <div className="rounded-xl border border-border bg-secondary/45 p-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-surface grid place-items-center text-secondary-foreground">
-                  <i className={`fa-solid ${target.icon}`} />
-                </div>
-                <div>
-                  <div className="font-semibold">{target.label}</div>
-                  <div className="font-mono text-sm text-secondary-foreground">
-                    {report.targetId}
-                  </div>
-                </div>
-              </div>
-              <p className="text-sm text-secondary-foreground mt-3">{target.help}</p>
-            </section>
-
-            <section className="card">
-              <h2 className="text-xl font-semibold mb-5">
-                {window._('moderationPortal.report.activity')}
-              </h2>
-              <Timeline.Root>
-                {report.activities.map((activity) => (
-                  <Timeline.Item
-                    key={`${activity.time}-${activity.kind}`}
-                    marker={
-                      <i
-                        className={`fa-solid ${activityIcon(activity.kind)} text-xs`}
-                        aria-hidden="true"
-                      />
-                    }
-                  >
-                    <p>
-                      <span className="font-semibold">
-                        {activity.actor || window._('moderationPortal.report.system')}
-                      </span>{' '}
-                      {activity.description}
-                    </p>
-                    <time className="text-sm text-secondary-foreground">
-                      {dateTimeFormatter.format(new Date(activity.time))}
-                    </time>
-                  </Timeline.Item>
-                ))}
-              </Timeline.Root>
-            </section>
+      <div className="w-full max-w-360 mx-auto px-4 md:px-8 py-5">
+        <div className="grid xl:grid-cols-[minmax(0,1fr)_22rem] gap-4 items-start">
+          <main className="grid gap-4">
+            <ReportSummary report={report} />
+            <ReportedContent report={report} target={target} />
+            {report.bookContext && <BookContext report={report} />}
+            <Activity report={report} />
           </main>
+          <DecisionPanel />
+        </div>
+      </div>
+    </DashboardContent.Root>
+  )
+}
 
-          <aside className="grid gap-5 xl:sticky xl:top-22">
-            <section className="card">
-              <h2 className="text-lg font-semibold mb-4">
-                {window._('moderationPortal.report.details')}
-              </h2>
-              <dl className="grid gap-4">
-                <Detail
-                  label={window._('moderationPortal.report.status')}
-                  value={capitalize(report.status)}
-                />
-                <Detail
-                  label={window._('moderationPortal.report.priorityLabel')}
-                  value={capitalize(report.priority)}
-                />
-                <Detail
-                  label={window._('moderationPortal.report.assignedTo')}
-                  value={report.assignedTo}
-                  subvalue={report.assignedTeam}
-                />
-                <Detail
-                  label={window._('moderationPortal.report.channel')}
-                  value={report.channel}
-                />
-                <Detail
-                  label={window._('moderationPortal.report.sla')}
-                  value={dateTimeFormatter.format(new Date(report.slaDeadline))}
-                />
-              </dl>
-            </section>
-            <section className="card">
-              <h2 className="text-lg font-semibold mb-3">
-                {window._('moderationPortal.report.tags')}
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {report.tags.map((tag) => (
-                  <span key={tag} className="rounded-full bg-secondary px-3 py-1 text-sm">
-                    {tag}
-                  </span>
-                ))}
+function ReportSummary({ report }: { report: ModerationReportDetail }) {
+  return (
+    <section className="card card--elevated">
+      <dl className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        <Detail label={window._('moderationPortal.report.reason')} value={report.reason} />
+        <Detail label={window._('moderationPortal.report.severity')} value={capitalize(report.priority)} dot />
+        <Detail label={window._('moderationPortal.report.submitted')} value={dateTimeFormatter.format(new Date(report.time))} />
+        <Detail label={window._('moderationPortal.report.reporter')} value={report.reporterUserName || window._('moderationPortal.report.unknownReporter')} />
+      </dl>
+      <div>
+        <div className="text-sm text-secondary-foreground">{window._('moderationPortal.report.reporterStatement')}</div>
+        <p className="mt-1 whitespace-pre-wrap">{report.description || window._('moderationPortal.report.noDescription')}</p>
+      </div>
+    </section>
+  )
+}
+
+function ReportedContent({ report, target }: { report: ModerationReportDetail; target: ReturnType<typeof targetPresentation> }) {
+  const book = report.bookContext
+  return (
+    <section className="card card--elevated">
+      <h2 className="text-lg font-semibold mb-4">
+        {window._('moderationPortal.report.reportedContent')}
+        <span className="ml-3 text-sm font-normal text-secondary-foreground"><i className="fa-solid fa-lock mr-2" />{window._('moderationPortal.report.snapshot')}</span>
+      </h2>
+      {book ? (
+        <div className="flex gap-4">
+          <img className="w-24 sm:w-30 aspect-[2/3] object-cover rounded-lg border border-border shrink-0" src={book.coverUrl} alt="" />
+          <div className="min-w-0">
+            <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground mb-2">
+              <i className={`fa-solid ${book.scope === 'text' ? 'fa-quote-left' : book.scope === 'chapter' ? 'fa-file-lines' : 'fa-book'} mr-2`} />
+              {window._(`moderationPortal.report.scope${capitalize(book.scope)}`)}
+            </span>
+            <h3 className="text-lg font-semibold">{book.title}</h3>
+            <p className="text-sm">{window._('moderationPortal.report.by')} <span className="text-primary">{book.author}</span></p>
+            {book.scope === 'chapter' && (
+              <div className="mt-3 rounded-lg border border-border bg-secondary/45 px-4 py-3 flex items-center gap-3">
+                <i className="fa-regular fa-file-lines text-secondary-foreground" />
+                <div><div className="text-xs text-secondary-foreground">{window._('moderationPortal.report.reportedChapter')}</div><div className="font-medium">{book.chapter}</div></div>
               </div>
-            </section>
-            <section className="rounded-xl border border-dashed border-border p-4 text-sm text-secondary-foreground">
-              <i className="fa-solid fa-flask mr-2" />
-              {window._('moderationPortal.report.mockNotice')}
-            </section>
-          </aside>
+            )}
+            {book.scope === 'text' && (
+              <div className="mt-3 border-l-3 border-amber-400 pl-4">
+                <div className="text-sm font-medium mb-1">{book.chapter}</div>
+                <p className="leading-6 line-clamp-4"><mark className="bg-amber-100 dark:bg-amber-900/40 px-1">{book.excerpt}</mark></p>
+              </div>
+            )}
+            {book.scope === 'book' && <p className="text-sm text-secondary-foreground mt-3">{window._('moderationPortal.report.wholeBookReported')}</p>}
+            <NavLink className="link inline-block mt-3" to={target.to}><i className="fa-solid fa-arrow-up-right-from-square mr-2" />{window._('moderationPortal.report.openTarget')}</NavLink>
+          </div>
         </div>
-      </div>
-    </DashboardContent.Root>
+      ) : (
+        <div className="rounded-xl border border-border bg-secondary/45 p-4 flex items-center gap-4">
+          <i className={`fa-solid ${target.icon} text-secondary-foreground`} />
+          <div className="flex-1"><div className="font-semibold">{target.label}</div><div className="font-mono text-sm text-secondary-foreground">{report.targetId}</div></div>
+          <NavLink className="btn btn--outline" to={target.to}>{window._('moderationPortal.report.openTarget')}</NavLink>
+        </div>
+      )}
+    </section>
   )
 }
 
-function Detail({ label, value, subvalue }: { label: string; value: string; subvalue?: string }) {
+function BookContext({ report }: { report: ModerationReportDetail }) {
+  const book = report.bookContext!
   return (
-    <div>
-      <dt className="text-xs text-secondary-foreground mb-1">{label}</dt>
-      <dd className="font-medium">{value}</dd>
-      {subvalue && <dd className="text-sm text-secondary-foreground">{subvalue}</dd>}
-    </div>
+    <>
+      <div className="rounded-xl border border-amber-400 bg-amber-50 dark:bg-amber-950/25 px-5 py-3 flex items-center gap-3">
+        <i className="fa-regular fa-clock text-amber-700" />
+        <span className="font-medium flex-1">{window._('moderationPortal.report.editedAfter', { minutes: String(book.editedAfterMinutes) })}</span>
+        <button className="link">{window._('moderationPortal.report.compareChanges')} <i className="fa-solid fa-chevron-right ml-2" /></button>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        <section className="card">
+          <h2 className="text-lg font-semibold mb-4">{window._('moderationPortal.report.contentContext')}</h2>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+            <dt>{window._('moderationPortal.report.rating')}</dt><dd><Badge>{book.rating}</Badge></dd>
+            <dt>{window._('moderationPortal.report.warnings')}</dt><dd>{book.warnings?.length ? book.warnings.join(', ') : window._('moderationPortal.report.none')}</dd>
+            <dt>{window._('moderationPortal.report.publicationStatus')}</dt><dd><Badge>{book.publicationState}</Badge></dd>
+            <dt>{window._('moderationPortal.report.lastUpdated')}</dt><dd>{dateTimeFormatter.format(new Date(book.lastUpdated))}</dd>
+          </dl>
+        </section>
+        <section className="card">
+          <h2 className="text-lg font-semibold mb-4">{window._('moderationPortal.report.history')}</h2>
+          <p><i className="fa-solid fa-users mr-3" />{window._('moderationPortal.report.relatedReportCount', { count: String(book.relatedReports) })}</p>
+          <p className="mt-3"><i className="fa-solid fa-shield-halved mr-3" />{window._('moderationPortal.report.noPreviousEnforcement')}</p>
+        </section>
+      </div>
+    </>
   )
 }
 
+function DecisionPanel() {
+  const [decision, setDecision] = useState('warning')
+  return (
+    <aside className="card xl:sticky xl:top-22">
+      <h2 className="text-xl font-semibold mb-4">{window._('moderationPortal.report.decision')}</h2>
+      <fieldset className="rounded-lg border border-border overflow-hidden">
+        {['noViolation', 'requestChanges', 'warning', 'restrict', 'escalate'].map((value) => (
+          <label key={value} className={`flex items-center gap-3 px-4 py-3 border-b last:border-b-0 border-border cursor-pointer ${decision === value ? 'bg-primary/8 text-primary' : 'hover:bg-foreground/5'}`}>
+            <input type="radio" name="decision" value={value} checked={decision === value} onChange={() => setDecision(value)} />
+            {window._(`moderationPortal.report.${value}`)}
+          </label>
+        ))}
+      </fieldset>
+      <label className="block mt-5 text-sm font-medium">{window._('moderationPortal.report.policyReason')}
+        <select className="input w-full mt-2" defaultValue="missing-warning"><option value="missing-warning">{window._('moderationPortal.report.missingWarning')}</option><option>{window._('moderationPortal.report.otherPolicy')}</option></select>
+      </label>
+      <label className="block mt-4 text-sm font-medium">{window._('moderationPortal.report.assignee')}
+        <div className="mt-2"><Select defaultValue="unassigned"><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">{window._('moderationPortal.report.unassigned')}</SelectItem><SelectItem value="placeholder" disabled>{window._('moderationPortal.report.assigneePlaceholder')}</SelectItem></SelectContent></Select></div>
+      </label>
+      <label className="block mt-4 text-sm font-medium">{window._('moderationPortal.report.internalNote')}
+        <textarea className="input min-h-24 mt-2" maxLength={1000} placeholder={window._('moderationPortal.report.notePlaceholder')} />
+      </label>
+      <label className="flex gap-3 mt-4 text-sm"><input type="checkbox" defaultChecked /> <span>{window._('moderationPortal.report.notifyAuthor')}<small className="block text-secondary-foreground mt-1">{window._('moderationPortal.report.notifyAuthorHelp')}</small></span></label>
+      <button className="btn btn--primary w-full mt-6"><i className="fa-solid fa-shield-halved mr-2" />{window._('moderationPortal.report.applyAction')}</button>
+      <p className="text-xs italic text-center text-secondary-foreground mt-5">{window._('moderationPortal.report.recordedNotice')}</p>
+    </aside>
+  )
+}
+
+function Activity({ report }: { report: ModerationReportDetail }) {
+  return <section className="card"><h2 className="text-lg font-semibold mb-4">{window._('moderationPortal.report.activity')}</h2><Timeline.Root>{report.activities.map((activity) => <Timeline.Item key={`${activity.time}-${activity.kind}`} marker={<i className="fa-solid fa-flag text-xs" />}><p><b>{activity.actor}</b> {activity.description}</p><time className="text-sm text-secondary-foreground">{dateTimeFormatter.format(new Date(activity.time))}</time></Timeline.Item>)}</Timeline.Root></section>
+}
+
+function Detail({ label, value, dot }: { label: string; value: string; dot?: boolean }) { return <div><dt className="text-sm text-secondary-foreground mb-1">{label}</dt><dd>{dot && <i className="fa-solid fa-circle text-amber-400 text-xs mr-2" />}{value}</dd></div> }
+function Badge({ children }: { children: string }) { return <span className="rounded bg-primary/10 text-primary px-2 py-0.5">{children}</span> }
 function targetPresentation(report: ModerationReportDetail) {
-  if (report.targetType === 'user')
-    return {
-      icon: 'fa-user',
-      label: window._('moderationPortal.report.targetUser'),
-      to: `/users/${report.targetId}`,
-      help: window._('moderationPortal.report.userHelp'),
-    }
-  if (report.targetType === 'book')
-    return {
-      icon: 'fa-book',
-      label: window._('moderationPortal.report.targetBook'),
-      to: `/books/${report.targetId}`,
-      help: window._('moderationPortal.report.bookHelp'),
-    }
-  return {
-    icon: 'fa-comment',
-    label: window._('moderationPortal.report.targetComment'),
-    to: `/comments/${report.targetId}`,
-    help: window._('moderationPortal.report.commentHelp'),
-  }
+  if (report.targetType === 'user') return { icon: 'fa-user', label: window._('moderationPortal.report.targetUser'), to: `/users/${report.targetId}` }
+  if (report.targetType === 'book') return { icon: 'fa-book', label: window._('moderationPortal.report.targetBook'), to: `/books/${report.targetId}` }
+  return { icon: 'fa-comment', label: window._('moderationPortal.report.targetComment'), to: `/comments/${report.targetId}` }
 }
+function capitalize(value: string) { return value.charAt(0).toUpperCase() + value.slice(1) }
 
-function activityIcon(kind: string) {
-  if (kind === 'assignment') return 'fa-user-check'
-  if (kind === 'priority') return 'fa-arrow-up'
-  return 'fa-flag'
-}
-
-function capitalize(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1)
-}
-
-export function ReportErrorPage() {
-  return (
-    <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.report.title')} />
-      <div className="p-8">
-        <div className="card">
-          <ErrorDisplay error={useRouteError()} />
-        </div>
-      </div>
-    </DashboardContent.Root>
-  )
-}
+export function ReportErrorPage() { return <DashboardContent.Root><DashboardContent.StickyHeader title={window._('moderationPortal.report.title')} /><div className="p-8"><div className="card"><ErrorDisplay error={useRouteError()} /></div></div></DashboardContent.Root> }

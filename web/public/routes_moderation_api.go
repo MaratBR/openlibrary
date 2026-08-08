@@ -62,23 +62,40 @@ type ModerationReportActivityResponse struct {
 
 // go2tsdef:generate
 type ModerationReportDetailResponse struct {
-	ID               string                             `json:"id"`
-	Number           string                             `json:"number"`
-	Time             time.Time                          `json:"time"`
-	ReporterUserID   string                             `json:"reporterUserId"`
-	ReporterUserName string                             `json:"reporterUserName"`
-	TargetType       string                             `json:"targetType"`
-	TargetID         string                             `json:"targetId"`
-	Reason           string                             `json:"reason"`
-	Description      string                             `json:"description"`
-	Status           string                             `json:"status"`
-	Priority         string                             `json:"priority"`
-	AssignedTo       string                             `json:"assignedTo"`
-	AssignedTeam     string                             `json:"assignedTeam"`
-	Channel          string                             `json:"channel"`
-	SLADeadline      time.Time                          `json:"slaDeadline"`
-	Tags             []string                           `json:"tags"`
-	Activities       []ModerationReportActivityResponse `json:"activities"`
+	ID               string                               `json:"id"`
+	Number           string                               `json:"number"`
+	Time             time.Time                            `json:"time"`
+	ReporterUserID   string                               `json:"reporterUserId"`
+	ReporterUserName string                               `json:"reporterUserName"`
+	TargetType       string                               `json:"targetType"`
+	TargetID         string                               `json:"targetId"`
+	Reason           string                               `json:"reason"`
+	Description      string                               `json:"description"`
+	Status           string                               `json:"status"`
+	Priority         string                               `json:"priority"`
+	AssignedTo       string                               `json:"assignedTo"`
+	AssignedTeam     string                               `json:"assignedTeam"`
+	Channel          string                               `json:"channel"`
+	SLADeadline      time.Time                            `json:"slaDeadline"`
+	Tags             []string                             `json:"tags"`
+	Activities       []ModerationReportActivityResponse   `json:"activities"`
+	BookContext      *ModerationReportBookContextResponse `json:"bookContext" go2tsdef:"ModerationReportBookContextResponse | null"`
+}
+
+// go2tsdef:generate
+type ModerationReportBookContextResponse struct {
+	Scope              string    `json:"scope"`
+	Title              string    `json:"title"`
+	Author             string    `json:"author"`
+	CoverURL           string    `json:"coverUrl"`
+	Chapter            string    `json:"chapter"`
+	Excerpt            string    `json:"excerpt"`
+	Rating             string    `json:"rating"`
+	Warnings           []string  `json:"warnings"`
+	PublicationState   string    `json:"publicationState"`
+	LastUpdated        time.Time `json:"lastUpdated"`
+	RelatedReports     int       `json:"relatedReports"`
+	EditedAfterMinutes int64     `json:"editedAfterMinutes"`
 }
 
 // go2tsdef:generate
@@ -308,12 +325,22 @@ func (c *apiControllerModeration) getReport(w http.ResponseWriter, r *http.Reque
 	activities := app.MapSlice(result.Activities, func(activity app.ModerationReportActivity) ModerationReportActivityResponse {
 		return ModerationReportActivityResponse{Time: activity.Time, Actor: activity.Actor, Description: activity.Description, Kind: activity.Kind}
 	})
+	var bookContext *ModerationReportBookContextResponse
+	if result.BookContext != nil {
+		bookContext = &ModerationReportBookContextResponse{
+			Scope: result.BookContext.Scope, Title: result.BookContext.Title, Author: result.BookContext.Author, CoverURL: result.BookContext.CoverURL,
+			Chapter: result.BookContext.Chapter, Excerpt: result.BookContext.Excerpt, Rating: result.BookContext.Rating,
+			Warnings: result.BookContext.Warnings, PublicationState: result.BookContext.PublicationState,
+			LastUpdated: result.BookContext.LastUpdated, RelatedReports: result.BookContext.RelatedReports,
+			EditedAfterMinutes: int64(result.BookContext.EditedAfter / time.Minute),
+		}
+	}
 	olhttp.NewAPIResponse(ModerationReportDetailResponse{
 		ID: strconv.FormatInt(result.ID, 10), Number: result.Number, Time: result.Time,
 		ReporterUserID: result.ReporterUserID.String(), ReporterUserName: result.ReporterUserName,
 		TargetType: string(result.TargetType), TargetID: result.TargetID, Reason: result.Reason, Description: result.Description,
 		Status: result.Status, Priority: result.Priority, AssignedTo: result.AssignedTo, AssignedTeam: result.AssignedTeam,
-		Channel: result.Channel, SLADeadline: result.SLADeadline, Tags: result.Tags, Activities: activities,
+		Channel: result.Channel, SLADeadline: result.SLADeadline, Tags: result.Tags, Activities: activities, BookContext: bookContext,
 	}).Write(w)
 }
 

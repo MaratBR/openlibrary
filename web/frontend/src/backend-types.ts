@@ -249,6 +249,22 @@ export interface ModerationReportActivityResponse {
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationReportBookContextResponse {
+  scope: string;
+  title: string;
+  author: string;
+  coverUrl: string;
+  chapter: string;
+  excerpt: string;
+  rating: string;
+  warnings: Array<string>;
+  publicationState: string;
+  lastUpdated: string;
+  relatedReports: number;
+  editedAfterMinutes: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationReportDetailResponse {
   id: string;
   number: string;
@@ -267,6 +283,7 @@ export interface ModerationReportDetailResponse {
   slaDeadline: string;
   tags: Array<string>;
   activities: Array<ModerationReportActivityResponse>;
+  bookContext: ModerationReportBookContextResponse | null;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */

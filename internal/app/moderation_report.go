@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -43,6 +44,22 @@ type ModerationReportDetail struct {
 	SLADeadline      time.Time
 	Tags             []string
 	Activities       []ModerationReportActivity
+	BookContext      *ModerationReportBookContext
+}
+
+type ModerationReportBookContext struct {
+	Scope            string
+	Title            string
+	Author           string
+	CoverURL         string
+	Chapter          string
+	Excerpt          string
+	Rating           string
+	Warnings         []string
+	PublicationState string
+	LastUpdated      time.Time
+	RelatedReports   int
+	EditedAfter      time.Duration
 }
 
 type ModerationReportService interface {
@@ -77,17 +94,41 @@ func (s *moderationReportService) GetReport(ctx context.Context, query GetModera
 	}
 
 	// TODO: Persist report workflow fields and activities instead of returning placeholder support-ticket data.
-	return ModerationReportDetail{
+	detail := ModerationReportDetail{
 		Report: report, ReporterUserName: reporterName,
-		Status: "open", Priority: "high", AssignedTo: "Maya Chen", AssignedTeam: "Trust & Safety",
+		Status: "unreviewed", Priority: "medium", AssignedTo: "", AssignedTeam: "Trust & Safety",
 		Channel: "In-product report", SLADeadline: report.Time.Add(24 * time.Hour),
 		Tags: []string{"needs-review", string(report.TargetType), "community-safety"},
 		Activities: []ModerationReportActivity{
 			{Time: report.Time, Actor: reporterName, Description: "submitted this report", Kind: "created"},
-			{Time: report.Time.Add(12 * time.Minute), Actor: "Triage automation", Description: "set priority to High", Kind: "priority"},
-			{Time: report.Time.Add(18 * time.Minute), Actor: "Maya Chen", Description: "was assigned to this report", Kind: "assignment"},
+			{Time: report.Time.Add(12 * time.Minute), Actor: "Triage automation", Description: "set severity to Medium", Kind: "priority"},
+			{Time: report.Time.Add(18 * time.Minute), Actor: "Triage automation", Description: "added this report to the review queue", Kind: "assignment"},
 		},
-	}, nil
+	}
+	if report.TargetType == ReportTargetBook {
+		// TODO: Replace this book snapshot with persisted report-time content metadata.
+		detail.BookContext = &ModerationReportBookContext{
+			Scope: "book",
+			Title: "Ashes of the Northern Crown", Author: "Mira Vale",
+			CoverURL: fmt.Sprintf("/_/embed-assets/cover/%d.h300.webp", (report.ID%5)+1),
+			Chapter:  "Chapter 18 · The Siege",
+			Excerpt:  "He brought the axe down in a single, sickening arc. The guard's head split open, blood and bone spraying across the stones. Mira stumbled back, her hands over her mouth. Another soldier fell, crushed beneath the battering ram.",
+			Rating:   "Teen", Warnings: []string{}, PublicationState: "Published",
+			LastUpdated: report.Time.Add(-2 * time.Hour), RelatedReports: 3,
+			EditedAfter: 24 * time.Minute,
+		}
+		switch report.ID % 3 {
+		case 1:
+			detail.BookContext.Scope = "chapter"
+			detail.BookContext.Excerpt = ""
+		case 2:
+			detail.BookContext.Scope = "text"
+		default:
+			detail.BookContext.Chapter = ""
+			detail.BookContext.Excerpt = ""
+		}
+	}
+	return detail, nil
 }
 
 func NewModerationReportService(auth ModerationAuthorizer, repo ReportRepository) ModerationReportService {

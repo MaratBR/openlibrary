@@ -31,11 +31,34 @@ func TestModerationReportUsesRealReportAndPlaceholderWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.ID != 42 || result.Status == "" || result.AssignedTo == "" || len(result.Activities) == 0 {
+	if result.ID != 42 || result.Status == "" || result.AssignedTeam == "" || len(result.Activities) == 0 {
 		t.Fatalf("expected report core and placeholder workflow, got %#v", result)
+	}
+	if result.BookContext != nil {
+		t.Fatalf("comment report should not include book context, got %#v", result.BookContext)
 	}
 	if !result.SLADeadline.Equal(createdAt.Add(24 * time.Hour)) {
 		t.Fatalf("unexpected SLA deadline: %s", result.SLADeadline)
+	}
+}
+
+func TestModerationBookReportIncludesPlaceholderBookScopes(t *testing.T) {
+	createdAt := time.Date(2026, 8, 7, 12, 0, 0, 0, time.UTC)
+	for _, test := range []struct {
+		id      int64
+		scope   string
+		chapter bool
+		excerpt bool
+	}{{42, "book", false, false}, {43, "chapter", true, false}, {44, "text", true, true}} {
+		repo := &reportRepoStub{result: Report{ID: test.id, Time: createdAt, TargetType: ReportTargetBook, TargetID: "99"}}
+		result, err := NewModerationReportService(moderationAuthStub{}, repo).GetReport(context.Background(), GetModerationReportQuery{ReportID: test.id})
+		if err != nil {
+			t.Fatal(err)
+		}
+		book := result.BookContext
+		if book == nil || book.Title == "" || book.Scope != test.scope || (book.Chapter != "") != test.chapter || (book.Excerpt != "") != test.excerpt {
+			t.Fatalf("expected %s placeholder scope, got %#v", test.scope, book)
+		}
 	}
 }
 
