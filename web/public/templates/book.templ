@@ -78,6 +78,9 @@ templ BookPage(
             <div class="book-page__left">
                 @bookCover(book.Cover.URL, book.Name, 300)
                 @bookReadingList(&book, readingListStatus)
+                <div class="mt-3">
+                    @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), Class: "btn btn--ghost w-full"})
+                </div>
             </div>
             <div class="book-page__right">
                 <header class="page-header">

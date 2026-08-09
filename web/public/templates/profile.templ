@@ -40,6 +40,7 @@ templ User(user *app.UserDetailsDto, pinnedBooks app.GetPinnedUserBooksResult) {
                             <p class="mt-3 max-w-3xl whitespace-pre-line text-secondary-foreground">{ user.About.Bio }</p>
                         }
                     </div>
+                    @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "user", TargetID: user.ID.String(), Class: "btn btn--ghost shrink-0"})
                 </div>
 
                 <dl class="grid grid-cols-3 border-t bg-foreground/5">

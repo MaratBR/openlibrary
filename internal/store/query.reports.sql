@@ -6,11 +6,11 @@ with next_number as (
         set counter = report_number_counters.counter + 1
     returning "day", counter
 )
-insert into reports (number, "time", reporter_user_id, target_type, target_id, reason, description)
+insert into reports (number, "time", reporter_user_id, target_type, target_id, reason, description, book_chapter_id, book_excerpt)
 select
     'R-' || to_char("day", 'YYYY-MMDD') || '-' || counter::text,
     sqlc.arg('time'), sqlc.arg('reporter_user_id'), sqlc.arg('target_type'),
-    sqlc.arg('target_id'), sqlc.arg('reason'), sqlc.arg('description')
+    sqlc.arg('target_id'), sqlc.arg('reason'), sqlc.arg('description'), sqlc.narg('book_chapter_id'), sqlc.arg('book_excerpt')
 from next_number
 returning id, number;
 
@@ -81,3 +81,6 @@ select exists(select 1 from books where id = $1);
 
 -- name: Report_CommentExists :one
 select exists(select 1 from comments where id = $1);
+
+-- name: Report_BookChapterExists :one
+select exists(select 1 from book_chapters where id = sqlc.arg('chapter_id') and book_id = sqlc.arg('book_id'));

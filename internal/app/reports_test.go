@@ -71,6 +71,10 @@ func (r *reportRepoStub) TargetExists(context.Context, ReportTargetType, string)
 	return r.exists, nil
 }
 
+func (r *reportRepoStub) BookChapterExists(context.Context, int64, int64) (bool, error) {
+	return r.exists, nil
+}
+
 func (r *reportRepoStub) Create(_ context.Context, report Report) (Report, error) {
 	report.ID = 123
 	report.Number = "R-2026-0712-1"
@@ -83,7 +87,7 @@ func TestReportServiceCreatesServerIDAndNormalizesText(t *testing.T) {
 	svc := NewReportService(repo)
 	report, err := svc.Create(context.Background(), CreateReportCommand{
 		ReporterUserID: uuid.Must(uuid.NewV4()), TargetType: ReportTargetBook, TargetID: " 42 ",
-		Reason: " spam ", Description: " repeated links ",
+		Reason: " Spam ", Description: " repeated links ", BookChapterID: Value[int64](7), BookExcerpt: " selected text ",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -91,8 +95,11 @@ func TestReportServiceCreatesServerIDAndNormalizesText(t *testing.T) {
 	if report.ID == 0 || report.ID != repo.created.ID || report.Number != "R-2026-0712-1" {
 		t.Fatalf("expected database-generated identity and number, got %#v", report)
 	}
-	if report.TargetID != "42" || report.Reason != "spam" || report.Description != "repeated links" {
+	if report.TargetID != "42" || report.Reason != "Spam" || report.Description != "repeated links" {
 		t.Fatalf("report text was not normalized: %#v", report)
+	}
+	if !report.BookChapterID.Valid || report.BookChapterID.Value != 7 || report.BookExcerpt != "selected text" {
+		t.Fatalf("book report scope was not preserved: %#v", report)
 	}
 }
 
@@ -102,7 +109,7 @@ func TestReportServiceRejectsUnsupportedOrMissingTargets(t *testing.T) {
 		cmd  CreateReportCommand
 		err  error
 	}{
-		{"unsupported type", CreateReportCommand{TargetType: "chapter", TargetID: "1", Reason: "reason"}, ErrInvalidReportTarget},
+		{"unsupported type", CreateReportCommand{TargetType: "chapter", TargetID: "1", Reason: "Spam"}, ErrInvalidReportTarget},
 		{"blank reason", CreateReportCommand{TargetType: ReportTargetBook, TargetID: "1"}, ErrReportReason},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -112,7 +119,7 @@ func TestReportServiceRejectsUnsupportedOrMissingTargets(t *testing.T) {
 			}
 		})
 	}
-	_, err := NewReportService(&reportRepoStub{}).Create(context.Background(), CreateReportCommand{TargetType: ReportTargetComment, TargetID: "1", Reason: "reason"})
+	_, err := NewReportService(&reportRepoStub{}).Create(context.Background(), CreateReportCommand{TargetType: ReportTargetComment, TargetID: "1", Reason: "Spam"})
 	if err != ErrReportTargetMissing {
 		t.Fatalf("expected missing target error, got %v", err)
 	}

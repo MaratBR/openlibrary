@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const report_BookChapterExists = `-- name: Report_BookChapterExists :one
+select exists(select 1 from book_chapters where id = $1 and book_id = $2)
+`
+
+type Report_BookChapterExistsParams struct {
+	ChapterID int64
+	BookID    int64
+}
+
+func (q *Queries) Report_BookChapterExists(ctx context.Context, arg Report_BookChapterExistsParams) (bool, error) {
+	row := q.db.QueryRow(ctx, report_BookChapterExists, arg.ChapterID, arg.BookID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const report_BookExists = `-- name: Report_BookExists :one
 select exists(select 1 from books where id = $1)
 `
@@ -65,11 +81,11 @@ with next_number as (
         set counter = report_number_counters.counter + 1
     returning "day", counter
 )
-insert into reports (number, "time", reporter_user_id, target_type, target_id, reason, description)
+insert into reports (number, "time", reporter_user_id, target_type, target_id, reason, description, book_chapter_id, book_excerpt)
 select
     'R-' || to_char("day", 'YYYY-MMDD') || '-' || counter::text,
     $1, $2, $3,
-    $4, $5, $6
+    $4, $5, $6, $7, $8
 from next_number
 returning id, number
 `
@@ -81,6 +97,8 @@ type Report_CreateParams struct {
 	TargetID       string
 	Reason         string
 	Description    string
+	BookChapterID  pgtype.Int8
+	BookExcerpt    string
 }
 
 type Report_CreateRow struct {
@@ -96,6 +114,8 @@ func (q *Queries) Report_Create(ctx context.Context, arg Report_CreateParams) (R
 		arg.TargetID,
 		arg.Reason,
 		arg.Description,
+		arg.BookChapterID,
+		arg.BookExcerpt,
 	)
 	var i Report_CreateRow
 	err := row.Scan(&i.ID, &i.Number)

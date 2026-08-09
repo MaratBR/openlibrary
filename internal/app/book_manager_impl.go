@@ -5,14 +5,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"io"
 	"math"
 	"slices"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/content"
 	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -217,7 +219,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return err
 	}
 
-	summaryData, err := ProcessContent(input.Summary)
+	summaryData, err := content.Process(input.Summary)
 	if err != nil {
 		return err
 	}
@@ -489,7 +491,7 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 	}
 
 	id := GenID()
-	content, err := ProcessContent(input.Content)
+	content, err := content.Process(input.Content)
 	if err != nil {
 		return CreateBookChapterCommand_Result{}, ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
 	}
@@ -643,7 +645,7 @@ func (s *bookManagerService) UpdateBookChapter(ctx context.Context, cmd UpdateBo
 		return err
 	}
 
-	summary, err := ProcessContent(cmd.Summary)
+	summary, err := content.Process(cmd.Summary)
 	if err != nil {
 		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process chapter summary")
 	}
@@ -734,7 +736,7 @@ func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCom
 		return err
 	}
 
-	content, err := ProcessContent(cmd.Content)
+	processedContent, err := content.Process(cmd.Content)
 
 	if err != nil {
 		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
@@ -742,10 +744,10 @@ func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCom
 
 	err = s.queries.Draft_Update(ctx, store.Draft_UpdateParams{
 		ID:          cmd.DraftID,
-		Content:     content.Sanitized,
+		Content:     processedContent.Sanitized,
 		ChapterName: cmd.Name,
 		Summary:     cmd.Summary,
-		Words:       content.Words,
+		Words:       processedContent.Words,
 	})
 	if err != nil {
 		return apperror.WrapUnexpectedDBError(err)
@@ -958,7 +960,7 @@ func (s *bookManagerService) UpdateDraftContent(ctx context.Context, cmd UpdateD
 		return err
 	}
 
-	data, err := ProcessContent(cmd.Content)
+	data, err := content.Process(cmd.Content)
 
 	if err != nil {
 		return err

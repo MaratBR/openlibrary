@@ -70,10 +70,11 @@ export function SelectContent({
   className,
   children,
   position = 'popper',
+  portalContainer,
   ...props
-}: ComponentProps<typeof SelectPrimitive.Content>) {
+}: ComponentProps<typeof SelectPrimitive.Content> & { portalContainer?: HTMLElement | null }) {
   return (
-    <SelectPrimitive.Portal>
+    <SelectPrimitive.Portal container={portalContainer ?? undefined}>
       <SelectPrimitive.Content
         className={cn(
           'select__content relative z-50 max-h-[var(--radix-select-content-available-height)] min-w-32 overflow-hidden rounded-md border border-border bg-surface text-surface-foreground shadow-md',

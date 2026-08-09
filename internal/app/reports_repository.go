@@ -12,6 +12,14 @@ import (
 
 type reportRepository struct{ db DB }
 
+func (r *reportRepository) BookChapterExists(ctx context.Context, bookID, chapterID int64) (bool, error) {
+	exists, err := store.New(r.db).Report_BookChapterExists(ctx, store.Report_BookChapterExistsParams{BookID: bookID, ChapterID: chapterID})
+	if err != nil {
+		return false, apperror.WrapUnexpectedDBError(err)
+	}
+	return exists, nil
+}
+
 func (r *reportRepository) TargetExists(ctx context.Context, targetType ReportTargetType, targetID string) (bool, error) {
 	q := store.New(r.db)
 	var (
@@ -48,6 +56,7 @@ func (r *reportRepository) Create(ctx context.Context, report Report) (Report, e
 	created, err := store.New(r.db).Report_Create(ctx, store.Report_CreateParams{
 		Time: timeToTimestamptz(report.Time), ReporterUserID: uuidDomainToDb(report.ReporterUserID),
 		TargetType: string(report.TargetType), TargetID: report.TargetID, Reason: report.Reason, Description: report.Description,
+		BookChapterID: int64NullableDomainToDb(report.BookChapterID), BookExcerpt: report.BookExcerpt,
 	})
 	if err != nil {
 		return Report{}, apperror.WrapUnexpectedDBError(err)

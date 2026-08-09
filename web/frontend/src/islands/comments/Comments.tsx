@@ -11,6 +11,7 @@ import UserContent from '@/components/UserContent'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import { RichTextInput, useOLEditor } from '@/components/rte'
 import type { ReactIslandProps } from '@/islands/common/react-island'
+import { ReportPopup, type ReportButtonConfig } from '@/islands/report-button/ReportButton'
 import { SelfUserDtoSchema } from '@/api/auth/user'
 import { FormEvent, useEffect, useRef, useState } from 'react'
 
@@ -189,6 +190,7 @@ function Comment({
   const [likes, setLikes] = useState(realLikes(comment))
   const [replying, setReplying] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [reporting, setReporting] = useState(false)
   const [content, setContent] = useState(comment.content)
   const [updatedAt, setUpdatedAt] = useState(comment.updatedAt)
   const operation = useRef(0)
@@ -257,7 +259,13 @@ function Comment({
               <i className="fa-solid fa-pencil" aria-hidden="true" /> {window._('common.edit')}
             </button>
           )}
+          {currentUserId !== comment.user.id && !comment.deleted && (
+            <button className="ol-comment-action" onClick={() => authenticated ? setReporting(true) : location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`}>
+              <i className="fa-solid fa-flag" aria-hidden="true" /> {window._('common.report')}
+            </button>
+          )}
         </div>
+        <ReportPopup config={commentReportConfig(comment.id, authenticated)} open={reporting} excerpt="" onClose={() => setReporting(false)} />
         {replying && <ReplyComposer chapterId={chapterId} parentId={comment.id} />}
         {comment.subcomments > 0 && (
           <Replies
@@ -324,6 +332,16 @@ function Replies({
       )}
     </div>
   )
+}
+
+function commentReportConfig(targetId: string, authenticated: boolean): ReportButtonConfig {
+  return {
+    targetType: 'comment', targetId, authenticated, label: window._('common.report'),
+    labels: {
+      title: window._('report.title'), reason: window._('report.reason'), description: window._('report.description'),
+      submit: window._('report.submit'), cancel: window._('common.cancel'), success: window._('report.success'),
+    },
+  }
 }
 
 function ReplyComposer({ chapterId, parentId }: { chapterId: string; parentId: string }) {

@@ -1,4 +1,4 @@
-package app
+package content
 
 import (
 	"io"
@@ -20,10 +20,10 @@ type ProcessedContentData struct {
 	Words     int32
 }
 
-// ProcessContent takes a string of HTML content and returns a ProcessedContentData
+// Process takes a string of HTML content and returns a ProcessedContentData
 // containing both a sanitized version of the content (i.e. HTML tags removed and
 // unsafe content stripped), and a count of the number of words in the content.
-func ProcessContent(content string) (ProcessedContentData, error) {
+func Process(content string) (ProcessedContentData, error) {
 	fixedHtml := SanitizeHtml(content)
 	fixedHtml, err := FixHTML(fixedHtml)
 	if err != nil {

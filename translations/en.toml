@@ -39,6 +39,13 @@ moderationPortal = "Moderation portal"
 logout = "Logout"
 close = "Close"
 
+[report]
+title = "Report content"
+reason = "Reason"
+description = "Tell us what is wrong"
+submit = "Submit report"
+success = "Thank you. Your report was submitted."
+
 [moderationPortal.user]
 title = "User moderation"
 loadError = "Unable to load this user."

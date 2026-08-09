@@ -1,0 +1,50 @@
+package webcomponents
+
+import "github.com/MaratBR/openlibrary/internal/auth"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
+
+type ReportButtonProps struct {
+    TargetType string
+    TargetID string
+    ChapterID int64
+    CaptureSelection bool
+    Class string
+    Label string
+    IconOnly bool
+}
+
+templ ReportButton(props ReportButtonProps) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+        _, authenticated := auth.GetSession(ctx)
+        label := props.Label
+        if label == "" { label = l.T("common.report") }
+        buttonClass := props.Class
+        if buttonClass == "" { buttonClass = "btn btn--ghost" }
+        triggerID := olhttp.GetID(ctx)
+        data := map[string]any{
+            "targetType": props.TargetType,
+            "targetId": props.TargetID,
+            "chapterId": props.ChapterID,
+            "captureSelection": props.CaptureSelection,
+            "buttonClass": buttonClass,
+            "label": label,
+            "iconOnly": props.IconOnly,
+            "authenticated": authenticated,
+            "triggerId": triggerID,
+            "labels": map[string]string{
+                "title": l.T("report.title"), "reason": l.T("report.reason"),
+                "description": l.T("report.description"), "submit": l.T("report.submit"),
+                "cancel": l.T("common.cancel"), "success": l.T("report.success"),
+            },
+        }
+    }}
+    <button id={ triggerID } type="button" class={ buttonClass } aria-label={ label }>
+        <i class="fa-solid fa-flag" aria-hidden="true"></i>
+        if !props.IconOnly {
+            <span>{ label }</span>
+        }
+    </button>
+    @Island2(Island2Props{Name: "report-button", Data: data, Attributes: templ.Attributes{"class": "contents"}})
+}
