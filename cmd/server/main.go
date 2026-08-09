@@ -4,21 +4,50 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 
+	"github.com/MaratBR/openlibrary/cmd/server/util/minifycontent"
+	"github.com/MaratBR/openlibrary/cmd/server/util/populate"
 	"github.com/urfave/cli/v3"
+	"go.uber.org/zap"
 )
 
 func main() {
+	log := newRootLogger()
+	zap.ReplaceGlobals(log)
+	defer func() { _ = log.Sync() }()
+
 	command := &cli.Command{
 		Commands: []*cli.Command{
 			{
-				Name:  "populate",
-				Usage: "populates database with random data",
-				Action: func(ctx context.Context, c *cli.Command) error {
-					cfg := loadConfigOrPanic()
-					mainPopulate(cfg)
-					return nil
+				Name:  "util",
+				Usage: "database maintenance and development utilities",
+				Commands: []*cli.Command{
+					{
+						Name:  "minify-content",
+						Usage: "sanitizes and minifies book summaries and chapter content",
+						Action: func(ctx context.Context, c *cli.Command) error {
+							config := loadConfigOrPanic()
+							db := connectToDatabase(config, zap.S())
+							if closer, ok := db.(interface{ Close() }); ok {
+								defer closer.Close()
+							}
+							return minifycontent.Run(ctx, db, zap.S())
+						},
+					},
+					{
+						Name:  "populate",
+						Usage: "populates the database with random data",
+						Action: func(ctx context.Context, c *cli.Command) error {
+							config := loadConfigOrPanic()
+							db := connectToDatabase(config, zap.S())
+							if closer, ok := db.(interface{ Close() }); ok {
+								defer closer.Close()
+							}
+							return populate.Run(config, db, zap.S())
+						},
+					},
 				},
 			},
 			{
@@ -50,5 +79,8 @@ func main() {
 		},
 	}
 
-	command.Run(context.Background(), os.Args)
+	if err := command.Run(context.Background(), os.Args); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }

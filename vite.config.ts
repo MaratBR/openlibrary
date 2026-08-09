@@ -7,44 +7,6 @@ import react from '@vitejs/plugin-react'
 
 const SOURCEMAP = true
 
-
-// function esbuildMinifyPlugin(): Plugin {
-//   return {
-//     name: 'esbuild-minify-post',
-//     apply: 'build',
-//     async closeBundle() {
-//       // adjust this to match your outDir
-//       const outDir = resolve(process.cwd(), 'dist')
-//       // get all .js files from dist
-//       const files = await glob('**/*.js', { cwd: outDir, absolute: true })
-
-//       await Promise.all(
-//         files.map(async (file) => {
-//           const code = await readFile(file, 'utf8')
-//           const result = await esbuild({
-//             stdin: {
-//               contents: code,
-//               resolveDir: dirname(file),
-//               sourcefile: file,
-//               loader: 'js',
-//             },
-//             outfile: file,
-//             write: true,
-//             bundle: false,
-//             minify: true,
-//             sourcemap: SOURCEMAP,
-//             allowOverwrite: true,
-//           })
-
-//           if (result.errors.length) {
-//             console.error(`esbuild failed on ${file}`, result.errors)
-//           }
-//         }),
-//       )
-//     },
-//   }
-// }
-
 function watchExternalPlugin(options: { paths?: string[] } = {}): Plugin {
   const { paths = [] } = options
 
@@ -118,7 +80,6 @@ export default defineConfig((env) => ({
       '@': resolve(__dirname, './web/frontend/src'),
     },
   },
-
 
   build: {
     minify: false, // TODO toggle depending on env

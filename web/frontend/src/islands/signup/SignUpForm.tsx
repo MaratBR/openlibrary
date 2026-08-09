@@ -149,7 +149,7 @@ export default function SignUpForm({ data: dataParam }: ReactIslandProps) {
           onClick={() => {
             setSubmitting(true)
           }}
-          className="btn btn--lg btn--default"
+          className="btn btn--lg btn--primary"
         >
           {submitting ? <span className="loader" /> : window._('signup.signup')}
         </button>

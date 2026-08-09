@@ -40,7 +40,7 @@ export function ScheduleChapterPopup({ onClose }: { onClose: () => void }) {
       <div className="flex gap-2 mt-4">
         <button
           type="button"
-          className="btn btn--default"
+          className="btn btn--primary"
           disabled={!valid || mutation.isPending}
           onClick={() => mutation.mutate()}
         >

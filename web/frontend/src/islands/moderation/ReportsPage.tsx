@@ -102,7 +102,7 @@ function ReportsSearch({
             </label>
             <TargetTypeSelect key={filters.targetType} targetType={filters.targetType} />
           </div>
-          <button className="btn btn--default h-10 px-5" type="submit">
+          <button className="btn btn--primary h-10 px-5" type="submit">
             {window._('moderationPortal.reportsPage.apply')}
           </button>
         </Form>

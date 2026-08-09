@@ -807,7 +807,7 @@ function Actions({ user }: { user: ModerationUser }) {
           <div className="flex justify-end gap-2 mt-5">
             <button
               disabled={pending}
-              className="btn btn--default"
+              className="btn btn--primary"
               onClick={() => setConfirmation(undefined)}
             >
               {window._('common.cancel')}

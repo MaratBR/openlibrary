@@ -89,7 +89,7 @@ export default function BookEdit() {
           </FormControl>
 
           <div className="mt-4 flex">
-            <button className="btn btn--default" onClick={() => saveMutation.mutate()}>
+            <button className="btn btn--primary" onClick={() => saveMutation.mutate()}>
               {window._('common.save')}
             </button>
           </div>

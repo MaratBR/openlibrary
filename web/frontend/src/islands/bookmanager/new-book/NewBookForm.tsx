@@ -84,7 +84,7 @@ export default function NewBookForm() {
                 disabled={name.trim().length < 2}
                 onClick={() => setStage(1)}
                 type="button"
-                className="btn btn--lg btn--default mt-8 rounded-full"
+                className="btn btn--lg btn--primary mt-8 rounded-full"
               >
                 {window._('bookManager.newBook.next')}
               </button>
@@ -120,7 +120,7 @@ export default function NewBookForm() {
                   disabled={rating === ''}
                   onClick={() => setStage(2)}
                   type="button"
-                  className="btn btn--lg btn--default mt-8 rounded-full"
+                  className="btn btn--lg btn--primary mt-8 rounded-full"
                 >
                   {window._('bookManager.newBook.next')}
                 </button>
@@ -135,7 +135,7 @@ export default function NewBookForm() {
               <button
                 onClick={() => setStage(3)}
                 type="button"
-                className="btn btn--lg btn--default mt-8 rounded-full"
+                className="btn btn--lg btn--primary mt-8 rounded-full"
               >
                 {window._('bookManager.newBook.next')}
               </button>
@@ -163,7 +163,7 @@ export default function NewBookForm() {
                 onClick={() => {
                   setLoading(true)
                 }}
-                className="btn btn--lg btn--default mt-8 rounded-full"
+                className="btn btn--lg btn--primary mt-8 rounded-full"
               >
                 {loading ? (
                   <span className="loader loader--dark" />

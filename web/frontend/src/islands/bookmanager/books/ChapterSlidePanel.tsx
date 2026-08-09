@@ -115,7 +115,7 @@ function ChapterEditForm({
 
       <button
         type="submit"
-        className="btn btn--default"
+        className="btn btn--primary"
         disabled={!normalizedName.valid || saveMutation.isPending}
       >
         {window._('common.save')}

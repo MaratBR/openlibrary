@@ -29,7 +29,7 @@ export function Books() {
   return (
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('bookManager.books.title')}>
-        <NavLink to="/books/new" className="btn btn--lg btn--default">
+        <NavLink to="/books/new" className="btn btn--lg btn--primary">
           <i className="fa-solid fa-plus mr-2" />
           {window._('bookManager.books.addBook')}
         </NavLink>
@@ -81,7 +81,7 @@ function BookRow({ book }: { book: ManagerBookDto }) {
       </td>
       <td>
         <div className="flex gap-2">
-          <NavLink to={`/books/${book.id}`} className="btn btn--lg btn--default">
+          <NavLink to={`/books/${book.id}`} className="btn btn--lg btn--primary">
             <i className="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </NavLink>
@@ -142,7 +142,7 @@ function TrashBookButton({
           <h2 className="text-lg font-semibold">{window._('bookManager.books.trashBook.title')}</h2>
           <p className="my-2">{window._('bookManager.books.trashBook.description')}</p>
           <div className="flex gap-2 mt-4">
-            <button onClick={() => setOpenTrashModal(false)} className="btn btn--default">
+            <button onClick={() => setOpenTrashModal(false)} className="btn btn--primary">
               {window._('common.cancel')}
             </button>
             <button className="btn btn--destructive" onClick={() => trashBookMutation.mutate(true)}>
@@ -159,7 +159,7 @@ function TrashBookButton({
           </h2>
           <p className="my-2">{window._('bookManager.books.restoreBook.description')}</p>
           <div className="flex gap-2 mt-4">
-            <button onClick={() => setOpenUntrashModal(false)} className="btn btn--default">
+            <button onClick={() => setOpenUntrashModal(false)} className="btn btn--primary">
               {window._('common.cancel')}
             </button>
             <button

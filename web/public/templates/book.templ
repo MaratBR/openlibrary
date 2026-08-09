@@ -92,8 +92,10 @@ templ BookPage(
                     </div>
                 </header>
 
+                @bookRating(&book, views)
+
                 <main class="contents" id="slot-book-page">
-                    <div x-ignore class="mt-4 user-content">
+                    <div x-ignore class="book-page__summary user-content">
                         @templ.Raw(book.Summary)
                     </div>
                     <section class="book-page__details" aria-label={l.T("book.details")}>
@@ -105,11 +107,10 @@ templ BookPage(
                                 })
                             </div>
                         </div>
-                        @bookRating(&book, views)
                     </section>
 
-                    <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) } class="mt-4">
-                        <header role="tablist" class="flex gap-4 items-baseline">
+                    <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) } class="book-page__content-tabs">
+                        <header role="tablist" class="book-page__tab-list">
                             <span role="tab"
                                 @click.prevent="tab='reviews'"
                                 if tab == "reviews" {

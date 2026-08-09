@@ -44,7 +44,7 @@ export function SaveButton() {
           type="button"
           onClick={() => setOpenPublishPopup(true)}
           disabled={!chapterNameIsValid || (!draftHasPendingChanges && !hasNewerRevision) || saving}
-          className="btn btn--default btn--lg flex justify-center items-center"
+          className="btn btn--primary btn--lg flex justify-center items-center"
         >
           <DraftPendingChangesIndicator />
           {window._('editor.publishDraft')}
@@ -52,7 +52,7 @@ export function SaveButton() {
         <button
           ref={menuButton}
           type="button"
-          className="btn btn--default btn--lg btn--icon"
+          className="btn btn--primary btn--lg btn--icon"
           disabled={!chapterNameIsValid || saving}
           aria-label={window._('editor.morePublishingOptions')}
           aria-expanded={openMenu}

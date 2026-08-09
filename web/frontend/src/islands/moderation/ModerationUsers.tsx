@@ -83,7 +83,7 @@ export default function ModerationUsers({ roles }: { roles: string[] }) {
                 ...roles.map((role): [string, string] => [role, roleLabel(role)]),
               ]}
             />
-            <button className="btn btn--default h-10 px-5" type="submit">
+            <button className="btn btn--primary h-10 px-5" type="submit">
               {window._('moderationPortal.usersPage.apply')}
             </button>
           </Form>

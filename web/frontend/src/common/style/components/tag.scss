@@ -1,8 +1,7 @@
 .tag {
-  @apply inline-block overflow-hidden px-2 !shadow-none bg-secondary border text-secondary-foreground
-        hover:text-foreground;
-  border-color: transparent;
-  border-radius: calc(var(--radius) - 2px);
+  @apply inline-block overflow-hidden px-2 bg-surface border rounded-sm
+        hover:text-foreground hover:bg-highlight
+        focus-visible:ring focus-visible:ring-primary focus-visible:border-primary focus-visible:ring-inset focus-visible:outline-none;
   transition:
     color var(--transition-fast),
     background var(--transition-fast),
@@ -10,14 +9,6 @@
   height: 1.7em;
   line-height: 1.7em;
 
-  &:hover {
-    background: var(--highlight);
-    border-color: var(--border);
-  }
-
-  &:active {
-    box-shadow: var(--focus-ring);
-  }
 
   &__adult {
     @apply text-destructive font-semibold text-sm;

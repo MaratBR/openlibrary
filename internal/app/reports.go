@@ -8,6 +8,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
+	"go.uber.org/zap"
 )
 
 type ReportTargetType string
@@ -141,6 +142,7 @@ func (s *reportService) Create(ctx context.Context, cmd CreateReportCommand) (Re
 	if cmd.BookChapterID.Valid {
 		bookID, _ := strconv.ParseInt(cmd.TargetID, 10, 64)
 		exists, err = s.repo.BookChapterExists(ctx, bookID, cmd.BookChapterID.Value)
+		zap.S().Infow("Create", "exists", exists, "bookID", bookID, "cmd.BookChapterID.Value", cmd.BookChapterID.Value)
 		if err != nil {
 			return Report{}, err
 		}

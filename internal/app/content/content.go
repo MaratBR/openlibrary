@@ -6,8 +6,16 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/htmlsanitizer"
 	"github.com/k3a/html2text"
+	"github.com/tdewolff/minify/v2"
+	minifyhtml "github.com/tdewolff/minify/v2/html"
 	"golang.org/x/net/html"
 )
+
+var contentMinifier = func() *minify.M {
+	m := minify.New()
+	m.AddFunc("text/html", minifyhtml.Minify)
+	return m
+}()
 
 // SanitizeHtml takes a string of HTML content and returns a sanitized version of it,
 // free of potentially malicious tags and attributes.
@@ -26,6 +34,10 @@ type ProcessedContentData struct {
 func Process(content string) (ProcessedContentData, error) {
 	fixedHtml := SanitizeHtml(content)
 	fixedHtml, err := FixHTML(fixedHtml)
+	if err != nil {
+		return ProcessedContentData{}, err
+	}
+	fixedHtml, err = contentMinifier.String("text/html", fixedHtml)
 	if err != nil {
 		return ProcessedContentData{}, err
 	}

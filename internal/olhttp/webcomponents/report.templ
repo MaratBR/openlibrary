@@ -3,6 +3,7 @@ package webcomponents
 import "github.com/MaratBR/openlibrary/internal/auth"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "strconv"
 
 type ReportButtonProps struct {
     TargetType string
@@ -26,7 +27,7 @@ templ ReportButton(props ReportButtonProps) {
         data := map[string]any{
             "targetType": props.TargetType,
             "targetId": props.TargetID,
-            "chapterId": props.ChapterID,
+            "chapterId": strconv.FormatInt(props.ChapterID, 10),
             "captureSelection": props.CaptureSelection,
             "buttonClass": buttonClass,
             "label": label,

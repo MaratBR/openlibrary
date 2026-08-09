@@ -42,7 +42,7 @@ export default function ReviewEditor({ rootElement }: ReactIslandProps) {
       {editor && <RichTextInput editor={editor} className="ol-simple-editor--review mt-4" />}
 
       <button
-        className="btn btn--lg btn--default mt-3"
+        className="btn btn--lg btn--primary mt-3"
         onClick={() => handleSave()}
         disabled={!formValid}
       >

@@ -80,7 +80,7 @@ export function Comments(_: ReactIslandProps) {
         <Composer chapterId={chapterId} avatar={user.avatar.md} />
       ) : (
         <div className="ol-comments__signin card">
-          <a className="btn btn--default" href="/login">
+          <a className="btn btn--primary" href="/login">
             {window._('comments.signInToComment')}
           </a>
         </div>
@@ -88,11 +88,9 @@ export function Comments(_: ReactIslandProps) {
       <div className="ol-comments__toolbar">
         <div className="ol-comments__toolbar-label">
           <span className="ol-comments__toolbar-title">{window._('comments.discussion')}</span>
-          {(!loading || total > 0) && (
-            <span className="ol-comments__count">
-              {window._('common.commentsCount', { Count: `${total}` })}
-            </span>
-          )}
+          <span className="ol-comments__count">
+            {window._('common.commentsCount', { Count: `${total}` })}
+          </span>
         </div>
         <label className="sr-only" htmlFor="ChapterCommentsSort">
           {window._('comments.sort')}
@@ -113,7 +111,7 @@ export function Comments(_: ReactIslandProps) {
         </Select>
       </div>
       <div className="ol-comment-list">
-        {!loading && comments.length === 0 && (
+        {comments.length === 0 && (
           <p className="ol-comments__empty">{window._('comments.empty')}</p>
         )}
         {comments.map((comment) => (
@@ -161,7 +159,7 @@ function Composer({ chapterId, avatar }: { chapterId: string; avatar: string }) 
           <p className="ol-comment-composer__hint">{window._('comments.kindHint')}</p>
           <div className="ol-comment-composer__actions">
             <button
-              className="btn btn--default"
+              className="btn btn--primary"
               disabled={submitting || !editor || editor.isEmpty || content.length > 2000}
             >
               {window._('comments.post')}
@@ -260,12 +258,24 @@ function Comment({
             </button>
           )}
           {currentUserId !== comment.user.id && !comment.deleted && (
-            <button className="ol-comment-action" onClick={() => authenticated ? setReporting(true) : location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`}>
+            <button
+              className="ol-comment-action"
+              onClick={() =>
+                authenticated
+                  ? setReporting(true)
+                  : (location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`)
+              }
+            >
               <i className="fa-solid fa-flag" aria-hidden="true" /> {window._('common.report')}
             </button>
           )}
         </div>
-        <ReportPopup config={commentReportConfig(comment.id, authenticated)} open={reporting} excerpt="" onClose={() => setReporting(false)} />
+        <ReportPopup
+          config={commentReportConfig(comment.id, authenticated)}
+          open={reporting}
+          excerpt=""
+          onClose={() => setReporting(false)}
+        />
         {replying && <ReplyComposer chapterId={chapterId} parentId={comment.id} />}
         {comment.subcomments > 0 && (
           <Replies
@@ -336,10 +346,17 @@ function Replies({
 
 function commentReportConfig(targetId: string, authenticated: boolean): ReportButtonConfig {
   return {
-    targetType: 'comment', targetId, authenticated, label: window._('common.report'),
+    targetType: 'comment',
+    targetId,
+    authenticated,
+    label: window._('common.report'),
     labels: {
-      title: window._('report.title'), reason: window._('report.reason'), description: window._('report.description'),
-      submit: window._('report.submit'), cancel: window._('common.cancel'), success: window._('report.success'),
+      title: window._('report.title'),
+      reason: window._('report.reason'),
+      description: window._('report.description'),
+      submit: window._('report.submit'),
+      cancel: window._('common.cancel'),
+      success: window._('report.success'),
     },
   }
 }
@@ -364,7 +381,7 @@ function ReplyComposer({ chapterId, parentId }: { chapterId: string; parentId: s
       {editor && <RichTextInput editor={editor} />}
       <div className="ol-comment-reply-editor__actions">
         <button
-          className="btn btn--default"
+          className="btn btn--primary"
           disabled={submitting || !editor || editor.isEmpty || content.length > 2000}
         >
           {window._('comments.post')}
@@ -413,7 +430,7 @@ function CommentEditor({
           {window._('common.cancel')}
         </button>
         <button
-          className="btn btn--default"
+          className="btn btn--primary"
           disabled={saving || !editor || editor.isEmpty || content.length > 2000}
         >
           {window._('common.save')}

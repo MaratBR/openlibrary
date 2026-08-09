@@ -120,7 +120,7 @@ export default function SearchFilters({ data }: ReactIslandProps) {
         />
       </div>
 
-      <button type="submit" className="btn btn--lg btn--default">
+      <button type="submit" className="btn btn--lg btn--primary">
         {window._('search.doSearch')}
       </button>
     </form>

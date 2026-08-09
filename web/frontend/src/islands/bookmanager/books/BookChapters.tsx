@@ -44,7 +44,7 @@ function Chapter({
           </p>
         )}
         <div className="flex gap-2 mt-2">
-          <button onClick={() => onOpenChapter(chapter)} className="btn btn--lg btn--default">
+          <button onClick={() => onOpenChapter(chapter)} className="btn btn--lg btn--primary">
             <i className="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </button>
@@ -114,7 +114,7 @@ function AddChapterButton({ bookId }: { bookId: string }) {
                 onChange={(e) => setName((e.target as HTMLInputElement).value)}
                 placeholder={window._('bookManager.edit.chapterNamePlaceholder')}
               />
-              <button disabled={!valid} className="btn btn--default">
+              <button disabled={!valid} className="btn btn--primary">
                 {window._('bookManager.edit.addChapter')}
               </button>
             </div>
