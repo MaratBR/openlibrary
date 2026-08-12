@@ -1,41 +1,41 @@
 alter table books
-    add column is_perm_removed bool not null default false;
+    add column is_perm_removed bool not null default false,
+    add column is_shadow_banned bool not null default false;
 
 create table moderation_logs (
     id int8 primary key,
-    "time" timestamptz not null,
-    "type" text not null,
+    time timestamptz not null,
+    type text not null,
     target_type text not null,
     target_id text not null,
     payload jsonb null,
-    actor_user_id uuid null references users (id),
+    actor_user_id uuid null references users(id),
     reason text not null default ''
 );
 
 create index ix_moderation_logs_target_time
-    on moderation_logs (target_type, target_id, "time" desc);
+    on moderation_logs (target_type, target_id, time desc);
 create index ix_moderation_logs_target_type_time
-    on moderation_logs (target_type, target_id, "type", "time" desc);
+    on moderation_logs (target_type, target_id, type, time desc);
 
 create table reports (
     id bigint generated always as identity primary key,
     number text not null unique,
-    "time" timestamptz not null,
-    reporter_user_id uuid not null references users (id),
+    time timestamptz not null,
+    reporter_user_id uuid not null references users(id),
     target_type text not null check (target_type in ('user', 'book', 'comment')),
     target_id text not null,
     reason text not null,
     description text not null,
-    book_chapter_id int8 null references book_chapters (id),
+    book_chapter_id int8 null references book_chapters(id),
     book_excerpt text not null default '',
     status text not null default 'unreviewed',
     priority text not null default 'medium'
 );
 
 create table report_number_counters (
-    "day" date primary key,
+    day date primary key,
     counter bigint not null check (counter > 0)
 );
 
-create index ix_reports_target_time
-    on reports (target_type, target_id, "time" desc);
+create index ix_reports_target_time on reports (target_type, target_id, time desc);

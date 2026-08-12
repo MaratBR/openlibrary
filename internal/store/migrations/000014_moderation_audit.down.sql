@@ -1,1 +1,0 @@
--- Moderation audit storage is defined by migration 000009.
