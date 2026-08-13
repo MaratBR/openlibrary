@@ -1,7 +1,6 @@
 import { ErrorDisplay } from '@/components/error'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { FormControl } from '@/components/FormControl'
-import Modal from '@/components/Modal'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import {
   banUser,
@@ -33,20 +32,19 @@ import {
   NavLink,
   useLoaderData,
   useLocation,
-  useRevalidator,
   useRouteError,
 } from 'react-router'
+import {
+  ModerationActionCard,
+  ModerationActionsPanel,
+  ModerationConfirmation,
+  ModerationReasonActionCard,
+  ModerationValueActionCard,
+} from './ModerationActions'
+import { ModerationLog, ModerationLogEntry } from './ModerationLog'
 import SanitizeHTML from '@/common/SanitizeHTML'
 import { queryClient } from '@/preact/queryCache'
 import { OLAPIResponse } from '@/http-client'
-
-type Confirmation = {
-  title: string
-  description: string
-  destructive?: boolean
-  run: () => Promise<unknown>
-  onSuccess?: () => void
-}
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' })
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
@@ -461,12 +459,11 @@ function Activity({
         >
           {history?.entries.length ? (
             history.entries.map((entry) => (
-              <div key={entry.id} className="py-3 border-b border-border last:border-0">
-                <div className="font-medium">{formatAction(entry.type)}</div>
-                <div className="text-sm text-secondary-foreground">
-                  {entry.reason || '--'} · {dateTimeFormatter.format(new Date(entry.time))}
-                </div>
-              </div>
+              <ModerationLogEntry
+                key={entry.id}
+                entry={{ ...entry, action: entry.type }}
+                showTarget={false}
+              />
             ))
           ) : (
             <EmptyState text={window._('moderationPortal.user.noModerationHistory')} />
@@ -574,19 +571,12 @@ function ResourcePage({
       )
     case 'history':
       return (
-        <PagedList
-          title={window._('moderationPortal.user.moderationHistory')}
-          data={data.history}
-          render={(entry: ModerationUserHistoryPage['entries'][number]) => (
-            <div>
-              <div className="font-medium">{formatAction(entry.type)}</div>
-              <div className="text-sm text-secondary-foreground">
-                {entry.reason || '--'} ·{' '}
-                {entry.actorUserName || window._('moderationPortal.user.system')} ·{' '}
-                {dateTimeFormatter.format(new Date(entry.time))}
-              </div>
-            </div>
-          )}
+        <ModerationLog
+          entries={(data.history?.entries ?? []).map((entry) => ({ ...entry, action: entry.type }))}
+          emptyText={window._('moderationPortal.user.noModerationHistory')}
+          page={data.history?.page}
+          totalPages={data.history?.totalPages}
+          showTarget={false}
         />
       )
     case 'reports':
@@ -660,14 +650,8 @@ function PagedList<T>({
   )
 }
 
-function formatAction(value: string) {
-  return value.replace(/_/g, ' ').replace(/\b\w/g, (letter: string) => letter.toUpperCase())
-}
-
 function Actions({ user }: { user: ModerationUser }) {
-  const revalidator = useRevalidator()
-  const [confirmation, setConfirmation] = useState<Confirmation>()
-  const [pending, setPending] = useState(false)
+  const [confirmation, setConfirmation] = useState<ModerationConfirmation>()
   const [action, setAction] = useState(user.isBanned ? 'unban' : 'temporary-ban')
 
   useEffect(() => {
@@ -676,33 +660,17 @@ function Actions({ user }: { user: ModerationUser }) {
     if (!user.isBanned && action === 'unban') setAction('temporary-ban')
   }, [action, user.isBanned])
 
-  const confirm = async () => {
-    if (!confirmation) return
-    setPending(true)
-    try {
-      const response = (await confirmation.run()) as { throwIfError?: () => void }
-      response.throwIfError?.()
-      confirmation.onSuccess?.()
-      window.toast({ title: window._('moderationPortal.user.actionComplete') })
-      setConfirmation(undefined)
-      await revalidator.revalidate()
-    } catch (actionError) {
-      window.toast.error(actionError)
-    } finally {
-      setPending(false)
-    }
-  }
-
   let actionForm: ReactNode
   if (action === 'temporary-ban')
     actionForm = <TemporaryBanCard userId={user.id} request={setConfirmation} />
   else if (action === 'permanent-ban')
     actionForm = (
-      <ReasonActionCard
+      <ModerationReasonActionCard
         title={window._('moderationPortal.user.permanentBan')}
         description={window._('moderationPortal.user.permanentBanDescription')}
         destructive
         submitLabel={window._('moderationPortal.user.permanentBan')}
+        reasonLabel={window._('moderationPortal.user.reason')}
         onSubmit={(reason, onSuccess) =>
           setConfirmation({
             title: window._('moderationPortal.user.confirmPermanentBan'),
@@ -716,10 +684,11 @@ function Actions({ user }: { user: ModerationUser }) {
     )
   else if (action === 'unban')
     actionForm = (
-      <ReasonActionCard
+      <ModerationReasonActionCard
         title={window._('moderationPortal.user.unban')}
         description={window._('moderationPortal.user.unbanDescription')}
         submitLabel={window._('moderationPortal.user.unban')}
+        reasonLabel={window._('moderationPortal.user.reason')}
         onSubmit={(reason, onSuccess) =>
           setConfirmation({
             title: window._('moderationPortal.user.confirmUnban'),
@@ -732,11 +701,14 @@ function Actions({ user }: { user: ModerationUser }) {
     )
   else if (action === 'rename')
     actionForm = (
-      <ValueActionCard
+      <ModerationValueActionCard
         title={window._('moderationPortal.user.rename')}
         description={window._('moderationPortal.user.renameDescription')}
         initialValue={user.name}
         multiline={false}
+        valueLabel={window._('moderationPortal.user.newValue')}
+        reasonLabel={window._('moderationPortal.user.reason')}
+        submitLabel={window._('moderationPortal.user.reviewChange')}
         onSubmit={(value, reason, onSuccess) =>
           setConfirmation({
             title: window._('moderationPortal.user.confirmRename'),
@@ -749,11 +721,14 @@ function Actions({ user }: { user: ModerationUser }) {
     )
   else
     actionForm = (
-      <ValueActionCard
+      <ModerationValueActionCard
         title={window._('moderationPortal.user.changeAbout')}
         description={window._('moderationPortal.user.changeAboutDescription')}
         initialValue={user.about}
         multiline
+        valueLabel={window._('moderationPortal.user.newValue')}
+        reasonLabel={window._('moderationPortal.user.reason')}
+        submitLabel={window._('moderationPortal.user.reviewChange')}
         onSubmit={(value, reason, onSuccess) =>
           setConfirmation({
             title: window._('moderationPortal.user.confirmChangeAbout'),
@@ -766,119 +741,28 @@ function Actions({ user }: { user: ModerationUser }) {
     )
 
   return (
-    <>
-      <div className="grid lg:grid-cols-[18rem_minmax(0,1fr)] gap-5 items-start">
-        <section className="card">
-          <FormControl
-            label={window._('moderationPortal.user.selectAction')}
-            htmlFor="moderation-user-action"
-          >
-            <Select value={action} onValueChange={setAction}>
-              <SelectTrigger id="moderation-user-action" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {user.isBanned ? (
-                  <SelectItem value="unban">{window._('moderationPortal.user.unban')}</SelectItem>
-                ) : (
-                  <>
-                    <SelectItem value="temporary-ban">
-                      {window._('moderationPortal.user.temporaryBan')}
-                    </SelectItem>
-                    <SelectItem value="permanent-ban">
-                      {window._('moderationPortal.user.permanentBan')}
-                    </SelectItem>
-                  </>
-                )}
-                <SelectItem value="rename">{window._('moderationPortal.user.rename')}</SelectItem>
-                <SelectItem value="change-about">
-                  {window._('moderationPortal.user.changeAbout')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </FormControl>
-        </section>
-        <div>{actionForm}</div>
-      </div>
-      <Modal open={Boolean(confirmation)} onClose={() => !pending && setConfirmation(undefined)}>
-        <div className="max-w-128">
-          <h2 className="text-xl font-semibold">{confirmation?.title}</h2>
-          <p className="my-3 text-secondary-foreground">{confirmation?.description}</p>
-          <div className="flex justify-end gap-2 mt-5">
-            <button
-              disabled={pending}
-              className="btn btn--primary"
-              onClick={() => setConfirmation(undefined)}
-            >
-              {window._('common.cancel')}
-            </button>
-            <button
-              disabled={pending}
-              className={`btn ${confirmation?.destructive ? 'btn--destructive' : 'btn--primary'}`}
-              onClick={() => void confirm()}
-            >
-              {pending && <span className="circle-loader mr-2" />}
-              {window._('moderationPortal.user.confirm')}
-            </button>
-          </div>
-        </div>
-      </Modal>
-    </>
-  )
-}
-
-function ActionCard({
-  title,
-  description,
-  children,
-}: {
-  title: string
-  description: string
-  children: ReactNode
-}) {
-  return (
-    <section className="card">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      <p className="text-secondary-foreground mt-1 mb-5">{description}</p>
-      {children}
-    </section>
-  )
-}
-
-function ReasonActionCard({
-  title,
-  description,
-  submitLabel,
-  destructive = false,
-  onSubmit,
-}: {
-  title: string
-  description: string
-  submitLabel: string
-  destructive?: boolean
-  onSubmit: (reason: string, onSuccess: () => void) => void
-}) {
-  const [reason, setReason] = useState('')
-  const submit = (event: FormEvent) => {
-    event.preventDefault()
-    if (reason.trim()) onSubmit(reason.trim(), () => setReason(''))
-  }
-  return (
-    <ActionCard title={title} description={description}>
-      <form onSubmit={submit}>
-        <FormControl label={window._('moderationPortal.user.reason')}>
-          <textarea
-            className="input min-h-24"
-            required
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-          />
-        </FormControl>
-        <button className={`btn mt-4 ${destructive ? 'btn--destructive' : 'btn--primary'}`}>
-          {submitLabel}
-        </button>
-      </form>
-    </ActionCard>
+    <ModerationActionsPanel
+      action={action}
+      onActionChange={setAction}
+      options={[
+        ...(user.isBanned
+          ? [{ value: 'unban', label: window._('moderationPortal.user.unban') }]
+          : [
+              { value: 'temporary-ban', label: window._('moderationPortal.user.temporaryBan') },
+              { value: 'permanent-ban', label: window._('moderationPortal.user.permanentBan') },
+            ]),
+        { value: 'rename', label: window._('moderationPortal.user.rename') },
+        { value: 'change-about', label: window._('moderationPortal.user.changeAbout') },
+      ]}
+      selectLabel={window._('moderationPortal.user.selectAction')}
+      selectId="moderation-user-action"
+      confirmation={confirmation}
+      onConfirmationChange={setConfirmation}
+      successMessage={window._('moderationPortal.user.actionComplete')}
+      confirmLabel={window._('moderationPortal.user.confirm')}
+    >
+      {actionForm}
+    </ModerationActionsPanel>
   )
 }
 
@@ -887,7 +771,7 @@ function TemporaryBanCard({
   request,
 }: {
   userId: string
-  request: (confirmation: Confirmation) => void
+  request: (confirmation: ModerationConfirmation) => void
 }) {
   const [days, setDays] = useState('7')
   const [reason, setReason] = useState('')
@@ -904,7 +788,7 @@ function TemporaryBanCard({
     })
   }
   return (
-    <ActionCard
+    <ModerationActionCard
       title={window._('moderationPortal.user.temporaryBan')}
       description={window._('moderationPortal.user.temporaryBanDescription')}
     >
@@ -936,64 +820,7 @@ function TemporaryBanCard({
           {window._('moderationPortal.user.temporaryBan')}
         </button>
       </form>
-    </ActionCard>
-  )
-}
-
-function ValueActionCard({
-  title,
-  description,
-  initialValue,
-  multiline,
-  onSubmit,
-}: {
-  title: string
-  description: string
-  initialValue: string
-  multiline: boolean
-  onSubmit: (value: string, reason: string, onSuccess: () => void) => void
-}) {
-  const [value, setValue] = useState(initialValue)
-  const [reason, setReason] = useState('')
-  useEffect(() => setValue(initialValue), [initialValue])
-  const submit = (event: FormEvent) => {
-    event.preventDefault()
-    if (value.trim() && reason.trim()) {
-      onSubmit(value.trim(), reason.trim(), () => setReason(''))
-    }
-  }
-  const control = multiline ? (
-    <textarea
-      className="input min-h-32"
-      required
-      value={value}
-      onChange={(event) => setValue(event.target.value)}
-    />
-  ) : (
-    <input
-      className="input"
-      required
-      value={value}
-      onChange={(event) => setValue(event.target.value)}
-    />
-  )
-  return (
-    <ActionCard title={title} description={description}>
-      <form onSubmit={submit} className="grid gap-4">
-        <FormControl label={window._('moderationPortal.user.newValue')}>{control}</FormControl>
-        <FormControl label={window._('moderationPortal.user.reason')}>
-          <textarea
-            className="input min-h-20"
-            required
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-          />
-        </FormControl>
-        <button className="btn btn--primary justify-self-start">
-          {window._('moderationPortal.user.reviewChange')}
-        </button>
-      </form>
-    </ActionCard>
+    </ModerationActionCard>
   )
 }
 

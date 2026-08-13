@@ -19,22 +19,25 @@ type apiControllerModeration struct {
 	loginHistory app.LoginHistoryService
 	users        app.ModerationUserService
 	reports      app.ModerationReportService
+	audit        app.ModerationAuditLogService
 }
 
-func newAPIModerationController(books app.ModerationBookService, content app.ContentModerationService, loginHistory app.LoginHistoryService, users app.ModerationUserService, reports app.ModerationReportService) *apiControllerModeration {
-	return &apiControllerModeration{books: books, content: content, loginHistory: loginHistory, users: users, reports: reports}
+func newAPIModerationController(books app.ModerationBookService, content app.ContentModerationService, loginHistory app.LoginHistoryService, users app.ModerationUserService, reports app.ModerationReportService, audit app.ModerationAuditLogService) *apiControllerModeration {
+	return &apiControllerModeration{books: books, content: content, loginHistory: loginHistory, users: users, reports: reports, audit: audit}
 }
 
 func (c *apiControllerModeration) Register(r chi.Router) {
 	r.Route("/moderation", func(r chi.Router) {
 		r.Use(apiRequiresAuthorizationMiddleware)
 		r.Get("/books/{bookID}", c.getBook)
+		r.Get("/books/{bookID}/chapters", c.getBookChapters)
 		r.Get("/books/{bookID}/log", c.getBookLog)
 		r.Post("/books/{bookID}/actions/{action}", c.bookAction)
 		r.Post("/chapters/{chapterID}/actions/{action}", c.chapterAction)
 		r.Post("/comments/{commentID}/actions/{action}", c.commentAction)
 		r.Get("/reports", c.searchReports)
 		r.Get("/reports/{reportID}", c.getReport)
+		r.Get("/audit-log", c.getAuditLog)
 		r.Get("/users", c.searchUsers)
 		r.Get("/users/{userID}", c.getUser)
 		r.Get("/users/{userID}/books", c.getUserBooks)
@@ -129,12 +132,41 @@ type ModerationValueRequest struct {
 
 // go2tsdef:generate
 type ModerationBookResponse struct {
-	ID                   int64  `json:"id,string"`
-	Name                 string `json:"name"`
-	Summary              string `json:"summary"`
-	IsBanned             bool   `json:"isBanned"`
-	IsShadowBanned       bool   `json:"isShadowBanned"`
-	IsPermanentlyRemoved bool   `json:"isPermanentlyRemoved"`
+	ID                   int64                                `json:"id,string"`
+	Name                 string                               `json:"name"`
+	Summary              string                               `json:"summary"`
+	IsBanned             bool                                 `json:"isBanned"`
+	IsShadowBanned       bool                                 `json:"isShadowBanned"`
+	IsPermanentlyRemoved bool                                 `json:"isPermanentlyRemoved"`
+	AuthorUserID         string                               `json:"authorUserId"`
+	AuthorUserName       string                               `json:"authorUserName"`
+	CreatedAt            time.Time                            `json:"createdAt"`
+	AgeRating            string                               `json:"ageRating"`
+	IsPubliclyVisible    bool                                 `json:"isPubliclyVisible"`
+	Words                int32                                `json:"words"`
+	Chapters             int32                                `json:"chapters"`
+	ReportsCount         int64                                `json:"reportsCount"`
+	LatestPendingReport  *ModerationBookPendingReportResponse `json:"latestPendingReport" go2tsdef:"ModerationBookPendingReportResponse | null"`
+	BanReason            string                               `json:"banReason"`
+}
+
+// go2tsdef:generate
+type ModerationBookPendingReportResponse struct {
+	ID     string    `json:"id"`
+	Number string    `json:"number"`
+	Reason string    `json:"reason"`
+	Time   time.Time `json:"time"`
+}
+
+// go2tsdef:generate
+type ModerationBookChapterResponse struct {
+	ID                string                  `json:"id"`
+	Name              string                  `json:"name"`
+	CreatedAt         time.Time               `json:"createdAt"`
+	UpdatedAt         app.Nullable[time.Time] `json:"updatedAt"`
+	Words             int32                   `json:"words"`
+	IsPubliclyVisible bool                    `json:"isPubliclyVisible"`
+	HasPendingReports bool                    `json:"hasPendingReports"`
 }
 
 // go2tsdef:generate
@@ -243,12 +275,37 @@ type ModerationUserCommentResponse struct {
 
 // go2tsdef:generate
 type ModerationUserHistoryResponse struct {
-	ID            string    `json:"id"`
-	Time          time.Time `json:"time"`
-	Type          string    `json:"type"`
-	Reason        string    `json:"reason"`
-	ActorUserID   string    `json:"actorUserId"`
-	ActorUserName string    `json:"actorUserName"`
+	ID            string          `json:"id"`
+	Time          time.Time       `json:"time"`
+	Type          string          `json:"type"`
+	Reason        string          `json:"reason"`
+	ActorUserID   string          `json:"actorUserId"`
+	ActorUserName string          `json:"actorUserName"`
+	TargetType    string          `json:"targetType"`
+	TargetID      string          `json:"targetId"`
+	Payload       json.RawMessage `json:"payload" go2tsdef:"unknown"`
+}
+
+// go2tsdef:generate
+type ModerationAuditLogEntryResponse struct {
+	ID            string          `json:"id"`
+	Time          time.Time       `json:"time"`
+	Action        string          `json:"action"`
+	TargetType    string          `json:"targetType"`
+	TargetID      string          `json:"targetId"`
+	Reason        string          `json:"reason"`
+	Payload       json.RawMessage `json:"payload" go2tsdef:"unknown"`
+	ActorUserID   string          `json:"actorUserId"`
+	ActorUserName string          `json:"actorUserName"`
+}
+
+// go2tsdef:generate
+type ModerationAuditLogPageResponse struct {
+	Entries    []ModerationAuditLogEntryResponse `json:"entries"`
+	Page       uint32                            `json:"page"`
+	PageSize   uint32                            `json:"pageSize"`
+	TotalPages uint32                            `json:"totalPages"`
+	Total      int64                             `json:"total"`
 }
 
 // go2tsdef:generate
@@ -448,9 +505,22 @@ func (c *apiControllerModeration) getUserHistory(w http.ResponseWriter, r *http.
 		return
 	}
 	entries := app.MapSlice(result.Entries, func(entry app.ModerationUserHistoryEntry) ModerationUserHistoryResponse {
-		return ModerationUserHistoryResponse{ID: strconv.FormatInt(entry.ID, 10), Time: entry.Time, Type: entry.Type, Reason: entry.Reason, ActorUserID: entry.ActorUserID.String(), ActorUserName: entry.ActorUserName}
+		return ModerationUserHistoryResponse{ID: strconv.FormatInt(entry.ID, 10), Time: entry.Time, Type: entry.Type, TargetType: entry.TargetType, TargetID: entry.TargetID, Reason: entry.Reason, Payload: entry.Payload, ActorUserID: entry.ActorUserID.String(), ActorUserName: entry.ActorUserName}
 	})
 	olhttp.NewAPIResponse(ModerationUserHistoryPageResponse{Entries: entries, Page: result.Page, PageSize: result.PageSize, Total: result.Total, TotalPages: result.TotalPages}).Write(w)
+}
+
+func (c *apiControllerModeration) getAuditLog(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	result, err := c.audit.GetAuditLog(r.Context(), app.ModerationAuditLogQuery{ActorUserID: auth.RequireSession(r.Context()).UserID, TargetType: params.Get("targetType"), Page: olhttp.GetPage(params, "page"), PageSize: olhttp.GetPageSize(params, "pageSize", 1, 100, 25)})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	entries := app.MapSlice(result.Entries, func(entry app.ModerationAuditLogEntry) ModerationAuditLogEntryResponse {
+		return ModerationAuditLogEntryResponse{ID: strconv.FormatInt(entry.ID, 10), Time: entry.Time, Action: entry.Action, TargetType: entry.TargetType, TargetID: entry.TargetID, Reason: entry.Reason, Payload: entry.Payload, ActorUserID: entry.ActorUserID.String(), ActorUserName: entry.ActorUserName}
+	})
+	olhttp.NewAPIResponse(ModerationAuditLogPageResponse{Entries: entries, Page: result.Page, PageSize: result.PageSize, TotalPages: result.TotalPages, Total: result.Total}).Write(w)
 }
 
 func (c *apiControllerModeration) getUserReports(w http.ResponseWriter, r *http.Request) {
@@ -485,7 +555,34 @@ func (c *apiControllerModeration) getBook(w http.ResponseWriter, r *http.Request
 		ID: result.ID, Name: result.Name, Summary: result.Summary,
 		IsBanned: result.IsBanned, IsShadowBanned: result.IsShadowBanned,
 		IsPermanentlyRemoved: result.IsPermDeleted,
+		AuthorUserID:         result.AuthorUserID.String(), AuthorUserName: result.AuthorUserName, CreatedAt: result.CreatedAt,
+		AgeRating: result.AgeRating, IsPubliclyVisible: result.IsPubliclyVisible, Words: result.Words, Chapters: result.Chapters,
+		ReportsCount: result.ReportsCount, BanReason: result.BanReason, LatestPendingReport: mapPendingBookReport(result.LatestPendingReport),
 	}).Write(w)
+}
+
+func mapPendingBookReport(report *app.BookPendingReport) *ModerationBookPendingReportResponse {
+	if report == nil {
+		return nil
+	}
+	return &ModerationBookPendingReportResponse{ID: strconv.FormatInt(report.ID, 10), Number: report.Number, Reason: report.Reason, Time: report.Time}
+}
+
+func (c *apiControllerModeration) getBookChapters(w http.ResponseWriter, r *http.Request) {
+	bookID, err := olhttp.URLParamInt64(r, "bookID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	rows, err := c.books.GetBookChapters(r.Context(), app.GetBookInfoQuery{ActorUserID: auth.RequireSession(r.Context()).UserID, BookID: bookID})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	response := app.MapSlice(rows, func(row app.BookModerationChapter) ModerationBookChapterResponse {
+		return ModerationBookChapterResponse{ID: strconv.FormatInt(row.ID, 10), Name: row.Name, CreatedAt: row.CreatedAt, UpdatedAt: app.NullableFromPtr(row.UpdatedAt), Words: row.Words, IsPubliclyVisible: row.IsPubliclyVisible, HasPendingReports: row.HasPendingReports}
+	})
+	olhttp.NewAPIResponse(response).Write(w)
 }
 
 func (c *apiControllerModeration) getBookLog(w http.ResponseWriter, r *http.Request) {
@@ -518,12 +615,13 @@ func (c *apiControllerModeration) bookAction(w http.ResponseWriter, r *http.Requ
 		apiWriteBadRequest(w, err)
 		return
 	}
-	var input ModerationReasonRequest
+	var input ModerationValueRequest
 	if err = decodeModerationJSON(w, r, &input); err != nil {
 		apiWriteBadRequest(w, err)
 		return
 	}
 	cmd := app.ModerationPerformBookActionCommand{ActorUserID: auth.RequireSession(r.Context()).UserID, BookID: bookID, Reason: input.Reason}
+	cmd.Value = input.Value
 	switch chi.URLParam(r, "action") {
 	case "ban":
 		err = c.books.BanBook(r.Context(), cmd)
@@ -535,6 +633,10 @@ func (c *apiControllerModeration) bookAction(w http.ResponseWriter, r *http.Requ
 		err = c.books.UnShadowBanBook(r.Context(), cmd)
 	case "permanent-remove":
 		err = c.books.PermanentlyRemoveBook(r.Context(), cmd)
+	case "change-age-rating":
+		err = c.books.ChangeAgeRating(r.Context(), cmd)
+	case "change-summary":
+		err = c.books.ChangeSummary(r.Context(), cmd)
 	default:
 		apiWriteBadRequest(w, errors.New("unknown book moderation action"))
 		return

@@ -6,9 +6,14 @@ This is the cross-session handoff for ongoing work in `web/frontend/src/islands/
 
 The `/users` route is now a functional, paginated user directory. It supports case-insensitive partial-name search, exact UUID lookup, banned/active filtering, and role filtering. Results show avatar, name, UUID, role, joined date, last visit, and latest ban time/reason, and link to the existing `/users/:userId` moderation view.
 
+The `/books/:bookId` route is now implemented with Overview, Actions, Chapters, and Activity tabs. Overview includes author/state/report context and the latest pending report. Actions support age-rating changes, restricting/restoring a book, and summary changes, all with required moderation reasons and audit entries. Chapters are fetched as one list and searched/paginated client-side at 100 rows per page; chapter links intentionally point to the not-yet-implemented `/chapters/:chapterId` route.
+
+The `/audit-log` route lists all moderation actions with server-side pagination and target-type filtering. User history, book activity, and the global audit log share the same log-entry and payload renderer. Action-specific payload renderers are registered in `ModerationLog.tsx`; unknown payloads fall back to a formatted JSON or plain-text `<pre>`.
+
 The implementation is currently uncommitted. Relevant files are:
 
 - `web/frontend/src/islands/moderation/ModerationUsers.tsx` and `Portal.tsx`
+- `web/frontend/src/islands/moderation/BookModerationPage.tsx`
 - `web/frontend/src/api/moderation/users.ts` and `index.ts`
 - `web/public/routes_moderation_api.go`
 - `internal/app/moderation_user.go`, `moderation_user_repository.go`, and tests

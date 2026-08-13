@@ -39,14 +39,81 @@ func (m *moderationBookService) GetBookInfo(ctx context.Context, query GetBookIn
 		}
 	}
 
-	return BookModerationInfo{
+	result := BookModerationInfo{
 		IsBanned:       row.IsBanned,
 		IsShadowBanned: row.IsShadowBanned,
 		IsPermDeleted:  row.IsPermRemoved,
 		Name:           row.Name,
 		Summary:        row.Summary,
 		ID:             query.BookID,
-	}, nil
+		AuthorUserID:   uuidDbToDomain(row.AuthorUserID), AuthorUserName: row.AuthorUserName,
+		CreatedAt: row.CreatedAt.Time, AgeRating: string(row.AgeRating),
+		IsPubliclyVisible: row.IsPubliclyVisible, Words: row.Words, Chapters: row.Chapters,
+		ReportsCount: row.ReportsCount, BanReason: row.BanReason,
+	}
+	if row.LatestPendingReportTime.Valid {
+		result.LatestPendingReport = &BookPendingReport{ID: row.LatestPendingReportID, Number: row.LatestPendingReportNumber, Reason: row.LatestPendingReportReason, Time: row.LatestPendingReportTime.Time}
+	}
+	return result, nil
+}
+
+func nullableTime(value pgtype.Timestamptz) *time.Time {
+	if !value.Valid {
+		return nil
+	}
+	return &value.Time
+}
+
+func (m *moderationBookService) GetBookChapters(ctx context.Context, query GetBookInfoQuery) ([]BookModerationChapter, error) {
+	if err := m.authorize(ctx, query.ActorUserID); err != nil {
+		return nil, err
+	}
+	rows, err := store.New(m.db).ModGetBookChapters(ctx, query.BookID)
+	if err != nil {
+		return nil, apperror.WrapUnexpectedDBError(err)
+	}
+	result := make([]BookModerationChapter, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, BookModerationChapter{ID: row.ID, Name: row.Name, CreatedAt: row.CreatedAt.Time, UpdatedAt: nullableTime(row.UpdatedAt), Words: row.Words, IsPubliclyVisible: row.IsPubliclyVisible, HasPendingReports: row.HasPendingReports})
+	}
+	return result, nil
+}
+
+func (m *moderationBookService) changeBookValue(ctx context.Context, cmd ModerationPerformBookActionCommand, action BookActionType, change func(*store.Queries) error) error {
+	if err := cmd.Validate(); err != nil {
+		return err
+	}
+	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
+		return err
+	}
+	tx, err := m.db.Begin(ctx)
+	if err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	queries := store.New(m.db).WithTx(tx)
+	if err = change(queries); err == nil {
+		err = m.addBookLog(ctx, queries, cmd.BookID, action, cmd.Reason, cmd.ActorUserID)
+	}
+	if err != nil {
+		dal.RollbackTx(ctx, tx)
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	return tx.Commit(ctx)
+}
+
+func (m *moderationBookService) ChangeAgeRating(ctx context.Context, cmd ModerationPerformBookActionCommand) error {
+	valid := map[string]bool{"?": true, "G": true, "PG": true, "PG-13": true, "R": true, "NC-17": true}
+	if !valid[cmd.Value] {
+		return InvalidModerationActionError.New("invalid age rating")
+	}
+	return m.changeBookValue(ctx, cmd, "change_age_rating", func(q *store.Queries) error {
+		return q.ModChangeBookAgeRating(ctx, store.ModChangeBookAgeRatingParams{ID: cmd.BookID, AgeRating: store.AgeRating(cmd.Value)})
+	})
+}
+func (m *moderationBookService) ChangeSummary(ctx context.Context, cmd ModerationPerformBookActionCommand) error {
+	return m.changeBookValue(ctx, cmd, "change_summary", func(q *store.Queries) error {
+		return q.ModChangeBookSummary(ctx, store.ModChangeBookSummaryParams{ID: cmd.BookID, Summary: cmd.Value})
+	})
 }
 
 // GetBookLog implements ModerationBookService.

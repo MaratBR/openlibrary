@@ -1,7 +1,42 @@
 -- name: ModGetBookInfo :one
-select is_banned, is_shadow_banned, is_perm_removed, name, summary
-from books 
-where id = $1;
+select books.is_banned, books.is_shadow_banned, books.is_perm_removed, books.name, books.summary,
+       books.author_user_id, users.name as author_user_name, books.created_at,
+       books.age_rating, books.is_publicly_visible, books.words, books.chapters,
+       (select count(*) from reports where target_type = 'book' and target_id = books.id::text)::bigint as reports_count,
+       coalesce(latest_report.id, 0)::bigint as latest_pending_report_id,
+       coalesce(latest_report.number, '')::text as latest_pending_report_number,
+       coalesce(latest_report.reason, '')::text as latest_pending_report_reason,
+       latest_report.time as latest_pending_report_time,
+       coalesce(latest_ban.reason, '')::text as ban_reason
+from books
+join users on users.id = books.author_user_id
+left join lateral (
+    select id, number, reason, time from reports
+    where target_type = 'book' and target_id = books.id::text and status = 'unreviewed'
+    order by time desc, id desc limit 1
+) latest_report on true
+left join lateral (
+    select reason from moderation_logs
+    where target_type = 'book' and target_id = books.id::text and type = 'ban'
+    order by time desc limit 1
+) latest_ban on books.is_banned
+where books.id = $1;
+
+-- name: ModGetBookChapters :many
+select book_chapters.id, book_chapters.name, book_chapters.created_at, book_chapters.updated_at,
+       book_chapters.words, book_chapters.is_publicly_visible,
+       exists(select 1 from reports where reports.target_type = 'book'
+              and reports.target_id = book_chapters.book_id::text
+              and reports.book_chapter_id = book_chapters.id and reports.status = 'unreviewed') as has_pending_reports
+from book_chapters
+where book_chapters.book_id = $1
+order by book_chapters."order", book_chapters.id;
+
+-- name: ModChangeBookAgeRating :exec
+update books set age_rating = $2 where id = $1;
+
+-- name: ModChangeBookSummary :exec
+update books set summary = $2 where id = $1;
 
 -- name: ModSetBookBanned :exec
 update books 

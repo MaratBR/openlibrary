@@ -40,6 +40,34 @@ func (q *Queries) ModAddBookLog(ctx context.Context, arg ModAddBookLogParams) er
 	return err
 }
 
+const modChangeBookAgeRating = `-- name: ModChangeBookAgeRating :exec
+update books set age_rating = $2 where id = $1
+`
+
+type ModChangeBookAgeRatingParams struct {
+	ID        int64
+	AgeRating AgeRating
+}
+
+func (q *Queries) ModChangeBookAgeRating(ctx context.Context, arg ModChangeBookAgeRatingParams) error {
+	_, err := q.db.Exec(ctx, modChangeBookAgeRating, arg.ID, arg.AgeRating)
+	return err
+}
+
+const modChangeBookSummary = `-- name: ModChangeBookSummary :exec
+update books set summary = $2 where id = $1
+`
+
+type ModChangeBookSummaryParams struct {
+	ID      int64
+	Summary string
+}
+
+func (q *Queries) ModChangeBookSummary(ctx context.Context, arg ModChangeBookSummaryParams) error {
+	_, err := q.db.Exec(ctx, modChangeBookSummary, arg.ID, arg.Summary)
+	return err
+}
+
 const modCountBookLogFiltered = `-- name: ModCountBookLogFiltered :one
 select count(*)
 from moderation_logs
@@ -61,18 +89,99 @@ func (q *Queries) ModCountBookLogFiltered(ctx context.Context, arg ModCountBookL
 	return count, err
 }
 
+const modGetBookChapters = `-- name: ModGetBookChapters :many
+select book_chapters.id, book_chapters.name, book_chapters.created_at, book_chapters.updated_at,
+       book_chapters.words, book_chapters.is_publicly_visible,
+       exists(select 1 from reports where reports.target_type = 'book'
+              and reports.target_id = book_chapters.book_id::text
+              and reports.book_chapter_id = book_chapters.id and reports.status = 'unreviewed') as has_pending_reports
+from book_chapters
+where book_chapters.book_id = $1
+order by book_chapters."order", book_chapters.id
+`
+
+type ModGetBookChaptersRow struct {
+	ID                int64
+	Name              string
+	CreatedAt         pgtype.Timestamptz
+	UpdatedAt         pgtype.Timestamptz
+	Words             int32
+	IsPubliclyVisible bool
+	HasPendingReports bool
+}
+
+func (q *Queries) ModGetBookChapters(ctx context.Context, bookID int64) ([]ModGetBookChaptersRow, error) {
+	rows, err := q.db.Query(ctx, modGetBookChapters, bookID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ModGetBookChaptersRow
+	for rows.Next() {
+		var i ModGetBookChaptersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Words,
+			&i.IsPubliclyVisible,
+			&i.HasPendingReports,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const modGetBookInfo = `-- name: ModGetBookInfo :one
-select is_banned, is_shadow_banned, is_perm_removed, name, summary
-from books 
-where id = $1
+select books.is_banned, books.is_shadow_banned, books.is_perm_removed, books.name, books.summary,
+       books.author_user_id, users.name as author_user_name, books.created_at,
+       books.age_rating, books.is_publicly_visible, books.words, books.chapters,
+       (select count(*) from reports where target_type = 'book' and target_id = books.id::text)::bigint as reports_count,
+       coalesce(latest_report.id, 0)::bigint as latest_pending_report_id,
+       coalesce(latest_report.number, '')::text as latest_pending_report_number,
+       coalesce(latest_report.reason, '')::text as latest_pending_report_reason,
+       latest_report.time as latest_pending_report_time,
+       coalesce(latest_ban.reason, '')::text as ban_reason
+from books
+join users on users.id = books.author_user_id
+left join lateral (
+    select id, number, reason, time from reports
+    where target_type = 'book' and target_id = books.id::text and status = 'unreviewed'
+    order by time desc, id desc limit 1
+) latest_report on true
+left join lateral (
+    select reason from moderation_logs
+    where target_type = 'book' and target_id = books.id::text and type = 'ban'
+    order by time desc limit 1
+) latest_ban on books.is_banned
+where books.id = $1
 `
 
 type ModGetBookInfoRow struct {
-	IsBanned       bool
-	IsShadowBanned bool
-	IsPermRemoved  bool
-	Name           string
-	Summary        string
+	IsBanned                  bool
+	IsShadowBanned            bool
+	IsPermRemoved             bool
+	Name                      string
+	Summary                   string
+	AuthorUserID              pgtype.UUID
+	AuthorUserName            string
+	CreatedAt                 pgtype.Timestamptz
+	AgeRating                 AgeRating
+	IsPubliclyVisible         bool
+	Words                     int32
+	Chapters                  int32
+	ReportsCount              int64
+	LatestPendingReportID     int64
+	LatestPendingReportNumber string
+	LatestPendingReportReason string
+	LatestPendingReportTime   pgtype.Timestamptz
+	BanReason                 string
 }
 
 func (q *Queries) ModGetBookInfo(ctx context.Context, id int64) (ModGetBookInfoRow, error) {
@@ -84,6 +193,19 @@ func (q *Queries) ModGetBookInfo(ctx context.Context, id int64) (ModGetBookInfoR
 		&i.IsPermRemoved,
 		&i.Name,
 		&i.Summary,
+		&i.AuthorUserID,
+		&i.AuthorUserName,
+		&i.CreatedAt,
+		&i.AgeRating,
+		&i.IsPubliclyVisible,
+		&i.Words,
+		&i.Chapters,
+		&i.ReportsCount,
+		&i.LatestPendingReportID,
+		&i.LatestPendingReportNumber,
+		&i.LatestPendingReportReason,
+		&i.LatestPendingReportTime,
+		&i.BanReason,
 	)
 	return i, err
 }

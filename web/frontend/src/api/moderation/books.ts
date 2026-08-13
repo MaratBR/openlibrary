@@ -3,6 +3,8 @@ import type {
   BookModerationLogResponse,
   ModerationBookResponse,
   ModerationReasonRequest,
+  ModerationValueRequest,
+  ModerationBookChapterResponse,
 } from '@/backend-types'
 
 export type BookModerationAction =
@@ -30,6 +32,24 @@ export function getBookModerationLog(
       },
     })
     .then((response) => OLAPIResponse.create<BookModerationLogResponse>(response))
+}
+
+export function getBookModerationChapters(bookId: string) {
+  return httpClient.get(`/_api/moderation/books/${encodeURIComponent(bookId)}/chapters`).then(
+    (response) => OLAPIResponse.create<ModerationBookChapterResponse[]>(response),
+  )
+}
+
+export function changeBookAgeRating(bookId: string, value: string, reason: string) {
+  return bookValueAction(bookId, 'change-age-rating', { value, reason })
+}
+
+export function changeBookSummary(bookId: string, value: string, reason: string) {
+  return bookValueAction(bookId, 'change-summary', { value, reason })
+}
+
+function bookValueAction(bookId: string, action: string, body: ModerationValueRequest) {
+  return httpClient.post(`/_api/moderation/books/${encodeURIComponent(bookId)}/actions/${action}`, { json: body }).then((response) => OLAPIResponse.createNoBody(response))
 }
 
 export function performBookModerationAction(

@@ -19,6 +19,7 @@ var (
 
 type ModerationPerformBookActionCommand struct {
 	Reason      string
+	Value       string
 	ActorUserID uuid.UUID
 	BookID      int64
 }
@@ -37,12 +38,36 @@ type GetBookInfoQuery struct {
 }
 
 type BookModerationInfo struct {
+	ID                  int64
+	Name                string
+	Summary             string
+	IsBanned            bool
+	IsShadowBanned      bool
+	IsPermDeleted       bool
+	AuthorUserID        uuid.UUID
+	AuthorUserName      string
+	CreatedAt           time.Time
+	AgeRating           string
+	IsPubliclyVisible   bool
+	Words               int32
+	Chapters            int32
+	ReportsCount        int64
+	LatestPendingReport *BookPendingReport
+	BanReason           string
+}
+
+type BookPendingReport struct {
 	ID             int64
-	Name           string
-	Summary        string
-	IsBanned       bool
-	IsShadowBanned bool
-	IsPermDeleted  bool
+	Number, Reason string
+	Time           time.Time
+}
+type BookModerationChapter struct {
+	ID                                   int64
+	Name                                 string
+	CreatedAt                            time.Time
+	UpdatedAt                            *time.Time
+	Words                                int32
+	IsPubliclyVisible, HasPendingReports bool
 }
 
 type BookModerationLog struct {
@@ -84,6 +109,9 @@ type BookLogResult struct {
 type ModerationBookService interface {
 	GetBookInfo(ctx context.Context, query GetBookInfoQuery) (BookModerationInfo, error)
 	GetBookLog(ctx context.Context, query GetBookLogQuery) (BookLogResult, error)
+	GetBookChapters(ctx context.Context, query GetBookInfoQuery) ([]BookModerationChapter, error)
+	ChangeAgeRating(ctx context.Context, cmd ModerationPerformBookActionCommand) error
+	ChangeSummary(ctx context.Context, cmd ModerationPerformBookActionCommand) error
 	BanBook(ctx context.Context, cmd ModerationPerformBookActionCommand) error
 	ShadowBanBook(ctx context.Context, cmd ModerationPerformBookActionCommand) error
 	PermanentlyRemoveBook(ctx context.Context, cmd ModerationPerformBookActionCommand) error

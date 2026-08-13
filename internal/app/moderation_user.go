@@ -90,6 +90,8 @@ type ModerationUserHistoryEntry struct {
 	Payload       json.RawMessage
 	ActorUserID   uuid.UUID
 	ActorUserName string
+	TargetType    string
+	TargetID      string
 }
 
 type ModerationUserReport struct {

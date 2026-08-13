@@ -1,8 +1,10 @@
 package public
 
 import (
+	"cmp"
 	"context"
 	"net/http"
+	"slices"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
@@ -72,6 +74,12 @@ func (c *homeController) getMostViewedBooks(ctx context.Context) ([]app.BookList
 	if err != nil {
 		return nil, nil, err
 	}
+
+	slices.SortStableFunc(books, func(a app.BookListDto, b app.BookListDto) int {
+		aViews, _ := views[a.ID]
+		bViews, _ := views[b.ID]
+		return cmp.Compare(bViews, aViews)
+	})
 
 	return books, views, nil
 }

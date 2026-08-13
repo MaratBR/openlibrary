@@ -8,6 +8,7 @@ export type {
   ModerationReportDetailResponse as ModerationReportDetail,
   ModerationReportsSearchResponse as ModerationReportsSearch,
   ModerationBookResponse as ModerationBook,
+  ModerationBookChapterResponse as ModerationBookChapter,
   ModerationUserBooksPageResponse as ModerationUserBooksPage,
   ModerationUserCommentsPageResponse as ModerationUserCommentsPage,
   ModerationUserHistoryPageResponse as ModerationUserHistoryPage,
@@ -15,4 +16,6 @@ export type {
   ModerationUserResponse as ModerationUser,
   ModerationUserListEntryResponse as ModerationUserListEntry,
   ModerationUsersPageResponse as ModerationUsersPage,
+  ModerationAuditLogEntryResponse as ModerationAuditLogEntry,
+  ModerationAuditLogPageResponse as ModerationAuditLogPage,
 } from '@/backend-types'

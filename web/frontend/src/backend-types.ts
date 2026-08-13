@@ -220,9 +220,50 @@ export interface MetricValues {
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationAuditLogEntryResponse {
+  id: string;
+  time: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  payload: unknown;
+  actorUserId: string;
+  actorUserName: string;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationAuditLogPageResponse {
+  entries: Array<ModerationAuditLogEntryResponse>;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationBanRequest {
   reason: string;
   until: string;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationBookChapterResponse {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: Nullable<string>;
+  words: number;
+  isPubliclyVisible: boolean;
+  hasPendingReports: boolean;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationBookPendingReportResponse {
+  id: string;
+  number: string;
+  reason: string;
+  time: string;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
@@ -233,6 +274,16 @@ export interface ModerationBookResponse {
   isBanned: boolean;
   isShadowBanned: boolean;
   isPermanentlyRemoved: boolean;
+  authorUserId: string;
+  authorUserName: string;
+  createdAt: string;
+  ageRating: string;
+  isPubliclyVisible: boolean;
+  words: number;
+  chapters: number;
+  reportsCount: number;
+  latestPendingReport: ModerationBookPendingReportResponse | null;
+  banReason: string;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
@@ -360,6 +411,9 @@ export interface ModerationUserHistoryResponse {
   reason: string;
   actorUserId: string;
   actorUserName: string;
+  targetType: string;
+  targetId: string;
+  payload: unknown;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */

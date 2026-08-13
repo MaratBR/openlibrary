@@ -3,7 +3,7 @@ package app_test
 import (
 	"testing"
 
-	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/content"
 )
 
 var (
@@ -23,7 +23,7 @@ var (
 
 func TestContentSanitization(t *testing.T) {
 	for input, expectedOutput := range sanitizationCases {
-		output := app.SanitizeHtml(input)
+		output := content.SanitizeHtml(input)
 		if output != expectedOutput {
 			t.Errorf("Expected %s, got %s", expectedOutput, output)
 		}
@@ -45,7 +45,7 @@ var (
 
 func TestContentProcessing(t *testing.T) {
 	for input, expectedOutput := range contentProcessingTestCases {
-		output, err := app.ProcessContent(input)
+		output, err := content.Process(input)
 		if err != nil {
 			t.Errorf("Expected no error, got %s", err.Error())
 		}

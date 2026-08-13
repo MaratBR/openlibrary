@@ -88,7 +88,7 @@ func (r *moderationUserRepository) GetHistory(ctx context.Context, userID uuid.U
 		return nil, 0, apperror.WrapUnexpectedDBError(err)
 	}
 	return MapSlice(rows, func(row store.Moderation_GetUserHistoryRow) ModerationUserHistoryEntry {
-		return ModerationUserHistoryEntry{ID: row.ID, Time: timeDbToDomain(row.Time), Type: row.Type, Reason: row.Reason, Payload: row.Payload, ActorUserID: uuidDbToDomain(row.ActorUserID), ActorUserName: row.ActorUserName.String}
+		return ModerationUserHistoryEntry{ID: row.ID, Time: timeDbToDomain(row.Time), Type: row.Type, TargetType: row.TargetType, TargetID: row.TargetID, Reason: row.Reason, Payload: row.Payload, ActorUserID: uuidDbToDomain(row.ActorUserID), ActorUserName: row.ActorUserName.String}
 	}), total, nil
 }
 

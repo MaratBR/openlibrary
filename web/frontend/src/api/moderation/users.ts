@@ -13,6 +13,7 @@ import type {
   LoginLocationResponse,
   ModerationReportDetailResponse,
   ModerationReportsSearchResponse,
+  ModerationAuditLogPageResponse,
 } from '@/backend-types'
 
 export function searchModerationUsers(
@@ -79,6 +80,12 @@ export function searchModerationReports(search = '', targetType = '', page = 1, 
   return httpClient
     .get('/_api/moderation/reports', { searchParams: { search, targetType, page, pageSize } })
     .then((response) => OLAPIResponse.create<ModerationReportsSearchResponse>(response))
+}
+
+export function getModerationAuditLog(targetType = '', page = 1, pageSize = 25) {
+  return httpClient
+    .get('/_api/moderation/audit-log', { searchParams: { targetType, page, pageSize } })
+    .then((response) => OLAPIResponse.create<ModerationAuditLogPageResponse>(response))
 }
 
 function getUserPage<T>(userId: string, resource: string, page = 1, pageSize = 20) {

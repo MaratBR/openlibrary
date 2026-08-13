@@ -11,6 +11,11 @@ import UserModerationPage, {
 import ModerationUsers, { ModerationUsersErrorPage, moderationUsersLoader } from './ModerationUsers'
 import ReportPage, { ReportErrorPage, reportRouteLoader } from './ReportPage'
 import ReportsPage, { ReportsErrorPage, reportsSearchLoader } from './ReportsPage'
+import BookModerationPage, {
+  BookModerationErrorPage,
+  bookModerationRouteLoader,
+} from './BookModerationPage'
+import AuditLogPage, { AuditLogErrorPage, auditLogLoader } from './AuditLogPage'
 
 const routes = [
   ['overview', 'moderationPortal.overview'],
@@ -38,7 +43,7 @@ function createModerationRouter(roles: string[]) {
           element: <Navigate to="/overview" replace />,
         },
         ...routes
-          .filter(([path]) => path !== 'users')
+          .filter(([path]) => path !== 'users' && path !== 'audit-log')
           .map(([path, translationKey]) => ({
             path: `/${path}`,
             element: <PlaceholderPage title={window._(translationKey)} />,
@@ -48,6 +53,12 @@ function createModerationRouter(roles: string[]) {
           element: <ModerationUsers roles={roles} />,
           errorElement: <ModerationUsersErrorPage />,
           loader: moderationUsersLoader,
+        },
+        {
+          path: '/audit-log',
+          element: <AuditLogPage />,
+          errorElement: <AuditLogErrorPage />,
+          loader: auditLogLoader,
         },
         {
           path: '/users/:userId',
@@ -89,11 +100,19 @@ function createModerationRouter(roles: string[]) {
           errorElement: <UserModerationErrorPage />,
           loader: userModerationRouteLoader,
         })),
-        // TODO: Replace these placeholders when book and comment moderation pages are implemented.
         {
           path: '/books/:bookId',
-          element: <PlaceholderPage title={window._('moderationPortal.books')} />,
+          element: <BookModerationPage />,
+          errorElement: <BookModerationErrorPage />,
+          loader: bookModerationRouteLoader,
         },
+        ...['actions', 'chapters', 'activity'].map((resource) => ({
+          path: `/books/:bookId/${resource}`,
+          element: <BookModerationPage />,
+          errorElement: <BookModerationErrorPage />,
+          loader: bookModerationRouteLoader,
+        })),
+        // TODO: Replace this placeholder when comment moderation is implemented.
         {
           path: '/comments/:commentId',
           element: <PlaceholderPage title={window._('moderationPortal.comments')} />,
