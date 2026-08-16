@@ -132,9 +132,17 @@ export type Int64String = string;
 
 /** Generated from `web/public/routes_moderation_api.go`. */
 export interface LoginHistoryEntryResponse {
+  id: string;
+  userId: string;
+  userName: string;
   ipAddress: string;
   userAgent: string;
   loggedInAt: string;
+  country: string;
+  region: string;
+  city: string;
+  isTerminated: boolean;
+  expiresAt: string;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
@@ -259,6 +267,23 @@ export interface ModerationBookChapterResponse {
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationBookListEntryResponse {
+  id: string;
+  name: string;
+  createdAt: string;
+  isBanned: boolean;
+  isShadowBanned: boolean;
+  isTrashed: boolean;
+  isPermanentlyRemoved: boolean;
+  isPubliclyVisible: boolean;
+  words: number;
+  chapters: number;
+  authorUserId: string;
+  authorUserName: string;
+  reportsCount: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationBookPendingReportResponse {
   id: string;
   number: string;
@@ -287,6 +312,15 @@ export interface ModerationBookResponse {
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationBooksPageResponse {
+  entries: Array<ModerationBookListEntryResponse>;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationReasonRequest {
   reason: string;
 }
@@ -297,6 +331,11 @@ export interface ModerationReportActivityResponse {
   actor: string;
   description: string;
   kind: string;
+  disposition: string;
+  action: string;
+  policyReason: string;
+  internalNote: string;
+  notifyTarget: boolean;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
@@ -316,6 +355,32 @@ export interface ModerationReportBookContextResponse {
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationReportCommentContextResponse {
+  id: string;
+  content: string;
+  authorId: string;
+  authorName: string;
+  chapterId: string;
+  chapterName: string;
+  bookId: string;
+  bookName: string;
+  createdAt: string;
+  updatedAt: Nullable<string>;
+  deletedAt: Nullable<string>;
+  relatedReports: number;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationReportDecisionRequest {
+  disposition: string;
+  action: string;
+  policyReason: string;
+  internalNote: string;
+  notifyTarget: boolean;
+  payload: Record<string, unknown>;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationReportDetailResponse {
   id: string;
   number: string;
@@ -330,6 +395,9 @@ export interface ModerationReportDetailResponse {
   priority: string;
   activities: Array<ModerationReportActivityResponse>;
   bookContext: ModerationReportBookContextResponse | null;
+  userContext: ModerationReportUserContextResponse | null;
+  commentContext: ModerationReportCommentContextResponse | null;
+  availableActions: Array<string>;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */
@@ -343,6 +411,18 @@ export interface ModerationReportListEntryResponse {
   targetId: string;
   reason: string;
   description: string;
+}
+
+/** Generated from `web/public/routes_moderation_api.go`. */
+export interface ModerationReportUserContextResponse {
+  id: string;
+  name: string;
+  email: string;
+  about: string;
+  role: string;
+  joinedAt: string;
+  isBanned: boolean;
+  relatedReports: number;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */

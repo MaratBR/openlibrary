@@ -2,9 +2,11 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
@@ -74,6 +76,10 @@ func (r *reportRepository) GetByID(ctx context.Context, reportID int64) (Report,
 		}
 		return Report{}, "", apperror.WrapUnexpectedDBError(err)
 	}
+	chapterID := Null[int64]()
+	if row.BookChapterID.Valid {
+		chapterID = Value(row.BookChapterID.Int64)
+	}
 	return Report{
 		ID:             row.ID,
 		Number:         row.Number,
@@ -83,6 +89,8 @@ func (r *reportRepository) GetByID(ctx context.Context, reportID int64) (Report,
 		TargetID:       row.TargetID,
 		Reason:         row.Reason,
 		Description:    row.Description,
+		BookChapterID:  chapterID,
+		BookExcerpt:    row.BookExcerpt,
 		Status:         row.Status,
 		Priority:       row.Priority,
 	}, row.ReporterUserName, nil
@@ -115,6 +123,28 @@ func (r *reportRepository) GetBookContext(ctx context.Context, reportID int64) (
 	}, nil
 }
 
+func (r *reportRepository) GetUserContext(ctx context.Context, reportID int64) (*ModerationReportUserContextData, error) {
+	row, err := store.New(r.db).Report_GetUserContext(ctx, reportID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, apperror.WrapUnexpectedDBError(err)
+	}
+	return &ModerationReportUserContextData{ID: uuidDbToDomain(row.ID), Name: row.Name, Email: row.Email, About: row.About, Role: string(row.Role), JoinedAt: timeDbToDomain(row.JoinedAt), IsBanned: row.IsBanned, RelatedReports: int(row.RelatedReports)}, nil
+}
+
+func (r *reportRepository) GetCommentContext(ctx context.Context, reportID int64) (*ModerationReportCommentContextData, error) {
+	row, err := store.New(r.db).Report_GetCommentContext(ctx, reportID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, apperror.WrapUnexpectedDBError(err)
+	}
+	return &ModerationReportCommentContextData{ID: row.ID, ChapterID: row.ChapterID, BookID: row.BookID, Content: row.Content, AuthorID: uuidDbToDomain(row.AuthorID), AuthorName: row.AuthorName, ChapterName: row.ChapterName, BookName: row.BookName, CreatedAt: timeDbToDomain(row.CreatedAt), UpdatedAt: timeNullableDbToDomain(row.UpdatedAt), DeletedAt: timeNullableDbToDomain(row.DeletedAt), RelatedReports: int(row.RelatedReports)}, nil
+}
+
 func (r *reportRepository) Search(ctx context.Context, search, targetType string, limit, offset int32) ([]ModerationReportListEntry, int64, error) {
 	queries := store.New(r.db)
 	total, err := queries.Report_CountSearch(ctx, store.Report_CountSearchParams{Search: search, TargetType: targetType})
@@ -129,6 +159,66 @@ func (r *reportRepository) Search(ctx context.Context, search, targetType string
 		return ModerationReportListEntry{Report: Report{ID: row.ID, Number: row.Number, Time: timeDbToDomain(row.Time), ReporterUserID: uuidDbToDomain(row.ReporterUserID), TargetType: ReportTargetType(row.TargetType), TargetID: row.TargetID, Reason: row.Reason, Description: row.Description}, ReporterUserName: row.ReporterUserName}
 	})
 	return entries, total, nil
+}
+
+func (r *reportRepository) GetEvents(ctx context.Context, reportID int64) ([]ReportDecision, error) {
+	rows, err := store.New(r.db).Report_GetEvents(ctx, reportID)
+	if err != nil {
+		return nil, apperror.WrapUnexpectedDBError(err)
+	}
+	result := make([]ReportDecision, 0, len(rows))
+	for _, row := range rows {
+		var payload reportDecisionLogPayload
+		if err = json.Unmarshal(row.Payload, &payload); err != nil {
+			return nil, apperror.WrapUnexpectedAppError(err)
+		}
+		result = append(result, ReportDecision{Time: timeDbToDomain(row.Time), ActorUserID: uuidDbToDomain(row.ActorUserID), ActorUserName: row.ActorUserName, Disposition: payload.Disposition, Action: payload.Action, PolicyReason: row.Reason, InternalNote: payload.InternalNote, NotifyTarget: payload.NotifyTarget, Payload: payload.ActionPayload})
+	}
+	return result, nil
+}
+
+type reportDecisionLogPayload struct {
+	Version       int             `json:"version"`
+	Disposition   string          `json:"disposition"`
+	Action        string          `json:"action,omitempty"`
+	InternalNote  string          `json:"internalNote,omitempty"`
+	NotifyTarget  bool            `json:"notifyTarget"`
+	ActionPayload json.RawMessage `json:"actionPayload"`
+}
+
+func (r *reportRepository) AddDecision(ctx context.Context, reportID int64, status string, decision ReportDecision) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	q := store.New(r.db).WithTx(tx)
+	rows, err := q.Report_SetStatus(ctx, store.Report_SetStatusParams{ReportID: reportID, NewStatus: status})
+	if err != nil {
+		dal.RollbackTx(ctx, tx)
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if rows != 1 {
+		dal.RollbackTx(ctx, tx)
+		return ErrReportAlreadyResolved
+	}
+	actionPayload := decision.Payload
+	if len(actionPayload) == 0 {
+		actionPayload = json.RawMessage(`{}`)
+	}
+	payload, err := json.Marshal(reportDecisionLogPayload{Version: 1, Disposition: decision.Disposition, Action: decision.Action, InternalNote: decision.InternalNote, NotifyTarget: decision.NotifyTarget, ActionPayload: actionPayload})
+	if err != nil {
+		dal.RollbackTx(ctx, tx)
+		return apperror.WrapUnexpectedAppError(err)
+	}
+	err = q.Moderation_AddLog(ctx, store.Moderation_AddLogParams{ID: GenID(), Time: timeToTimestamptz(decision.Time), Type: "report_decision", TargetType: "report", TargetID: strconv.FormatInt(reportID, 10), Payload: payload, ActorUserID: uuidDomainToDb(decision.ActorUserID), Reason: decision.PolicyReason})
+	if err != nil {
+		dal.RollbackTx(ctx, tx)
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	return nil
 }
 
 func NewReportRepository(db DB) ReportRepository { return &reportRepository{db: db} }

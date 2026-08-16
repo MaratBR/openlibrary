@@ -89,6 +89,39 @@ func (q *Queries) ModCountBookLogFiltered(ctx context.Context, arg ModCountBookL
 	return count, err
 }
 
+const modCountBooks = `-- name: ModCountBooks :one
+select count(*)
+from books
+where ($1::text = ''
+       or ($2::bigint is not null and books.id = $2)
+       or ($2::bigint is null and
+           case when $3::bool then lower(books.name) = lower($1)
+                else books.name ilike '%' || $1 || '%' end))
+  and ($4::bool or (not books.is_banned and not books.is_shadow_banned))
+  and ($5::bool or (not books.is_trashed and not books.is_perm_removed))
+`
+
+type ModCountBooksParams struct {
+	Search         string
+	SearchID       pgtype.Int8
+	ExactName      bool
+	IncludeBanned  bool
+	IncludeDeleted bool
+}
+
+func (q *Queries) ModCountBooks(ctx context.Context, arg ModCountBooksParams) (int64, error) {
+	row := q.db.QueryRow(ctx, modCountBooks,
+		arg.Search,
+		arg.SearchID,
+		arg.ExactName,
+		arg.IncludeBanned,
+		arg.IncludeDeleted,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const modGetBookChapters = `-- name: ModGetBookChapters :many
 select book_chapters.id, book_chapters.name, book_chapters.created_at, book_chapters.updated_at,
        book_chapters.words, book_chapters.is_publicly_visible,
@@ -326,6 +359,92 @@ type ModPermRemoveBookParams struct {
 func (q *Queries) ModPermRemoveBook(ctx context.Context, arg ModPermRemoveBookParams) error {
 	_, err := q.db.Exec(ctx, modPermRemoveBook, arg.ID, arg.AuthorUserID)
 	return err
+}
+
+const modSearchBooks = `-- name: ModSearchBooks :many
+select books.id, books.name, books.created_at, books.is_banned, books.is_shadow_banned,
+       books.is_trashed, books.is_perm_removed, books.is_publicly_visible,
+       books.words, books.chapters, users.id as author_user_id, users.name as author_user_name,
+       (select count(*) from reports where target_type = 'book' and target_id = books.id::text)::bigint as reports_count
+from books
+join users on users.id = books.author_user_id
+where ($1::text = ''
+       or ($2::bigint is not null and books.id = $2)
+       or ($2::bigint is null and
+           case when $3::bool then lower(books.name) = lower($1)
+                else books.name ilike '%' || $1 || '%' end))
+  and ($4::bool or (not books.is_banned and not books.is_shadow_banned))
+  and ($5::bool or (not books.is_trashed and not books.is_perm_removed))
+order by books.name, books.id
+limit $7 offset $6
+`
+
+type ModSearchBooksParams struct {
+	Search         string
+	SearchID       pgtype.Int8
+	ExactName      bool
+	IncludeBanned  bool
+	IncludeDeleted bool
+	PageOffset     int32
+	PageLimit      int32
+}
+
+type ModSearchBooksRow struct {
+	ID                int64
+	Name              string
+	CreatedAt         pgtype.Timestamptz
+	IsBanned          bool
+	IsShadowBanned    bool
+	IsTrashed         bool
+	IsPermRemoved     bool
+	IsPubliclyVisible bool
+	Words             int32
+	Chapters          int32
+	AuthorUserID      pgtype.UUID
+	AuthorUserName    string
+	ReportsCount      int64
+}
+
+func (q *Queries) ModSearchBooks(ctx context.Context, arg ModSearchBooksParams) ([]ModSearchBooksRow, error) {
+	rows, err := q.db.Query(ctx, modSearchBooks,
+		arg.Search,
+		arg.SearchID,
+		arg.ExactName,
+		arg.IncludeBanned,
+		arg.IncludeDeleted,
+		arg.PageOffset,
+		arg.PageLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ModSearchBooksRow
+	for rows.Next() {
+		var i ModSearchBooksRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.IsBanned,
+			&i.IsShadowBanned,
+			&i.IsTrashed,
+			&i.IsPermRemoved,
+			&i.IsPubliclyVisible,
+			&i.Words,
+			&i.Chapters,
+			&i.AuthorUserID,
+			&i.AuthorUserName,
+			&i.ReportsCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const modSetBookBanned = `-- name: ModSetBookBanned :exec

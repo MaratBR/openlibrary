@@ -14,6 +14,7 @@ import type {
   ModerationReportDetailResponse,
   ModerationReportsSearchResponse,
   ModerationAuditLogPageResponse,
+  ModerationReportDecisionRequest,
 } from '@/backend-types'
 
 export function searchModerationUsers(
@@ -56,11 +57,19 @@ export function changeUserAbout(userId: string, value: string, reason: string) {
   return userAction(userId, 'change-about', { reason, value } satisfies ModerationValueRequest)
 }
 
-export function getUserLoginHistory(userId: string, page = 1, pageSize = 20) {
+export type LoginHistoryFilters = { users?: string; search?: string; status?: string; dateFrom?: string; dateTo?: string }
+
+export function getUserLoginHistory(userId: string, page = 1, pageSize = 20, filters: LoginHistoryFilters = {}) {
   return httpClient
     .get(`/_api/moderation/users/${encodeURIComponent(userId)}/login-history`, {
-      searchParams: { page, pageSize },
+      searchParams: { ...filters, page, pageSize },
     })
+    .then((response) => OLAPIResponse.create<UserLoginHistoryResponse>(response))
+}
+
+export function getGlobalLoginHistory(page = 1, pageSize = 20, filters: LoginHistoryFilters = {}) {
+  return httpClient
+    .get('/_api/moderation/login-history', { searchParams: { ...filters, page, pageSize } })
     .then((response) => OLAPIResponse.create<UserLoginHistoryResponse>(response))
 }
 
@@ -74,6 +83,12 @@ export function getModerationReport(reportId: string) {
   return httpClient
     .get(`/_api/moderation/reports/${encodeURIComponent(reportId)}`)
     .then((response) => OLAPIResponse.create<ModerationReportDetailResponse>(response))
+}
+
+export function decideModerationReport(reportId: string, body: ModerationReportDecisionRequest) {
+  return httpClient
+    .post(`/_api/moderation/reports/${encodeURIComponent(reportId)}/decisions`, { json: body })
+    .then((response) => OLAPIResponse.createNoBody(response))
 }
 
 export function searchModerationReports(search = '', targetType = '', page = 1, pageSize = 20) {

@@ -1,4 +1,6 @@
 export * from './DropdownMenu'
+export * from './Checkbox'
+export * from './Popover'
 export * from './Select'
 export * from './Timeline'
 export { cn, createClassComponent } from './util'

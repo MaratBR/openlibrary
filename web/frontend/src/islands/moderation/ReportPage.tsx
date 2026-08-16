@@ -1,11 +1,14 @@
-import { getModerationReport } from '@/api/moderation'
-import type { ModerationReportDetail } from '@/api/moderation'
+import { decideModerationReport, getModerationReport } from '@/api/moderation'
+import type { ModerationReportDecision, ModerationReportDetail } from '@/api/moderation'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Timeline } from '@/components'
+import { Checkbox } from '@/components'
+import { FormControl } from '@/components/FormControl'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'
 import { OLAPIResponse } from '@/http-client'
-import { useState } from 'react'
-import { LoaderFunctionArgs, NavLink, useLoaderData, useRouteError } from 'react-router'
+import { FormEvent, useState } from 'react'
+import { LoaderFunctionArgs, NavLink, useLoaderData, useRevalidator, useRouteError } from 'react-router'
+import { ModerationConfirmation, ModerationConfirmationDialog } from './ModerationActions'
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 
@@ -51,7 +54,7 @@ export default function ReportPage() {
             {report.bookContext && <BookContext report={report} />}
             <Activity report={report} />
           </main>
-          <DecisionPanel />
+          <DecisionPanel report={report} />
         </div>
       </div>
     </DashboardContent.Root>
@@ -109,6 +112,24 @@ function ReportedContent({ report, target }: { report: ModerationReportDetail; t
             <NavLink className="link inline-block mt-3" to={target.to}><i className="fa-solid fa-arrow-up-right-from-square mr-2" />{window._('moderationPortal.report.openTarget')}</NavLink>
           </div>
         </div>
+      ) : report.userContext ? (
+        <div className="grid md:grid-cols-[minmax(0,1fr)_auto] gap-5 items-start">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-3"><span className="chip">{report.userContext.role}</span><span className={`chip ${report.userContext.isBanned ? 'chip--destructive' : 'chip--primary'}`}>{report.userContext.isBanned ? window._('moderationPortal.report.userBanned') : window._('moderationPortal.report.userActive')}</span></div>
+            <h3 className="text-xl font-semibold">{report.userContext.name}</h3>
+            <p className="text-sm text-secondary-foreground break-all">{report.userContext.email}</p>
+            <p className="mt-4 whitespace-pre-wrap">{report.userContext.about || window._('moderationPortal.report.noProfileDescription')}</p>
+            <dl className="grid sm:grid-cols-2 gap-3 mt-4 text-sm"><Detail label={window._('moderationPortal.report.joined')} value={dateTimeFormatter.format(new Date(report.userContext.joinedAt))} /><Detail label={window._('moderationPortal.report.relatedReports')} value={String(report.userContext.relatedReports)} /></dl>
+          </div>
+          <NavLink className="btn btn--outline" to={target.to}>{window._('moderationPortal.report.openTarget')}</NavLink>
+        </div>
+      ) : report.commentContext ? (
+        <div>
+          <div className="flex flex-wrap gap-2 mb-3"><span className={`chip ${report.commentContext.deletedAt ? 'chip--destructive' : 'chip--primary'}`}>{report.commentContext.deletedAt ? window._('moderationPortal.report.commentRemoved') : window._('moderationPortal.report.commentVisible')}</span><span className="chip">{window._('moderationPortal.report.relatedReportCount', { count: String(report.commentContext.relatedReports) })}</span></div>
+          <blockquote className="rounded-lg border-l-4 border-primary bg-secondary/45 px-5 py-4 whitespace-pre-wrap">{report.commentContext.content}</blockquote>
+          <div className="grid sm:grid-cols-2 gap-4 mt-4 text-sm"><div><span className="text-secondary-foreground">{window._('moderationPortal.report.commentAuthor')}</span><NavLink className="link block" to={`/users/${report.commentContext.authorId}`}>{report.commentContext.authorName}</NavLink></div><div><span className="text-secondary-foreground">{window._('moderationPortal.report.commentLocation')}</span><NavLink className="link block" to={`/books/${report.commentContext.bookId}`}>{report.commentContext.bookName} · {report.commentContext.chapterName}</NavLink></div></div>
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-4"><time className="text-sm text-secondary-foreground">{dateTimeFormatter.format(new Date(report.commentContext.createdAt))}</time><NavLink className="btn btn--outline" to={target.to}>{window._('moderationPortal.report.openTarget')}</NavLink></div>
+        </div>
       ) : (
         <div className="rounded-xl border border-border bg-secondary/45 p-4 flex items-center gap-4">
           <i className={`fa-solid ${target.icon} text-secondary-foreground`} />
@@ -149,37 +170,72 @@ function BookContext({ report }: { report: ModerationReportDetail }) {
   )
 }
 
-function DecisionPanel() {
-  const [decision, setDecision] = useState('warning')
+const dispositions = ['no_violation', 'request_changes', 'action_taken', 'escalated'] as const
+
+function DecisionPanel({ report }: { report: ModerationReportDetail }) {
+  const revalidator = useRevalidator()
+  const [disposition, setDisposition] = useState<(typeof dispositions)[number]>('no_violation')
+  const [action, setAction] = useState('')
+  const [policyReason, setPolicyReason] = useState('')
+  const [internalNote, setInternalNote] = useState('')
+  const [notifyTarget, setNotifyTarget] = useState(false)
+  const [value, setValue] = useState('')
+  const [until, setUntil] = useState('')
+  const [confirmation, setConfirmation] = useState<ModerationConfirmation>()
+  const [pending, setPending] = useState(false)
+  const actions = report.availableActions
+  const resolved = report.status === 'resolved'
+  const needsValue = ['user.rename', 'user.change_about', 'book.change_age_rating', 'book.change_summary'].includes(action)
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const payload: Record<string, unknown> = {}
+    if (needsValue) payload.value = value
+    if (action === 'user.temporary_ban') payload.until = new Date(until).toISOString()
+    const body: ModerationReportDecision = { disposition, action: disposition === 'action_taken' ? action : '', policyReason: policyReason.trim(), internalNote: internalNote.trim(), notifyTarget, payload }
+    setConfirmation({
+      title: window._('moderationPortal.report.confirmDecision'),
+      description: window._('moderationPortal.report.confirmDecisionHelp'),
+      destructive: disposition === 'action_taken',
+      run: () => decideModerationReport(report.id, body),
+    })
+  }
+  const confirm = async () => {
+    if (!confirmation) return
+    setPending(true)
+    try {
+      const response = await confirmation.run() as { throwIfError?: () => void }
+      response.throwIfError?.()
+      setConfirmation(undefined)
+      window.toast({ title: window._('moderationPortal.report.decisionRecorded') })
+      await revalidator.revalidate()
+    } catch (error) { window.toast.error(error) } finally { setPending(false) }
+  }
   return (
     <aside className="card xl:sticky xl:top-22">
       <h2 className="text-xl font-semibold mb-4">{window._('moderationPortal.report.decision')}</h2>
-      <fieldset className="rounded-lg border border-border overflow-hidden">
-        {['noViolation', 'requestChanges', 'warning', 'restrict', 'escalate'].map((value) => (
-          <label key={value} className={`flex items-center gap-3 px-4 py-3 border-b last:border-b-0 border-border cursor-pointer ${decision === value ? 'bg-primary/8 text-primary' : 'hover:bg-foreground/5'}`}>
-            <input type="radio" name="decision" value={value} checked={decision === value} onChange={() => setDecision(value)} />
-            {window._(`moderationPortal.report.${value}`)}
-          </label>
-        ))}
-      </fieldset>
-      <label className="block mt-5 text-sm font-medium">{window._('moderationPortal.report.policyReason')}
-        <select className="input w-full mt-2" defaultValue="missing-warning"><option value="missing-warning">{window._('moderationPortal.report.missingWarning')}</option><option>{window._('moderationPortal.report.otherPolicy')}</option></select>
-      </label>
-      <label className="block mt-4 text-sm font-medium">{window._('moderationPortal.report.assignee')}
-        <div className="mt-2"><Select defaultValue="unassigned"><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">{window._('moderationPortal.report.unassigned')}</SelectItem><SelectItem value="placeholder" disabled>{window._('moderationPortal.report.assigneePlaceholder')}</SelectItem></SelectContent></Select></div>
-      </label>
-      <label className="block mt-4 text-sm font-medium">{window._('moderationPortal.report.internalNote')}
-        <textarea className="input min-h-24 mt-2" maxLength={1000} placeholder={window._('moderationPortal.report.notePlaceholder')} />
-      </label>
-      <label className="flex gap-3 mt-4 text-sm"><input type="checkbox" defaultChecked /> <span>{window._('moderationPortal.report.notifyAuthor')}<small className="block text-secondary-foreground mt-1">{window._('moderationPortal.report.notifyAuthorHelp')}</small></span></label>
-      <button className="btn btn--primary w-full mt-6"><i className="fa-solid fa-shield-halved mr-2" />{window._('moderationPortal.report.applyAction')}</button>
+      {resolved ? <p className="rounded-lg bg-secondary p-4 text-secondary-foreground">{window._('moderationPortal.report.alreadyResolved')}</p> : <form onSubmit={submit} className="grid gap-4">
+        <FormControl label={window._('moderationPortal.report.outcome')}>
+          <Select value={disposition} onValueChange={(next) => { setDisposition(next as typeof disposition); setAction('') }}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent>{dispositions.map((item) => <SelectItem key={item} value={item}>{window._(`moderationPortal.report.disposition_${item}`)}</SelectItem>)}</SelectContent></Select>
+        </FormControl>
+        {disposition === 'action_taken' && <FormControl label={window._('moderationPortal.report.enforcementAction')}>
+          <Select value={action} onValueChange={setAction}><SelectTrigger className="w-full"><SelectValue placeholder={window._('moderationPortal.report.chooseAction')} /></SelectTrigger><SelectContent>{actions.map((item) => <SelectItem key={item} value={item}>{window._(`moderationPortal.report.action_${item.replace(/\./g, '_')}`)}</SelectItem>)}</SelectContent></Select>
+        </FormControl>}
+        {action === 'user.temporary_ban' && <FormControl label={window._('moderationPortal.report.banUntil')}><input className="input" type="datetime-local" required value={until} onChange={(event) => setUntil(event.target.value)} /></FormControl>}
+        {action === 'book.change_age_rating' && <FormControl label={window._('moderationPortal.report.newValue')}><Select value={value} onValueChange={setValue}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent>{['?', 'G', 'PG', 'PG-13', 'R', 'NC-17'].map((rating) => <SelectItem key={rating} value={rating}>{rating}</SelectItem>)}</SelectContent></Select></FormControl>}
+        {needsValue && action !== 'book.change_age_rating' && <FormControl label={window._('moderationPortal.report.newValue')}><textarea className="input min-h-20" required value={value} onChange={(event) => setValue(event.target.value)} /></FormControl>}
+        <FormControl label={window._('moderationPortal.report.policyReason')}><textarea className="input min-h-20" required value={policyReason} onChange={(event) => setPolicyReason(event.target.value)} /></FormControl>
+        <FormControl label={window._('moderationPortal.report.internalNote')}><textarea className="input min-h-24" maxLength={1000} value={internalNote} onChange={(event) => setInternalNote(event.target.value)} placeholder={window._('moderationPortal.report.notePlaceholder')} /></FormControl>
+        <label className="flex items-start gap-3 cursor-pointer" htmlFor="report-notify-target"><Checkbox id="report-notify-target" className="mt-0.5" checked={notifyTarget} onCheckedChange={(checked) => setNotifyTarget(checked === true)} /><span>{window._('moderationPortal.report.notifyAuthor')}<small className="block text-secondary-foreground mt-1">{window._('moderationPortal.report.notifyUnavailable')}</small></span></label>
+        <button disabled={disposition === 'action_taken' && !action} className="btn btn--primary w-full"><i className="fa-solid fa-shield-halved mr-2" />{window._('moderationPortal.report.applyAction')}</button>
+      </form>}
       <p className="text-xs italic text-center text-secondary-foreground mt-5">{window._('moderationPortal.report.recordedNotice')}</p>
+      <ModerationConfirmationDialog confirmation={confirmation} pending={pending} onClose={() => setConfirmation(undefined)} onConfirm={() => void confirm()} confirmLabel={window._('moderationPortal.report.applyAction')} />
     </aside>
   )
 }
 
 function Activity({ report }: { report: ModerationReportDetail }) {
-  return <section className="card"><h2 className="text-lg font-semibold mb-4">{window._('moderationPortal.report.activity')}</h2><Timeline.Root>{report.activities.map((activity) => <Timeline.Item key={`${activity.time}-${activity.kind}`} marker={<i className="fa-solid fa-flag text-xs" />}><p><b>{activity.actor}</b> {activity.description}</p><time className="text-sm text-secondary-foreground">{dateTimeFormatter.format(new Date(activity.time))}</time></Timeline.Item>)}</Timeline.Root></section>
+  return <section className="card"><h2 className="text-lg font-semibold mb-4">{window._('moderationPortal.report.activity')}</h2><Timeline.Root>{report.activities.map((activity) => <Timeline.Item key={`${activity.time}-${activity.kind}`} marker={<i className={`fa-solid ${activity.kind === 'decision' ? 'fa-gavel' : 'fa-flag'} text-xs`} />}><p><b>{activity.actor}</b> {activity.kind === 'decision' ? window._(`moderationPortal.report.disposition_${activity.disposition}`) : activity.description}</p>{activity.action && <p className="text-sm mt-1">{window._(`moderationPortal.report.action_${activity.action.replace(/\./g, '_')}`)}</p>}{activity.policyReason && <p className="text-sm text-secondary-foreground mt-1">{activity.policyReason}</p>}{activity.internalNote && <p className="mt-2 whitespace-pre-wrap">{activity.internalNote}</p>}{activity.notifyTarget && <p className="text-xs text-secondary-foreground mt-1">{window._('moderationPortal.report.notificationRequested')}</p>}<time className="text-sm text-secondary-foreground">{dateTimeFormatter.format(new Date(activity.time))}</time></Timeline.Item>)}</Timeline.Root></section>
 }
 
 function Detail({ label, value, dot }: { label: string; value: string; dot?: boolean }) { return <div><dt className="text-sm text-secondary-foreground mb-1">{label}</dt><dd>{dot && <i className="fa-solid fa-circle text-amber-400 text-xs mr-2" />}{value}</dd></div> }

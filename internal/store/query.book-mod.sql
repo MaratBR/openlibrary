@@ -22,6 +22,34 @@ left join lateral (
 ) latest_ban on books.is_banned
 where books.id = $1;
 
+-- name: ModSearchBooks :many
+select books.id, books.name, books.created_at, books.is_banned, books.is_shadow_banned,
+       books.is_trashed, books.is_perm_removed, books.is_publicly_visible,
+       books.words, books.chapters, users.id as author_user_id, users.name as author_user_name,
+       (select count(*) from reports where target_type = 'book' and target_id = books.id::text)::bigint as reports_count
+from books
+join users on users.id = books.author_user_id
+where (sqlc.arg('search')::text = ''
+       or (sqlc.narg('search_id')::bigint is not null and books.id = sqlc.narg('search_id'))
+       or (sqlc.narg('search_id')::bigint is null and
+           case when sqlc.arg('exact_name')::bool then lower(books.name) = lower(sqlc.arg('search'))
+                else books.name ilike '%' || sqlc.arg('search') || '%' end))
+  and (sqlc.arg('include_banned')::bool or (not books.is_banned and not books.is_shadow_banned))
+  and (sqlc.arg('include_deleted')::bool or (not books.is_trashed and not books.is_perm_removed))
+order by books.name, books.id
+limit sqlc.arg('page_limit') offset sqlc.arg('page_offset');
+
+-- name: ModCountBooks :one
+select count(*)
+from books
+where (sqlc.arg('search')::text = ''
+       or (sqlc.narg('search_id')::bigint is not null and books.id = sqlc.narg('search_id'))
+       or (sqlc.narg('search_id')::bigint is null and
+           case when sqlc.arg('exact_name')::bool then lower(books.name) = lower(sqlc.arg('search'))
+                else books.name ilike '%' || sqlc.arg('search') || '%' end))
+  and (sqlc.arg('include_banned')::bool or (not books.is_banned and not books.is_shadow_banned))
+  and (sqlc.arg('include_deleted')::bool or (not books.is_trashed and not books.is_perm_removed));
+
 -- name: ModGetBookChapters :many
 select book_chapters.id, book_chapters.name, book_chapters.created_at, book_chapters.updated_at,
        book_chapters.words, book_chapters.is_publicly_visible,

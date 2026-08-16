@@ -35,3 +35,49 @@ select id, user_id, created_at, user_agent, ip_address
 from sessions
 where user_id = $1
 order by created_at desc;
+
+-- name: Moderation_SearchUserLoginHistory :many
+select sessions.id, sessions.user_id, users.name as user_name,
+       sessions.created_at, sessions.user_agent, sessions.ip_address,
+       sessions.expires_at, sessions.is_terminated,
+       sessions.location_country, sessions.location_region, sessions.location_city
+from sessions
+join users on users.id = sessions.user_id
+where (cardinality(sqlc.arg('user_ids')::uuid[]) = 0 or sessions.user_id = any(sqlc.arg('user_ids')::uuid[]))
+  and (sqlc.arg('search')::text = ''
+       or ip_address ilike '%' || sqlc.arg('search') || '%'
+       or user_agent ilike '%' || sqlc.arg('search') || '%'
+       or location_country ilike '%' || sqlc.arg('search') || '%'
+       or location_region ilike '%' || sqlc.arg('search') || '%'
+       or location_city ilike '%' || sqlc.arg('search') || '%')
+  and (sqlc.narg('date_from')::timestamptz is null or created_at >= sqlc.narg('date_from'))
+  and (sqlc.narg('date_to')::timestamptz is null or created_at < sqlc.narg('date_to'))
+  and (sqlc.arg('session_status')::text = ''
+       or (sqlc.arg('session_status') = 'active' and not is_terminated and expires_at > now())
+       or (sqlc.arg('session_status') = 'expired' and not is_terminated and expires_at <= now())
+       or (sqlc.arg('session_status') = 'terminated' and is_terminated))
+order by sessions.created_at desc, sessions.id desc
+limit sqlc.arg('page_limit') offset sqlc.arg('page_offset');
+
+-- name: Moderation_CountUserLoginHistory :one
+select count(*)
+from sessions
+where (cardinality(sqlc.arg('user_ids')::uuid[]) = 0 or sessions.user_id = any(sqlc.arg('user_ids')::uuid[]))
+  and (sqlc.arg('search')::text = ''
+       or ip_address ilike '%' || sqlc.arg('search') || '%'
+       or user_agent ilike '%' || sqlc.arg('search') || '%'
+       or location_country ilike '%' || sqlc.arg('search') || '%'
+       or location_region ilike '%' || sqlc.arg('search') || '%'
+       or location_city ilike '%' || sqlc.arg('search') || '%')
+  and (sqlc.narg('date_from')::timestamptz is null or created_at >= sqlc.narg('date_from'))
+  and (sqlc.narg('date_to')::timestamptz is null or created_at < sqlc.narg('date_to'))
+  and (sqlc.arg('session_status')::text = ''
+       or (sqlc.arg('session_status') = 'active' and not is_terminated and expires_at > now())
+       or (sqlc.arg('session_status') = 'expired' and not is_terminated and expires_at <= now())
+       or (sqlc.arg('session_status') = 'terminated' and is_terminated));
+
+-- name: Moderation_GetRecentLoginSessions :many
+select created_at, location_country, location_region, location_city
+from sessions
+where user_id = $1
+order by created_at desc;

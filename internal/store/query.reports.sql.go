@@ -242,6 +242,142 @@ func (q *Queries) Report_GetByID(ctx context.Context, id int64) (Report_GetByIDR
 	return i, err
 }
 
+const report_GetCommentContext = `-- name: Report_GetCommentContext :one
+select comments.id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at,
+       authors.id as author_id, authors.name as author_name,
+       book_chapters.id as chapter_id, book_chapters.name as chapter_name,
+       books.id as book_id, books.name as book_name,
+       (select count(*) from reports related where related.target_type = 'comment' and related.target_id = comments.id::text)::int as related_reports
+from reports
+join comments on comments.id = reports.target_id::bigint
+join users authors on authors.id = comments.user_id
+join book_chapters on book_chapters.id = comments.chapter_id
+join books on books.id = book_chapters.book_id
+where reports.id = $1 and reports.target_type = 'comment'
+`
+
+type Report_GetCommentContextRow struct {
+	ID             int64
+	Content        string
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+	DeletedAt      pgtype.Timestamptz
+	AuthorID       pgtype.UUID
+	AuthorName     string
+	ChapterID      int64
+	ChapterName    string
+	BookID         int64
+	BookName       string
+	RelatedReports int32
+}
+
+func (q *Queries) Report_GetCommentContext(ctx context.Context, id int64) (Report_GetCommentContextRow, error) {
+	row := q.db.QueryRow(ctx, report_GetCommentContext, id)
+	var i Report_GetCommentContextRow
+	err := row.Scan(
+		&i.ID,
+		&i.Content,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.AuthorID,
+		&i.AuthorName,
+		&i.ChapterID,
+		&i.ChapterName,
+		&i.BookID,
+		&i.BookName,
+		&i.RelatedReports,
+	)
+	return i, err
+}
+
+const report_GetEvents = `-- name: Report_GetEvents :many
+select moderation_logs.id, moderation_logs.time, moderation_logs.type, moderation_logs.target_type, moderation_logs.target_id, moderation_logs.payload, moderation_logs.actor_user_id, moderation_logs.reason, users.name as actor_user_name
+from moderation_logs
+join users on users.id = moderation_logs.actor_user_id
+where moderation_logs.target_type = 'report'
+  and moderation_logs.target_id = $1::bigint::text
+  and moderation_logs.type = 'report_decision'
+order by moderation_logs.time, moderation_logs.id
+`
+
+type Report_GetEventsRow struct {
+	ID            int64
+	Time          pgtype.Timestamptz
+	Type          string
+	TargetType    string
+	TargetID      string
+	Payload       []byte
+	ActorUserID   pgtype.UUID
+	Reason        string
+	ActorUserName string
+}
+
+func (q *Queries) Report_GetEvents(ctx context.Context, reportID int64) ([]Report_GetEventsRow, error) {
+	rows, err := q.db.Query(ctx, report_GetEvents, reportID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Report_GetEventsRow
+	for rows.Next() {
+		var i Report_GetEventsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Time,
+			&i.Type,
+			&i.TargetType,
+			&i.TargetID,
+			&i.Payload,
+			&i.ActorUserID,
+			&i.Reason,
+			&i.ActorUserName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const report_GetUserContext = `-- name: Report_GetUserContext :one
+select users.id, users.name, users.email, users.about, users.joined_at, users.role, users.is_banned,
+       (select count(*) from reports related where related.target_type = 'user' and related.target_id = users.id::text)::int as related_reports
+from reports
+join users on users.id = reports.target_id::uuid
+where reports.id = $1 and reports.target_type = 'user'
+`
+
+type Report_GetUserContextRow struct {
+	ID             pgtype.UUID
+	Name           string
+	Email          string
+	About          string
+	JoinedAt       pgtype.Timestamptz
+	Role           UserRole
+	IsBanned       bool
+	RelatedReports int32
+}
+
+func (q *Queries) Report_GetUserContext(ctx context.Context, id int64) (Report_GetUserContextRow, error) {
+	row := q.db.QueryRow(ctx, report_GetUserContext, id)
+	var i Report_GetUserContextRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.About,
+		&i.JoinedAt,
+		&i.Role,
+		&i.IsBanned,
+		&i.RelatedReports,
+	)
+	return i, err
+}
+
 const report_Search = `-- name: Report_Search :many
 select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, reports.book_chapter_id, reports.book_excerpt, reports.status, reports.priority, users.name as reporter_user_name
 from reports
@@ -317,6 +453,25 @@ func (q *Queries) Report_Search(ctx context.Context, arg Report_SearchParams) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const report_SetStatus = `-- name: Report_SetStatus :execrows
+update reports
+set status = $1
+where id = $2 and status in ('unreviewed', 'escalated')
+`
+
+type Report_SetStatusParams struct {
+	NewStatus string
+	ReportID  int64
+}
+
+func (q *Queries) Report_SetStatus(ctx context.Context, arg Report_SetStatusParams) (int64, error) {
+	result, err := q.db.Exec(ctx, report_SetStatus, arg.NewStatus, arg.ReportID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const report_UserExists = `-- name: Report_UserExists :one

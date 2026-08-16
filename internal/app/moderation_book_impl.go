@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
@@ -20,6 +22,32 @@ type moderationBookService struct {
 
 func (m *moderationBookService) authorize(ctx context.Context, actor uuid.UUID) error {
 	return m.auth.AuthorizeModerator(ctx, actor)
+}
+
+func (m *moderationBookService) SearchBooks(ctx context.Context, query SearchModerationBooksQuery) (ModerationPage[ModerationBookListEntry], error) {
+	if err := m.authorize(ctx, query.ActorUserID); err != nil {
+		return ModerationPage[ModerationBookListEntry]{}, err
+	}
+	query.Search = strings.TrimSpace(query.Search)
+	searchID := pgtype.Int8{}
+	if id, err := strconv.ParseInt(query.Search, 10, 64); err == nil {
+		searchID = pgtype.Int8{Int64: id, Valid: true}
+	}
+	page, size, limit, offset := normalizeModerationPage(query.Page, query.PageSize)
+	q := store.New(m.db)
+	params := store.ModSearchBooksParams{Search: query.Search, SearchID: searchID, ExactName: query.ExactName, IncludeBanned: query.IncludeBanned, IncludeDeleted: query.IncludeDeleted, PageLimit: limit, PageOffset: offset}
+	rows, err := q.ModSearchBooks(ctx, params)
+	if err != nil {
+		return ModerationPage[ModerationBookListEntry]{}, apperror.WrapUnexpectedDBError(err)
+	}
+	total, err := q.ModCountBooks(ctx, store.ModCountBooksParams{Search: params.Search, SearchID: params.SearchID, ExactName: params.ExactName, IncludeBanned: params.IncludeBanned, IncludeDeleted: params.IncludeDeleted})
+	if err != nil {
+		return ModerationPage[ModerationBookListEntry]{}, apperror.WrapUnexpectedDBError(err)
+	}
+	entries := MapSlice(rows, func(row store.ModSearchBooksRow) ModerationBookListEntry {
+		return ModerationBookListEntry{ID: row.ID, Name: row.Name, CreatedAt: timeDbToDomain(row.CreatedAt), IsBanned: row.IsBanned, IsShadowBanned: row.IsShadowBanned, IsTrashed: row.IsTrashed, IsPermanentlyRemoved: row.IsPermRemoved, IsPubliclyVisible: row.IsPubliclyVisible, Words: row.Words, Chapters: row.Chapters, AuthorUserID: uuidDbToDomain(row.AuthorUserID), AuthorUserName: row.AuthorUserName, ReportsCount: row.ReportsCount}
+	})
+	return moderationPage(entries, page, size, total), nil
 }
 
 // GetBookInfo implements ModerationBookService.

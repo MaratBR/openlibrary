@@ -48,6 +48,26 @@ left join defined_tags on defined_tags.id = any(books.tag_ids) and defined_tags.
 where reports.id = $1 and reports.target_type = 'book'
 group by reports.id, books.id, authors.name, book_chapters.id;
 
+-- name: Report_GetUserContext :one
+select users.id, users.name, users.email, users.about, users.joined_at, users.role, users.is_banned,
+       (select count(*) from reports related where related.target_type = 'user' and related.target_id = users.id::text)::int as related_reports
+from reports
+join users on users.id = reports.target_id::uuid
+where reports.id = $1 and reports.target_type = 'user';
+
+-- name: Report_GetCommentContext :one
+select comments.id, comments.content, comments.created_at, comments.updated_at, comments.deleted_at,
+       authors.id as author_id, authors.name as author_name,
+       book_chapters.id as chapter_id, book_chapters.name as chapter_name,
+       books.id as book_id, books.name as book_name,
+       (select count(*) from reports related where related.target_type = 'comment' and related.target_id = comments.id::text)::int as related_reports
+from reports
+join comments on comments.id = reports.target_id::bigint
+join users authors on authors.id = comments.user_id
+join book_chapters on book_chapters.id = comments.chapter_id
+join books on books.id = book_chapters.book_id
+where reports.id = $1 and reports.target_type = 'comment';
+
 -- name: Report_Search :many
 select reports.*, users.name as reporter_user_name
 from reports
@@ -84,3 +104,17 @@ select exists(select 1 from comments where id = $1);
 
 -- name: Report_BookChapterExists :one
 select exists(select 1 from book_chapters where id = sqlc.arg('chapter_id') and book_id = sqlc.arg('book_id'));
+
+-- name: Report_GetEvents :many
+select moderation_logs.*, users.name as actor_user_name
+from moderation_logs
+join users on users.id = moderation_logs.actor_user_id
+where moderation_logs.target_type = 'report'
+  and moderation_logs.target_id = sqlc.arg('report_id')::bigint::text
+  and moderation_logs.type = 'report_decision'
+order by moderation_logs.time, moderation_logs.id;
+
+-- name: Report_SetStatus :execrows
+update reports
+set status = sqlc.arg('new_status')
+where id = sqlc.arg('report_id') and status in ('unreviewed', 'escalated');

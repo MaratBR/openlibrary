@@ -105,7 +105,6 @@ export const userModerationRouteLoader = async ({ params, request }: LoaderFunct
     comments = await responseData(getModerationUserComments(userId, page))
   else if (leaf === 'history') history = await responseData(getModerationUserHistory(userId, page))
   else if (leaf === 'reports') reports = await responseData(getModerationUserReports(userId, page))
-  else if (leaf === 'login-history') logins = await responseData(getUserLoginHistory(userId, page))
 
   return { user, books, comments, history, reports, logins, locations }
 }
@@ -116,7 +115,7 @@ export default function UserModerationPage() {
   const location = useLocation()
 
   const leaf = location.pathname.split('/').at(-1) ?? ''
-  const section = ['activity', 'history', 'reports', 'login-history'].includes(leaf)
+  const section = ['activity', 'history', 'reports'].includes(leaf)
     ? 'activity'
     : leaf === 'actions'
       ? 'actions'
@@ -142,7 +141,7 @@ export default function UserModerationPage() {
         <div className="pt-5">
           {leaf === user.id && <Overview user={user} data={data} />}
           {leaf === 'activity' && <Activity userId={user.id} data={data} />}
-          {['history', 'reports', 'login-history', 'books', 'comments'].includes(leaf) && (
+          {['history', 'reports', 'books', 'comments'].includes(leaf) && (
             <ResourcePage resource={leaf} data={data} />
           )}
           {leaf === 'actions' && <Actions user={user} />}
@@ -598,19 +597,7 @@ function ResourcePage({
         />
       )
     default:
-      return (
-        <PagedList
-          title={window._('moderationPortal.user.loginHistory')}
-          data={data.logins}
-          render={(entry: LoginHistoryEntry) => (
-            <div className="grid sm:grid-cols-[12rem_10rem_1fr] gap-2">
-              <span>{dateTimeFormatter.format(new Date(entry.loggedInAt))}</span>
-              <span className="font-mono text-sm">{entry.ipAddress}</span>
-              <span>{entry.userAgent}</span>
-            </div>
-          )}
-        />
-      )
+      return null
   }
 }
 

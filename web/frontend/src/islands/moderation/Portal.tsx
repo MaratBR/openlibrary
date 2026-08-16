@@ -1,4 +1,4 @@
-import { createHashRouter, Navigate, Outlet } from 'react-router'
+import { createHashRouter, Navigate, Outlet, redirect } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import { ReactIslandProps } from '../common/react-island'
 import { useMemo } from 'react'
@@ -16,6 +16,8 @@ import BookModerationPage, {
   bookModerationRouteLoader,
 } from './BookModerationPage'
 import AuditLogPage, { AuditLogErrorPage, auditLogLoader } from './AuditLogPage'
+import ModerationBooks, { ModerationBooksErrorPage, moderationBooksLoader } from './ModerationBooks'
+import LoginHistoryPage, { LoginHistoryErrorPage, loginHistoryLoader } from './LoginHistoryPage'
 
 const routes = [
   ['overview', 'moderationPortal.overview'],
@@ -43,7 +45,7 @@ function createModerationRouter(roles: string[]) {
           element: <Navigate to="/overview" replace />,
         },
         ...routes
-          .filter(([path]) => path !== 'users' && path !== 'audit-log')
+          .filter(([path]) => path !== 'users' && path !== 'books' && path !== 'login-history' && path !== 'audit-log')
           .map(([path, translationKey]) => ({
             path: `/${path}`,
             element: <PlaceholderPage title={window._(translationKey)} />,
@@ -53,6 +55,18 @@ function createModerationRouter(roles: string[]) {
           element: <ModerationUsers roles={roles} />,
           errorElement: <ModerationUsersErrorPage />,
           loader: moderationUsersLoader,
+        },
+        {
+          path: '/books',
+          element: <ModerationBooks />,
+          errorElement: <ModerationBooksErrorPage />,
+          loader: moderationBooksLoader,
+        },
+        {
+          path: '/login-history',
+          element: <LoginHistoryPage />,
+          errorElement: <LoginHistoryErrorPage />,
+          loader: loginHistoryLoader,
         },
         {
           path: '/audit-log',
@@ -94,12 +108,17 @@ function createModerationRouter(roles: string[]) {
           errorElement: <UserModerationErrorPage />,
           loader: userModerationRouteLoader,
         },
-        ...['history', 'reports', 'login-history', 'books', 'comments'].map((resource) => ({
+        ...['history', 'reports', 'books', 'comments'].map((resource) => ({
           path: `/users/:userId/${resource}`,
           element: <UserModerationPage />,
           errorElement: <UserModerationErrorPage />,
           loader: userModerationRouteLoader,
         })),
+        {
+          path: '/users/:userId/login-history',
+          loader: ({ params }) => redirect(`/login-history?users=${encodeURIComponent(params.userId ?? '')}`),
+          element: null,
+        },
         {
           path: '/books/:bookId',
           element: <BookModerationPage />,

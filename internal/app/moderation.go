@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -12,8 +11,9 @@ import (
 )
 
 var (
-	ErrModerationForbidden = apperror.AppErrors.NewType("moderation_forbidden", apperror.ErrTraitAuthorizationIssue).New("moderator privileges are required")
-	ErrModerationReason    = apperror.AppErrors.NewType("moderation_reason_required").New("a moderation reason is required")
+	ErrModerationForbidden       = apperror.AppErrors.NewType("moderation_forbidden", apperror.ErrTraitAuthorizationIssue).New("moderator privileges are required")
+	ErrModerationReason          = apperror.AppErrors.NewType("moderation_reason_required").New("a moderation reason is required")
+	ErrInvalidLoginHistoryFilter = apperror.AppErrors.NewType("invalid_login_history_filter").New("invalid login history filter")
 )
 
 // ModerationAuthorizer centralizes the role check shared by every moderation
@@ -198,58 +198,85 @@ func NewContentModerationService(auth ModerationAuthorizer, repo ContentModerati
 }
 
 type LoginHistoryEntry struct {
+	ID                   int64
+	UserID               uuid.UUID
+	UserName             string
 	IPAddress, UserAgent string
 	Location             IPLocation
 	LoggedInAt           time.Time
+	IsTerminated         bool
+	ExpiresAt            time.Time
 }
 
 type LoginLocation struct {
 	IPLocation
 	LastSeenAt time.Time
 }
-type GetLoginHistoryQuery struct{ ActorUserID, UserID uuid.UUID }
+type GetLoginHistoryQuery struct {
+	ActorUserID, UserID uuid.UUID
+	UserIDs             []uuid.UUID
+	Search, Status      string
+	DateFrom, DateTo    Nullable[time.Time]
+	Page, PageSize      uint32
+}
+type LoginHistoryRepository interface {
+	Search(context.Context, GetLoginHistoryQuery, int32, int32) ([]LoginHistoryEntry, int64, error)
+	RecentLocations(context.Context, uuid.UUID) ([]LoginLocation, error)
+}
 type LoginHistoryService interface {
-	GetUserLoginHistory(context.Context, GetLoginHistoryQuery) ([]LoginHistoryEntry, error)
+	GetUserLoginHistory(context.Context, GetLoginHistoryQuery) (ModerationPage[LoginHistoryEntry], error)
 	GetRecentLoginLocations(context.Context, GetLoginHistoryQuery) ([]LoginLocation, error)
 }
 
 type loginHistoryService struct {
-	auth     ModerationAuthorizer
-	sessions SessionService
+	auth ModerationAuthorizer
+	repo LoginHistoryRepository
 }
 
-func (s *loginHistoryService) GetUserLoginHistory(ctx context.Context, q GetLoginHistoryQuery) ([]LoginHistoryEntry, error) {
+func (s *loginHistoryService) GetUserLoginHistory(ctx context.Context, q GetLoginHistoryQuery) (ModerationPage[LoginHistoryEntry], error) {
 	if err := s.auth.AuthorizeModerator(ctx, q.ActorUserID); err != nil {
-		return nil, err
+		return ModerationPage[LoginHistoryEntry]{}, err
 	}
-	rows, err := s.sessions.GetByUserID(ctx, q.UserID)
+	q.Search = strings.TrimSpace(q.Search)
+	if len(q.UserIDs) == 0 && q.UserID != uuid.Nil {
+		q.UserIDs = []uuid.UUID{q.UserID}
+	}
+	if len(q.UserIDs) > 20 {
+		return ModerationPage[LoginHistoryEntry]{}, ErrInvalidLoginHistoryFilter
+	}
+	if q.Status != "" && q.Status != "active" && q.Status != "expired" && q.Status != "terminated" {
+		return ModerationPage[LoginHistoryEntry]{}, ErrInvalidLoginHistoryFilter
+	}
+	if q.DateFrom.Valid && q.DateTo.Valid && !q.DateFrom.Value.Before(q.DateTo.Value) {
+		return ModerationPage[LoginHistoryEntry]{}, ErrInvalidLoginHistoryFilter
+	}
+	page, size, limit, offset := normalizeModerationPage(q.Page, q.PageSize)
+	rows, total, err := s.repo.Search(ctx, q, limit, offset)
 	if err != nil {
-		return nil, err
+		return ModerationPage[LoginHistoryEntry]{}, err
 	}
-	result := make([]LoginHistoryEntry, len(rows))
-	for i, row := range rows {
-		result[i] = LoginHistoryEntry{IPAddress: row.IpAddress, UserAgent: row.UserAgent, Location: row.Location, LoggedInAt: row.CreatedAt}
-	}
-	sort.Slice(result, func(i, j int) bool { return result[i].LoggedInAt.After(result[j].LoggedInAt) })
-	return result, nil
+	return moderationPage(rows, page, size, total), nil
 }
 
 func (s *loginHistoryService) GetRecentLoginLocations(ctx context.Context, q GetLoginHistoryQuery) ([]LoginLocation, error) {
-	history, err := s.GetUserLoginHistory(ctx, q)
+	if err := s.auth.AuthorizeModerator(ctx, q.ActorUserID); err != nil {
+		return nil, err
+	}
+	history, err := s.repo.RecentLocations(ctx, q.UserID)
 	if err != nil {
 		return nil, err
 	}
 	result := make([]LoginLocation, 0, 3)
 	seen := make(map[IPLocation]struct{}, 3)
 	for _, entry := range history {
-		if entry.Location == (IPLocation{}) {
+		if entry.IPLocation == (IPLocation{}) {
 			continue
 		}
-		if _, exists := seen[entry.Location]; exists {
+		if _, exists := seen[entry.IPLocation]; exists {
 			continue
 		}
-		seen[entry.Location] = struct{}{}
-		result = append(result, LoginLocation{IPLocation: entry.Location, LastSeenAt: entry.LoggedInAt})
+		seen[entry.IPLocation] = struct{}{}
+		result = append(result, entry)
 		if len(result) == 3 {
 			break
 		}
@@ -257,6 +284,6 @@ func (s *loginHistoryService) GetRecentLoginLocations(ctx context.Context, q Get
 	return result, nil
 }
 
-func NewLoginHistoryService(auth ModerationAuthorizer, sessions SessionService) LoginHistoryService {
-	return &loginHistoryService{auth: auth, sessions: sessions}
+func NewLoginHistoryService(auth ModerationAuthorizer, repo LoginHistoryRepository) LoginHistoryService {
+	return &loginHistoryService{auth: auth, repo: repo}
 }

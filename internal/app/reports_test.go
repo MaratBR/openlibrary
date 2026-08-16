@@ -10,11 +10,33 @@ import (
 )
 
 type reportRepoStub struct {
-	exists  bool
-	created Report
-	result  Report
-	book    *ModerationReportBookContextData
-	getErr  error
+	exists   bool
+	created  Report
+	result   Report
+	book     *ModerationReportBookContextData
+	user     *ModerationReportUserContextData
+	comment  *ModerationReportCommentContextData
+	events   []ReportDecision
+	decision *ReportDecision
+	status   string
+	getErr   error
+}
+
+type reportActionExecutorStub struct{ err error }
+
+func (s reportActionExecutorStub) Execute(context.Context, Report, DecideModerationReportCommand) error {
+	return s.err
+}
+func (s reportActionExecutorStub) AvailableActions(report Report) []string {
+	return NewReportActionExecutor(nil, nil).AvailableActions(report)
+}
+
+func (r *reportRepoStub) GetEvents(context.Context, int64) ([]ReportDecision, error) {
+	return r.events, nil
+}
+func (r *reportRepoStub) AddDecision(_ context.Context, _ int64, status string, decision ReportDecision) error {
+	r.status, r.decision = status, &decision
+	return nil
 }
 
 func (r *reportRepoStub) GetByID(context.Context, int64) (Report, string, error) {
@@ -24,6 +46,12 @@ func (r *reportRepoStub) GetByID(context.Context, int64) (Report, string, error)
 func (r *reportRepoStub) GetBookContext(context.Context, int64) (*ModerationReportBookContextData, error) {
 	return r.book, nil
 }
+func (r *reportRepoStub) GetUserContext(context.Context, int64) (*ModerationReportUserContextData, error) {
+	return r.user, nil
+}
+func (r *reportRepoStub) GetCommentContext(context.Context, int64) (*ModerationReportCommentContextData, error) {
+	return r.comment, nil
+}
 
 func (r *reportRepoStub) Search(context.Context, string, string, int32, int32) ([]ModerationReportListEntry, int64, error) {
 	return nil, 0, nil
@@ -32,7 +60,7 @@ func (r *reportRepoStub) Search(context.Context, string, string, int32, int32) (
 func TestModerationReportUsesPersistedWorkflow(t *testing.T) {
 	createdAt := time.Date(2026, 8, 7, 12, 0, 0, 0, time.UTC)
 	repo := &reportRepoStub{result: Report{ID: 42, Number: "R-2026-0807-42", Time: createdAt, TargetType: ReportTargetComment, TargetID: "99", Reason: "Harassment", Status: "reviewing", Priority: "high"}}
-	result, err := NewModerationReportService(moderationAuthStub{}, repo, nil).GetReport(context.Background(), GetModerationReportQuery{ReportID: 42})
+	result, err := NewModerationReportService(moderationAuthStub{}, repo, nil, reportActionExecutorStub{}).GetReport(context.Background(), GetModerationReportQuery{ReportID: 42})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,9 +74,71 @@ func TestModerationReportUsesPersistedWorkflow(t *testing.T) {
 
 func TestModerationReportRequiresModerator(t *testing.T) {
 	repo := &reportRepoStub{getErr: errors.New("repository should not be called")}
-	_, err := NewModerationReportService(moderationAuthStub{err: ErrModerationForbidden}, repo, nil).GetReport(context.Background(), GetModerationReportQuery{})
+	_, err := NewModerationReportService(moderationAuthStub{err: ErrModerationForbidden}, repo, nil, reportActionExecutorStub{}).GetReport(context.Background(), GetModerationReportQuery{})
 	if !errors.Is(err, ErrModerationForbidden) {
 		t.Fatalf("expected forbidden error, got %v", err)
+	}
+}
+
+func TestModerationReportDecisionValidationAndPersistence(t *testing.T) {
+	repo := &reportRepoStub{result: Report{ID: 42, Status: "unreviewed"}}
+	svc := NewModerationReportService(moderationAuthStub{}, repo, nil, reportActionExecutorStub{})
+	actor := uuid.Must(uuid.NewV4())
+	err := svc.DecideReport(context.Background(), DecideModerationReportCommand{ActorUserID: actor, ReportID: 42, Disposition: ReportDispositionNoViolation, PolicyReason: " No policy violation ", InternalNote: " reviewed "})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if repo.status != "resolved" || repo.decision == nil || repo.decision.PolicyReason != "No policy violation" || repo.decision.InternalNote != "reviewed" {
+		t.Fatalf("decision was not normalized and persisted: status=%q decision=%#v", repo.status, repo.decision)
+	}
+}
+
+func TestModerationReportDecisionRejectsInvalidTransitions(t *testing.T) {
+	tests := []DecideModerationReportCommand{
+		{Disposition: "unknown", PolicyReason: "reason"},
+		{Disposition: ReportDispositionNoViolation, Action: "comment.remove", PolicyReason: "reason"},
+		{Disposition: ReportDispositionActionTaken, PolicyReason: "reason"},
+		{Disposition: ReportDispositionEscalated, Action: "book.ban", PolicyReason: "reason"},
+		{Disposition: ReportDispositionNoViolation},
+	}
+	for _, cmd := range tests {
+		repo := &reportRepoStub{result: Report{ID: 42, Status: "unreviewed"}}
+		cmd.ReportID = 42
+		if err := NewModerationReportService(moderationAuthStub{}, repo, nil, reportActionExecutorStub{}).DecideReport(context.Background(), cmd); err == nil {
+			t.Fatalf("expected invalid command to fail: %#v", cmd)
+		}
+		if repo.decision != nil {
+			t.Fatalf("invalid command was persisted: %#v", cmd)
+		}
+	}
+	repo := &reportRepoStub{result: Report{ID: 42, Status: "resolved"}}
+	err := NewModerationReportService(moderationAuthStub{}, repo, nil, reportActionExecutorStub{}).DecideReport(context.Background(), DecideModerationReportCommand{ReportID: 42, Disposition: ReportDispositionNoViolation, PolicyReason: "reason"})
+	if !errors.Is(err, ErrReportAlreadyResolved) {
+		t.Fatalf("expected resolved error, got %v", err)
+	}
+}
+
+func TestModerationReportFailedEnforcementDoesNotResolve(t *testing.T) {
+	expected := errors.New("enforcement failed")
+	repo := &reportRepoStub{result: Report{ID: 42, Status: "unreviewed", TargetType: ReportTargetComment, TargetID: "9"}}
+	err := NewModerationReportService(moderationAuthStub{}, repo, nil, reportActionExecutorStub{err: expected}).DecideReport(context.Background(), DecideModerationReportCommand{ReportID: 42, Disposition: ReportDispositionActionTaken, Action: "comment.remove", PolicyReason: "Harassment"})
+	if !errors.Is(err, expected) {
+		t.Fatalf("expected enforcement error, got %v", err)
+	}
+	if repo.decision != nil || repo.status != "" {
+		t.Fatalf("failed enforcement changed report: status=%q decision=%#v", repo.status, repo.decision)
+	}
+}
+
+func TestReportAvailableActionsMatchTargetAndScope(t *testing.T) {
+	executor := NewReportActionExecutor(nil, nil)
+	chapterActions := executor.AvailableActions(Report{TargetType: ReportTargetBook, BookChapterID: Value[int64](7)})
+	wholeBookActions := executor.AvailableActions(Report{TargetType: ReportTargetBook})
+	if len(chapterActions) != len(wholeBookActions)+2 || chapterActions[len(chapterActions)-1] != "chapter.restore" {
+		t.Fatalf("chapter actions do not include scoped actions: %#v", chapterActions)
+	}
+	if actions := executor.AvailableActions(Report{TargetType: ReportTargetComment}); len(actions) != 2 || actions[0] != "comment.remove" {
+		t.Fatalf("unexpected comment actions: %#v", actions)
 	}
 }
 
@@ -58,12 +148,27 @@ func TestModerationWholeBookReportHandlesMissingChapterData(t *testing.T) {
 		result: Report{ID: 42, Time: createdAt, TargetType: ReportTargetBook, TargetID: "99"},
 		book:   &ModerationReportBookContextData{BookID: 99, Title: "Book", BookCreatedAt: createdAt.Add(-time.Hour)},
 	}
-	result, err := NewModerationReportService(moderationAuthStub{}, repo, nil).GetReport(context.Background(), GetModerationReportQuery{ReportID: 42})
+	result, err := NewModerationReportService(moderationAuthStub{}, repo, nil, reportActionExecutorStub{}).GetReport(context.Background(), GetModerationReportQuery{ReportID: 42})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if result.BookContext == nil || result.BookContext.Scope != "book" || !result.BookContext.LastUpdated.Equal(createdAt.Add(-time.Hour)) {
 		t.Fatalf("unexpected whole-book context: %#v", result.BookContext)
+	}
+}
+
+func TestModerationReportLoadsUserAndCommentSnapshots(t *testing.T) {
+	user := &ModerationReportUserContextData{Name: "reported user", IsBanned: true}
+	userRepo := &reportRepoStub{result: Report{ID: 1, TargetType: ReportTargetUser}, user: user}
+	userResult, err := NewModerationReportService(moderationAuthStub{}, userRepo, nil, reportActionExecutorStub{}).GetReport(context.Background(), GetModerationReportQuery{ReportID: 1})
+	if err != nil || userResult.UserContext != user || userResult.CommentContext != nil {
+		t.Fatalf("unexpected user report snapshot: result=%#v err=%v", userResult, err)
+	}
+	comment := &ModerationReportCommentContextData{ID: 9, Content: "reported comment"}
+	commentRepo := &reportRepoStub{result: Report{ID: 2, TargetType: ReportTargetComment}, comment: comment}
+	commentResult, err := NewModerationReportService(moderationAuthStub{}, commentRepo, nil, reportActionExecutorStub{}).GetReport(context.Background(), GetModerationReportQuery{ReportID: 2})
+	if err != nil || commentResult.CommentContext != comment || commentResult.UserContext != nil {
+		t.Fatalf("unexpected comment report snapshot: result=%#v err=%v", commentResult, err)
 	}
 }
 

@@ -5,7 +5,12 @@ import type {
   ModerationReasonRequest,
   ModerationValueRequest,
   ModerationBookChapterResponse,
+  ModerationBooksPageResponse,
 } from '@/backend-types'
+
+export function searchModerationBooks(search = '', exact = false, includeBanned = false, includeDeleted = false, page = 1, pageSize = 20) {
+  return httpClient.get('/_api/moderation/books', { searchParams: { search, exact, includeBanned, includeDeleted, page, pageSize } }).then((response) => OLAPIResponse.create<ModerationBooksPageResponse>(response))
+}
 
 export type BookModerationAction =
   | 'ban'

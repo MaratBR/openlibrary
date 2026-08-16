@@ -81,6 +81,45 @@ func (q *Queries) Moderation_ChangeUserAbout(ctx context.Context, arg Moderation
 	return err
 }
 
+const moderation_CountUserLoginHistory = `-- name: Moderation_CountUserLoginHistory :one
+select count(*)
+from sessions
+where (cardinality($1::uuid[]) = 0 or sessions.user_id = any($1::uuid[]))
+  and ($2::text = ''
+       or ip_address ilike '%' || $2 || '%'
+       or user_agent ilike '%' || $2 || '%'
+       or location_country ilike '%' || $2 || '%'
+       or location_region ilike '%' || $2 || '%'
+       or location_city ilike '%' || $2 || '%')
+  and ($3::timestamptz is null or created_at >= $3)
+  and ($4::timestamptz is null or created_at < $4)
+  and ($5::text = ''
+       or ($5 = 'active' and not is_terminated and expires_at > now())
+       or ($5 = 'expired' and not is_terminated and expires_at <= now())
+       or ($5 = 'terminated' and is_terminated))
+`
+
+type Moderation_CountUserLoginHistoryParams struct {
+	UserIds       []pgtype.UUID
+	Search        string
+	DateFrom      pgtype.Timestamptz
+	DateTo        pgtype.Timestamptz
+	SessionStatus string
+}
+
+func (q *Queries) Moderation_CountUserLoginHistory(ctx context.Context, arg Moderation_CountUserLoginHistoryParams) (int64, error) {
+	row := q.db.QueryRow(ctx, moderation_CountUserLoginHistory,
+		arg.UserIds,
+		arg.Search,
+		arg.DateFrom,
+		arg.DateTo,
+		arg.SessionStatus,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const moderation_GetChapter = `-- name: Moderation_GetChapter :one
 select id, name, book_id, content, content_updated_at, "order", created_at, updated_at, words, summary, is_publicly_visible from book_chapters where id = $1
 `
@@ -113,6 +152,45 @@ func (q *Queries) Moderation_GetLatestUserBanExpiry(ctx context.Context, userID 
 	var expires_at pgtype.Timestamptz
 	err := row.Scan(&expires_at)
 	return expires_at, err
+}
+
+const moderation_GetRecentLoginSessions = `-- name: Moderation_GetRecentLoginSessions :many
+select created_at, location_country, location_region, location_city
+from sessions
+where user_id = $1
+order by created_at desc
+`
+
+type Moderation_GetRecentLoginSessionsRow struct {
+	CreatedAt       pgtype.Timestamptz
+	LocationCountry string
+	LocationRegion  string
+	LocationCity    string
+}
+
+func (q *Queries) Moderation_GetRecentLoginSessions(ctx context.Context, userID pgtype.UUID) ([]Moderation_GetRecentLoginSessionsRow, error) {
+	rows, err := q.db.Query(ctx, moderation_GetRecentLoginSessions, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Moderation_GetRecentLoginSessionsRow
+	for rows.Next() {
+		var i Moderation_GetRecentLoginSessionsRow
+		if err := rows.Scan(
+			&i.CreatedAt,
+			&i.LocationCountry,
+			&i.LocationRegion,
+			&i.LocationCity,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const moderation_GetUserLoginHistory = `-- name: Moderation_GetUserLoginHistory :many
@@ -168,6 +246,94 @@ type Moderation_RenameUserParams struct {
 func (q *Queries) Moderation_RenameUser(ctx context.Context, arg Moderation_RenameUserParams) error {
 	_, err := q.db.Exec(ctx, moderation_RenameUser, arg.ID, arg.Name)
 	return err
+}
+
+const moderation_SearchUserLoginHistory = `-- name: Moderation_SearchUserLoginHistory :many
+select sessions.id, sessions.user_id, users.name as user_name,
+       sessions.created_at, sessions.user_agent, sessions.ip_address,
+       sessions.expires_at, sessions.is_terminated,
+       sessions.location_country, sessions.location_region, sessions.location_city
+from sessions
+join users on users.id = sessions.user_id
+where (cardinality($1::uuid[]) = 0 or sessions.user_id = any($1::uuid[]))
+  and ($2::text = ''
+       or ip_address ilike '%' || $2 || '%'
+       or user_agent ilike '%' || $2 || '%'
+       or location_country ilike '%' || $2 || '%'
+       or location_region ilike '%' || $2 || '%'
+       or location_city ilike '%' || $2 || '%')
+  and ($3::timestamptz is null or created_at >= $3)
+  and ($4::timestamptz is null or created_at < $4)
+  and ($5::text = ''
+       or ($5 = 'active' and not is_terminated and expires_at > now())
+       or ($5 = 'expired' and not is_terminated and expires_at <= now())
+       or ($5 = 'terminated' and is_terminated))
+order by sessions.created_at desc, sessions.id desc
+limit $7 offset $6
+`
+
+type Moderation_SearchUserLoginHistoryParams struct {
+	UserIds       []pgtype.UUID
+	Search        string
+	DateFrom      pgtype.Timestamptz
+	DateTo        pgtype.Timestamptz
+	SessionStatus string
+	PageOffset    int32
+	PageLimit     int32
+}
+
+type Moderation_SearchUserLoginHistoryRow struct {
+	ID              int64
+	UserID          pgtype.UUID
+	UserName        string
+	CreatedAt       pgtype.Timestamptz
+	UserAgent       string
+	IpAddress       string
+	ExpiresAt       pgtype.Timestamptz
+	IsTerminated    bool
+	LocationCountry string
+	LocationRegion  string
+	LocationCity    string
+}
+
+func (q *Queries) Moderation_SearchUserLoginHistory(ctx context.Context, arg Moderation_SearchUserLoginHistoryParams) ([]Moderation_SearchUserLoginHistoryRow, error) {
+	rows, err := q.db.Query(ctx, moderation_SearchUserLoginHistory,
+		arg.UserIds,
+		arg.Search,
+		arg.DateFrom,
+		arg.DateTo,
+		arg.SessionStatus,
+		arg.PageOffset,
+		arg.PageLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Moderation_SearchUserLoginHistoryRow
+	for rows.Next() {
+		var i Moderation_SearchUserLoginHistoryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.UserName,
+			&i.CreatedAt,
+			&i.UserAgent,
+			&i.IpAddress,
+			&i.ExpiresAt,
+			&i.IsTerminated,
+			&i.LocationCountry,
+			&i.LocationRegion,
+			&i.LocationCity,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const moderation_SetChapterVisibility = `-- name: Moderation_SetChapterVisibility :exec

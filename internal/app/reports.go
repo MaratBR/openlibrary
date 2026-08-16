@@ -47,6 +47,18 @@ type Report struct {
 	Priority       string
 }
 
+type ReportDecision struct {
+	Time          time.Time
+	ActorUserID   uuid.UUID
+	ActorUserName string
+	Disposition   string
+	Action        string
+	PolicyReason  string
+	InternalNote  string
+	NotifyTarget  bool
+	Payload       []byte
+}
+
 type ModerationReportBookContextData struct {
 	Title, Author, CoverID, Excerpt, Rating   string
 	BookID                                    int64
@@ -59,6 +71,24 @@ type ModerationReportBookContextData struct {
 	ChapterCreatedAt, ChapterUpdatedAt        Nullable[time.Time]
 	ChapterContentUpdatedAt                   Nullable[time.Time]
 	RelatedReports                            int
+}
+
+type ModerationReportUserContextData struct {
+	ID                       uuid.UUID
+	Name, Email, About, Role string
+	JoinedAt                 time.Time
+	IsBanned                 bool
+	RelatedReports           int
+}
+
+type ModerationReportCommentContextData struct {
+	ID, ChapterID, BookID                      int64
+	Content, AuthorName, ChapterName, BookName string
+	AuthorID                                   uuid.UUID
+	CreatedAt                                  time.Time
+	UpdatedAt                                  Nullable[time.Time]
+	DeletedAt                                  Nullable[time.Time]
+	RelatedReports                             int
 }
 
 type CreateReportCommand struct {
@@ -77,7 +107,11 @@ type ReportRepository interface {
 	Create(context.Context, Report) (Report, error)
 	GetByID(context.Context, int64) (Report, string, error)
 	GetBookContext(context.Context, int64) (*ModerationReportBookContextData, error)
+	GetUserContext(context.Context, int64) (*ModerationReportUserContextData, error)
+	GetCommentContext(context.Context, int64) (*ModerationReportCommentContextData, error)
 	Search(context.Context, string, string, int32, int32) ([]ModerationReportListEntry, int64, error)
+	GetEvents(context.Context, int64) ([]ReportDecision, error)
+	AddDecision(context.Context, int64, string, ReportDecision) error
 }
 
 type ReportService interface {

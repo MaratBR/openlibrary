@@ -5,12 +5,14 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid"
 )
 
 type apiControllerModeration struct {
@@ -22,6 +24,8 @@ type apiControllerModeration struct {
 	audit        app.ModerationAuditLogService
 }
 
+const moderationJSONMaxBytes int64 = 64 * 1024
+
 func newAPIModerationController(books app.ModerationBookService, content app.ContentModerationService, loginHistory app.LoginHistoryService, users app.ModerationUserService, reports app.ModerationReportService, audit app.ModerationAuditLogService) *apiControllerModeration {
 	return &apiControllerModeration{books: books, content: content, loginHistory: loginHistory, users: users, reports: reports, audit: audit}
 }
@@ -29,6 +33,7 @@ func newAPIModerationController(books app.ModerationBookService, content app.Con
 func (c *apiControllerModeration) Register(r chi.Router) {
 	r.Route("/moderation", func(r chi.Router) {
 		r.Use(apiRequiresAuthorizationMiddleware)
+		r.Get("/books", c.searchBooks)
 		r.Get("/books/{bookID}", c.getBook)
 		r.Get("/books/{bookID}/chapters", c.getBookChapters)
 		r.Get("/books/{bookID}/log", c.getBookLog)
@@ -37,7 +42,9 @@ func (c *apiControllerModeration) Register(r chi.Router) {
 		r.Post("/comments/{commentID}/actions/{action}", c.commentAction)
 		r.Get("/reports", c.searchReports)
 		r.Get("/reports/{reportID}", c.getReport)
+		r.Post("/reports/{reportID}/decisions", c.decideReport)
 		r.Get("/audit-log", c.getAuditLog)
+		r.Get("/login-history", c.getGlobalLoginHistory)
 		r.Get("/users", c.searchUsers)
 		r.Get("/users/{userID}", c.getUser)
 		r.Get("/users/{userID}/books", c.getUserBooks)
@@ -57,27 +64,73 @@ type ModerationReasonRequest struct {
 
 // go2tsdef:generate
 type ModerationReportActivityResponse struct {
-	Time        time.Time `json:"time"`
-	Actor       string    `json:"actor"`
-	Description string    `json:"description"`
-	Kind        string    `json:"kind"`
+	Time         time.Time `json:"time"`
+	Actor        string    `json:"actor"`
+	Description  string    `json:"description"`
+	Kind         string    `json:"kind"`
+	Disposition  string    `json:"disposition"`
+	Action       string    `json:"action"`
+	PolicyReason string    `json:"policyReason"`
+	InternalNote string    `json:"internalNote"`
+	NotifyTarget bool      `json:"notifyTarget"`
+}
+
+// go2tsdef:generate
+type ModerationReportDecisionRequest struct {
+	Disposition  string          `json:"disposition"`
+	Action       string          `json:"action"`
+	PolicyReason string          `json:"policyReason"`
+	InternalNote string          `json:"internalNote"`
+	NotifyTarget bool            `json:"notifyTarget"`
+	Payload      json.RawMessage `json:"payload" go2tsdef:"Record<string, unknown>"`
 }
 
 // go2tsdef:generate
 type ModerationReportDetailResponse struct {
-	ID               string                               `json:"id"`
-	Number           string                               `json:"number"`
-	Time             time.Time                            `json:"time"`
-	ReporterUserID   string                               `json:"reporterUserId"`
-	ReporterUserName string                               `json:"reporterUserName"`
-	TargetType       string                               `json:"targetType"`
-	TargetID         string                               `json:"targetId"`
-	Reason           string                               `json:"reason"`
-	Description      string                               `json:"description"`
-	Status           string                               `json:"status"`
-	Priority         string                               `json:"priority"`
-	Activities       []ModerationReportActivityResponse   `json:"activities"`
-	BookContext      *ModerationReportBookContextResponse `json:"bookContext" go2tsdef:"ModerationReportBookContextResponse | null"`
+	ID               string                                  `json:"id"`
+	Number           string                                  `json:"number"`
+	Time             time.Time                               `json:"time"`
+	ReporterUserID   string                                  `json:"reporterUserId"`
+	ReporterUserName string                                  `json:"reporterUserName"`
+	TargetType       string                                  `json:"targetType"`
+	TargetID         string                                  `json:"targetId"`
+	Reason           string                                  `json:"reason"`
+	Description      string                                  `json:"description"`
+	Status           string                                  `json:"status"`
+	Priority         string                                  `json:"priority"`
+	Activities       []ModerationReportActivityResponse      `json:"activities"`
+	BookContext      *ModerationReportBookContextResponse    `json:"bookContext" go2tsdef:"ModerationReportBookContextResponse | null"`
+	UserContext      *ModerationReportUserContextResponse    `json:"userContext" go2tsdef:"ModerationReportUserContextResponse | null"`
+	CommentContext   *ModerationReportCommentContextResponse `json:"commentContext" go2tsdef:"ModerationReportCommentContextResponse | null"`
+	AvailableActions []string                                `json:"availableActions"`
+}
+
+// go2tsdef:generate
+type ModerationReportUserContextResponse struct {
+	ID             string    `json:"id"`
+	Name           string    `json:"name"`
+	Email          string    `json:"email"`
+	About          string    `json:"about"`
+	Role           string    `json:"role"`
+	JoinedAt       time.Time `json:"joinedAt"`
+	IsBanned       bool      `json:"isBanned"`
+	RelatedReports int       `json:"relatedReports"`
+}
+
+// go2tsdef:generate
+type ModerationReportCommentContextResponse struct {
+	ID             string                  `json:"id"`
+	Content        string                  `json:"content"`
+	AuthorID       string                  `json:"authorId"`
+	AuthorName     string                  `json:"authorName"`
+	ChapterID      string                  `json:"chapterId"`
+	ChapterName    string                  `json:"chapterName"`
+	BookID         string                  `json:"bookId"`
+	BookName       string                  `json:"bookName"`
+	CreatedAt      time.Time               `json:"createdAt"`
+	UpdatedAt      app.Nullable[time.Time] `json:"updatedAt"`
+	DeletedAt      app.Nullable[time.Time] `json:"deletedAt"`
+	RelatedReports int                     `json:"relatedReports"`
 }
 
 // go2tsdef:generate
@@ -151,6 +204,32 @@ type ModerationBookResponse struct {
 }
 
 // go2tsdef:generate
+type ModerationBookListEntryResponse struct {
+	ID                   string    `json:"id"`
+	Name                 string    `json:"name"`
+	CreatedAt            time.Time `json:"createdAt"`
+	IsBanned             bool      `json:"isBanned"`
+	IsShadowBanned       bool      `json:"isShadowBanned"`
+	IsTrashed            bool      `json:"isTrashed"`
+	IsPermanentlyRemoved bool      `json:"isPermanentlyRemoved"`
+	IsPubliclyVisible    bool      `json:"isPubliclyVisible"`
+	Words                int32     `json:"words"`
+	Chapters             int32     `json:"chapters"`
+	AuthorUserID         string    `json:"authorUserId"`
+	AuthorUserName       string    `json:"authorUserName"`
+	ReportsCount         int64     `json:"reportsCount"`
+}
+
+// go2tsdef:generate
+type ModerationBooksPageResponse struct {
+	Entries    []ModerationBookListEntryResponse `json:"entries"`
+	Page       uint32                            `json:"page"`
+	PageSize   uint32                            `json:"pageSize"`
+	TotalPages uint32                            `json:"totalPages"`
+	Total      int64                             `json:"total"`
+}
+
+// go2tsdef:generate
 type ModerationBookPendingReportResponse struct {
 	ID     string    `json:"id"`
 	Number string    `json:"number"`
@@ -191,9 +270,17 @@ type BookModerationLogResponse struct {
 
 // go2tsdef:generate
 type LoginHistoryEntryResponse struct {
-	IPAddress  string    `json:"ipAddress"`
-	UserAgent  string    `json:"userAgent"`
-	LoggedInAt time.Time `json:"loggedInAt"`
+	ID           string    `json:"id"`
+	UserID       string    `json:"userId"`
+	UserName     string    `json:"userName"`
+	IPAddress    string    `json:"ipAddress"`
+	UserAgent    string    `json:"userAgent"`
+	LoggedInAt   time.Time `json:"loggedInAt"`
+	Country      string    `json:"country"`
+	Region       string    `json:"region"`
+	City         string    `json:"city"`
+	IsTerminated bool      `json:"isTerminated"`
+	ExpiresAt    time.Time `json:"expiresAt"`
 }
 
 // go2tsdef:generate
@@ -357,12 +444,6 @@ type ModerationUserReportsPageResponse struct {
 	Total      int64                          `json:"total"`
 }
 
-func decodeModerationJSON(w http.ResponseWriter, r *http.Request, value any) error {
-	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64*1024))
-	decoder.DisallowUnknownFields()
-	return decoder.Decode(value)
-}
-
 func (c *apiControllerModeration) getReport(w http.ResponseWriter, r *http.Request) {
 	reportID, err := olhttp.URLParamInt64(r, "reportID")
 	if err != nil {
@@ -375,7 +456,15 @@ func (c *apiControllerModeration) getReport(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	activities := app.MapSlice(result.Activities, func(activity app.ModerationReportActivity) ModerationReportActivityResponse {
-		return ModerationReportActivityResponse{Time: activity.Time, Actor: activity.Actor, Description: activity.Description, Kind: activity.Kind}
+		response := ModerationReportActivityResponse{Time: activity.Time, Actor: activity.Actor, Description: activity.Description, Kind: activity.Kind}
+		if activity.Decision != nil {
+			response.Disposition = activity.Decision.Disposition
+			response.Action = activity.Decision.Action
+			response.PolicyReason = activity.Decision.PolicyReason
+			response.InternalNote = activity.Decision.InternalNote
+			response.NotifyTarget = activity.Decision.NotifyTarget
+		}
+		return response
 	})
 	var bookContext *ModerationReportBookContextResponse
 	if result.BookContext != nil {
@@ -387,12 +476,35 @@ func (c *apiControllerModeration) getReport(w http.ResponseWriter, r *http.Reque
 			EditedAfterMinutes: int64(result.BookContext.EditedAfter / time.Minute),
 		}
 	}
+	var userContext *ModerationReportUserContextResponse
+	if result.UserContext != nil {
+		userContext = &ModerationReportUserContextResponse{ID: result.UserContext.ID.String(), Name: result.UserContext.Name, Email: result.UserContext.Email, About: result.UserContext.About, Role: result.UserContext.Role, JoinedAt: result.UserContext.JoinedAt, IsBanned: result.UserContext.IsBanned, RelatedReports: result.UserContext.RelatedReports}
+	}
+	var commentContext *ModerationReportCommentContextResponse
+	if result.CommentContext != nil {
+		commentContext = &ModerationReportCommentContextResponse{ID: strconv.FormatInt(result.CommentContext.ID, 10), Content: result.CommentContext.Content, AuthorID: result.CommentContext.AuthorID.String(), AuthorName: result.CommentContext.AuthorName, ChapterID: strconv.FormatInt(result.CommentContext.ChapterID, 10), ChapterName: result.CommentContext.ChapterName, BookID: strconv.FormatInt(result.CommentContext.BookID, 10), BookName: result.CommentContext.BookName, CreatedAt: result.CommentContext.CreatedAt, UpdatedAt: result.CommentContext.UpdatedAt, DeletedAt: result.CommentContext.DeletedAt, RelatedReports: result.CommentContext.RelatedReports}
+	}
 	olhttp.NewAPIResponse(ModerationReportDetailResponse{
 		ID: strconv.FormatInt(result.ID, 10), Number: result.Number, Time: result.Time,
 		ReporterUserID: result.ReporterUserID.String(), ReporterUserName: result.ReporterUserName,
 		TargetType: string(result.TargetType), TargetID: result.TargetID, Reason: result.Reason, Description: result.Description,
-		Status: result.Status, Priority: result.Priority, Activities: activities, BookContext: bookContext,
+		Status: result.Status, Priority: result.Priority, Activities: activities, BookContext: bookContext, UserContext: userContext, CommentContext: commentContext, AvailableActions: result.AvailableActions,
 	}).Write(w)
+}
+
+func (c *apiControllerModeration) decideReport(w http.ResponseWriter, r *http.Request) {
+	reportID, err := olhttp.URLParamInt64(r, "reportID")
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	var input ModerationReportDecisionRequest
+	if err = olhttp.ReadJSONBodyMax(w, r, &input, moderationJSONMaxBytes); err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	err = c.reports.DecideReport(r.Context(), app.DecideModerationReportCommand{ActorUserID: auth.RequireSession(r.Context()).UserID, ReportID: reportID, Disposition: input.Disposition, Action: input.Action, PolicyReason: input.PolicyReason, InternalNote: input.InternalNote, NotifyTarget: input.NotifyTarget, Payload: input.Payload})
+	writeModerationActionResult(w, err)
 }
 
 func (c *apiControllerModeration) searchReports(w http.ResponseWriter, r *http.Request) {
@@ -561,6 +673,19 @@ func (c *apiControllerModeration) getBook(w http.ResponseWriter, r *http.Request
 	}).Write(w)
 }
 
+func (c *apiControllerModeration) searchBooks(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	result, err := c.books.SearchBooks(r.Context(), app.SearchModerationBooksQuery{ActorUserID: auth.RequireSession(r.Context()).UserID, Search: params.Get("search"), ExactName: params.Get("exact") == "true", IncludeBanned: params.Get("includeBanned") == "true", IncludeDeleted: params.Get("includeDeleted") == "true", Page: olhttp.GetPage(params, "page"), PageSize: olhttp.GetPageSize(params, "pageSize", 1, 100, 20)})
+	if err != nil {
+		apiWriteApplicationError(w, err)
+		return
+	}
+	entries := app.MapSlice(result.Entries, func(entry app.ModerationBookListEntry) ModerationBookListEntryResponse {
+		return ModerationBookListEntryResponse{ID: strconv.FormatInt(entry.ID, 10), Name: entry.Name, CreatedAt: entry.CreatedAt, IsBanned: entry.IsBanned, IsShadowBanned: entry.IsShadowBanned, IsTrashed: entry.IsTrashed, IsPermanentlyRemoved: entry.IsPermanentlyRemoved, IsPubliclyVisible: entry.IsPubliclyVisible, Words: entry.Words, Chapters: entry.Chapters, AuthorUserID: entry.AuthorUserID.String(), AuthorUserName: entry.AuthorUserName, ReportsCount: entry.ReportsCount}
+	})
+	olhttp.NewAPIResponse(ModerationBooksPageResponse{Entries: entries, Page: result.Page, PageSize: result.PageSize, TotalPages: result.TotalPages, Total: result.Total}).Write(w)
+}
+
 func mapPendingBookReport(report *app.BookPendingReport) *ModerationBookPendingReportResponse {
 	if report == nil {
 		return nil
@@ -616,7 +741,7 @@ func (c *apiControllerModeration) bookAction(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	var input ModerationValueRequest
-	if err = decodeModerationJSON(w, r, &input); err != nil {
+	if err = olhttp.ReadJSONBodyMax(w, r, &input, moderationJSONMaxBytes); err != nil {
 		apiWriteBadRequest(w, err)
 		return
 	}
@@ -651,7 +776,7 @@ func (c *apiControllerModeration) chapterAction(w http.ResponseWriter, r *http.R
 		return
 	}
 	var input ModerationReasonRequest
-	if err = decodeModerationJSON(w, r, &input); err != nil {
+	if err = olhttp.ReadJSONBodyMax(w, r, &input, moderationJSONMaxBytes); err != nil {
 		apiWriteBadRequest(w, err)
 		return
 	}
@@ -675,7 +800,7 @@ func (c *apiControllerModeration) commentAction(w http.ResponseWriter, r *http.R
 		return
 	}
 	var input ModerationReasonRequest
-	if err = decodeModerationJSON(w, r, &input); err != nil {
+	if err = olhttp.ReadJSONBodyMax(w, r, &input, moderationJSONMaxBytes); err != nil {
 		apiWriteBadRequest(w, err)
 		return
 	}
@@ -702,7 +827,7 @@ func (c *apiControllerModeration) userAction(w http.ResponseWriter, r *http.Requ
 	switch chi.URLParam(r, "action") {
 	case "ban":
 		var input ModerationBanRequest
-		if err = decodeModerationJSON(w, r, &input); err != nil {
+		if err = olhttp.ReadJSONBodyMax(w, r, &input, moderationJSONMaxBytes); err != nil {
 			apiWriteBadRequest(w, err)
 			return
 		}
@@ -710,7 +835,7 @@ func (c *apiControllerModeration) userAction(w http.ResponseWriter, r *http.Requ
 		err = c.content.BanUser(r.Context(), cmd)
 	case "permanent-ban", "unban":
 		var input ModerationReasonRequest
-		if err = decodeModerationJSON(w, r, &input); err != nil {
+		if err = olhttp.ReadJSONBodyMax(w, r, &input, moderationJSONMaxBytes); err != nil {
 			apiWriteBadRequest(w, err)
 			return
 		}
@@ -722,7 +847,7 @@ func (c *apiControllerModeration) userAction(w http.ResponseWriter, r *http.Requ
 		}
 	case "rename", "change-about":
 		var input ModerationValueRequest
-		if err = decodeModerationJSON(w, r, &input); err != nil {
+		if err = olhttp.ReadJSONBodyMax(w, r, &input, moderationJSONMaxBytes); err != nil {
 			apiWriteBadRequest(w, err)
 			return
 		}
@@ -745,23 +870,78 @@ func (c *apiControllerModeration) getLoginHistory(w http.ResponseWriter, r *http
 		apiWriteBadRequest(w, err)
 		return
 	}
-	result, err := c.loginHistory.GetUserLoginHistory(r.Context(), app.GetLoginHistoryQuery{ActorUserID: auth.RequireSession(r.Context()).UserID, UserID: userID})
+	c.writeLoginHistory(w, r, []uuid.UUID{userID})
+}
+
+func (c *apiControllerModeration) getGlobalLoginHistory(w http.ResponseWriter, r *http.Request) {
+	userIDs, err := moderationUserIDsFilter(r.URL.Query().Get("users"))
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	c.writeLoginHistory(w, r, userIDs)
+}
+
+func moderationUserIDsFilter(value string) ([]uuid.UUID, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil, nil
+	}
+	parts := strings.Split(value, ",")
+	if len(parts) > 20 {
+		return nil, errors.New("at most 20 users may be selected")
+	}
+	result := make([]uuid.UUID, 0, len(parts))
+	seen := make(map[uuid.UUID]struct{}, len(parts))
+	for _, part := range parts {
+		id, err := uuid.FromString(strings.TrimSpace(part))
+		if err != nil {
+			return nil, err
+		}
+		if _, exists := seen[id]; exists {
+			continue
+		}
+		seen[id] = struct{}{}
+		result = append(result, id)
+	}
+	return result, nil
+}
+
+func (c *apiControllerModeration) writeLoginHistory(w http.ResponseWriter, r *http.Request, userIDs []uuid.UUID) {
+	params := r.URL.Query()
+	dateFrom, err := moderationDateFilter(params.Get("dateFrom"), false)
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	dateTo, err := moderationDateFilter(params.Get("dateTo"), true)
+	if err != nil {
+		apiWriteBadRequest(w, err)
+		return
+	}
+	result, err := c.loginHistory.GetUserLoginHistory(r.Context(), app.GetLoginHistoryQuery{ActorUserID: auth.RequireSession(r.Context()).UserID, UserIDs: userIDs, Search: params.Get("search"), Status: params.Get("status"), DateFrom: dateFrom, DateTo: dateTo, Page: olhttp.GetPage(params, "page"), PageSize: olhttp.GetPageSize(params, "pageSize", 1, 100, 20)})
 	if err != nil {
 		apiWriteApplicationError(w, err)
 		return
 	}
-	entries := app.MapSlice(result, func(entry app.LoginHistoryEntry) LoginHistoryEntryResponse {
-		return LoginHistoryEntryResponse{IPAddress: entry.IPAddress, UserAgent: entry.UserAgent, LoggedInAt: entry.LoggedInAt}
+	entries := app.MapSlice(result.Entries, func(entry app.LoginHistoryEntry) LoginHistoryEntryResponse {
+		return LoginHistoryEntryResponse{ID: strconv.FormatInt(entry.ID, 10), UserID: entry.UserID.String(), UserName: entry.UserName, IPAddress: entry.IPAddress, UserAgent: entry.UserAgent, LoggedInAt: entry.LoggedInAt, Country: entry.Location.Country, Region: entry.Location.Region, City: entry.Location.City, IsTerminated: entry.IsTerminated, ExpiresAt: entry.ExpiresAt}
 	})
-	page := olhttp.GetPage(r.URL.Query(), "page")
-	pageSize := olhttp.GetPageSize(r.URL.Query(), "pageSize", 1, 100, 20)
-	start := min(len(entries), int((page-1)*pageSize))
-	end := min(len(entries), start+int(pageSize))
-	totalPages := uint32(0)
-	if len(entries) > 0 {
-		totalPages = uint32((len(entries) + int(pageSize) - 1) / int(pageSize))
+	olhttp.NewAPIResponse(UserLoginHistoryResponse{Entries: entries, Page: result.Page, PageSize: result.PageSize, Total: int(result.Total), TotalPages: result.TotalPages}).Write(w)
+}
+
+func moderationDateFilter(value string, endOfDay bool) (app.Nullable[time.Time], error) {
+	if value == "" {
+		return app.Null[time.Time](), nil
 	}
-	olhttp.NewAPIResponse(UserLoginHistoryResponse{Entries: entries[start:end], Page: page, PageSize: pageSize, Total: len(entries), TotalPages: totalPages}).Write(w)
+	parsed, err := time.Parse("2006-01-02", value)
+	if err != nil {
+		return app.Null[time.Time](), err
+	}
+	if endOfDay {
+		parsed = parsed.AddDate(0, 0, 1)
+	}
+	return app.Value(parsed), nil
 }
 
 func (c *apiControllerModeration) getLoginLocations(w http.ResponseWriter, r *http.Request) {

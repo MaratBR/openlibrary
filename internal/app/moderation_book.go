@@ -37,6 +37,24 @@ type GetBookInfoQuery struct {
 	BookID      int64
 }
 
+type SearchModerationBooksQuery struct {
+	ActorUserID                              uuid.UUID
+	Search                                   string
+	ExactName, IncludeBanned, IncludeDeleted bool
+	Page, PageSize                           uint32
+}
+
+type ModerationBookListEntry struct {
+	ID                                                                           int64
+	Name                                                                         string
+	CreatedAt                                                                    time.Time
+	IsBanned, IsShadowBanned, IsTrashed, IsPermanentlyRemoved, IsPubliclyVisible bool
+	Words, Chapters                                                              int32
+	AuthorUserID                                                                 uuid.UUID
+	AuthorUserName                                                               string
+	ReportsCount                                                                 int64
+}
+
 type BookModerationInfo struct {
 	ID                  int64
 	Name                string
@@ -107,6 +125,7 @@ type BookLogResult struct {
 }
 
 type ModerationBookService interface {
+	SearchBooks(ctx context.Context, query SearchModerationBooksQuery) (ModerationPage[ModerationBookListEntry], error)
 	GetBookInfo(ctx context.Context, query GetBookInfoQuery) (BookModerationInfo, error)
 	GetBookLog(ctx context.Context, query GetBookLogQuery) (BookLogResult, error)
 	GetBookChapters(ctx context.Context, query GetBookInfoQuery) ([]BookModerationChapter, error)
