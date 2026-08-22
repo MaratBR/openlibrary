@@ -3,8 +3,7 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import './EditorBubbleMenu.scss'
 import { ChapterContentEditor, useEditorToolbarState } from '../editor'
 import EditorToggleButton from './EditorToggleButton'
-import { ColorPallette } from './ColorPallette'
-import { ColorPallettePicker } from './ColorPallette/ColorPallettePicker'
+import { ColorPallette, ColorPalletteSection } from './ColorPallette'
 
 export function EditorBubbleMenu({
   editor,
@@ -36,10 +35,6 @@ export function EditorBubbleMenu({
       editor={editor}
       appendTo={appendTo}
     >
-      <div className="be-bubble-menu__section">
-        <ColorPallettePicker />
-      </div>
-
       <div className="be-bubble-menu__main">
         <div className="be-toggle-group">
           <EditorToggleButton
@@ -89,9 +84,11 @@ export function EditorBubbleMenu({
           </EditorToggleButton>
         </div>
         <div className="be-toggle-group">
-          <ColorPallette editor={editor} />
+          <ColorPallette />
         </div>
       </div>
+
+      <ColorPalletteSection editor={editor} />
     </BubbleMenu>
   )
 }

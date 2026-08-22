@@ -84,7 +84,8 @@ ol-island:has(> .be-layout) {
     @apply focus-visible:outline-none focus:outline-none;
 
     &::selection {
-      @apply bg-primary/20;
+      color: initial !important;
+      background: initial !important;
     }
   }
 

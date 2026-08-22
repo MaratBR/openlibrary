@@ -1,7 +1,16 @@
-import { ChapterContentEditor } from '../../editor'
+import { useBubbleState } from '../state'
+import { ColorPalletteSection } from './ColorPaletteSection'
 
-export function ColorPallette({ editor }: { editor: ChapterContentEditor }) {
-  return <button className="be-listitem be-listitem--btn">{generateCircleSvg(7, 24)}</button>
+export { ColorPalletteSection }
+
+export function ColorPallette() {
+  const toggle = useBubbleState((x) => x.toggleColorPicker)
+
+  return (
+    <button className="be-listitem be-listitem--btn" onClick={toggle}>
+      {generateCircleSvg(7, 24)}
+    </button>
+  )
 }
 
 function generateCircleSvg(sectors: number, size: number) {

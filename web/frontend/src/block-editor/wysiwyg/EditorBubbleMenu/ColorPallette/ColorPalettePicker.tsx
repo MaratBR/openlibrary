@@ -1,3 +1,6 @@
+import React from 'react'
+import './ColorPalettePicker.scss'
+
 const COLORS: [number, number, number][] = [
   [230, 57, 70],
   [244, 114, 73],
@@ -30,14 +33,24 @@ const COLORS: [number, number, number][] = [
   [190, 192, 255],
 ]
 
-export function ColorPallettePicker() {
+export function ColorPallettePicker({
+  onColorChosen,
+}: {
+  onColorChosen: (color: null | { r: number; g: number; b: number }) => void
+}) {
   return (
-    <div className="flex w-full min-w-0 flex-wrap gap-2">
+    <div className="be-color-palette-picker">
+      <button
+        className="be-color-palette-picker__item"
+        style={{ '--color': `var(--foreground)` } as React.CSSProperties}
+        onClick={() => onColorChosen(null)}
+      />
       {COLORS.map(([r, g, b]) => (
         <button
           key={`${r}-${g}-${b}`}
-          className="size-6 rounded-full"
-          style={{ background: `rgb(${r}, ${g}, ${b})` }}
+          className="be-color-palette-picker__item"
+          style={{ '--color': `rgb(${r}, ${g}, ${b})` } as React.CSSProperties}
+          onClick={() => onColorChosen({ r, g, b })}
         />
       ))}
     </div>
