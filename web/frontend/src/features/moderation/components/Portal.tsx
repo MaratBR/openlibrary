@@ -1,6 +1,6 @@
 import { createHashRouter, Navigate, Outlet, redirect } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
-import { ReactIslandProps } from '../common/react-island'
+import { ReactIslandProps } from '@/islands/common/react-island'
 import { useMemo } from 'react'
 import ModerationLayout from './ModerationLayout'
 import PlaceholderPage from './PlaceholderPage'
@@ -45,7 +45,13 @@ function createModerationRouter(roles: string[]) {
           element: <Navigate to="/overview" replace />,
         },
         ...routes
-          .filter(([path]) => path !== 'users' && path !== 'books' && path !== 'login-history' && path !== 'audit-log')
+          .filter(
+            ([path]) =>
+              path !== 'users' &&
+              path !== 'books' &&
+              path !== 'login-history' &&
+              path !== 'audit-log',
+          )
           .map(([path, translationKey]) => ({
             path: `/${path}`,
             element: <PlaceholderPage title={window._(translationKey)} />,
@@ -116,7 +122,8 @@ function createModerationRouter(roles: string[]) {
         })),
         {
           path: '/users/:userId/login-history',
-          loader: ({ params }) => redirect(`/login-history?users=${encodeURIComponent(params.userId ?? '')}`),
+          loader: ({ params }) =>
+            redirect(`/login-history?users=${encodeURIComponent(params.userId ?? '')}`),
           element: null,
         },
         {

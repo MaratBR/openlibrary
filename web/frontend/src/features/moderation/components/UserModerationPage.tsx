@@ -15,7 +15,7 @@ import {
   permanentlyBanUser,
   renameUser,
   unbanUser,
-} from '@/api/moderation'
+} from '@/features/moderation/api'
 import type {
   LoginHistoryEntry,
   LoginLocation,
@@ -24,7 +24,7 @@ import type {
   ModerationUserCommentsPage,
   ModerationUserHistoryPage,
   ModerationUserReportsPage,
-} from '@/api/moderation'
+} from '@/features/moderation/api'
 import { Pagination } from '@/components/Pagination'
 import { FormEvent, ReactNode, useEffect, useState } from 'react'
 import {

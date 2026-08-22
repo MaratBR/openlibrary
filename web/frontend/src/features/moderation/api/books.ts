@@ -8,8 +8,19 @@ import type {
   ModerationBooksPageResponse,
 } from '@/backend-types'
 
-export function searchModerationBooks(search = '', exact = false, includeBanned = false, includeDeleted = false, page = 1, pageSize = 20) {
-  return httpClient.get('/_api/moderation/books', { searchParams: { search, exact, includeBanned, includeDeleted, page, pageSize } }).then((response) => OLAPIResponse.create<ModerationBooksPageResponse>(response))
+export function searchModerationBooks(
+  search = '',
+  exact = false,
+  includeBanned = false,
+  includeDeleted = false,
+  page = 1,
+  pageSize = 20,
+) {
+  return httpClient
+    .get('/_api/moderation/books', {
+      searchParams: { search, exact, includeBanned, includeDeleted, page, pageSize },
+    })
+    .then((response) => OLAPIResponse.create<ModerationBooksPageResponse>(response))
 }
 
 export type BookModerationAction =
@@ -40,9 +51,9 @@ export function getBookModerationLog(
 }
 
 export function getBookModerationChapters(bookId: string) {
-  return httpClient.get(`/_api/moderation/books/${encodeURIComponent(bookId)}/chapters`).then(
-    (response) => OLAPIResponse.create<ModerationBookChapterResponse[]>(response),
-  )
+  return httpClient
+    .get(`/_api/moderation/books/${encodeURIComponent(bookId)}/chapters`)
+    .then((response) => OLAPIResponse.create<ModerationBookChapterResponse[]>(response))
 }
 
 export function changeBookAgeRating(bookId: string, value: string, reason: string) {
@@ -54,7 +65,9 @@ export function changeBookSummary(bookId: string, value: string, reason: string)
 }
 
 function bookValueAction(bookId: string, action: string, body: ModerationValueRequest) {
-  return httpClient.post(`/_api/moderation/books/${encodeURIComponent(bookId)}/actions/${action}`, { json: body }).then((response) => OLAPIResponse.createNoBody(response))
+  return httpClient
+    .post(`/_api/moderation/books/${encodeURIComponent(bookId)}/actions/${action}`, { json: body })
+    .then((response) => OLAPIResponse.createNoBody(response))
 }
 
 export function performBookModerationAction(

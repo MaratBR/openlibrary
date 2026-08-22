@@ -1,5 +1,5 @@
-import { getModerationAuditLog } from '@/api/moderation'
-import type { ModerationAuditLogPage } from '@/api/moderation'
+import { getModerationAuditLog } from '@/features/moderation/api'
+import type { ModerationAuditLogPage } from '@/features/moderation/api'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'

@@ -11,7 +11,10 @@ import UserContent from '@/components/UserContent'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import { RichTextInput, useOLEditor } from '@/components/rte'
 import type { ReactIslandProps } from '@/islands/common/react-island'
-import { ReportPopup, type ReportButtonConfig } from '@/islands/report-button/ReportButton'
+import {
+  ReportPopup,
+  type ReportButtonConfig,
+} from '@/features/moderation/components/report-button/ReportButton'
 import { SelfUserDtoSchema } from '@/api/auth/user'
 import { FormEvent, useEffect, useRef, useState } from 'react'
 

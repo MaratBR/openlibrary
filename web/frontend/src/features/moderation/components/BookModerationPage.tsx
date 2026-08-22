@@ -9,8 +9,12 @@ import {
   getBookModerationLog,
   getModerationBook,
   performBookModerationAction,
-} from '@/api/moderation'
-import type { ModerationBook, ModerationBookChapter, BookModerationLog } from '@/api/moderation'
+} from '@/features/moderation/api'
+import type {
+  ModerationBook,
+  ModerationBookChapter,
+  BookModerationLog,
+} from '@/features/moderation/api'
 import { ReactNode, useMemo, useState } from 'react'
 import {
   LoaderFunctionArgs,

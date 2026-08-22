@@ -1,5 +1,5 @@
-import { decideModerationReport, getModerationReport } from '@/api/moderation'
-import type { ModerationReportDecision, ModerationReportDetail } from '@/api/moderation'
+import { decideModerationReport, getModerationReport } from '@/features/moderation/api'
+import type { ModerationReportDecision, ModerationReportDetail } from '@/features/moderation/api'
 import {
   Select,
   SelectContent,

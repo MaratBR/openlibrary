@@ -1,5 +1,5 @@
-import { searchModerationReports } from '@/api/moderation'
-import type { ModerationReportsSearch } from '@/api/moderation'
+import { searchModerationReports } from '@/features/moderation/api'
+import type { ModerationReportsSearch } from '@/features/moderation/api'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'

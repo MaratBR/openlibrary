@@ -57,9 +57,20 @@ export function changeUserAbout(userId: string, value: string, reason: string) {
   return userAction(userId, 'change-about', { reason, value } satisfies ModerationValueRequest)
 }
 
-export type LoginHistoryFilters = { users?: string; search?: string; status?: string; dateFrom?: string; dateTo?: string }
+export type LoginHistoryFilters = {
+  users?: string
+  search?: string
+  status?: string
+  dateFrom?: string
+  dateTo?: string
+}
 
-export function getUserLoginHistory(userId: string, page = 1, pageSize = 20, filters: LoginHistoryFilters = {}) {
+export function getUserLoginHistory(
+  userId: string,
+  page = 1,
+  pageSize = 20,
+  filters: LoginHistoryFilters = {},
+) {
   return httpClient
     .get(`/_api/moderation/users/${encodeURIComponent(userId)}/login-history`, {
       searchParams: { ...filters, page, pageSize },

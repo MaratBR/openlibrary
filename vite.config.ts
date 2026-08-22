@@ -51,9 +51,11 @@ const ENTRIES = [
   'islands/bookmanager',
 
   'islands/admin',
-
-  'islands/mod',
 ]
+
+const ENTRY_PATHS: Partial<Record<(typeof ENTRIES)[number], string>> = {
+  mod: 'features/moderation/styles',
+}
 
 export default defineConfig((env) => ({
   cacheDir: '.vite',
@@ -105,7 +107,10 @@ export default defineConfig((env) => ({
       name: 'ol-public-ui',
       formats: ['es'],
       entry: Object.fromEntries(
-        ENTRIES.map((entry) => [entry, resolve(__dirname, 'web/frontend/src', entry, 'index.ts')]),
+        ENTRIES.map((entry) => [
+          entry,
+          resolve(__dirname, 'web/frontend/src', ENTRY_PATHS[entry] ?? entry, 'index.ts'),
+        ]),
       ),
     },
     sourcemap: SOURCEMAP,

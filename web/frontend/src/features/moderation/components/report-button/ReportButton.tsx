@@ -44,16 +44,35 @@ export function ReportButtonIsland({ data }: ReactIslandProps) {
     return () => trigger.removeEventListener('click', show)
   }, [config])
 
-  return <ReportPopup config={config} open={open} excerpt={excerpt.current} onClose={() => setOpen(false)} />
+  return (
+    <ReportPopup
+      config={config}
+      open={open}
+      excerpt={excerpt.current}
+      onClose={() => setOpen(false)}
+    />
+  )
 }
 
-export function ReportPopup({ config, open, excerpt, onClose }: { config: ReportButtonConfig; open: boolean; excerpt: string; onClose: () => void }) {
+export function ReportPopup({
+  config,
+  open,
+  excerpt,
+  onClose,
+}: {
+  config: ReportButtonConfig
+  open: boolean
+  excerpt: string
+  onClose: () => void
+}) {
   const [submitting, setSubmitting] = useState(false)
   const [reasons, setReasons] = useState<string[]>([])
   const [reason, setReason] = useState('')
   const [dialog, setDialog] = useState<HTMLDialogElement | null>(null)
 
-  useEffect(() => { if (open && dialog && !dialog.open) dialog.showModal() }, [open, dialog])
+  useEffect(() => {
+    if (open && dialog && !dialog.open) dialog.showModal()
+  }, [open, dialog])
   useEffect(() => {
     if (!open) return
     let active = true
@@ -61,13 +80,21 @@ export function ReportPopup({ config, open, excerpt, onClose }: { config: Report
       .then((response) => window.OLAPIResponse.create<string[]>(response))
       .then((response) => {
         response.throwIfError()
-        if (active) { setReasons(response.data); setReason(response.data[0] || '') }
+        if (active) {
+          setReasons(response.data)
+          setReason(response.data[0] || '')
+        }
       })
       .catch((error) => window.toast.error(error))
-    return () => { active = false }
+    return () => {
+      active = false
+    }
   }, [open, config.targetType])
 
-  function close() { dialog?.close(); onClose() }
+  function close() {
+    dialog?.close()
+    onClose()
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -104,24 +131,47 @@ export function ReportPopup({ config, open, excerpt, onClose }: { config: Report
   }
 
   return open ? (
-        <dialog ref={setDialog} className="modal" onCancel={close} onClick={backdropClick}>
-          <form className="modal__content grid gap-4" onSubmit={submit}>
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="font-title text-2xl font-semibold">{config.labels.title}</h2>
-              <button type="button" className="btn btn--icon btn--ghost" aria-label={config.labels.cancel} onClick={close}><i className="fa-solid fa-xmark" /></button>
-            </div>
-            <label className="grid gap-2"><span className="font-medium">{config.labels.reason}</span>
-              <Select value={reason} onValueChange={setReason}>
-                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                <SelectContent portalContainer={dialog}>{reasons.map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
-              </Select>
-            </label>
-            <label className="grid gap-2"><span className="font-medium">{config.labels.description}</span><textarea className="textarea min-h-28" name="description" maxLength={2000} /></label>
-            <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn--outline" onClick={close}>{config.labels.cancel}</button>
-              <button className="btn btn--primary" type="submit" disabled={submitting || !reason}>{config.labels.submit}</button>
-            </div>
-          </form>
-        </dialog>
+    <dialog ref={setDialog} className="modal" onCancel={close} onClick={backdropClick}>
+      <form className="modal__content grid gap-4" onSubmit={submit}>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="font-title text-2xl font-semibold">{config.labels.title}</h2>
+          <button
+            type="button"
+            className="btn btn--icon btn--ghost"
+            aria-label={config.labels.cancel}
+            onClick={close}
+          >
+            <i className="fa-solid fa-xmark" />
+          </button>
+        </div>
+        <label className="grid gap-2">
+          <span className="font-medium">{config.labels.reason}</span>
+          <Select value={reason} onValueChange={setReason}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent portalContainer={dialog}>
+              {reasons.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {value}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </label>
+        <label className="grid gap-2">
+          <span className="font-medium">{config.labels.description}</span>
+          <textarea className="textarea min-h-28" name="description" maxLength={2000} />
+        </label>
+        <div className="flex justify-end gap-2">
+          <button type="button" className="btn btn--outline" onClick={close}>
+            {config.labels.cancel}
+          </button>
+          <button className="btn btn--primary" type="submit" disabled={submitting || !reason}>
+            {config.labels.submit}
+          </button>
+        </div>
+      </form>
+    </dialog>
   ) : null
 }
