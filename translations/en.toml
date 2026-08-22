@@ -218,9 +218,7 @@ empty = "No genres found"
 [comments]
 title = "Comments"
 chapterDiscussion = "Chapter discussion"
-shareThoughts = "Share your thoughts on this chapter…"
 kindHint = "Be kind. Spoilers should be marked."
-preview = "Preview"
 post = "Post comment"
 discussion = "Discussion"
 sort = "Sort comments"
@@ -228,8 +226,6 @@ newest = "Newest first"
 oldest = "Oldest first"
 popular = "Most popular"
 edited = "Edited"
-like = "Like comment"
-replies = "{{.Count}} replies"
 empty = "No comments yet. Start the discussion."
 signInToComment = "Sign in to comment"
 
@@ -561,34 +557,18 @@ Strong = "Strong"
 VeryStrong = "Very strong"
 
 [user]
-admin = "Administrator"
-adminDescription = "You can manage users, tags and site settings"
-superAdmin = "Super administrator"
-superAdminDescription = "You can manage everything, demote administrators, etc."
-mod = "Moderator"
-modDescription = "You can manage users, tags, moderate content"
-user = "User"
-users = "Users"
 allUsers = "All users"
 
 notFound = "User not found"
 notFoundDescription = "There are a lot of people that exist. But not this one though."
 
 [user.books]
-one = "book"
-many = "books"
 
 [user.favorites]
-one = "favorite"
-many = "favorites"
 
 [user.followers]
-one = "follower"
-many = "followers"
 
 [user.following]
-one = "following"
-many = "following"
 
 [readingList]
 want_to_read = "Want to read"
@@ -602,18 +582,13 @@ dnf = "Did not finish"
 
 [reviews]
 title = "Reviews"
-myReview = "My review"
 updated = "Your review of \"{{.name}}\" was updated"
 editReview = "Edit my review"
-noReviewsTitle = "Hm, it's empty out here"
-noReviewsText = "There are no reviews for this book yet. Be the first to write one! :)"
 
 [nav]
 home = "Home"
 library = "Library"
 search = "Search"
-logIn = "Sign in"
-signUp = "Sign up"
 
 #############
 # TAG STUFF #
@@ -755,16 +730,13 @@ sortWeightedRating = "Weighted rating"
 sortRandom = "Random"
 
 [special]
-noJavascript = "Hey there! It looks like you have Javascript disabled. OpenLibrary only offers limited functionality without it. Please enable it in your browser settings."
 
 [library]
 libraryDescription = "Books from your reading list will appear here. If you want to take a look at books that you already read or simply did not finish (i.e. abandoned) please checkout the Archive tab."
-login = "Login to add books to your library"
 title = "My library"
 archive = "Archive"
 collections = "Collections"
 archiveDescription = "Books that you read or did not finish will appear here"
-noCollections = "You do not have any collections yet. Create your first collection below."
 
 
 [collection]
@@ -920,13 +892,11 @@ books = "Books"
 title = "Users"
 userIsBanned = "User is banned"
 name = "Name"
-email = "Email"
 actions = "Actions"
 gender = "Gender"
 role = "Role"
 about = "About you"
 generalInformation = "General information"
-avatar = "Avatar"
 accountManagement = "Account management"
 rolesAndPermissions = "Roles and permissions"
 providedByGravatar = "This user's avatar is provided by <a class=\"link link--primary\" target=\"_blank\" href=\"https://gravatar.com\">Gravatar</a>"
