@@ -2,7 +2,7 @@ import { useLayoutEffect } from 'react'
 import './style.scss'
 import { ChapterContentEditor, ChapterContentEditorOptions } from './editor'
 import { EditorContent } from '@tiptap/react'
-import EditorBubbleMenu from './EditorBubbleMenu'
+import { EditorBubbleMenu } from './EditorBubbleMenu'
 import EditorFloatingMenu from './EditorFloatingMenu'
 import { useWYSIWYG } from './state'
 

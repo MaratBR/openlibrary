@@ -99,29 +99,29 @@ ol-island:has(> .be-layout) {
 
 @mixin interactable() {
   line-height: calc(var(--spacing) * 10);
-  @apply h-10 px-1 rounded-xl transition
+  @apply px-1 rounded-xl transition
         text-secondary-foreground hover:bg-foreground/10 hover:text-foreground;
-}
-
-.be-toggle {
-  @include interactable();
-  @apply size-10;
-
-  &[aria-selected='true'] {
-    @apply bg-foreground/10 text-foreground hover:bg-foreground/20;
-  }
 }
 
 .be-toggle-group {
   @apply flex items-center rounded-xl;
-
-  & > .be-toggle {
-    // @apply rounded-none first:rounded-l-xl last:rounded-r-xl;
-  }
 }
 
 .be-listitem {
   @include interactable();
+  @apply h-10;
+
+  &--toggle {
+    @apply w-10;
+
+    &[aria-selected='true'] {
+      @apply bg-foreground/10 text-foreground hover:bg-foreground/20;
+    }
+  }
+
+  &--btn {
+    @apply w-10 hover:bg-foreground/10 active:bg-foreground/20 flex flex-row justify-center items-center;
+  }
 
   &__icon {
     @apply inline-block mr-1;
@@ -129,10 +129,9 @@ ol-island:has(> .be-layout) {
 }
 
 .be-widget-card {
-  @apply flex flex-col items-center justify-center gap-2 p-3 min-h-20 border bg-background text-sm text-center
-        hover:bg-highlight disabled:opacity-50 disabled:pointer-events-none;
-  border-color: var(--border);
-  border-radius: var(--radius);
+  @apply flex flex-col items-center justify-center gap-2 p-3 min-h-20 bg-card text-sm text-center bg-highlight/20
+        hover:text-primary hover:ring hover:ring-2 hover:ring-inset
+        disabled:opacity-50 disabled:pointer-events-none;
 
   &__icon {
     @apply text-lg;
