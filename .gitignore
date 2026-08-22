@@ -4,6 +4,12 @@
 /ao3-books
 /rr-books
 
+# temporary data
+/temp
+
+# fonts
+/oldata/fonts
+
 # js stuff
 **/node_modules
 

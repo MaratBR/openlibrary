@@ -2,6 +2,7 @@ package content
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -77,6 +78,21 @@ func TestMarkupEngineCleanAllowsConfiguredFontValuesOnly(t *testing.T) {
 		`<span style="font-family: Unapproved; font-size: 17px">styled</span>`,
 		`<span>styled</span>`,
 	)
+}
+
+func TestMarkupEngineCleanReturnsSeenFonts(t *testing.T) {
+	t.Parallel()
+
+	engine := NewEngine(MarkupEngineOptions{
+		AllowedFontFamilies: []string{"Arial", "Georgia", "Arial, Georgia"},
+	})
+	got, err := engine.Clean(`<p style="font-family: Arial">one</p><span style="font-family: Arial, Georgia">two</span><em style="font-family: Arial">three</em><b style="font-family: Unapproved">four</b>`)
+	if err != nil {
+		t.Fatalf("Clean() error = %v", err)
+	}
+	if want := []string{"Arial", "Georgia"}; !slices.Equal(got.Fonts, want) {
+		t.Errorf("Clean().Fonts = %#v, want %#v", got.Fonts, want)
+	}
 }
 
 func TestMarkupEngineCleanFiltersLinkURLs(t *testing.T) {

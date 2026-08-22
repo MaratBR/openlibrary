@@ -48,6 +48,7 @@ var FXModule = fx.Module("public_ui_handler",
 		newAPIReportsController,
 		newAPIModerationController,
 		newApiControllerI18N,
+		newAPIControllerGoogleFonts,
 		account.NewSettingsController,
 		webinfra.AsMountableHandler(newHandler),
 	))
@@ -83,6 +84,7 @@ func newHandler(
 	apiControllerReports *apiControllerReports,
 	apiControllerModeration *apiControllerModeration,
 	apiControllerI18N *apiControllerI18N,
+	apiControllerGoogleFonts *apiControllerGoogleFonts,
 
 	flashMiddleware flash.Middleware,
 	log *zap.SugaredLogger,
@@ -139,6 +141,7 @@ func newHandler(
 		apiControllerReports.Register(r)
 		apiControllerModeration.Register(r)
 		apiControllerI18N.Register(r)
+		apiControllerGoogleFonts.Register(r)
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)

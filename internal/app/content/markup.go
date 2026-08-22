@@ -86,13 +86,100 @@ func (e *MarkupEngine) createSanitizerPolicy(options MarkupEngineOptions) {
 type ProcessedContentData struct {
 	Sanitized string
 	Words     int32
+	Fonts     []string
 }
 
 func (e *MarkupEngine) Clean(value string) (processed ProcessedContentData, err error) {
 	processed.Sanitized, err = e.process(value, false, true)
+	if err != nil {
+		return ProcessedContentData{}, err
+	}
 	processed.Words = CountWordsHtml(processed.Sanitized)
+	processed.Fonts, err = collectFontFamilies(processed.Sanitized)
+	if err != nil {
+		return ProcessedContentData{}, err
+	}
 
 	return processed, nil
+}
+
+func collectFontFamilies(content string) ([]string, error) {
+	doc, err := html.Parse(strings.NewReader(content))
+	if err != nil {
+		return nil, err
+	}
+
+	fonts := make([]string, 0)
+	seen := make(map[string]struct{})
+	var walk func(*html.Node)
+	walk = func(node *html.Node) {
+		if node.Type == html.ElementNode {
+			for _, attr := range node.Attr {
+				if attr.Namespace != "" || attr.Key != "style" {
+					continue
+				}
+				for _, declaration := range strings.Split(attr.Val, ";") {
+					property, value, ok := strings.Cut(declaration, ":")
+					if !ok || !strings.EqualFold(strings.TrimSpace(property), "font-family") {
+						continue
+					}
+					for _, font := range splitFontFamilyList(value) {
+						if _, ok := seen[font]; ok {
+							continue
+						}
+						seen[font] = struct{}{}
+						fonts = append(fonts, font)
+					}
+				}
+			}
+		}
+		for child := node.FirstChild; child != nil; child = child.NextSibling {
+			walk(child)
+		}
+	}
+	walk(doc)
+	return fonts, nil
+}
+
+func splitFontFamilyList(value string) []string {
+	var fonts []string
+	start := 0
+	var quote rune
+	escaped := false
+	for index, char := range value {
+		if escaped {
+			escaped = false
+			continue
+		}
+		if char == '\\' && quote != 0 {
+			escaped = true
+			continue
+		}
+		if char == '\'' || char == '"' {
+			if quote == 0 {
+				quote = char
+			} else if quote == char {
+				quote = 0
+			}
+			continue
+		}
+		if char == ',' && quote == 0 {
+			fonts = appendFontFamily(fonts, value[start:index])
+			start = index + 1
+		}
+	}
+	return appendFontFamily(fonts, value[start:])
+}
+
+func appendFontFamily(fonts []string, value string) []string {
+	font := strings.TrimSpace(value)
+	if len(font) >= 2 && ((font[0] == '\'' && font[len(font)-1] == '\'') || (font[0] == '"' && font[len(font)-1] == '"')) {
+		font = font[1 : len(font)-1]
+	}
+	if font != "" {
+		fonts = append(fonts, font)
+	}
+	return fonts
 }
 
 func (e *MarkupEngine) Expand(content string) (string, error) {
