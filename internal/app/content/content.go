@@ -31,9 +31,6 @@ func CountWordsHtml(html string) int32 {
 }
 
 func countWordsPlainText(content string) int32 {
-
-	println(content)
-
 	r := strings.NewReader(content)
 	var (
 		words        int32
@@ -59,6 +56,10 @@ func countWordsPlainText(content string) int32 {
 				}
 			}
 		}
+	}
+
+	if isWithinWord {
+		words++
 	}
 
 	return words

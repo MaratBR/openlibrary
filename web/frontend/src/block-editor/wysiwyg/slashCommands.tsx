@@ -26,6 +26,7 @@ export class SlashCommandsProvider {
 function createSlashCommandFromWidget(widget: Widget): SlashCommandItem {
   return {
     name: widget.name,
+    icon: widget.icon,
     description: widget.description,
     command: widget.apply.bind(widget),
   }

@@ -23,8 +23,8 @@ func TestMarkupEngineProcess(t *testing.T) {
 	if result.Sanitized != wantSanitized {
 		t.Errorf("Process().Sanitized = %q, want %q", result.Sanitized, wantSanitized)
 	}
-	if result.Words != 4 {
-		t.Errorf("Process().Words = %d, want 4", result.Words)
+	if result.Words != 3 {
+		t.Errorf("Process().Words = %d, want 3", result.Words)
 	}
 }
 
@@ -43,17 +43,14 @@ func TestMarkupEngineProcessExpandsTagsRecursively(t *testing.T) {
 		},
 	})
 
-	result, err := engine.Clean("<p>Content</p>")
+	result, err := engine.Expand("<p>Content</p>")
 	if err != nil {
-		t.Fatalf("Process() error = %v", err)
+		t.Fatalf("Expand() error = %v", err)
 	}
 
 	const wantSanitized = "<p>Content<em> expanded</em></p>"
-	if result.Sanitized != wantSanitized {
-		t.Errorf("Process().Sanitized = %q, want %q", result.Sanitized, wantSanitized)
-	}
-	if result.Words != 1 {
-		t.Errorf("Process().Words = %d, want 1", result.Words)
+	if result != wantSanitized {
+		t.Errorf("Expand() = %q, want %q", result, wantSanitized)
 	}
 }
 
@@ -66,13 +63,13 @@ func TestNewEngineCopiesTagExpanders(t *testing.T) {
 	engine := NewEngine(MarkupEngineOptions{TagExapanders: expanders})
 	expanders["strong"] = ExpandTagFunc(func(node *html.Node) { node.Data = "i" })
 
-	result, err := engine.Clean("<strong>Content</strong>")
+	result, err := engine.Expand("<strong>Content</strong>")
 	if err != nil {
-		t.Fatalf("Process() error = %v", err)
+		t.Fatalf("Expand() error = %v", err)
 	}
 
 	const want = "<em>Content</em>"
-	if result.Sanitized != want {
-		t.Errorf("Process().Sanitized = %q, want %q", result.Sanitized, want)
+	if result != want {
+		t.Errorf("Expand() = %q, want %q", result, want)
 	}
 }

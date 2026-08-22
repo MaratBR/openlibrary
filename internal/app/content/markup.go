@@ -3,6 +3,7 @@ package content
 import (
 	"errors"
 	"maps"
+	"regexp"
 	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -14,26 +15,66 @@ type ExpandTag interface {
 	ConfigureSanitizer(policy *bluemonday.Policy)
 }
 
+// ExpandTagFunc adapts a function to an ExpandTag. It is useful for small
+// tag expanders and tests that do not need to change the sanitizer policy.
+type ExpandTagFunc func(node *html.Node)
+
+func (f ExpandTagFunc) Expand(node *html.Node) {
+	f(node)
+}
+
+func (ExpandTagFunc) ConfigureSanitizer(*bluemonday.Policy) {}
+
 type MarkupEngine struct {
 	tagExpanders    map[string]ExpandTag
 	sanitizerPolicy *bluemonday.Policy
+	urlFilter       func(url string) bool
 }
 
 type MarkupEngineOptions struct {
 	TagExapanders map[string]ExpandTag
+
+	// URLFilter decides whether a URL used by markup such as links and images is
+	// permitted. A nil filter leaves URL validation to the sanitizer policy.
+	URLFilter func(url string) bool
+
+	// TextColorFilter decides whether a CSS text color value is permitted. A nil
+	// filter leaves text color validation to the sanitizer policy.
+	TextColorFilter func(color string) bool
+
+	// AllowedFontFamilies is the fixed set of permitted font-family CSS values.
+	AllowedFontFamilies []string
+
+	// AllowedFontSizes is the fixed set of permitted font-size CSS values.
+	AllowedFontSizes []string
 }
 
 func NewEngine(options MarkupEngineOptions) *MarkupEngine {
 
 	eng := &MarkupEngine{
 		tagExpanders: maps.Clone(options.TagExapanders),
+		urlFilter:    options.URLFilter,
 	}
-	eng.createSanitizerPolicy()
+	eng.createSanitizerPolicy(options)
 	return eng
 }
 
-func (e *MarkupEngine) createSanitizerPolicy() {
+func (e *MarkupEngine) createSanitizerPolicy(options MarkupEngineOptions) {
 	policy := bluemonday.UGCPolicy()
+
+	policy.AllowStyles("text-align").MatchingEnum("left", "right", "center", "justify").Globally()
+	policy.AllowAttrs("target").Matching(regexp.MustCompile(`^_blank$`)).OnElements("a")
+	policy.AllowAttrs("data-lang").Matching(regexp.MustCompile(`^[a-zA-Z0-9_+-]+$`)).OnElements("pre")
+
+	if options.TextColorFilter != nil {
+		policy.AllowStyles("color").MatchingHandler(options.TextColorFilter).Globally()
+	}
+	if len(options.AllowedFontFamilies) > 0 {
+		policy.AllowStyles("font-family").MatchingEnum(options.AllowedFontFamilies...).Globally()
+	}
+	if len(options.AllowedFontSizes) > 0 {
+		policy.AllowStyles("font-size").MatchingEnum(options.AllowedFontSizes...).Globally()
+	}
 
 	for _, expander := range e.tagExpanders {
 		expander.ConfigureSanitizer(policy)
@@ -73,6 +114,10 @@ func (e *MarkupEngine) process(content string, expandTags bool, sanitize bool) (
 		return "", errors.New("cannot find body element")
 	}
 
+	if e.urlFilter != nil {
+		e.filterURLs(body)
+	}
+
 	if expandTags {
 		e.expandRecursively(body, 0)
 	}
@@ -89,6 +134,35 @@ func (e *MarkupEngine) process(content string, expandTags bool, sanitize bool) (
 	html := fixedHTML.String()
 
 	return html, nil
+}
+
+func (e *MarkupEngine) filterURLs(node *html.Node) {
+	if node.Type == html.ElementNode {
+		for index := 0; index < len(node.Attr); {
+			attr := node.Attr[index]
+			if attr.Namespace == "" && (attr.Key == "href" || attr.Key == "src") && !e.urlFilter(attr.Val) {
+				node.Attr = append(node.Attr[:index], node.Attr[index+1:]...)
+				if attr.Key == "href" {
+					e.removeAttribute(node, "rel")
+				}
+				continue
+			}
+			index++
+		}
+	}
+
+	for child := node.FirstChild; child != nil; child = child.NextSibling {
+		e.filterURLs(child)
+	}
+}
+
+func (e *MarkupEngine) removeAttribute(node *html.Node, name string) {
+	for index, attr := range node.Attr {
+		if attr.Namespace == "" && attr.Key == name {
+			node.Attr = append(node.Attr[:index], node.Attr[index+1:]...)
+			return
+		}
+	}
 }
 
 func (e *MarkupEngine) expandRecursively(node *html.Node, depth int) {
