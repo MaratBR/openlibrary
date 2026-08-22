@@ -10,6 +10,7 @@ import (
 	"slices"
 	"time"
 
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
@@ -22,15 +23,22 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
+type BookManagerServiceDeps struct {
+	fx.In
+
+	DB                 DB
+	TagsService        TagsService
+	UsersService       UserService
+	UploadService      *UploadService
+	BookReindexService BookReindexService
+	MetricService      analytics.MetricService
+	Log                *zap.SugaredLogger
+	Markup             *content.MarkupEngine
+}
+
 type bookManagerService struct {
-	queries            *store.Queries
-	db                 DB
-	tagsService        TagsService
-	usersService       UserService
-	uploadService      *UploadService
-	bookReindexService BookReindexService
-	metricService      analytics.MetricService
-	log                *zap.SugaredLogger
+	queries *store.Queries
+	deps    BookManagerServiceDeps
 }
 
 const (
@@ -77,7 +85,7 @@ func (s *bookManagerService) GetUserBooks(ctx context.Context, input ManagerGetU
 
 	// load views
 	bookIDs := MapSlice(userBooks, func(b ManagerBookDto) int64 { return b.ID })
-	viewMappings, err := s.metricService.Get(ctx, analytics.MetricViews, bookIDs)
+	viewMappings, err := s.deps.MetricService.Get(ctx, analytics.MetricViews, bookIDs)
 	if err != nil {
 		return ManagerGetUserBooksQuery_Result{}, err
 	}
@@ -100,7 +108,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		return ManagerGetBookQuery_Result{}, err
 	}
 
-	tags, err := s.tagsService.GetTagsByIds(ctx, book.TagIds)
+	tags, err := s.deps.TagsService.GetTagsByIds(ctx, book.TagIds)
 	if err != nil {
 		return ManagerGetBookQuery_Result{}, err
 	}
@@ -126,7 +134,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		Summary:           book.Summary,
 		IsPubliclyVisible: book.IsPubliclyVisible,
 		IsBanned:          book.IsBanned,
-		Cover:             getBookCover(s.uploadService, book.Cover, book.ID),
+		Cover:             getBookCover(s.deps.UploadService, book.Cover, book.ID),
 	}
 
 	{
@@ -186,7 +194,7 @@ func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 		return 0, err
 	}
 
-	tags, err := s.tagsService.FindParentTagIds(ctx, input.Tags)
+	tags, err := s.deps.TagsService.FindParentTagIds(ctx, input.Tags)
 	if err != nil {
 		return 0, err
 	}
@@ -208,7 +216,7 @@ func (s *bookManagerService) CreateBook(ctx context.Context, input CreateBookCom
 		return 0, apperror.WrapUnexpectedDBError(err)
 	}
 
-	s.bookReindexService.ScheduleReindex(ctx, id)
+	s.deps.BookReindexService.ScheduleReindex(ctx, id)
 
 	return id, err
 }
@@ -219,7 +227,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return err
 	}
 
-	summaryData, err := content.Process(input.Summary)
+	summaryData, err := s.deps.Markup.Clean(input.Summary)
 	if err != nil {
 		return err
 	}
@@ -229,7 +237,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return err
 	}
 
-	tags, err := s.tagsService.FindParentTagIds(ctx, input.Tags)
+	tags, err := s.deps.TagsService.FindParentTagIds(ctx, input.Tags)
 	if err != nil {
 		return err
 	}
@@ -247,7 +255,7 @@ func (s *bookManagerService) UpdateBook(ctx context.Context, input UpdateBookCom
 		return apperror.WrapUnexpectedDBError(err)
 	}
 
-	s.bookReindexService.ScheduleReindex(ctx, input.BookID)
+	s.deps.BookReindexService.ScheduleReindex(ctx, input.BookID)
 
 	return nil
 }
@@ -273,9 +281,9 @@ func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBo
 
 	cover := fmt.Sprintf("%d_%d", input.BookID, GenID())
 	path := fmt.Sprintf("%s/%s.jpeg", BOOK_COVER_DIRECTORY, cover)
-	_, err = s.uploadService.Client.PutObject(
+	_, err = s.deps.UploadService.Client.PutObject(
 		ctx,
-		s.uploadService.PublicBucket,
+		s.deps.UploadService.PublicBucket,
 		path,
 		bytes.NewReader(imgBytes),
 		int64(len(imgBytes)),
@@ -293,7 +301,7 @@ func (s *bookManagerService) UploadBookCover(ctx context.Context, input UploadBo
 		return
 	}
 
-	result.URL = getBookCover(s.uploadService, cover, input.BookID)
+	result.URL = getBookCover(s.deps.UploadService, cover, input.BookID)
 
 	return
 }
@@ -328,7 +336,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 		return UpdateBookChapterOrdersCommand_Result{}, nil
 	}
 
-	tx, err := s.db.Begin(ctx)
+	tx, err := s.deps.DB.Begin(ctx)
 	if err != nil {
 		return UpdateBookChapterOrdersCommand_Result{}, err
 	}
@@ -350,7 +358,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 	for _, modification := range input.Modifications {
 		_, ok := MoveItem(newOrder, modification.ChapterID, modification.NewPositionIndex)
 		if !ok {
-			s.log.Errorw("failed to apply chapter modification", "chapterID", modification.ChapterID, "newPositionIndex", modification.NewPositionIndex)
+			s.deps.Log.Errorw("failed to apply chapter modification", "chapterID", modification.ChapterID, "newPositionIndex", modification.NewPositionIndex)
 			continue
 		}
 	}
@@ -366,7 +374,7 @@ func (s *bookManagerService) UpdateBookChaptersOrder(ctx context.Context, input 
 
 		modifiedPositions[chapterID] = i + 1
 
-		s.log.Debugw("updating position of the chapter", "chapterID", chapterID, "index", i)
+		s.deps.Log.Debugw("updating position of the chapter", "chapterID", chapterID, "index", i)
 		err = queries.Book_SetChapterOrder(ctx, store.Book_SetChapterOrderParams{
 			ID:    chapterID,
 			Order: int32(i + 1),
@@ -412,7 +420,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 	var (
 		books   []ManagerBookDto = []ManagerBookDto{}
 		book    ManagerBookDto
-		tagsAgg = newTagsAggregator(s.tagsService)
+		tagsAgg = newTagsAggregator(s.deps.TagsService)
 	)
 
 	for _, row := range rows {
@@ -438,7 +446,7 @@ func (s *bookManagerService) aggregateUserBooks(ctx context.Context, rows []stor
 				IsPubliclyVisible: row.IsPubliclyVisible,
 				IsBanned:          row.IsBanned,
 				IsTrashed:         row.IsTrashed,
-				Cover:             getBookCover(s.uploadService, row.Cover, row.ID),
+				Cover:             getBookCover(s.deps.UploadService, row.Cover, row.ID),
 				Stats: ManagerBookDto_Stats{
 					Ratings: row.TotalReviews,
 					Reviews: row.TotalReviews,
@@ -491,7 +499,7 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 	}
 
 	id := GenID()
-	content, err := content.Process(input.Content)
+	content, err := s.deps.Markup.Clean(input.Content)
 	if err != nil {
 		return CreateBookChapterCommand_Result{}, ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
 	}
@@ -513,7 +521,7 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 	if err != nil {
 		return CreateBookChapterCommand_Result{}, err
 	}
-	s.bookReindexService.ScheduleReindex(ctx, input.BookID)
+	s.deps.BookReindexService.ScheduleReindex(ctx, input.BookID)
 	return CreateBookChapterCommand_Result{ID: id}, nil
 }
 
@@ -523,7 +531,7 @@ func (s *bookManagerService) ReorderChapters(ctx context.Context, input ReorderC
 		oldChapterOrder map[int64]int
 	)
 
-	tx, err := s.db.Begin(ctx)
+	tx, err := s.deps.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
@@ -645,7 +653,7 @@ func (s *bookManagerService) UpdateBookChapter(ctx context.Context, cmd UpdateBo
 		return err
 	}
 
-	summary, err := content.Process(cmd.Summary)
+	summary, err := s.deps.Markup.Clean(cmd.Summary)
 	if err != nil {
 		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process chapter summary")
 	}
@@ -671,7 +679,7 @@ func (s *bookManagerService) UpdateBookChapter(ctx context.Context, cmd UpdateBo
 	}
 
 	s.recalculateBookStats(ctx, cmd.BookID)
-	s.bookReindexService.ScheduleReindex(ctx, cmd.BookID)
+	s.deps.BookReindexService.ScheduleReindex(ctx, cmd.BookID)
 	return nil
 }
 
@@ -690,7 +698,7 @@ func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) 
 		return DraftDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
-	user, err := s.usersService.GetUserSelfData(ctx, uuidDbToDomain(draft.CreatedBy))
+	user, err := s.deps.UsersService.GetUserSelfData(ctx, uuidDbToDomain(draft.CreatedBy))
 	if err != nil {
 		return DraftDto{}, apperror.WrapUnexpectedAppError(err)
 	}
@@ -736,7 +744,7 @@ func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCom
 		return err
 	}
 
-	processedContent, err := content.Process(cmd.Content)
+	processedContent, err := s.deps.Markup.Clean(cmd.Content)
 
 	if err != nil {
 		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
@@ -792,7 +800,7 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 		return err
 	}
 
-	tx, err := s.db.Begin(ctx)
+	tx, err := s.deps.DB.Begin(ctx)
 	if err != nil {
 		return apperror.WrapUnexpectedDBError(err)
 	}
@@ -845,7 +853,7 @@ func (s *bookManagerService) ScheduleDraft(ctx context.Context, cmd ScheduleDraf
 		return err
 	}
 
-	tx, err := s.db.Begin(ctx)
+	tx, err := s.deps.DB.Begin(ctx)
 	if err != nil {
 		return apperror.WrapUnexpectedDBError(err)
 	}
@@ -870,7 +878,7 @@ func (s *bookManagerService) ScheduleDraft(ctx context.Context, cmd ScheduleDraf
 func (s *bookManagerService) recalculateBookStats(ctx context.Context, bookID int64) {
 	err := s.queries.RecalculateBookStats(ctx, bookID)
 	if err != nil {
-		s.log.Errorw("failed to recalculate book stats", "err", err, "bookID", bookID)
+		s.deps.Log.Errorw("failed to recalculate book stats", "err", err, "bookID", bookID)
 	}
 }
 
@@ -960,7 +968,7 @@ func (s *bookManagerService) UpdateDraftContent(ctx context.Context, cmd UpdateD
 		return err
 	}
 
-	data, err := content.Process(cmd.Content)
+	data, err := s.deps.Markup.Clean(cmd.Content)
 
 	if err != nil {
 		return err
@@ -1010,15 +1018,9 @@ func (s *bookManagerService) authorizeChapterEdit(ctx context.Context, userID uu
 	return nil
 }
 
-func NewBookManagerService(db DB, tagsService TagsService, uploadService *UploadService, usersService UserService, bookReindexService BookReindexService, metricService analytics.MetricService, log *zap.SugaredLogger) BookManagerService {
+func NewBookManagerService(deps BookManagerServiceDeps, db dal.DB) BookManagerService {
 	return &bookManagerService{
-		queries:            store.New(db),
-		tagsService:        tagsService,
-		db:                 db,
-		uploadService:      uploadService,
-		usersService:       usersService,
-		bookReindexService: bookReindexService,
-		metricService:      metricService,
-		log:                log,
+		queries: store.New(db),
+		deps:    deps,
 	}
 }

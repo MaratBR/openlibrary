@@ -24,6 +24,8 @@ func processBookSummaries(ctx context.Context, db dal.DB, queries *store.Queries
 	var afterID int64
 	var total, updated int
 
+	markup := content.NewDefaultEngine()
+
 	log.Infow("started processing book summaries")
 	for {
 		books, err := queries.CLI_Util_MinifyContent_ListBookSummaries(ctx, store.CLI_Util_MinifyContent_ListBookSummariesParams{
@@ -43,7 +45,7 @@ func processBookSummaries(ctx context.Context, db dal.DB, queries *store.Queries
 		}
 		txQueries := queries.WithTx(tx)
 		for _, book := range books {
-			processed, err := content.Process(book.Summary)
+			processed, err := markup.Clean(book.Summary)
 			if err != nil {
 				_ = tx.Rollback(ctx)
 				return fmt.Errorf("process book %d summary: %w", book.ID, err)
@@ -76,6 +78,8 @@ func processChapterContent(ctx context.Context, db dal.DB, queries *store.Querie
 	var afterID int64
 	var total, updated int
 
+	markup := content.NewDefaultEngine()
+
 	log.Infow("started processing chapter content")
 	for {
 		chapters, err := queries.CLI_Util_MinifyContent_ListChapters(ctx, store.CLI_Util_MinifyContent_ListChaptersParams{
@@ -95,7 +99,7 @@ func processChapterContent(ctx context.Context, db dal.DB, queries *store.Querie
 		}
 		txQueries := queries.WithTx(tx)
 		for _, chapter := range chapters {
-			processed, err := content.Process(chapter.Content)
+			processed, err := markup.Clean(chapter.Content)
 			if err != nil {
 				_ = tx.Rollback(ctx)
 				return fmt.Errorf("process chapter %d: %w", chapter.ID, err)

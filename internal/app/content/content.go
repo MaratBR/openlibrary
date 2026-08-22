@@ -23,29 +23,6 @@ func SanitizeHtml(html string) string {
 	return htmlsanitizer.Sanitize(html)
 }
 
-type ProcessedContentData struct {
-	Sanitized string
-	Words     int32
-}
-
-// Process takes a string of HTML content and returns a ProcessedContentData
-// containing both a sanitized version of the content (i.e. HTML tags removed and
-// unsafe content stripped), and a count of the number of words in the content.
-func Process(content string) (ProcessedContentData, error) {
-	fixedHtml := SanitizeHtml(content)
-	fixedHtml, err := FixHTML(fixedHtml)
-	if err != nil {
-		return ProcessedContentData{}, err
-	}
-	fixedHtml, err = contentMinifier.String("text/html", fixedHtml)
-	if err != nil {
-		return ProcessedContentData{}, err
-	}
-	words := CountWordsHtml(fixedHtml)
-
-	return ProcessedContentData{Sanitized: fixedHtml, Words: words}, nil
-}
-
 func CountWordsHtml(html string) int32 {
 	text := html2text.HTML2Text(html)
 	words := countWordsPlainText(text)

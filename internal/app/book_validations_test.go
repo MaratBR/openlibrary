@@ -14,7 +14,7 @@ func TestValidateChapterName(t *testing.T) {
 		{name: "valid", value: "Chapter 1"},
 		{name: "empty", value: "   ", wantErr: true},
 		{name: "seventy unicode characters", value: strings.Repeat("界", 70)},
-		{name: "too long", value: strings.Repeat("a", 71), wantErr: true},
+		{name: "too long", value: strings.Repeat("a", 201), wantErr: true},
 	}
 
 	for _, tt := range tests {

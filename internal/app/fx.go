@@ -2,12 +2,14 @@ package app
 
 import (
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
+	"github.com/MaratBR/openlibrary/internal/app/content"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"go.uber.org/fx"
 )
 
 var FXModule = fx.Module("ol_app", fx.Decorate(),
 	analytics.FXModule,
+	content.FXModule,
 
 	fx.Provide(
 		NewUserService,

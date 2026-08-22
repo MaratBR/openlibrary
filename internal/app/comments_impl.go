@@ -39,7 +39,7 @@ func (c *commentsService) AddComment(ctx context.Context, command AddCommentComm
 
 	comment, err := c.getByID(ctx, id, command.UserID)
 	if err != nil {
-		return AddCommentResult{}, apperror.UnexpectedError.New(err.Error())
+		return AddCommentResult{}, apperror.UnexpectedError.New("%s", err.Error())
 	}
 
 	return AddCommentResult{Comment: comment}, err
@@ -217,7 +217,7 @@ func (c *commentsService) UpdateComment(ctx context.Context, command UpdateComme
 
 	comment, err := c.getByID(ctx, command.ID, command.UserID)
 	if err != nil {
-		return UpdateCommentResult{}, apperror.UnexpectedError.New(err.Error())
+		return UpdateCommentResult{}, apperror.UnexpectedError.New("%s", err.Error())
 	}
 
 	return UpdateCommentResult{Comment: comment}, err
@@ -228,7 +228,7 @@ func (c *commentsService) getByID(ctx context.Context, id int64, userID uuid.UUI
 	row, err := queries.Comment_GetWithUserByID(ctx, id)
 	if err != nil {
 		if err == store.ErrNoRows {
-			return CommentDto{}, ErrTypeCommentNotFound.New(fmt.Sprintf("comment with id %d not found", id))
+			return CommentDto{}, ErrTypeCommentNotFound.New("%s", fmt.Sprintf("comment with id %d not found", id))
 		}
 		return CommentDto{}, apperror.WrapUnexpectedDBError(err)
 	}

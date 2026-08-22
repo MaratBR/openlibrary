@@ -19,6 +19,7 @@ require (
 	github.com/h2non/bimg v1.1.9
 	github.com/hjson/hjson-go/v4 v4.6.0
 	github.com/jackc/pgx/v5 v5.10.0
+	github.com/jasonlvhit/gocron v0.0.1
 	github.com/joomcode/errorx v1.2.0
 	github.com/k3a/html2text v1.4.0
 	github.com/knadh/koanf/parsers/toml/v2 v2.2.1
@@ -35,8 +36,10 @@ require (
 	github.com/pelletier/go-toml/v2 v2.4.3
 	github.com/redis/go-redis/extra/redisotel/v9 v9.21.0
 	github.com/redis/go-redis/v9 v9.21.0
+	github.com/stretchr/testify v1.11.1
 	github.com/tdewolff/minify/v2 v2.24.16
 	github.com/urfave/cli/v3 v3.10.1
+	github.com/zeebo/assert v1.3.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.66.0
 	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.44.0
@@ -73,7 +76,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
-	github.com/jasonlvhit/gocron v0.0.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.11 // indirect

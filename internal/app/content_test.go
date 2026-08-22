@@ -45,7 +45,7 @@ var (
 
 func TestContentProcessing(t *testing.T) {
 	for input, expectedOutput := range contentProcessingTestCases {
-		output, err := content.Process(input)
+		output, err := content.NewDefaultEngine().Clean(input)
 		if err != nil {
 			t.Errorf("Expected no error, got %s", err.Error())
 		}

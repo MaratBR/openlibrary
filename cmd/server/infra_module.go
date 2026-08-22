@@ -4,11 +4,12 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/cache"
@@ -35,6 +36,7 @@ import (
 var infraModule = fx.Module("infra", fx.Provide(
 	loadConfigOrPanic,
 	connectToDatabase,
+	// TODO remove
 	func(db dal.DB) app.DB {
 		return db
 	},
@@ -57,6 +59,9 @@ func newLocaleProvider(cliParams cliParams, _ *zap.SugaredLogger) *i18n.LocalePr
 		map[language.Tag][]string{
 			language.English: {
 				"translations/en.toml",
+			},
+			language.Russian: {
+				"translations/ru.toml",
 			},
 		},
 	)

@@ -2,11 +2,12 @@ package i18n
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/eduardolat/goeasyi18n"
 	"github.com/pelletier/go-toml/v2"

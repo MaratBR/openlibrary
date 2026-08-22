@@ -61,7 +61,7 @@ func (m *moderationBookService) GetBookInfo(ctx context.Context, query GetBookIn
 	row, err := queries.ModGetBookInfo(ctx, query.BookID)
 	if err != nil {
 		if err == store.ErrNoRows {
-			return BookModerationInfo{}, ModerationBookNotFoundError.New(fmt.Sprintf("book with ID %d could not be found", query.BookID))
+			return BookModerationInfo{}, ModerationBookNotFoundError.New("%s", fmt.Sprintf("book with ID %d could not be found", query.BookID))
 		} else {
 			return BookModerationInfo{}, apperror.WrapUnexpectedDBError(err)
 		}

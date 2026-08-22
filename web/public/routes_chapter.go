@@ -1,10 +1,12 @@
 package public
 
 import (
-	"go.uber.org/zap"
 	"net/http"
 
+	"go.uber.org/zap"
+
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/content"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
@@ -16,10 +18,11 @@ type chaptersController struct {
 	readingListService app.ReadingListService
 	readerPreferences  app.ReaderPreferencesService
 	log                *zap.SugaredLogger
+	markup             *content.MarkupEngine
 }
 
-func newChaptersController(service app.BookService, readingListService app.ReadingListService, readerPreferences app.ReaderPreferencesService, log *zap.SugaredLogger) *chaptersController {
-	return &chaptersController{service: service, readingListService: readingListService, readerPreferences: readerPreferences, log: log}
+func newChaptersController(service app.BookService, readingListService app.ReadingListService, readerPreferences app.ReaderPreferencesService, log *zap.SugaredLogger, markup *content.MarkupEngine) *chaptersController {
+	return &chaptersController{service: service, readingListService: readingListService, readerPreferences: readerPreferences, log: log, markup: markup}
 }
 
 func (c *chaptersController) Register(r chi.Router) {
@@ -48,7 +51,7 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := c.service.GetBookChapter(r.Context(), app.GetBookChapterQuery{
+	chapterResult, err := c.service.GetBookChapter(r.Context(), app.GetBookChapterQuery{
 		BookID:    bookID,
 		ChapterID: chapterID,
 	})
@@ -58,7 +61,7 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	options := c.getChapterProgressTrackerOptions(r, &result.Chapter)
+	options := c.getChapterProgressTrackerOptions(r, &chapterResult.Chapter)
 	preferences := templates.GetReaderPreferencesFromCookies(r)
 	if userID.Valid {
 		storedPreferences, preferencesErr := c.readerPreferences.Get(r.Context(), userID.UUID)
@@ -70,7 +73,15 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 			preferences = storedPreferences.Value
 		}
 	}
-	olhttp.WriteTemplate(w, r.Context(), templates.Chapter(result.Chapter, book, options, preferences))
+
+	// TEMPORARY MEASURE
+	chapterResult.Chapter.Content, err = c.markup.Expand(chapterResult.Chapter.Content)
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	olhttp.WriteTemplate(w, r.Context(), templates.Chapter(chapterResult.Chapter, book, options, preferences))
 }
 
 func (c *chaptersController) getChapterProgressTrackerOptions(r *http.Request, chapter *app.ChapterDto) templates.ChapterProgressTrackerOptions {
