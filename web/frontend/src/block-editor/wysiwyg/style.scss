@@ -8,7 +8,8 @@
 .be-suggestions-modal {
   @apply bg-surface shadow-md fixed left-0 top-0 p-2;
   min-width: 300px;
-  min-height: 300px;
+  min-height: 100px;
+  max-height: min(400px, 50vw);
   scrollbar-width: thin;
   overflow-y: auto;
 }

@@ -140,8 +140,8 @@ ol-island:has(> .be-layout) {
 }
 
 .be-chapter-name-input {
-  @apply focus:rounded-xl focus:bg-highlight focus:outline-none
-        text-3xl font-title w-full block p-4 -mx-4;
+  @apply focus:bg-highlight focus:outline-none py-3
+        text-3xl font-title w-full block border-b border-b-3;
 }
 
 .be-publish-popup {

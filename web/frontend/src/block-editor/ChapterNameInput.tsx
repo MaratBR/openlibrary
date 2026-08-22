@@ -12,7 +12,7 @@ export function ChapterNameInput() {
       <input
         id="chapter-name-input"
         name="chapterName"
-        className="input be-chapter-name-input"
+        className="be-chapter-name-input"
         value={chapterName}
         aria-invalid={!valid}
         aria-describedby={!valid ? 'chapter-name-error' : undefined}

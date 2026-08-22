@@ -80,7 +80,7 @@
   }
 
   blockquote {
-    @apply bg-surface p-4 italic border-b border-b-4 my-8;
+    @apply bg-surface p-4 border-b border-b-4 my-8;
 
     & > p:last-child {
       @apply mb-0;

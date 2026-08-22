@@ -1,24 +1,32 @@
+import { WidgetsService } from '../widgets'
+import { Widget } from '../widgets/core'
 import { SlashCommandItem } from './Suggestions'
 
-export const slashCommands: () => SlashCommandItem[] = () => [
-  {
-    name: window._('editor.h2'),
-    icon: <i className="fa-solid fa-heading" />,
-    command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-  },
-  {
-    name: window._('editor.h3'),
-    icon: <i className="fa-solid fa-heading" />,
-    command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
-  },
-  {
-    name: window._('editor.ul'),
-    description: 'Create a bullet list',
-    command: (editor) => editor.chain().focus().toggleBulletList().run(),
-  },
-  {
-    name: window._('editor.ol'),
-    description: 'Create an ordered list',
-    command: (editor) => editor.chain().focus().toggleOrderedList().run(),
-  },
-]
+export class SlashCommandsProvider {
+  private _commands: SlashCommandItem[] = []
+  private _widgetService: WidgetsService
+
+  get(): SlashCommandItem[] {
+    return this._commands
+  }
+
+  constructor(widgetService: WidgetsService) {
+    this._widgetService = widgetService
+
+    // TODO error handling
+    this.load()
+  }
+
+  private async load() {
+    const widgets = await this._widgetService.getWidgets()
+    this._commands = widgets.map(createSlashCommandFromWidget)
+  }
+}
+
+function createSlashCommandFromWidget(widget: Widget): SlashCommandItem {
+  return {
+    name: widget.name,
+    description: widget.description,
+    command: widget.apply.bind(widget),
+  }
+}

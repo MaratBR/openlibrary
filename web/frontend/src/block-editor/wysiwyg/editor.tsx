@@ -11,9 +11,10 @@ import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Subject, useSubject } from '@/common/rx'
 import { SlashCommand } from './Suggestions'
-import { slashCommands } from './slashCommands'
+import { SlashCommandsProvider } from './slashCommands'
 import { SuggestionsDisplay } from './SuggestionsDisplay'
 import { createEvent } from '@/lib/event'
+import { WidgetsService } from '../widgets'
 
 export type EditorToolbarState = {
   bold: boolean
@@ -87,7 +88,7 @@ export class ChapterContentEditor extends Editor {
         OrderedList,
         SlashCommand.configure({
           suggestionClass: 'be-suggestion',
-          commands: slashCommands(),
+          commandsProvider: new SlashCommandsProvider(WidgetsService.instance()),
           // TODO proper disposal of this
           displayAdapter: new SuggestionsDisplay(
             {

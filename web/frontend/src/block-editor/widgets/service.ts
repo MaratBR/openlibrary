@@ -9,7 +9,7 @@ export class WidgetsService {
     return this._INSTANCE
   }
 
-  public async loadWidgets(): Promise<Widget[]> {
+  public async getWidgets(): Promise<Widget[]> {
     return getBaseWidgets()
   }
 }

@@ -3,6 +3,7 @@ package content
 import (
 	"io"
 	"strings"
+	"unicode"
 
 	"github.com/MaratBR/openlibrary/internal/app/htmlsanitizer"
 	"github.com/k3a/html2text"
@@ -31,6 +32,8 @@ func CountWordsHtml(html string) int32 {
 
 func countWordsPlainText(content string) int32 {
 
+	println(content)
+
 	r := strings.NewReader(content)
 	var (
 		words        int32
@@ -45,7 +48,7 @@ func countWordsPlainText(content string) int32 {
 				panic(err)
 			}
 		} else {
-			if r == ' ' || r == '\n' || r == '\t' {
+			if unicode.IsSpace(r) {
 				if isWithinWord {
 					isWithinWord = false
 					words += 1

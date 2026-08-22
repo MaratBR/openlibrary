@@ -8,7 +8,7 @@ export function WidgetsMenu({ service }: { service: WidgetsService }) {
   const editor = useWYSIWYG((state) => state.editor)
 
   useEffect(() => {
-    service.loadWidgets().then(setWidgets)
+    service.getWidgets().then(setWidgets)
   }, [service])
 
   return (

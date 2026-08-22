@@ -19,10 +19,10 @@ func newTagsController(service app.TagsService) *tagsController {
 }
 
 func (t *tagsController) Register(r chi.Router) {
-	r.Get("/tag/{tagID}", t.TagPage)
+	r.Get("/tag/{tagID}", t.tagPage)
 }
 
-func (t *tagsController) TagPage(w http.ResponseWriter, r *http.Request) {
+func (t *tagsController) tagPage(w http.ResponseWriter, r *http.Request) {
 	tagID, err := olhttp.URLParamInt64(r, "tagID")
 	if err != nil {
 		http.Redirect(w, r, "/tags", http.StatusFound)

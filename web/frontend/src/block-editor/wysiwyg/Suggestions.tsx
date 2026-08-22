@@ -21,7 +21,9 @@ export interface SlashCommandDisplayAdapter {
 export type SlashCommandDisplayFocusKey = 'ArrowUp' | 'ArrowDown' | null
 
 export type SlashCommandOptions = {
-  commands: SlashCommandItem[]
+  commandsProvider: {
+    get(): SlashCommandItem[]
+  }
   suggestionClass: string
   displayAdapter: SlashCommandDisplayAdapter
 }
@@ -50,9 +52,9 @@ export const SlashCommand = Extension.create<SlashCommandOptions, SuggestsionsSt
         findSuggestionMatch: findSlashLineMatch,
 
         items: ({ query }) => {
-          return this.options.commands.filter((item) =>
-            item.name.toLowerCase().includes(query.toLowerCase()),
-          )
+          return this.options.commandsProvider
+            .get()
+            .filter((item) => item.name.toLowerCase().includes(query.toLowerCase()))
         },
 
         command: ({ editor, range, props }) => {
