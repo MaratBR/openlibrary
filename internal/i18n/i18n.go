@@ -128,6 +128,7 @@ func loadFromTOML(files ...string) (goeasyi18n.TranslateStrings, *keyDef, error)
 func newI18N(
 	lang language.Tag,
 	files map[language.Tag][]string,
+	log *zap.SugaredLogger,
 ) (*goeasyi18n.I18n, *keyDef) {
 	i18nInstance := goeasyi18n.NewI18n(goeasyi18n.Config{
 		FallbackLanguageName:    lang.String(),
@@ -138,11 +139,11 @@ func newI18N(
 
 	for lang, langFiles := range files {
 		translations, langKeyDef, err := loadFromTOML(langFiles...)
-		allLangDef.mergeWith(langKeyDef)
 		if err != nil {
-			panic(err)
+			log.Errorw("failed to open language files", "files", langFiles, "lang", lang, "err", err)
+			continue
 		}
-
+		allLangDef.mergeWith(langKeyDef)
 		i18nInstance.AddLanguage(lang.String(), translations)
 	}
 
@@ -157,17 +158,24 @@ type LocaleProvider struct {
 	autoReload      bool
 	files           map[language.Tag][]string
 	lastLoad        time.Time
+	queryParam      string
+	cookie          string
+	log             *zap.SugaredLogger
 }
 
 func NewLocaleProvider(
 	defaultLanguage language.Tag,
 	autoReload bool,
 	files map[language.Tag][]string,
+	log *zap.SugaredLogger,
 ) *LocaleProvider {
 	lp := &LocaleProvider{
 		files:           files,
 		autoReload:      autoReload,
 		defaultLanguage: defaultLanguage,
+		queryParam:      "lang",
+		cookie:          "lang",
+		log:             log,
 	}
 	lp.load()
 	return lp
@@ -184,7 +192,7 @@ func (p *LocaleProvider) getI18N() *goeasyi18n.I18n {
 func (p *LocaleProvider) load() {
 	p.mx.Lock()
 	defer p.mx.Unlock()
-	p.i18n, p.def = newI18N(p.defaultLanguage, p.files)
+	p.i18n, p.def = newI18N(p.defaultLanguage, p.files, p.log)
 	p.lastLoad = time.Now()
 }
 
@@ -206,34 +214,15 @@ func (p *LocaleProvider) statChanged() bool {
 	return false
 }
 
-func (p *LocaleProvider) CreateLocalizer(r *http.Request) *Localizer {
-	tag, passthrough := getLanguageTag(r, p.defaultLanguage)
+func (p *LocaleProvider) createLocalizer(r *http.Request) *Localizer {
+	lang := detectLanguage(r, p.defaultLanguage, p.queryParam, p.cookie)
 	i18nInstance := p.getI18N()
-	localizer := newLocalizer(i18nInstance, p.def, tag, passthrough)
+	localizer := newLocalizer(i18nInstance, p.def, lang.Lang, lang.Passthrough)
 	return localizer
 }
 
-func getLanguageTag(r *http.Request, defaultLang language.Tag) (language.Tag, bool) {
-	langQueryParam := r.URL.Query().Get("lang")
-
-	if langQueryParam != "" {
-		if langQueryParam == "KEYS" {
-			return language.English, true
-		}
-
-		tag, err := language.Parse(langQueryParam)
-		if err == nil {
-			return tag, false
-		}
-	}
-
-	accept := r.Header.Get("Accept-Language")
-	preferredLanguages, _, _ := language.ParseAcceptLanguage(accept)
-	if len(preferredLanguages) > 0 {
-		return preferredLanguages[0], false
-	} else {
-		return defaultLang, false
-	}
+func (p *LocaleProvider) SetLanguage(w http.ResponseWriter, lang language.Tag) {
+	setLanguage(w, p.cookie, lang)
 }
 
 type Localizer struct {
@@ -303,7 +292,7 @@ var localizerKey localizerKeyType
 
 func (p *LocaleProvider) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		l := p.CreateLocalizer(r)
+		l := p.createLocalizer(r)
 		r = r.WithContext(context.WithValue(r.Context(), localizerKey, l))
 		next.ServeHTTP(w, r)
 	})

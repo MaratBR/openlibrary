@@ -75,7 +75,7 @@ export function Comments(_: ReactIslandProps) {
   }
 
   return (
-    <>
+    <div className="animate-[fade-in_0.2s]">
       {user ? (
         <Composer chapterId={chapterId} avatar={user.avatar.md} />
       ) : (
@@ -129,7 +129,7 @@ export function Comments(_: ReactIslandProps) {
           </button>
         )}
       </div>
-    </>
+    </div>
   )
 }
 

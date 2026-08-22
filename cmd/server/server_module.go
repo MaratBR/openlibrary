@@ -81,6 +81,9 @@ func mainServer(
 		fx.Invoke(func(params postInitParams) {
 			go postInit(params)
 		}, func(*http.Server) {}),
+
+		// TODO make it toggleable?
+		fx.NopLogger,
 	).Run()
 }
 
@@ -92,7 +95,6 @@ func newRootMux(
 	csrfHandler *csrf.Handler,
 	sessionStore session.Store,
 	localeProvider *i18n.LocaleProvider,
-
 	log *zap.SugaredLogger,
 ) http.Handler {
 
@@ -130,7 +132,7 @@ func newRootMux(
 		r.Use(session.Middleware(sessionStore, log))
 
 		for _, h := range handlers {
-			log.Infow("registering mounted handler", "at", h.MountAt(), "type", reflect.TypeOf(h).String())
+			log.Debugw("registering mounted handler", "at", h.MountAt(), "type", reflect.TypeOf(h).String())
 			r.Mount(h.MountAt(), h)
 		}
 	})

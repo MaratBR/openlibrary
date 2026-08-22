@@ -17,6 +17,10 @@ func (k *keyDef) addInner(key string) *keyDef {
 }
 
 func (def *keyDef) mergeWith(other *keyDef) {
+	if other == nil {
+		panic("other is nil")
+	}
+
 	if def.keys == nil {
 		def.keys = other.keys
 		return

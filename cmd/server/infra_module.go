@@ -52,7 +52,7 @@ var infraModule = fx.Module("infra", fx.Provide(
 	upload.NewFileValidator,
 ))
 
-func newLocaleProvider(cliParams cliParams, _ *zap.SugaredLogger) *i18n.LocaleProvider {
+func newLocaleProvider(cliParams cliParams, log *zap.SugaredLogger) *i18n.LocaleProvider {
 	return i18n.NewLocaleProvider(
 		language.English,
 		cliParams.Dev,
@@ -63,7 +63,11 @@ func newLocaleProvider(cliParams cliParams, _ *zap.SugaredLogger) *i18n.LocalePr
 			language.Russian: {
 				"translations/ru.toml",
 			},
+			language.Spanish: {
+				"translations/es.toml",
+			},
 		},
+		log,
 	)
 }
 

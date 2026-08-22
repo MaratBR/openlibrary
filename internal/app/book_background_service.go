@@ -45,11 +45,11 @@ func NewBookBackgroundService(db DB, lc fx.Lifecycle, log *zap.SugaredLogger) Bo
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			log.Info("starting bookBackgroundService...")
+			log.Debug("starting bookBackgroundService...")
 			return srv.Start()
 		},
 		OnStop: func(ctx context.Context) error {
-			log.Info("stopping bookBackgroundService...")
+			log.Debug("stopping bookBackgroundService...")
 			srv.Stop()
 			return nil
 		},
