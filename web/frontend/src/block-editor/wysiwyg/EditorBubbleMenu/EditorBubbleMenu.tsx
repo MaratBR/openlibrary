@@ -4,6 +4,7 @@ import './EditorBubbleMenu.scss'
 import { ChapterContentEditor, useEditorToolbarState } from '../editor'
 import EditorToggleButton from './EditorToggleButton'
 import { ColorPallette, ColorPalletteSection } from './ColorPallette'
+import { FontPicker, Fonts } from './Fonts'
 
 export function EditorBubbleMenu({
   editor,
@@ -85,10 +86,12 @@ export function EditorBubbleMenu({
         </div>
         <div className="be-toggle-group">
           <ColorPallette />
+          <Fonts />
         </div>
       </div>
 
       <ColorPalletteSection editor={editor} />
+      <FontPicker editor={editor} />
     </BubbleMenu>
   )
 }

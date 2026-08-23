@@ -121,7 +121,7 @@ func (q *Queries) Moderation_CountUserLoginHistory(ctx context.Context, arg Mode
 }
 
 const moderation_GetChapter = `-- name: Moderation_GetChapter :one
-select id, name, book_id, content, content_updated_at, "order", created_at, updated_at, words, summary, is_publicly_visible from book_chapters where id = $1
+select id, name, book_id, content, content_updated_at, "order", created_at, updated_at, words, summary, fonts, is_publicly_visible from book_chapters where id = $1
 `
 
 func (q *Queries) Moderation_GetChapter(ctx context.Context, id int64) (BookChapter, error) {
@@ -138,6 +138,7 @@ func (q *Queries) Moderation_GetChapter(ctx context.Context, id int64) (BookChap
 		&i.UpdatedAt,
 		&i.Words,
 		&i.Summary,
+		&i.Fonts,
 		&i.IsPubliclyVisible,
 	)
 	return i, err

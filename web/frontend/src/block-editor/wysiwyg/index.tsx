@@ -5,6 +5,7 @@ import { EditorContent } from '@tiptap/react'
 import { EditorBubbleMenu } from './EditorBubbleMenu'
 import EditorFloatingMenu from './EditorFloatingMenu'
 import { useWYSIWYG } from './state'
+import { MoreFonts } from './MoreFonts'
 
 export function WYSIWYGEditor({ editorOptions }: { editorOptions: ChapterContentEditorOptions }) {
   const editor = useWYSIWYG((s) => s.editor)
@@ -23,6 +24,7 @@ export function WYSIWYGEditor({ editorOptions }: { editorOptions: ChapterContent
 
   return (
     <>
+      <MoreFonts />
       <EditorContent editor={editor} />
       <EditorBubbleMenu editor={editor} appendTo={editorOptions.contentWrapperElement} />
       <EditorFloatingMenu editor={editor} />

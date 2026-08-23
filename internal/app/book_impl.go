@@ -218,6 +218,7 @@ func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQu
 			NextChapter:   next,
 			BookID:        chapter.BookID,
 			CommentsCount: 42, // TODO
+			Fonts:         chapter.Fonts,
 		},
 	}, nil
 }

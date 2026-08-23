@@ -134,8 +134,8 @@ func (q *Queries) Book_Insert(ctx context.Context, arg Book_InsertParams) error 
 
 const book_InsertChapter = `-- name: Book_InsertChapter :exec
 insert into book_chapters
-(id, name, book_id, content, "order", created_at, words, summary, is_publicly_visible)
-values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+(id, name, book_id, content, "order", created_at, words, summary, fonts, is_publicly_visible)
+values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `
 
 type Book_InsertChapterParams struct {
@@ -147,6 +147,7 @@ type Book_InsertChapterParams struct {
 	CreatedAt         pgtype.Timestamptz
 	Words             int32
 	Summary           string
+	Fonts             []string
 	IsPubliclyVisible bool
 }
 
@@ -160,6 +161,7 @@ func (q *Queries) Book_InsertChapter(ctx context.Context, arg Book_InsertChapter
 		arg.CreatedAt,
 		arg.Words,
 		arg.Summary,
+		arg.Fonts,
 		arg.IsPubliclyVisible,
 	)
 	return err
@@ -349,6 +351,7 @@ set
     summary = $5, 
     is_publicly_visible = $6,
     content_updated_at = $7,
+    fonts = $8,
     updated_at = now()
 where id = $1
 returning book_chapters.book_id
@@ -362,6 +365,7 @@ type Chapter_UpdateParams struct {
 	Summary           string
 	IsPubliclyVisible bool
 	ContentUpdatedAt  pgtype.Timestamptz
+	Fonts             []string
 }
 
 func (q *Queries) Chapter_Update(ctx context.Context, arg Chapter_UpdateParams) (int64, error) {
@@ -373,6 +377,7 @@ func (q *Queries) Chapter_Update(ctx context.Context, arg Chapter_UpdateParams) 
 		arg.Summary,
 		arg.IsPubliclyVisible,
 		arg.ContentUpdatedAt,
+		arg.Fonts,
 	)
 	var book_id int64
 	err := row.Scan(&book_id)

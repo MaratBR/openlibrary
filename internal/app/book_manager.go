@@ -155,6 +155,7 @@ type ManagerBookChapterDetailsDto struct {
 	Order             int32     `json:"order"`
 	Content           string    `json:"content"`
 	IsPubliclyVisible bool      `json:"isPubliclyVisible"`
+	Fonts             []string  `json:"fonts"`
 }
 
 type ManagerGetChapterQuery_Result struct {
@@ -220,6 +221,7 @@ type DraftDto struct {
 	Chapter struct {
 		ID               int64     `json:"id,string"`
 		ContentUpdatedAt time.Time `json:"contentUpdatedAt"`
+		Fonts            []string  `json:"fonts"`
 	} `json:"chapter"`
 	IsChapterPubliclyAvailable bool `json:"isChapterPubliclyAvailable"`
 }

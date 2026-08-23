@@ -73,8 +73,8 @@ where book_id = $1;
 
 -- name: Book_InsertChapter :exec
 insert into book_chapters
-(id, name, book_id, content, "order", created_at, words, summary, is_publicly_visible)
-values ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+(id, name, book_id, content, "order", created_at, words, summary, fonts, is_publicly_visible)
+values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 
 -- name: Chapter_Update :one
 update book_chapters
@@ -85,6 +85,7 @@ set
     summary = $5, 
     is_publicly_visible = $6,
     content_updated_at = $7,
+    fonts = $8,
     updated_at = now()
 where id = $1
 returning book_chapters.book_id;

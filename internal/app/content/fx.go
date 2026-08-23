@@ -1,15 +1,21 @@
 package content
 
-import "go.uber.org/fx"
+import (
+	"strings"
+
+	"go.uber.org/fx"
+)
 
 func NewDefaultEngine() *MarkupEngine {
 	return NewEngine(MarkupEngineOptions{
 		TagExapanders: map[string]ExpandTag{
 			"ol-widget": NewWidgetRegistry(),
 		},
-		TextColorFilter:     func(color string) bool { return true },
-		URLFilter:           func(url string) bool { return true },
-		AllowedFontFamilies: []string{},
+		TextColorFilter: func(color string) bool { return true },
+		URLFilter:       func(url string) bool { return true },
+		FontFamilyFilter: func(fontFamily string) bool {
+			return strings.TrimSpace(fontFamily) != ""
+		},
 		AllowedFontSizes: []string{
 			"1em",
 			"2em",

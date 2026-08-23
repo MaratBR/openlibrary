@@ -15,6 +15,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/bookfont"
 	"github.com/MaratBR/openlibrary/internal/app/content"
 	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
@@ -34,6 +35,7 @@ type BookManagerServiceDeps struct {
 	MetricService      analytics.MetricService
 	Log                *zap.SugaredLogger
 	Markup             *content.MarkupEngine
+	FontPolicy         bookfont.Policy
 }
 
 type bookManagerService struct {
@@ -493,17 +495,27 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 		return CreateBookChapterCommand_Result{}, err
 	}
 
-	lastOrder, err := s.queries.Book_GetLastChapterOrder(ctx, input.BookID)
-	if err != nil {
-		return CreateBookChapterCommand_Result{}, err
-	}
-
-	id := GenID()
 	content, err := s.deps.Markup.Clean(input.Content)
 	if err != nil {
 		return CreateBookChapterCommand_Result{}, ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
 	}
-	err = s.queries.Book_InsertChapter(ctx, store.Book_InsertChapterParams{
+	fonts := content.Fonts
+	if err := s.deps.FontPolicy.Validate(fonts); err != nil {
+		return CreateBookChapterCommand_Result{}, err
+	}
+	tx, err := s.deps.DB.Begin(ctx)
+	if err != nil {
+		return CreateBookChapterCommand_Result{}, apperror.WrapUnexpectedDBError(err)
+	}
+	queries := s.queries.WithTx(tx)
+	lastOrder, err := queries.Book_GetLastChapterOrder(ctx, input.BookID)
+	if err != nil {
+		dal.RollbackTx(ctx, tx)
+		return CreateBookChapterCommand_Result{}, err
+	}
+
+	id := GenID()
+	err = queries.Book_InsertChapter(ctx, store.Book_InsertChapterParams{
 		ID:                id,
 		BookID:            input.BookID,
 		Name:              input.Name,
@@ -512,14 +524,20 @@ func (s *bookManagerService) CreateBookChapter(ctx context.Context, input Create
 		Order:             lastOrder + 1,
 		Words:             content.Words,
 		Summary:           input.Summary,
+		Fonts:             fonts,
 		IsPubliclyVisible: input.IsPubliclyVisible,
 	})
 	if err != nil {
+		dal.RollbackTx(ctx, tx)
 		return CreateBookChapterCommand_Result{}, err
 	}
-	err = s.queries.RecalculateBookStats(ctx, input.BookID)
+	err = queries.RecalculateBookStats(ctx, input.BookID)
 	if err != nil {
+		dal.RollbackTx(ctx, tx)
 		return CreateBookChapterCommand_Result{}, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return CreateBookChapterCommand_Result{}, apperror.WrapUnexpectedDBError(err)
 	}
 	s.deps.BookReindexService.ScheduleReindex(ctx, input.BookID)
 	return CreateBookChapterCommand_Result{ID: id}, nil
@@ -642,6 +660,7 @@ func (s *bookManagerService) GetChapter(ctx context.Context, query ManagerGetCha
 			Words:             int(chapter.Words),
 			Order:             chapter.Order,
 			Content:           chapter.Content,
+			Fonts:             chapter.Fonts,
 			IsPubliclyVisible: true,
 		},
 	}, nil
@@ -713,9 +732,11 @@ func (s *bookManagerService) GetDraft(ctx context.Context, query GetDraftQuery) 
 		Chapter: struct {
 			ID               int64     "json:\"id,string\""
 			ContentUpdatedAt time.Time "json:\"contentUpdatedAt\""
+			Fonts            []string  "json:\"fonts\""
 		}{
 			ID:               draft.ChapterID,
 			ContentUpdatedAt: timeDbToDomain(draft.ChapterContentUpdatedAt),
+			Fonts:            draft.ChapterFonts,
 		},
 		CreatedBy: struct {
 			ID   uuid.UUID `json:"id"`
@@ -748,6 +769,9 @@ func (s *bookManagerService) UpdateDraft(ctx context.Context, cmd UpdateDraftCom
 
 	if err != nil {
 		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
+	}
+	if err := s.deps.FontPolicy.Validate(processedContent.Fonts); err != nil {
+		return err
 	}
 
 	err = s.queries.Draft_Update(ctx, store.Draft_UpdateParams{
@@ -799,6 +823,14 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 	if err != nil {
 		return err
 	}
+	content, err := s.deps.Markup.Clean(draft.Content)
+	if err != nil {
+		return ErrTypeBookSanitizationFailed.Wrap(err, "failed to process content")
+	}
+	fonts := content.Fonts
+	if err := s.deps.FontPolicy.Validate(fonts); err != nil {
+		return err
+	}
 
 	tx, err := s.deps.DB.Begin(ctx)
 	if err != nil {
@@ -818,8 +850,9 @@ func (s *bookManagerService) PublishDraft(ctx context.Context, cmd PublishDraftC
 		ID:                draft.ChapterID,
 		Name:              draft.ChapterName,
 		Summary:           draft.Summary,
-		Content:           draft.Content,
+		Content:           content.Sanitized,
 		ContentUpdatedAt:  draft.UpdatedAt,
+		Fonts:             fonts,
 		Words:             draft.Words,
 		IsPubliclyVisible: isChapterPublic,
 	})
@@ -971,6 +1004,9 @@ func (s *bookManagerService) UpdateDraftContent(ctx context.Context, cmd UpdateD
 	data, err := s.deps.Markup.Clean(cmd.Content)
 
 	if err != nil {
+		return err
+	}
+	if err := s.deps.FontPolicy.Validate(data.Fonts); err != nil {
 		return err
 	}
 

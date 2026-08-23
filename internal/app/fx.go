@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
+	"github.com/MaratBR/openlibrary/internal/app/bookfont"
 	"github.com/MaratBR/openlibrary/internal/app/content"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"go.uber.org/fx"
@@ -9,6 +10,7 @@ import (
 
 var FXModule = fx.Module("ol_app", fx.Decorate(),
 	analytics.FXModule,
+	bookfont.FXModule,
 	content.FXModule,
 
 	fx.Provide(

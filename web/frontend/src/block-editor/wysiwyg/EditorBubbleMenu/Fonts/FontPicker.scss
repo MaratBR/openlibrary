@@ -1,0 +1,11 @@
+.be-font-picker-mini {
+    @apply grid grid-cols-2 p-2;
+
+    &__item, &__more {
+        @apply hover:text-primary text-lg p-1 text-center rounded-sm hover:bg-highlight;
+    }
+
+    &__more {
+        @apply font-semibold;
+    }
+}

@@ -1,0 +1,32 @@
+.be-font-picker-item {
+    @apply v-middle grid;
+    height: var(--item-height);
+    grid-template-columns: var(--item-height) 1fr var(--item-height);
+
+    & .apply-font {
+        font-family: var(--font-family);
+    }
+
+    
+    &__main {
+        @apply flex flex-col justify-center;
+    }
+    
+    &__aa {
+        @apply v-middle text-center text-3xl;
+        line-height: var(--item-height);
+        width: var(--item-height);
+    }
+
+    &__name, &__name-normal {
+        @apply block;
+    }
+
+    &__name {
+        @apply text-2xl;
+    }
+
+    &__name-normal {
+        @apply text-secondary-foreground;
+    }
+}

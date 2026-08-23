@@ -1,7 +1,7 @@
 import { AnimationEvent, ModalAnimation, useAnimation } from '@/lib/animate'
 import clsx from 'clsx'
 import { HTMLAttributes, MouseEvent } from 'react'
-import { PropsWithChildren, useCallback, useRef, useState } from 'react'
+import { PropsWithChildren, useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 export type ModalProps = PropsWithChildren<{
@@ -27,11 +27,16 @@ export default function Modal({ open, children, onClose, slotProps = {} }: Modal
   }, [])
 
   const [animationInProgress, setAnimationInProgress] = useState(false)
+  const [animationOpen, setAnimationOpen] = useState(false)
+
+  useLayoutEffect(() => {
+    setAnimationOpen(open)
+  }, [open])
 
   const shouldRender = open || animationInProgress
 
   const { ref: animationRef } = useAnimation({
-    show: open,
+    show: animationOpen,
     animation: ModalAnimation.default,
     onAnimation: handleAnimation,
   })

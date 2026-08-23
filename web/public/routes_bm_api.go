@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/bookfont"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/internal/upload"
@@ -18,14 +19,16 @@ import (
 type apiControllerBM struct {
 	service       app.BookManagerService
 	fileValidator upload.FileValidator
+	fontPolicy    bookfont.Policy
 }
 
-func newAPIBookManagerController(service app.BookManagerService, fileValidator upload.FileValidator) *apiControllerBM {
-	return &apiControllerBM{service: service, fileValidator: fileValidator}
+func newAPIBookManagerController(service app.BookManagerService, fileValidator upload.FileValidator, fontPolicy bookfont.Policy) *apiControllerBM {
+	return &apiControllerBM{service: service, fileValidator: fileValidator, fontPolicy: fontPolicy}
 }
 
 func (c *apiControllerBM) Register(r chi.Router) {
 	r.Route("/books-manager", func(r chi.Router) {
+		r.Get("/font-policy", c.getFontPolicy)
 		r.With(httpin.NewInput(&apiPayloadBookDirectUpdate{})).Post("/book/{bookID}/direct-update", c.bookDirectUpdate)
 		r.With(httpin.NewInput(&apiPayloadUploadCover{})).Post("/book/{bookID}/cover", c.uploadCover)
 		r.With(httpin.NewInput(&apiPayloadChangeChaptersOrder{})).Post("/book/{bookID}/chapters-order", c.changeChaptersOrder)
@@ -268,6 +271,17 @@ func (c *apiControllerBM) changeChaptersOrder(w http.ResponseWriter, r *http.Req
 	olhttp.NewAPIResponse(responseModifiedChapterOrderPositions(result.ModifiedPositions))
 }
 
+type apiPayloadDraftContent struct {
+	Content string `json:"content"`
+}
+
+func (c *apiControllerBM) getFontPolicy(w http.ResponseWriter, _ *http.Request) {
+	olhttp.NewAPIResponse(struct {
+		MaxPerChapter int      `json:"maxPerChapter"`
+		Whitelist     []string `json:"whitelist"`
+	}{MaxPerChapter: c.fontPolicy.MaxPerChapter, Whitelist: c.fontPolicy.Whitelist}).Write(w)
+}
+
 func (c *apiControllerBM) updateDraftContent(w http.ResponseWriter, r *http.Request) {
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
@@ -285,12 +299,8 @@ func (c *apiControllerBM) updateDraftContent(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if r.Header.Get("Content-Type") != "text/plain" {
-		apiWriteBadRequest(w, errors.New("Content-Type must be text/plain"))
-		return
-	}
-
-	contentBytes, err := io.ReadAll(r.Body)
+	var payload apiPayloadDraftContent
+	err = olhttp.ReadJSONBody(r, &payload)
 	defer r.Body.Close()
 	if err != nil {
 		apiWriteBadRequest(w, err)
@@ -304,7 +314,7 @@ func (c *apiControllerBM) updateDraftContent(w http.ResponseWriter, r *http.Requ
 		ChapterID: chapterID,
 		DraftID:   draftID,
 		UserID:    session.UserID,
-		Content:   string(contentBytes),
+		Content:   payload.Content,
 	})
 	if err != nil {
 		apiWriteApplicationError(w, err)
@@ -390,12 +400,8 @@ func (c *apiControllerBM) updateDraftContentAndPublish(w http.ResponseWriter, r 
 
 	makePublic := olhttp.GetBool(r.URL.Query(), "makePublic").Or(false)
 
-	if r.Header.Get("Content-Type") != "text/plain" {
-		apiWriteBadRequest(w, errors.New("Content-Type must be text/plain"))
-		return
-	}
-
-	contentBytes, err := io.ReadAll(r.Body)
+	var payload apiPayloadDraftContent
+	err = olhttp.ReadJSONBody(r, &payload)
 	defer r.Body.Close()
 	if err != nil {
 		apiWriteBadRequest(w, err)
@@ -409,7 +415,7 @@ func (c *apiControllerBM) updateDraftContentAndPublish(w http.ResponseWriter, r 
 		ChapterID: chapterID,
 		DraftID:   draftID,
 		UserID:    session.UserID,
-		Content:   string(contentBytes),
+		Content:   payload.Content,
 	})
 	if err != nil {
 		apiWriteApplicationError(w, err)

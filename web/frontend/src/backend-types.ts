@@ -123,6 +123,7 @@ export interface DraftDto {
   chapter: {
   id: string;
   contentUpdatedAt: string;
+  fonts: Array<string>;
 };
   isChapterPubliclyAvailable: boolean;
 }

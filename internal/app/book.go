@@ -141,6 +141,7 @@ type ChapterDto struct {
 	PrevChapter   Nullable[ChapterNextPrevDto] `json:"prevChapter"`
 	BookID        int64                        `json:"bookId"`
 	CommentsCount int64                        `json:"commentsCount"`
+	Fonts         []string                     `json:"fonts"`
 }
 
 type ChapterNextPrevDto struct {

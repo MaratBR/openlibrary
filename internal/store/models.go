@@ -358,6 +358,7 @@ type BookChapter struct {
 	UpdatedAt         pgtype.Timestamptz
 	Words             int32
 	Summary           string
+	Fonts             []string
 	IsPubliclyVisible bool
 }
 

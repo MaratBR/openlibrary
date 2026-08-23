@@ -8,6 +8,15 @@ import "strconv"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 import "github.com/MaratBR/openlibrary/internal/auth"
+import "net/url"
+
+func chapterFontStylesheets(fonts []string) []string {
+    stylesheets := make([]string, 0, len(fonts))
+    for _, font := range fonts {
+        stylesheets = append(stylesheets, "/_api/fonts/google/include?name=" + url.QueryEscape(font))
+    }
+    return stylesheets
+}
 
 type ChapterProgressTrackerOptions struct {
     JumpedBackward bool
@@ -26,7 +35,7 @@ templ Chapter(
         _, isAuthenticated := auth.GetSession(ctx)
     }}
 
-    @htmlLayout(htmlLayoutProps{Title: chapter.Name}) {
+    @htmlLayout(htmlLayoutProps{Title: chapter.Name, CSS: chapterFontStylesheets(chapter.Fonts)}) {
         @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapter.ID))
 
         @siteHeaderLayout() {

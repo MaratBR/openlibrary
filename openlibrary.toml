@@ -33,6 +33,10 @@ url = "http://localhost:9200"
 # type = "memory"
 type = "disabled"
 
+[chapter-fonts]
+max-per-chapter = 10
+whitelist = ["Poppins", "Merriweather", "Literata"]
+
 [redis]
 url = "localhost:6379"
 

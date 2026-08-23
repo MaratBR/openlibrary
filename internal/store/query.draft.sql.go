@@ -57,7 +57,8 @@ const draft_GetById = `-- name: Draft_GetById :one
 select drafts.id, drafts.created_by, drafts.chapter_id, drafts.chapter_name, drafts.content, drafts.words, drafts.summary, drafts.updated_at, drafts.created_at, drafts.published_at, drafts.scheduled_at,
     books.id as book_id, books.name as book_name, 
     bc.is_publicly_visible as is_chapter_publicly_visible,
-    bc.content_updated_at as chapter_content_updated_at
+    bc.content_updated_at as chapter_content_updated_at,
+    bc.fonts as chapter_fonts
 from drafts
 join book_chapters bc on bc.id = drafts.chapter_id
 join books on books.id = bc.book_id
@@ -80,6 +81,7 @@ type Draft_GetByIdRow struct {
 	BookName                 string
 	IsChapterPubliclyVisible bool
 	ChapterContentUpdatedAt  pgtype.Timestamptz
+	ChapterFonts             []string
 }
 
 func (q *Queries) Draft_GetById(ctx context.Context, id int64) (Draft_GetByIdRow, error) {
@@ -101,6 +103,7 @@ func (q *Queries) Draft_GetById(ctx context.Context, id int64) (Draft_GetByIdRow
 		&i.BookName,
 		&i.IsChapterPubliclyVisible,
 		&i.ChapterContentUpdatedAt,
+		&i.ChapterFonts,
 	)
 	return i, err
 }

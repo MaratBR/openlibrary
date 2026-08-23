@@ -10,10 +10,7 @@ export function httpUpdateDraft(
 ) {
   return httpClient
     .post(`/_api/books-manager/book/${bookId}/${chapterId}/${draftId}`, {
-      body: content,
-      headers: {
-        'Content-Type': 'text/plain',
-      },
+      json: { content },
     })
     .then((r) => OLAPIResponse.create<DraftDto>(r))
 }
@@ -27,10 +24,7 @@ export function httpUpdateAndPublishDraft(
 ) {
   return httpClient
     .post(`/_api/books-manager/book/${bookId}/${chapterId}/${draftId}/publish`, {
-      body: content,
-      headers: {
-        'Content-Type': 'text/plain',
-      },
+      json: { content },
       searchParams: {
         makePublic,
       },

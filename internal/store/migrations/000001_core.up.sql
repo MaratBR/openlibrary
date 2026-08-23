@@ -122,6 +122,7 @@ create table book_chapters (
     updated_at timestamptz,
     words int4 not null default 0,
     summary text not null default '',
+    fonts text[] not null default '{}',
     is_publicly_visible bool not null default false
 );
 

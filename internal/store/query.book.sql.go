@@ -272,7 +272,7 @@ func (q *Queries) Book_GetPubliclyVisibleChapters(ctx context.Context, bookID in
 }
 
 const getAllBookChapters = `-- name: GetAllBookChapters :many
-select c.id, c.name, c.book_id, c.content, c.content_updated_at, c."order", c.created_at, c.updated_at, c.words, c.summary, c.is_publicly_visible,
+select c.id, c.name, c.book_id, c.content, c.content_updated_at, c."order", c.created_at, c.updated_at, c.words, c.summary, c.fonts, c.is_publicly_visible,
   cast(coalesce((select id from drafts where drafts.chapter_id = c.id order by coalesce(updated_at, created_at) desc limit 1), 0) as int8) as latest_draft_id,
   (select scheduled_at from drafts where drafts.chapter_id = c.id order by coalesce(updated_at, created_at) desc limit 1) as scheduled_at
 from book_chapters c
@@ -291,6 +291,7 @@ type GetAllBookChaptersRow struct {
 	UpdatedAt         pgtype.Timestamptz
 	Words             int32
 	Summary           string
+	Fonts             []string
 	IsPubliclyVisible bool
 	LatestDraftID     int64
 	ScheduledAt       pgtype.Timestamptz
@@ -316,6 +317,7 @@ func (q *Queries) GetAllBookChapters(ctx context.Context, bookID int64) ([]GetAl
 			&i.UpdatedAt,
 			&i.Words,
 			&i.Summary,
+			&i.Fonts,
 			&i.IsPubliclyVisible,
 			&i.LatestDraftID,
 			&i.ScheduledAt,
@@ -393,7 +395,7 @@ func (q *Queries) GetAllBooks(ctx context.Context, arg GetAllBooksParams) ([]Get
 
 const getBookChapterWithDetails = `-- name: GetBookChapterWithDetails :one
 select 
-    bc.id, bc.name, bc.book_id, bc.content, bc.content_updated_at, bc."order", bc.created_at, bc.updated_at, bc.words, bc.summary, bc.is_publicly_visible,
+    bc.id, bc.name, bc.book_id, bc.content, bc.content_updated_at, bc."order", bc.created_at, bc.updated_at, bc.words, bc.summary, bc.fonts, bc.is_publicly_visible,
     coalesce(prev_chapter.id, 0) as prev_chapter_id,
     coalesce(prev_chapter.name, '') as prev_chapter_name,
     coalesce(next_chapter.id, 0) as next_chapter_id,
@@ -437,6 +439,7 @@ type GetBookChapterWithDetailsRow struct {
 	UpdatedAt         pgtype.Timestamptz
 	Words             int32
 	Summary           string
+	Fonts             []string
 	IsPubliclyVisible bool
 	PrevChapterID     int64
 	PrevChapterName   string
@@ -458,6 +461,7 @@ func (q *Queries) GetBookChapterWithDetails(ctx context.Context, arg GetBookChap
 		&i.UpdatedAt,
 		&i.Words,
 		&i.Summary,
+		&i.Fonts,
 		&i.IsPubliclyVisible,
 		&i.PrevChapterID,
 		&i.PrevChapterName,

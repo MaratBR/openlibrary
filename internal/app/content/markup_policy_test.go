@@ -95,6 +95,19 @@ func TestMarkupEngineCleanReturnsSeenFonts(t *testing.T) {
 	}
 }
 
+func TestDefaultMarkupEnginePreservesFontFamilies(t *testing.T) {
+	got, err := NewDefaultEngine().Clean(`<p style="font-family: Poppins">text</p>`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got.Sanitized, "font-family: Poppins") {
+		t.Errorf("Clean().Sanitized = %q, want font family preserved", got.Sanitized)
+	}
+	if want := []string{"Poppins"}; !slices.Equal(got.Fonts, want) {
+		t.Errorf("Clean().Fonts = %#v, want %#v", got.Fonts, want)
+	}
+}
+
 func TestMarkupEngineCleanFiltersLinkURLs(t *testing.T) {
 	t.Parallel()
 

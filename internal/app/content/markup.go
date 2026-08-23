@@ -45,6 +45,9 @@ type MarkupEngineOptions struct {
 	// AllowedFontFamilies is the fixed set of permitted font-family CSS values.
 	AllowedFontFamilies []string
 
+	// FontFamilyFilter permits dynamic font-family values.
+	FontFamilyFilter func(fontFamily string) bool
+
 	// AllowedFontSizes is the fixed set of permitted font-size CSS values.
 	AllowedFontSizes []string
 }
@@ -69,7 +72,9 @@ func (e *MarkupEngine) createSanitizerPolicy(options MarkupEngineOptions) {
 	if options.TextColorFilter != nil {
 		policy.AllowStyles("color").MatchingHandler(options.TextColorFilter).Globally()
 	}
-	if len(options.AllowedFontFamilies) > 0 {
+	if options.FontFamilyFilter != nil {
+		policy.AllowStyles("font-family").MatchingHandler(options.FontFamilyFilter).Globally()
+	} else if len(options.AllowedFontFamilies) > 0 {
 		policy.AllowStyles("font-family").MatchingEnum(options.AllowedFontFamilies...).Globally()
 	}
 	if len(options.AllowedFontSizes) > 0 {

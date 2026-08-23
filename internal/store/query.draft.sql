@@ -2,7 +2,8 @@
 select drafts.*,
     books.id as book_id, books.name as book_name, 
     bc.is_publicly_visible as is_chapter_publicly_visible,
-    bc.content_updated_at as chapter_content_updated_at
+    bc.content_updated_at as chapter_content_updated_at,
+    bc.fonts as chapter_fonts
 from drafts
 join book_chapters bc on bc.id = drafts.chapter_id
 join books on books.id = bc.book_id
