@@ -1,4 +1,4 @@
-import { getCsrfToken } from '@/http-client/client'
+import { getCsrfToken } from '@/features/http-client/client'
 import { useMemo } from 'react'
 
 export default function CSRFInput() {

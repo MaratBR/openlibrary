@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'
 import { Pagination } from '@/components/Pagination'
-import { OLAPIResponse } from '@/http-client'
+import { OLAPIResponse } from '@/features/http-client'
 import { useState } from 'react'
 import { Form, LoaderFunctionArgs, NavLink, useLoaderData, useRouteError } from 'react-router'
 

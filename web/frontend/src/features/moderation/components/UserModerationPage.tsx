@@ -44,7 +44,7 @@ import {
 import { ModerationLog, ModerationLogEntry } from './ModerationLog'
 import SanitizeHTML from '@/common/SanitizeHTML'
 import { queryClient } from '@/preact/queryCache'
-import { OLAPIResponse } from '@/http-client'
+import { OLAPIResponse } from '@/features/http-client'
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' })
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {

@@ -1,5 +1,6 @@
 import PQueue from 'p-queue'
 import { Font, FontsApi } from './api'
+import { Effect } from 'effect'
 
 export namespace FontsLoader {
   const cssQueue = new PQueue({ concurrency: 1 })
@@ -19,16 +20,18 @@ export namespace FontsLoader {
     return fonts
   }
 
-  export async function fetchFonts(): Promise<ReadonlyArray<Readonly<Font>>> {
-    if (loaded) {
+  export function fetchFonts() {
+    return Effect.tryPromise(async () => {
+      if (loaded) {
+        return getFonts()
+      }
+
+      const googleFonts = await FontsApi.getGoogleFonts()
+
+      fonts = googleFonts
+
       return getFonts()
-    }
-
-    const googleFonts = await FontsApi.getGoogleFonts()
-
-    fonts = googleFonts
-
-    return getFonts()
+    })
   }
 
   export async function addFonts(fonts: string[]) {

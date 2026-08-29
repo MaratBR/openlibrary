@@ -11,7 +11,7 @@ import './nav'
 import './scrollable'
 import './theme'
 import './util'
-import '@/http-client'
+import '@/features/http-client'
 import './ui'
 
 import './style'

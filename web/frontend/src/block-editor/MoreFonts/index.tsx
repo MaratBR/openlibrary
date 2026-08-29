@@ -1,13 +1,13 @@
 import Modal from '@/components/Modal'
 import { create } from 'zustand'
-import { ChapterContentEditor } from '../editor'
-import { useQuery } from '@tanstack/react-query'
 import { FontsLoader } from '@/features/fonts-loader/loader'
 import { Font } from '@/features/fonts-loader/api'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import './MoreFonts.scss'
+import { ChapterContentEditor } from '../wysiwyg/editor'
+import { useFonts } from '../fonts/state'
 
 export type MoreFontsState = {
   opened: boolean
@@ -45,13 +45,11 @@ export function MoreFonts() {
 
   const [search, setSearch] = useState('')
 
-  const { data: fonts } = useQuery({
-    queryFn: () => FontsLoader.fetchFonts(),
-    queryKey: ['FontLoader-loadFonts'],
-    staleTime: 0,
-    gcTime: Infinity,
-    initialData: [],
-  })
+  const fonts = useFonts((x) => x.fonts)
+
+  useEffect(() => {
+    if (opened) useFonts.getState().init()
+  }, [opened])
 
   const filteredFonts = useMemo(() => {
     const trimmed = search.trim().toLowerCase()

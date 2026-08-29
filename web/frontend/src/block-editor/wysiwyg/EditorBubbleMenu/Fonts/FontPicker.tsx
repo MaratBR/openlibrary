@@ -1,5 +1,5 @@
+import { useMoreFontsState } from '@/block-editor/MoreFonts'
 import { ChapterContentEditor } from '../../editor'
-import { useMoreFontsState } from '../../MoreFonts'
 import { EditButtonMenuExpandableSection } from '../EditBubbleMenuExpandableSection'
 import { useBubbleState } from '../state'
 

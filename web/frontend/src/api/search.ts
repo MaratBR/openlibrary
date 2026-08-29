@@ -1,5 +1,5 @@
 import { DEFAULT_SEARCH_DEBOUNCE } from '@/config'
-import { httpClient } from '@/http-client'
+import { httpClient } from '@/features/http-client'
 import type { DefinedTagDto } from '@/backend-types'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'

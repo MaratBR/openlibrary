@@ -1,4 +1,4 @@
-import { httpClient } from '@/http-client'
+import { httpClient } from '@/features/http-client'
 import type { BookReadingListDto, ReadingListStatus } from '@/backend-types'
 
 export async function updateReadingListStatus(

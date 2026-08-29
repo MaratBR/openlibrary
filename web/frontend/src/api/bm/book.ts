@@ -1,6 +1,6 @@
 import z from 'zod'
 import type { AgeRating, ApiResponseGetBooks, ManagerBookDetailsDto } from '@/backend-types'
-import { httpClient, OLAPIResponse } from '@/http-client'
+import { httpClient, OLAPIResponse } from '@/features/http-client'
 
 export type ApiPayloadGetBooks = {
   page: number

@@ -1,5 +1,5 @@
 import { KyResponse } from 'ky'
-import { httpClient, OLAPIResponse } from '@/http-client'
+import { httpClient, OLAPIResponse } from '@/features/http-client'
 import type { RatingAndReview, RatingValue, ReviewDto } from '@/backend-types'
 
 export type CreateReviewRequest = {

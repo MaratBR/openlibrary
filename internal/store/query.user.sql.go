@@ -281,6 +281,40 @@ func (q *Queries) Session_TerminateAllByUserID(ctx context.Context, userID pgtyp
 	return err
 }
 
+const userData_Get = `-- name: UserData_Get :one
+select data from user_data where user_id = $1 and key = $2
+`
+
+type UserData_GetParams struct {
+	UserID pgtype.UUID
+	Key    string
+}
+
+func (q *Queries) UserData_Get(ctx context.Context, arg UserData_GetParams) ([]byte, error) {
+	row := q.db.QueryRow(ctx, userData_Get, arg.UserID, arg.Key)
+	var data []byte
+	err := row.Scan(&data)
+	return data, err
+}
+
+const userData_Set = `-- name: UserData_Set :exec
+insert into user_data (user_id, key, data)
+values ($1, $2, $3)
+on conflict (user_id, key) do update
+    set data = EXCLUDED.data
+`
+
+type UserData_SetParams struct {
+	UserID pgtype.UUID
+	Key    string
+	Data   []byte
+}
+
+func (q *Queries) UserData_Set(ctx context.Context, arg UserData_SetParams) error {
+	_, err := q.db.Exec(ctx, userData_Set, arg.UserID, arg.Key, arg.Data)
+	return err
+}
+
 const user_ExistsByEmail = `-- name: User_ExistsByEmail :one
 select exists(select 1
 from users

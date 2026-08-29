@@ -1,4 +1,4 @@
-import { httpClient, OLAPIResponse } from '@/http-client'
+import { httpClient, OLAPIResponse } from '@/features/http-client'
 import type { ModerationReasonRequest } from '@/backend-types'
 
 export type ChapterModerationAction = 'hide' | 'restore'

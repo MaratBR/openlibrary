@@ -1,4 +1,4 @@
-import { httpClient } from '@/http-client'
+import { httpClient } from '@/features/http-client'
 import { z } from 'zod'
 import type { recentCollectionDto as RecentCollectionDto } from '@/backend-types'
 

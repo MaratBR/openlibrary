@@ -1,4 +1,4 @@
-import { httpClient, OLAPIResponse } from '@/http-client'
+import { httpClient, OLAPIResponse } from '@/features/http-client'
 import type { CommentDto } from '@/backend-types'
 
 export function httpLikeComment(commentId: string, like: boolean) {

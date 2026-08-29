@@ -602,6 +602,12 @@ type UserBan struct {
 	ExpiresAt      pgtype.Timestamptz
 }
 
+type UserDatum struct {
+	Key    string
+	UserID pgtype.UUID
+	Data   []byte
+}
+
 type UserFollower struct {
 	FollowerID pgtype.UUID
 	FollowedID pgtype.UUID

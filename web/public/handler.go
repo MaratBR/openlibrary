@@ -41,6 +41,7 @@ var FXModule = fx.Module("public_ui_handler",
 		newAPIBookController,
 		newAPIReadingListController,
 		newAPIReaderPreferencesController,
+		newAPIUserDataController,
 		newAPITagsController,
 		newAPIBookManagerController,
 		newAPICollectionController,
@@ -80,6 +81,7 @@ func newHandler(
 	apiControllerCollection *apiControllerCollection,
 	apiControllerReadingList *apiControllerReadingList,
 	apiControllerReaderPreferences *apiControllerReaderPreferences,
+	apiControllerUserData *apiControllerUserData,
 	apiControllerComments *apiControllerComments,
 	apiControllerReports *apiControllerReports,
 	apiControllerModeration *apiControllerModeration,
@@ -136,6 +138,7 @@ func newHandler(
 		apiControllerCollection.Register(r)
 		apiControllerReadingList.Register(r)
 		apiControllerReaderPreferences.Register(r)
+		apiControllerUserData.Register(r)
 		apiControllerTags.Register(r)
 		apiControllerComments.Register(r)
 		apiControllerReports.Register(r)

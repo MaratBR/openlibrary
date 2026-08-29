@@ -1,4 +1,4 @@
-import type { OLNotification } from '@/http-client'
+import type { OLNotification } from '@/features/http-client'
 import SanitizeHTML from './SanitizeHTML'
 import { Subject, useSubject } from './rx'
 import { createRoot } from 'react-dom/client'

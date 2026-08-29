@@ -268,6 +268,14 @@ create table user_reader_preferences (
     updated_at timestamptz not null default now()
 );
 
+create table user_data (
+    key text not null,
+    user_id uuid not null references users(id) on delete cascade,
+    data jsonb not null,
+
+    primary key (key, user_id)
+);
+
 create index ix_books_author_created_at on books (author_user_id, created_at desc);
 create index ix_books_visible_author_pinned_created_at on books (author_user_id, is_pinned desc, created_at)
     where is_publicly_visible and not is_banned and not is_trashed and chapters > 0;

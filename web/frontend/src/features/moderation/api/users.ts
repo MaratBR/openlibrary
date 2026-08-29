@@ -1,4 +1,4 @@
-import { httpClient, OLAPIResponse } from '@/http-client'
+import { httpClient, OLAPIResponse } from '@/features/http-client'
 import type {
   ModerationUserBooksPageResponse,
   ModerationUserCommentsPageResponse,

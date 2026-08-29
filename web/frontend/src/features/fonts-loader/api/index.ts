@@ -1,4 +1,4 @@
-import { httpClient } from '@/http-client'
+import { httpClient } from '@/features/http-client'
 
 export type Font = {
   name: string

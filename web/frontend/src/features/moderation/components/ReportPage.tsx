@@ -12,7 +12,7 @@ import { Checkbox } from '@/components'
 import { FormControl } from '@/components/FormControl'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'
-import { OLAPIResponse } from '@/http-client'
+import { OLAPIResponse } from '@/features/http-client'
 import { FormEvent, useState } from 'react'
 import {
   LoaderFunctionArgs,

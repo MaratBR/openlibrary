@@ -24,7 +24,6 @@ function watchExternalPlugin(options: { paths?: string[] } = {}): Plugin {
 const ENTRIES = [
   'common',
   'alpinejs',
-  'http-client',
   'block-editor',
 
   // admin stuff

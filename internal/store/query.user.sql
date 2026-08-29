@@ -180,3 +180,12 @@ values ($1, $2, $3, $4);
 
 -- name: EmailVerification_Get :one
 select * from email_verification where email = $1;
+
+-- name: UserData_Get :one
+select data from user_data where user_id = $1 and key = $2;
+
+-- name: UserData_Set :exec
+insert into user_data (user_id, key, data)
+values ($1, $2, $3)
+on conflict (user_id, key) do update
+    set data = EXCLUDED.data;

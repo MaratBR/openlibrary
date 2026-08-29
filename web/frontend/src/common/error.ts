@@ -1,4 +1,4 @@
-import { OLAPIResponse } from '@/http-client'
+import { OLAPIResponse } from '@/features/http-client'
 
 export function getErrorMessage(error: unknown): string {
   if (typeof error === 'string') return error
