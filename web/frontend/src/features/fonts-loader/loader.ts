@@ -5,7 +5,7 @@ import { Effect } from 'effect'
 export namespace FontsLoader {
   const cssQueue = new PQueue({ concurrency: 1 })
 
-  let fonts: Font[] = []
+  let fonts: ReadonlyArray<Font> = []
   let loaded = false
 
   export function fontLoaded(font: string): boolean {
@@ -21,13 +21,13 @@ export namespace FontsLoader {
   }
 
   export function fetchFonts() {
-    return Effect.tryPromise(async () => {
+    return Effect.gen(function* () {
       if (loaded) {
         return getFonts()
       }
 
-      const googleFonts = await FontsApi.getGoogleFonts()
-
+      const fontsApi = yield* FontsApi
+      const googleFonts = yield* fontsApi.getGoogleFonts()
       fonts = googleFonts
 
       return getFonts()

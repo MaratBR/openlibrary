@@ -1,6 +1,7 @@
-import ky from 'ky'
+import ky, { KyInstance } from 'ky'
 
 import './client-meta'
+import { Context, Layer } from 'effect'
 
 const originalFetch = window.fetch
 
@@ -42,4 +43,10 @@ export function getCsrfToken() {
   } catch {
     /* empty */
   }
+}
+
+export class HttpClient extends Context.Service<HttpClient, KyInstance>()(
+  'openlibrary/HttpClient',
+) {
+  static readonly layer = Layer.succeed(this, httpClient)
 }

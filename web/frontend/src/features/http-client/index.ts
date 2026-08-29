@@ -1,7 +1,7 @@
-import { httpClient } from './client'
+import { HttpClient, httpClient } from './client'
 import { OLAPIResponse, OLNotification } from './OLAPIResponse'
 
-export { httpClient, OLAPIResponse }
+export { HttpClient, httpClient, OLAPIResponse }
 export type { OLNotification }
 
 declare global {

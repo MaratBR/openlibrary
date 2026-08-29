@@ -40,11 +40,16 @@ Use `app.Nullable[T]` for optional domain/JSON values where surrounding code alr
 
 ## Templates and frontend behavior
 
+- Frontend code under `web/frontend` follows a feature-oriented structure with two main variants: `features` and `islands`.
+- `web/frontend/src/features` divides code by the application's functional features.
+- `web/frontend/src/islands` contains UI elements rendered as islands in the application. Ideally, each island represents a feature, while not every feature is an island; in practice, the two structures currently overlap.
+- This organization is a recent convention and is not yet consistently enforced across the existing frontend. Follow it for new work and when naturally touching related code, without broad unrelated reorganizations.
+- Put APIs shared by multiple features in `web/frontend/src/features/api`. Put an API used by only one feature in that feature's `api` subfolder.
 - Edit `.templ` sources, never ignored `*_templ.go` output.
 - After changing a template, run `templ generate` and compile/test the affected Go package.
 - Keep simple, page-local interactivity in Alpine `x-data` near the markup. Reuse/register an Alpine component under `web/frontend/src/alpinejs` when behavior is substantial or shared.
 - Use a React island for stateful, reusable, or complex client UI. Existing islands live under `web/frontend/src/islands`; reusable React controls live under `web/frontend/src/components`.
-- Public browser APIs are assembled under `web/frontend/src/public.api`. Keep Zod response schemas aligned with the complete Go DTO fields that callers need; Zod object parsing strips undeclared fields.
+- `web/frontend/src/public.api` is deprecated compatibility code for browser globals used by server-rendered templates. Do not add new APIs there; move shared APIs to `features/api`, move highly specific APIs to their owning feature's `api` subfolder, and migrate existing globals when touching their callers. Keep Zod response schemas aligned with the complete Go DTO fields that callers need; Zod object parsing strips undeclared fields.
 - Frontend imports may use the `@/` alias for `web/frontend/src`.
 - Server-provided Alpine data is commonly serialized to JSON in a template helper. Do not construct JSON by string concatenation.
 - Use existing i18n helpers such as `i18nExtractKeys`/`i18nExtractKeysByPrefix`. Add user-facing copy to `translations/en.toml`; do not hard-code visible English when the surrounding component is translated.

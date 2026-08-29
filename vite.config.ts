@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 import { resolve } from 'node:path'
+import { transform } from 'esbuild'
 import { defineConfig, Plugin } from 'vite'
 import glob from 'fast-glob'
 import UnoCSS from 'unocss/vite'
@@ -17,6 +18,25 @@ function watchExternalPlugin(options: { paths?: string[] } = {}): Plugin {
       for (const file of glob.sync(paths, { absolute: true })) {
         this.addWatchFile(file)
       }
+    },
+  }
+}
+
+function minifyLibraryPlugin(enabled: boolean): Plugin {
+  return {
+    name: 'minify-library',
+    renderChunk: {
+      order: 'post',
+      async handler(code, chunk, outputOptions) {
+        if (!enabled || outputOptions.format !== 'es') return null
+
+        return transform(code, {
+          format: 'esm',
+          minify: true,
+          sourcemap: SOURCEMAP,
+          sourcefile: chunk.fileName,
+        })
+      },
     },
   }
 }
@@ -74,6 +94,10 @@ export default defineConfig((env) => ({
     UnoCSS(),
 
     react({}),
+
+    // Vite deliberately preserves whitespace in ES library builds, even with
+    // build.minify enabled. Run a final minification pass for production mode.
+    minifyLibraryPlugin(env.mode === 'production'),
   ],
 
   resolve: {
@@ -83,7 +107,7 @@ export default defineConfig((env) => ({
   },
 
   build: {
-    minify: false, // TODO toggle depending on env
+    minify: env.mode === 'production' ? 'esbuild' : false,
     rollupOptions: {
       output: {
         chunkFileNames: 'chunks/[hash].js',

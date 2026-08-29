@@ -1,4 +1,5 @@
 import Modal from '@/components/Modal'
+import { appRuntime } from '@/effect/runtime'
 import { create } from 'zustand'
 import { FontsLoader } from '@/features/fonts-loader/loader'
 import { Font } from '@/features/fonts-loader/api'
@@ -45,11 +46,11 @@ export function MoreFonts() {
 
   const [search, setSearch] = useState('')
 
-  const fonts = useFonts((x) => x.fonts)
+  const { fonts, init } = useFonts()
 
   useEffect(() => {
-    if (opened) useFonts.getState().init()
-  }, [opened])
+    if (opened) void appRuntime.runPromise(init())
+  }, [opened, init])
 
   const filteredFonts = useMemo(() => {
     const trimmed = search.trim().toLowerCase()

@@ -1,15 +1,15 @@
 import { bookAPI } from './book-api'
 import { reviewsAPI } from './reviews-api'
-import * as userDataAPI from './user-data'
 
+/** @deprecated Compatibility API for server-rendered templates. Do not add new APIs here. */
 const api = {
   book: bookAPI,
   reviews: reviewsAPI,
-  userData: userDataAPI,
 }
 
 declare global {
   interface OLGlobal {
+    /** @deprecated Compatibility API for server-rendered templates. */
     api: typeof api
   }
 }

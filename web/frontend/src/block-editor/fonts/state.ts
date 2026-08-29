@@ -1,20 +1,9 @@
 import { Font } from '@/features/fonts-loader/api'
 import { FontsLoader } from '@/features/fonts-loader/loader'
-import { UserDataApi } from '@/public.api/user-data'
+import { UserDataApi } from '@/features/api/user-data'
 import { Effect } from 'effect'
-import { UnknownException } from 'effect/Cause'
+import { atom, useAtomValue, useSetAtom } from 'jotai'
 import { z } from 'zod'
-import { create } from 'zustand'
-
-export type FontsState = {
-  initializing: boolean
-  error: unknown
-  fonts: ReadonlyArray<Readonly<Font>>
-  init(): Effect.Effect<void, UnknownException, never>
-
-  favoriteFonts: string[]
-  favorite(font: string, favorite: boolean): Effect.Effect<void, never, never>
-}
 
 const USER_DATA_FONTS_KEY = 'bm:fonts'
 
@@ -22,45 +11,60 @@ const FontsStateSchema = z.object({
   favorite: z.array(z.string()),
 })
 
-export const useFonts = create<FontsState>()((set, get) => ({
-  initializing: false,
-  error: undefined,
-  fonts: [],
+const fontsAtom = atom<ReadonlyArray<Readonly<Font>>>([])
+const favoriteFontsAtom = atom(Array<string>())
+const fontsInitializingAtom = atom(false)
+const fontsErrorAtom = atom<unknown>(undefined)
 
-  init() {
-    return Effect.gen(function* () {
-      if (get().initializing) {
-        return
-      }
-      set({ initializing: true })
+const initializeFontsAtom = atom(null, (get, set) => {
+  if (get(fontsInitializingAtom)) return Effect.void
 
-      try {
-        const fonts = yield* FontsLoader.fetchFonts()
-        const fontState = yield* UserDataApi.getUserData(USER_DATA_FONTS_KEY, {
-          schema: FontsStateSchema,
-        })
-        set({ fonts, initializing: false, favoriteFonts: fontState?.favorite ?? [] })
-      } catch (error: unknown) {
-        set({ initializing: false, error })
-      }
+  return Effect.gen(function* () {
+    yield* Effect.sync(() => {
+      set(fontsInitializingAtom, true)
+      set(fontsErrorAtom, undefined)
     })
-  },
 
-  favoriteFonts: [],
+    yield* Effect.gen(function* () {
+      const fonts = yield* FontsLoader.fetchFonts()
+      const userDataApi = yield* UserDataApi
+      const fontState = yield* userDataApi.getUserData(USER_DATA_FONTS_KEY, {
+        schema: FontsStateSchema,
+      })
+      yield* Effect.sync(() => {
+        set(fontsAtom, fonts)
+        set(favoriteFontsAtom, fontState?.favorite ?? [])
+      })
+    }).pipe(
+      Effect.tapError((error) => Effect.sync(() => set(fontsErrorAtom, error))),
+      Effect.ensuring(Effect.sync(() => set(fontsInitializingAtom, false))),
+    )
+  })
+})
 
-  favorite(font, favorite) {
-    return Effect.sync(() => {
-      const favoriteCurrent = get().favoriteFonts.includes(font)
+const setFontFavoriteAtom = atom(null, (get, set, font: string, favorite: boolean) =>
+  Effect.sync(() => {
+    const favoriteFonts = get(favoriteFontsAtom)
+    const favoriteCurrent = favoriteFonts.includes(font)
 
-      if (favoriteCurrent === favorite) {
-        return
-      }
+    if (favoriteCurrent === favorite) return
 
-      if (favorite) {
-        set({ favoriteFonts: [...get().favoriteFonts, font].sort() })
-      } else {
-        set({ favoriteFonts: get().favoriteFonts.filter((x) => x !== font) })
-      }
-    })
-  },
-}))
+    set(
+      favoriteFontsAtom,
+      favorite
+        ? [...favoriteFonts, font].sort()
+        : favoriteFonts.filter((currentFont) => currentFont !== font),
+    )
+  }),
+)
+
+export function useFonts() {
+  return {
+    initializing: useAtomValue(fontsInitializingAtom),
+    error: useAtomValue(fontsErrorAtom),
+    fonts: useAtomValue(fontsAtom),
+    favoriteFonts: useAtomValue(favoriteFontsAtom),
+    init: useSetAtom(initializeFontsAtom),
+    favorite: useSetAtom(setFontFavoriteAtom),
+  }
+}

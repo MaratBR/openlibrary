@@ -14,7 +14,7 @@ MIGRATE_ARGS = -source=$(PGX_MIGRATIONS) -database=$(LOCAL_DB)
 
 .PHONY: help verify_go verify_gow verify_templ verify_migrate verify_psql \
 	verify_sqlc verify_pnpm verify_docker build build_server main_watch templ templ_watch \
-	migration migrate_db db_reset db_migrate_down_1 db_sqlc ui_watch ui_build \
+	migration migrate_db db_reset db_migrate_down_1 db_sqlc ui_watch ui_watchmin ui_build \
 	codegen check_generated test check db_populate db_backup
 
 help:
@@ -24,6 +24,7 @@ help:
 	@echo "  check             Generate, test, build the UI, and check whitespace"
 	@echo "  main_watch        Run the development server with gow"
 	@echo "  ui_watch          Build frontend assets in watch mode"
+	@echo "  ui_watchmin       Build minified frontend assets in watch mode"
 	@echo "  migration N=name  Create a database migration"
 	@echo "  migrate_db        Apply all pending database migrations"
 	@echo "  db_reset CONFIRM=yes  Recreate and migrate the local database"
@@ -89,6 +90,9 @@ db_sqlc: verify_sqlc
 
 ui_watch: verify_pnpm
 	pnpm run dev
+
+ui_watchmin: verify_pnpm
+	pnpm exec vite build --watch --mode production
 
 ui_build: verify_pnpm
 	pnpm run build
