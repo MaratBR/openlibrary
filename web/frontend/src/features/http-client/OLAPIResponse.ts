@@ -1,21 +1,21 @@
 import { KyResponse } from 'ky'
-import { z, ZodSchema } from 'zod'
+import { Schema } from 'effect'
 import type { jsonErrorResponse, Notification } from '@/backend-types'
 
 export type OLNotification = Notification
 
-const NO_BODY_SCHEMA = z.literal('ok')
+const NO_BODY_SCHEMA = Schema.Literal('ok')
 
 export class OLAPIResponse<T> {
   private readonly response: Response
   private _notifications?: OLNotification[] = undefined
   private _data?: T
   private _error?: jsonErrorResponse
-  private readonly _schema: ZodSchema<T>
+  private readonly _schema: Schema.Codec<T, unknown>
 
   public static async create<T>(
     response: Response,
-    schema: ZodSchema<T> = z.any(),
+    schema: Schema.Codec<T, unknown> = Schema.Unknown as Schema.Codec<T, unknown>,
   ): Promise<OLAPIResponse<T>> {
     const resp = new OLAPIResponse<T>(response, schema)
     await resp._loadData()
@@ -24,11 +24,11 @@ export class OLAPIResponse<T> {
 
   public static async createNoBody(
     response: Response,
-  ): Promise<OLAPIResponse<z.infer<typeof NO_BODY_SCHEMA>>> {
+  ): Promise<OLAPIResponse<Schema.Schema.Type<typeof NO_BODY_SCHEMA>>> {
     return OLAPIResponse.create(response, NO_BODY_SCHEMA)
   }
 
-  private constructor(response: Response, schema: ZodSchema<T>) {
+  private constructor(response: Response, schema: Schema.Codec<T, unknown>) {
     this.response = response
     this._schema = schema
   }
@@ -74,7 +74,7 @@ export class OLAPIResponse<T> {
       this._error = json as jsonErrorResponse
     }
 
-    this._data = await this._schema.parseAsync(json)
+    this._data = Schema.decodeUnknownSync(this._schema)(json)
   }
 
   private static parseNotifications(response: KyResponse): OLNotification[] {

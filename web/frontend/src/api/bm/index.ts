@@ -1,5 +1,5 @@
 import { httpClient, OLAPIResponse } from '@/features/http-client'
-import { z } from 'zod'
+import { Schema } from 'effect'
 import type { DraftDto, ManagerBookChapterDto } from '@/backend-types'
 
 export function httpUpdateDraft(
@@ -67,9 +67,9 @@ export type UploadCoverRequest = {
   bookId: string
 }
 
-const uploadCoverResponseSchema = z.string()
+const uploadCoverResponseSchema = Schema.String
 
-export type UploadCoverResponse = z.infer<typeof uploadCoverResponseSchema>
+export type UploadCoverResponse = Schema.Schema.Type<typeof uploadCoverResponseSchema>
 
 export function httpUploadCover(req: UploadCoverRequest): Promise<UploadCoverResponse> {
   const body = new FormData()
@@ -81,7 +81,7 @@ export function httpUploadCover(req: UploadCoverRequest): Promise<UploadCoverRes
       body,
     })
     .then((r) => r.json())
-    .then(uploadCoverResponseSchema.parse)
+    .then(Schema.decodeUnknownSync(uploadCoverResponseSchema))
 }
 
 export function httpUpdateChaptersOrder(

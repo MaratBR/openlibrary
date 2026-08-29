@@ -1,15 +1,15 @@
-import { DefinedTagDto, useTagsSearch } from '@/api/search'
+import { DefinedTagDto, useTagsSearch } from '@/features/search'
 import Modal from '@/components/Modal'
 import { ReactIslandProps } from '@/lib/island'
 import { useMemo, useState } from 'react'
-import { z } from 'zod'
+import { Schema } from 'effect'
 
-const dataSchema = z.object({
-  open: z.boolean(),
+const dataSchema = Schema.Struct({
+  open: Schema.Boolean,
 })
 
 export function SimpleTagInputModal({ data, rootElement }: ReactIslandProps) {
-  const { open } = useMemo(() => dataSchema.parse(data), [data])
+  const { open } = useMemo(() => Schema.decodeUnknownSync(dataSchema)(data), [data])
 
   const [searchValue, setSearchValue] = useState('')
 

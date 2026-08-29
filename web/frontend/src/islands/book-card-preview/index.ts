@@ -3,10 +3,10 @@ import { debounce } from '@/common/util/fn'
 import { ModalAnimation } from '@/lib/animate'
 import { OLIsland, OLIslandMounted } from '@/lib/island'
 import { computePosition } from '@floating-ui/react'
-import z from 'zod'
+import { Schema } from 'effect'
 
-const dataSchema = z.object({
-  selector: z.string().nullable().optional(),
+const dataSchema = Schema.Struct({
+  selector: Schema.optional(Schema.NullOr(Schema.String)),
 })
 
 const DUMMY_ISLAND: OLIslandMounted = {
@@ -23,7 +23,7 @@ function findBySelector($el: HTMLElement, selector: string) {
 
 class BookCardPreviewIsland implements OLIsland {
   mount(el: HTMLElement, data: unknown): OLIslandMounted {
-    const { selector } = dataSchema.parse(data)
+    const { selector } = Schema.decodeUnknownSync(dataSchema)(data)
     if (!selector) return DUMMY_ISLAND
     const $root = findBySelector(el, selector)
     if (!$root) return DUMMY_ISLAND

@@ -3,7 +3,7 @@ import { Fragment } from 'react'
 import clsx from 'clsx'
 import CSRFInput from '@/components/CSRFInput'
 import TagsInput from '@/components/TagsInput'
-import { DefinedTagDto } from '@/api/search'
+import { DefinedTagDto } from '@/features/search'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { NavLink } from 'react-router'
 

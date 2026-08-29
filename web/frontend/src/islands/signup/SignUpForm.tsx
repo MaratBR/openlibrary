@@ -1,14 +1,14 @@
-import { z } from 'zod'
+import { Schema } from 'effect'
 import { ReactIslandProps } from '../common/react-island'
 import { passwordRequirementsSchema, validatePassword } from '@/common/password'
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PasswordInput } from './PasswordInput'
 import { animate } from 'popmotion'
 
-const signUpFormDataSchema = z.object({
+const signUpFormDataSchema = Schema.Struct({
   PasswordRequirements: passwordRequirementsSchema,
-  PrefilledUsername: z.string(),
-  PrefilledEmail: z.string(),
+  PrefilledUsername: Schema.String,
+  PrefilledEmail: Schema.String,
 })
 
 function isValidUsername(username: string) {
@@ -24,7 +24,10 @@ function normalizeUsername(value: string): string {
 }
 
 export default function SignUpForm({ data: dataParam }: ReactIslandProps) {
-  const { PasswordRequirements } = useMemo(() => signUpFormDataSchema.parse(dataParam), [dataParam])
+  const { PasswordRequirements } = useMemo(
+    () => Schema.decodeUnknownSync(signUpFormDataSchema)(dataParam),
+    [dataParam],
+  )
 
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')

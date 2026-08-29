@@ -1,13 +1,13 @@
-import { z } from 'zod'
+import { Schema } from 'effect'
 
-export const managerBookChapterDetailsDtoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  createdAt: z.string(),
-  words: z.number(),
-  summary: z.string(),
-  order: z.number().int(),
-  content: z.string(),
-  isPubliclyVisible: z.boolean(),
-  fonts: z.array(z.string()),
+export const managerBookChapterDetailsDtoSchema = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  createdAt: Schema.String,
+  words: Schema.Number,
+  summary: Schema.String,
+  order: Schema.Int,
+  content: Schema.String,
+  isPubliclyVisible: Schema.Boolean,
+  fonts: Schema.Array(Schema.String),
 })

@@ -1,9 +1,8 @@
 import { HttpClient, OLAPIResponse } from '@/features/http-client'
-import { Context, Effect, Layer } from 'effect'
-import { type ZodType } from 'zod'
+import { Context, Effect, Layer, Schema } from 'effect'
 
 export type GetUserDataOptions<T> = {
-  readonly schema: ZodType<T>
+  readonly schema: Schema.Codec<T, unknown>
 }
 
 export class UserDataApi extends Context.Service<
@@ -24,7 +23,7 @@ export class UserDataApi extends Context.Service<
         Effect.tryPromise(async () => {
           const response = await httpClient
             .get(`/_api/user-data/${encodeURIComponent(key)}`)
-            .then((r) => OLAPIResponse.create(r, schema.nullable()))
+            .then((r) => OLAPIResponse.create(r, Schema.NullOr(schema)))
           response.throwIfError()
           return response.data
         })

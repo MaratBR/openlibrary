@@ -1,4 +1,4 @@
-import { DefinedTagDto } from '@/api/search'
+import { DefinedTagDto } from '@/features/search'
 import TagsInput from '@/components/TagsInput'
 import { Wrapper } from '@/preact'
 import { useMemo, useRef, useState } from 'react'

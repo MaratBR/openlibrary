@@ -1,23 +1,23 @@
 import { useMemo } from 'react'
-import z from 'zod'
+import { Schema } from 'effect'
 
-export const UserRoleSchema = z.enum(['user', 'admin', 'system', 'moderator'])
+export const UserRoleSchema = Schema.Literals(['user', 'admin', 'system', 'moderator'])
 
-export const SelfUserDtoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string(),
+export const SelfUserDtoSchema = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  email: Schema.String,
   role: UserRoleSchema,
-  avatar: z.object({
-    lg: z.string(),
-    md: z.string(),
+  avatar: Schema.Struct({
+    lg: Schema.String,
+    md: Schema.String,
   }),
-  joinedAt: z.string(),
-  isBanned: z.boolean(),
-  isEmailVerified: z.boolean(),
-  preferredTheme: z.string(),
+  joinedAt: Schema.String,
+  isBanned: Schema.Boolean,
+  isEmailVerified: Schema.Boolean,
+  preferredTheme: Schema.String,
 })
 
 export function useUserSelfData() {
-  return useMemo(() => SelfUserDtoSchema.parse(window.__server__.user), [])
+  return useMemo(() => Schema.decodeUnknownSync(SelfUserDtoSchema)(window.__server__.user), [])
 }

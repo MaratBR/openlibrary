@@ -1,14 +1,13 @@
 import { Font } from '@/features/fonts-loader/api'
 import { FontsLoader } from '@/features/fonts-loader/loader'
 import { UserDataApi } from '@/features/api/user-data'
-import { Effect } from 'effect'
+import { Effect, Schema } from 'effect'
 import { atom, useAtomValue, useSetAtom } from 'jotai'
-import { z } from 'zod'
 
 const USER_DATA_FONTS_KEY = 'bm:fonts'
 
-const FontsStateSchema = z.object({
-  favorite: z.array(z.string()),
+const FontsStateSchema = Schema.Struct({
+  favorite: Schema.Array(Schema.String),
 })
 
 const fontsAtom = atom<ReadonlyArray<Readonly<Font>>>([])
@@ -33,7 +32,7 @@ const initializeFontsAtom = atom(null, (get, set) => {
       })
       yield* Effect.sync(() => {
         set(fontsAtom, fonts)
-        set(favoriteFontsAtom, fontState?.favorite ?? [])
+        set(favoriteFontsAtom, [...(fontState?.favorite ?? [])])
       })
     }).pipe(
       Effect.tapError((error) => Effect.sync(() => set(fontsErrorAtom, error))),

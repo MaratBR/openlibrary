@@ -16,6 +16,7 @@ import {
   type ReportButtonConfig,
 } from '@/features/moderation/components/report-button/ReportButton'
 import { SelfUserDtoSchema } from '@/api/auth/user'
+import { Option, Schema } from 'effect'
 import { FormEvent, useEffect, useRef, useState } from 'react'
 
 type CommentSort = 'newest' | 'oldest' | 'popular'
@@ -23,8 +24,9 @@ type CommentSort = 'newest' | 'oldest' | 'popular'
 export function Comments(_: ReactIslandProps) {
   const chapterId = getChapterId()
 
-  const userResult = SelfUserDtoSchema.safeParse(window.__server__.user)
-  const user = userResult.success ? userResult.data : null
+  const user = Option.getOrNull(
+    Schema.decodeUnknownOption(SelfUserDtoSchema)(window.__server__.user),
+  )
   const [comments, setComments] = useState<CommentDto[]>([])
   const [nextCursor, setNextCursor] = useState(0)
   const [total, setTotal] = useState(0)

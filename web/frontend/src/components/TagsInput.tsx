@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { DropdownCore } from '../islands/search-filters/DropdownCore'
-import { DefinedTagDto, useTagsSearch } from '@/api/search'
+import { DefinedTagDto, useTagsSearch } from '@/features/search'
 
 export type TagsInputProps = {
   tags?: DefinedTagDto[]

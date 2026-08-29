@@ -1,14 +1,14 @@
-import { z } from 'zod'
+import { Schema } from 'effect'
 
-export const passwordRequirementsSchema = z.object({
-  Digits: z.boolean(),
-  Symbols: z.string(),
-  SymbolsEnabled: z.boolean(),
-  DifferentCases: z.boolean(),
-  MinLength: z.number(),
+export const passwordRequirementsSchema = Schema.Struct({
+  Digits: Schema.Boolean,
+  Symbols: Schema.String,
+  SymbolsEnabled: Schema.Boolean,
+  DifferentCases: Schema.Boolean,
+  MinLength: Schema.Number,
 })
 
-export type PasswordRequirements = z.infer<typeof passwordRequirementsSchema>
+export type PasswordRequirements = Schema.Schema.Type<typeof passwordRequirementsSchema>
 
 export type PasswordValidationResult = {
   digits: boolean

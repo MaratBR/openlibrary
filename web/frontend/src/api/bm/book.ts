@@ -1,4 +1,4 @@
-import z from 'zod'
+import { Schema } from 'effect'
 import type { AgeRating, ApiResponseGetBooks, ManagerBookDetailsDto } from '@/backend-types'
 import { httpClient, OLAPIResponse } from '@/features/http-client'
 
@@ -70,7 +70,7 @@ export class BMBookAPI {
       .post(`/_api/books-manager/book/${bookId}/create-chapter`, {
         body: JSON.stringify(request),
       })
-      .then((r) => OLAPIResponse.create(r, z.string()))
+      .then((r) => OLAPIResponse.create(r, Schema.String))
   }
 
   updateBook(bookId: string, body: ApiPayloadBookDirectUpdate) {

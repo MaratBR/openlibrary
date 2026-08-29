@@ -1,5 +1,5 @@
 import { httpClient } from '@/features/http-client'
-import { z } from 'zod'
+import { Schema } from 'effect'
 import type { recentCollectionDto as RecentCollectionDto } from '@/backend-types'
 
 export async function httpGetRecentCollections(): Promise<RecentCollectionDto[]> {
@@ -20,7 +20,7 @@ export async function httpCreateCollection(name: string): Promise<string> {
   return httpClient
     .post('/_api/collections', { json: { name } })
     .then((r) => r.json())
-    .then(z.string().parse)
+    .then(Schema.decodeUnknownSync(Schema.String))
 }
 
 export async function httpAddBookToCollections(

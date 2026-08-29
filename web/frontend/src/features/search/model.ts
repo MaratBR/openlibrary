@@ -1,8 +1,5 @@
-import { DEFAULT_SEARCH_DEBOUNCE } from '@/config'
-import { httpClient } from '@/features/http-client'
 import type { DefinedTagDto } from '@/backend-types'
-import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+
 type UserDto = {
   id: string
   name: string
@@ -68,54 +65,17 @@ export function getQueryParams(query: DetailedBookSearchQuery): URLSearchParams 
   if (query.chapters.max !== null) params.set('c.max', query.chapters.max.toString())
   if (query.wordsPerChapter.min !== null) params.set('wc.min', query.wordsPerChapter.min.toString())
   if (query.wordsPerChapter.max !== null) params.set('wc.max', query.wordsPerChapter.max.toString())
-  if (query.includeTags.length > 0) params.set('it', query.includeTags.map((x) => x.id).join(','))
-  if (query.excludeTags.length > 0) params.set('et', query.excludeTags.map((x) => x.id).join(','))
-  if (query.includeUsers.length > 0) params.set('iu', query.includeUsers.map((x) => x.id).join(','))
-  if (query.excludeUsers.length > 0) params.set('eu', query.excludeUsers.map((x) => x.id).join(','))
+  if (query.includeTags.length > 0)
+    params.set('it', query.includeTags.map((tag) => tag.id).join(','))
+  if (query.excludeTags.length > 0)
+    params.set('et', query.excludeTags.map((tag) => tag.id).join(','))
+  if (query.includeUsers.length > 0)
+    params.set('iu', query.includeUsers.map((user) => user.id).join(','))
+  if (query.excludeUsers.length > 0)
+    params.set('eu', query.excludeUsers.map((user) => user.id).join(','))
 
   if (query.page > 1) params.set('page', query.page.toString())
   if (query.pageSize !== 20) params.set('pageSize', query.pageSize.toString())
 
   return params
-}
-
-export async function searchTags(query: string): Promise<DefinedTagDto[]> {
-  const response = await httpClient.get('/_api/tags', { searchParams: { q: query } })
-  return response.json<DefinedTagDto[]>()
-}
-
-export type { DefinedTagDto, TagsCategory } from '@/backend-types'
-
-export type TagsSearchOptions = {
-  query: string
-  fetchDefault?: boolean
-  debounceTimeout?: number
-  enabled?: boolean
-}
-
-export function useTagsSearch({
-  query,
-  fetchDefault = false,
-  debounceTimeout = DEFAULT_SEARCH_DEBOUNCE,
-  enabled = true,
-}: TagsSearchOptions) {
-  query = query.trim().toLowerCase()
-
-  const [realQuery, setRealQuery] = useState(query)
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setRealQuery(query)
-    }, debounceTimeout)
-
-    return () => clearInterval(t)
-  }, [query, debounceTimeout])
-
-  const queryObject = useQuery({
-    queryKey: ['tags-search', realQuery],
-    enabled: enabled && (realQuery.length > 0 || fetchDefault),
-    queryFn: () => searchTags(realQuery),
-  })
-
-  return queryObject
 }

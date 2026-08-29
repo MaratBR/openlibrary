@@ -6,13 +6,14 @@ import {
 } from '@/common/password'
 import { Subject } from '@/common/rx'
 import Alpine from 'alpinejs'
+import { Schema } from 'effect'
 
 Alpine.data('passwordInput', () => ({
   id: `passwordInputRX_${Math.random().toString(16).substring(2)}`,
   requirements: null as PasswordRequirements | null,
 
   init() {
-    this.requirements = passwordRequirementsSchema.parse(
+    this.requirements = Schema.decodeUnknownSync(passwordRequirementsSchema)(
       JSON.parse(this.$el.getAttribute('data-password-requirements') || ''),
     )
     const rx = new Subject<PasswordValidationResult>({

@@ -4,24 +4,25 @@ import TagsInput from '@/components/TagsInput'
 
 import RangeInput from './RangeInput'
 import { ReactIslandProps } from '../common/react-island'
-import { z } from 'zod'
+import { Schema } from 'effect'
 import {
   DetailedBookSearchQuery,
   getDefaultDetailedBookSearchQuery,
   getQueryParams,
-} from '@/api/search'
+} from '@/features/search'
 
-const dataSchema = z
-  .object({
-    searchInputId: z.string().optional().nullable(),
-  })
-  .nullable()
-  .optional()
+const dataSchema = Schema.UndefinedOr(
+  Schema.NullOr(
+    Schema.Struct({
+      searchInputId: Schema.optional(Schema.NullOr(Schema.String)),
+    }),
+  ),
+)
 
 const RELEVANCE_SORT_VALUE = 'relevance'
 
 export default function SearchFilters({ data }: ReactIslandProps) {
-  const parsedData = useMemo(() => dataSchema.parse(data), [data])
+  const parsedData = useMemo(() => Schema.decodeUnknownSync(dataSchema)(data), [data])
   const [filters, setFilters] = useState<DetailedBookSearchQuery>(getDetailedBookSearchQuery)
 
   function handleSubmit(event: SubmitEvent) {

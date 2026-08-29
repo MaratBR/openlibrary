@@ -3,13 +3,15 @@ import { RenderLazy } from '@/components/RenderLazy'
 import Tabs from '@/components/Tabs'
 import { createEnumParameter } from '@/lib/parameters'
 import { LoaderFunctionArgs, NavLink, useLoaderData } from 'react-router'
-import z from 'zod'
+import { Schema } from 'effect'
 import { BookGeneral } from './BookGeneral'
 import { BookChapters } from './BookChapters'
 import { BMBookAPI } from '@/api/bm/book'
 
 export const bookRouteLoader = async ({ params }: LoaderFunctionArgs) => {
-  const { bookId } = z.object({ bookId: z.string().nonempty() }).parse(params)
+  const { bookId } = Schema.decodeUnknownSync(Schema.Struct({ bookId: Schema.NonEmptyString }))(
+    params,
+  )
   const resp = await BMBookAPI.getInstance().getBook(bookId)
 
   return {
