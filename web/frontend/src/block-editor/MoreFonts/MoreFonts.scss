@@ -1,4 +1,4 @@
-.be-font-picker-item {
+.BeFontPickerItem {
     @apply v-middle grid;
     height: var(--item-height);
     grid-template-columns: var(--item-height) 1fr var(--item-height);
@@ -8,25 +8,25 @@
     }
 
     
-    &__main {
+    &-main {
         @apply flex flex-col justify-center;
     }
     
-    &__aa {
+    &-aa {
         @apply v-middle text-center text-3xl;
         line-height: var(--item-height);
         width: var(--item-height);
     }
 
-    &__name, &__name-normal {
+    &-name, &-nameNormal {
         @apply block;
     }
 
-    &__name {
+    &-name {
         @apply text-2xl;
     }
 
-    &__name-normal {
+    &-nameNormal {
         @apply text-secondary-foreground;
     }
 }

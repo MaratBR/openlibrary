@@ -1,19 +1,19 @@
 .flash-container {
   @apply mx-4;
 
-  .flash {
+  .Flash {
     @apply my-2;
   }
 }
 
-.flash {
+.Flash {
   @apply bg-surface border-border shadow-md border-l-2 border-l-emerald p-2 relative;
 
-  &__closeContainer {
+  &-closeContainer {
     @apply absolute right-2 top-0 bottom-0 flex items-center;
   }
 
-  &__close {
+  &-close {
     @apply size-8 flex items-center justify-center hover:bg-highlight rounded-full;
   }
 }

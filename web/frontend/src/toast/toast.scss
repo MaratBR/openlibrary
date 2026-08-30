@@ -6,10 +6,10 @@
   @apply p-2 bg-surface rounded-2xl shadow-lg mr-3 my-2;
 }
 
-.toast-layout {
+.ToastLayout {
   @apply grid grid-cols-[40px_auto] gap-2;
 
-  &__icon {
+  &-icon {
     @apply w-full flex items-center justify-center;
 
     &[data-color='warn'] {
@@ -34,18 +34,18 @@
     }
   }
 
-  &__content {
+  &-content {
     @apply pr-9 max-w-96;
   }
 
-  &__title {
+  &-title {
     @apply text-lg font-semibold;
   }
 
-  &__text {
+  &-text {
   }
 
-  &__close {
+  &-close {
     @apply absolute top-1 right-1 opacity-60 size-8 flex items-center justify-center transition cursor-pointer rounded-3xl
             hover:bg-highlight hover:opacity-100
             active:scale-80;

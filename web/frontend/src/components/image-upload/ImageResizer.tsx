@@ -149,8 +149,8 @@ export function ImageResizer({
         </div>
 
         <div className="absolute right-4 bottom-4 flex z-10">
-          <button className="btn btn--secondary" onClick={handleResizeAndCrop}>
-            {loading ? <span className="loader" /> : window._('common.crop')}
+          <button className="Btn Btn--secondary" onClick={handleResizeAndCrop}>
+            {loading ? <span className="Loader" /> : window._('common.crop')}
           </button>
         </div>
       </div>

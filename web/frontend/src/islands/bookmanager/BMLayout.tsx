@@ -3,8 +3,8 @@ import { NavLink, To } from 'react-router'
 
 export default function BMLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="dashboard-layout">
-      <aside className="dashboard-layout__sidebar">
+    <div className="DashboardLayout">
+      <aside className="DashboardLayout-sidebar">
         <Logo />
         <ul className="dashboard-sidebar-list">
           <SidebarItem
@@ -15,7 +15,7 @@ export default function BMLayout({ children }: { children: ReactNode }) {
         </ul>
       </aside>
 
-      <div className="dashboard-layout__body">{children}</div>
+      <div className="DashboardLayout-body">{children}</div>
     </div>
   )
 }
@@ -31,10 +31,10 @@ function Logo() {
 
 function SidebarItem({ icon, label, to }: { icon?: JSX.Element; label: string; to: To }) {
   return (
-    <li className="dashboard-sidebar-item">
+    <li className="DashboardSidebarItem">
       <NavLink to={to}>
-        <div className="dashboard-sidebar-item__icon">{icon}</div>
-        <div className="dashboard-sidebar-item__label">{label}</div>
+        <div className="DashboardSidebarItem-icon">{icon}</div>
+        <div className="DashboardSidebarItem-label">{label}</div>
       </NavLink>
     </li>
   )

@@ -33,14 +33,14 @@ function FlashesHost() {
       {notifications.map((notif, i) => {
         return (
           // TODO proper key value
-          <div key={i} className="ol-flash" data-type={notif.type}>
+          <div key={i} className="OlFlash" data-type={notif.type}>
             <span>
               <SanitizeHTML value={notif.text} />
             </span>
-            <div className="ol-flash__closeContainer">
+            <div className="OlFlash-closeContainer">
               <button
                 onClick={() => Notifications.instance.remove(notif)}
-                className="ol-flash__close"
+                className="OlFlash-close"
               >
                 <i className="fa-solid fa-xmark"></i>
               </button>

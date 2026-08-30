@@ -21,15 +21,15 @@ templ GenresPage(result app.ListTagsResult, query string) {
 	@standardPageLayout(standardPageLayoutProps{
 		htmlLayoutProps: htmlLayoutProps{Title: l.T("genres.title")},
 	}) {
-		<main class="ol-container py-10 md:py-14">
-			<header class="page-header">
-				<div class="page-header__body">
-					<h1 class="page-header__title">{ l.T("genres.title") }</h1>
-					<p class="page-header__description">{ l.T("genres.description") }</p>
+		<main class="OlContainer py-10 md:py-14">
+			<header class="PageHeader">
+				<div class="PageHeader-body">
+					<h1 class="PageHeader-title">{ l.T("genres.title") }</h1>
+					<p class="PageHeader-description">{ l.T("genres.description") }</p>
 				</div>
 			</header>
 
-			<section class="card mb-6 flex items-center gap-5 p-5" aria-label={ l.T("genres.total") }>
+			<section class="Card mb-6 flex items-center gap-5 p-5" aria-label={ l.T("genres.total") }>
 				<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-secondary text-2xl text-primary">
 					<i class="fa-solid fa-book-open" aria-hidden="true"></i>
 				</div>
@@ -49,7 +49,7 @@ templ GenresPage(result app.ListTagsResult, query string) {
 			</form>
 
 			if len(result.Tags) == 0 {
-				<div class="card p-10 text-center text-secondary-foreground">{ l.T("genres.empty") }</div>
+				<div class="Card p-10 text-center text-secondary-foreground">{ l.T("genres.empty") }</div>
 			} else {
 				<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					for _, genre := range result.Tags {
@@ -65,7 +65,7 @@ templ GenresPage(result app.ListTagsResult, query string) {
 }
 
 templ genreCard(genre app.TagDetailsItemDto) {
-	<a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", genre.ID)) } class="card group flex min-h-32 items-stretch overflow-hidden border-t-2 border-t-primary p-0 transition-shadow hover:shadow-md">
+	<a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", genre.ID)) } class="Card group flex min-h-32 items-stretch overflow-hidden border-t-2 border-t-primary p-0 transition-shadow hover:shadow-md">
 		<div class="flex w-20 shrink-0 items-center justify-center border-r text-5xl font-title text-primary/70">
 			{ genreInitial(genre.Name) }
 		</div>

@@ -49,10 +49,10 @@ export class SimpleEditor extends Editor {
 
   constructor(element: HTMLElement) {
     const html = element.innerHTML
-    element.classList.add('ol-simple-editor')
+    element.classList.add('OlSimpleEditor')
 
     const contentElement = document.createElement('div')
-    contentElement.classList.add('ol-simple-editor__content')
+    contentElement.classList.add('OlSimpleEditor-content')
     contentElement.classList.add('user-content')
 
     super({
@@ -169,7 +169,7 @@ function Toolbar({ editor }: { editor: SimpleEditor }) {
   const { bold, italic, strikethrough, textAlign } = useSubject(editor.tiptapState)
 
   return (
-    <ul className="ol-simple-editor__toolbar">
+    <ul className="OlSimpleEditor-toolbar">
       <ToolbarButton active={bold} onClick={() => editor.chain().toggleBold().focus().run()}>
         <i className="fa-solid fa-bold" />
       </ToolbarButton>
@@ -182,7 +182,7 @@ function Toolbar({ editor }: { editor: SimpleEditor }) {
       >
         <i className="fa-solid fa-strikethrough" />
       </ToolbarButton>
-      <li className="ol-simple-editor__delimiter" aria-hidden="true" />
+      <li className="OlSimpleEditor-delimiter" aria-hidden="true" />
       <ToolbarButton
         active={textAlign === 'left'}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -223,7 +223,7 @@ function ToolbarButton({
   return (
     <li
       role="button"
-      className={`ol-simple-editor__btn ${active ? 'ol-simple-editor__btn--active' : ''}`}
+      className={`OlSimpleEditor-btn ${active ? 'OlSimpleEditorBtn--active' : ''}`}
       onClick={onClick}
     >
       {children}

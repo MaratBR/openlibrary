@@ -2,24 +2,24 @@
   @apply flex py-8;
 }
 
-.book-recommendation-item {
+.BookRecommendationItem {
   @apply 
     rounded-xl w-42 min-w-42 transition block mx-3 first:ml-0;
 
-  &__img {
+  &-img {
     @apply rounded-xl h-56 max-h-56 w-full transition;
     object-fit: cover
   }
 
-  &:hover &__img {
+  &:hover &-img {
     @apply scale-102;
   }
 
-  &__summary {
+  &-summary {
     @apply p-2 font-title text-sm;
   }
 
-  &__name {
+  &-name {
     @apply text-base whitespace-nowrap text-ellipsis overflow-hidden font-medium;
   }
 }

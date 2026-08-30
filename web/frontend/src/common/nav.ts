@@ -121,7 +121,7 @@ export function setupNavigation(parent: HTMLElement) {
       }
 
       window.requestAnimationFrame(() => {
-        portal.style.setProperty('--nav-trigger-left', `${left}px`)
+        portal.style.setProperty('--navTriggerLeft', `${left}px`)
         portal.style.setProperty('--nav-trigger-bottom', `${bottom}px`)
         portal.style.setProperty('--nav-trigger-top', `${top}px`)
         portal.style.setProperty('--nav-trigger-right', `${right}px`)

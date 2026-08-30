@@ -1,12 +1,12 @@
-.select__icon {
+.Select-icon {
   transition: transform var(--transition-fast);
 }
 
-.select[data-state='open'] .select__icon {
+.Select[data-state='open'] .Select-icon {
   transform: rotate(180deg);
 }
 
-.select__content {
+.Select-content {
   transform-origin: var(--radix-select-content-transform-origin);
 
   &[data-state='open'] {

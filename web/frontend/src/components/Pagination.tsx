@@ -9,7 +9,7 @@ const Pagination_Root = forwardRef(
     ref: React.ForwardedRef<HTMLElement>,
   ) => {
     return (
-      <nav ref={ref} role="listbox" className={clsx('pagination', className)} {...props}>
+      <nav ref={ref} role="listbox" className={clsx('Pagination', className)} {...props}>
         {children}
       </nav>
     )
@@ -37,8 +37,8 @@ const Pagination_Item = forwardRef(
       <Component
         ref={ref}
         role="listbox"
-        className={clsx('pagination__item', {
-          'pagination__item--active': active,
+        className={clsx('Pagination-item', {
+          'PaginationItem--active': active,
         })}
         aria-disabled={disabled ? 'true' : 'false'}
         {...rest}

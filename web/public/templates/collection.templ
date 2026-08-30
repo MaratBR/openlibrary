@@ -19,8 +19,8 @@ templ Collection(
             Title: l.T("collection.collection") + " - " + collection.Name,
         },
     }) {
-        <header class="hero hero--header">
-            <div class="ol-container">
+        <header class="Hero Hero--header">
+            <div class="OlContainer">
                 <h1 class="font-semibold text-4xl">{ collection.Name }</h1>
                 if len(collection.Summary) > 0 {
                     <div class="bg-surface rounded-3xl p-4 mt-4 mb-2">
@@ -33,24 +33,24 @@ templ Collection(
                 <div class="mt-2">
                     if canEdit {
                         <div class="btn-group">
-                            <a class="btn btn--outline btn--sm" href="/library/collections">
+                            <a class="Btn Btn--outline Btn--sm" href="/library/collections">
                                 <i class="fa-solid fa-arrow-left"></i>&nbsp;
                                 { l.T("collection.backToLibrary") }
                             </a>
-                            <a class="btn btn--outline btn--sm" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", collection.ID)) }>
+                            <a class="Btn Btn--outline Btn--sm" href={ templ.URL(fmt.Sprintf("/library/collections/%d/manage", collection.ID)) }>
                                 <i class="fa-solid fa-table-list"></i>&nbsp;
                                 { l.T("collection.manage") }
                             </a>
                         </div>
                     } else {
-                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", collection.UserID.String())) }>
+                        <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", collection.UserID.String())) }>
                             { collection.UserName }
                         </a>
                     }
                 </div>
             </div>
         </header>
-        <div class="ol-container px-2" x-data="{bookId:''}">
+        <div class="OlContainer px-2" x-data="{bookId:''}">
             {{
                 pagination := olhttp.PaginationImpl(olhttp.PaginationImplProps{
                     Size: 9,
@@ -64,7 +64,7 @@ templ Collection(
                     if !(result.TotalPages == 1 && result.Page == 1) {
                         @pagination
                     }
-                    <div x-data="Popover({options:{}})" id="DeleteBookPopover" x-cloak class="card shadow-2xl rounded-xl z-20 p-4 w-64">
+                    <div x-data="Popover({options:{}})" id="DeleteBookPopover" x-cloak class="Card shadow-2xl rounded-xl z-20 p-4 w-64">
                         <span class="text-lg font-semibold">
                             { l.T("collection.confirmBookDelete") }
 
@@ -76,7 +76,7 @@ templ Collection(
                         <form :action={fmt.Sprintf("`/_api/collections/removeBook/%d/${bookId}`", collection.ID)} method="post">
                             @csrf.CSRFInputTempl(ctx)
                             <button 
-                                class="btn btn--outline btn--destructive text-lg mt-2"
+                                class="Btn Btn--outline Btn--destructive text-lg mt-2"
                                 type="submit">
                                 //              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                 //              Dispatch this event to the button and corresponding form.
@@ -92,7 +92,7 @@ templ Collection(
                                     <div class="absolute top-1 right-1">
                                         <button l
                                             @click.prevent={fmt.Sprintf("bookId='%d';Alpine.$data(document.getElementById('DeleteBookPopover')).open($el)", book.ID)}
-                                            class="btn btn--ghost btn--destructive">
+                                            class="Btn Btn--ghost Btn--destructive">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </div>
@@ -128,35 +128,35 @@ templ CollectionManage(
             Title: l.T("collection.collection") + " - " + collection.Name,
         },
     }) {
-        <header class="hero hero--header">
-            <div class="ol-container">
+        <header class="Hero Hero--header">
+            <div class="OlContainer">
                 <h1 class="font-semibold text-4xl">
                     { collection.Name }
                 </h1>
             </div>
         </header>
 
-        <div class="ol-container pt-4" x-data="{deleting:false,confirmationPhrase:''}">
+        <div class="OlContainer pt-4" x-data="{deleting:false,confirmationPhrase:''}">
             <form method="post" action="?act=update">
                 @csrf.CSRFInputTempl(ctx)
-                <div class="form-control">
-                    <div class="form-control__label">
+                <div class="FormControl">
+                    <div class="FormControl-label">
                         <label for="CollectionManage-name" class="label">
                             { l.T("collection.edit.nameLabel") }
                         </label>
                     </div>
-                    <div class="form-control__value">
+                    <div class="FormControl-value">
                         <input maxlength="255" required value={ collection.Name } id="CollectionManage-name" name="name" class="input" />
                     </div>
                 </div>
 
-                <div class="form-control">
-                    <div class="form-control__label">
+                <div class="FormControl">
+                    <div class="FormControl-label">
                         <label for="CollectionManage-summary" class="label">
                             { l.T("collection.edit.summaryLabel") }
                         </label>
                     </div>
-                    <div class="form-control__value">
+                    <div class="FormControl-value">
                         <textarea 
                             id="CollectionManage-summary" 
                             name="summary" 
@@ -165,20 +165,20 @@ templ CollectionManage(
                     </div>
                 </div>
 
-                <div class="form-control">
-                    <div class="form-control__label">
+                <div class="FormControl">
+                    <div class="FormControl-label">
                         <label for="CollectionManage-public" class="label">
                             { l.T("collection.edit.isPublicLabel") }
                         </label>
                     </div>
-                    <div class="form-control__value">
-                        <label class="switch">
+                    <div class="FormControl-value">
+                        <label class="Switch">
                             <input
                                 if true {
                                     checked
                                 }
                                 id="CollectionManage-public" name="public" type="checkbox">
-                            <span class="switch__slider" />
+                            <span class="Switch-slider" />
                         </label>
                     </div>
                 </div>
@@ -186,23 +186,23 @@ templ CollectionManage(
                 <hr class="my-4" />
 
                 <div class="flex gap-1">
-                    <button type="submit" class="btn btn--primary">
+                    <button type="submit" class="Btn Btn--primary">
                         { l.T("common.save") }
                     </button>
 
-                    <button @click.prevent="deleting=true" class="btn btn--destructive">
+                    <button @click.prevent="deleting=true" class="Btn Btn--destructive">
                         { l.T("common.delete") }
                     </button>
                 </div>
             </form>
 
-            <form method="post" action="?act=delete" x-show="deleting" x-cloak class="card card--elevated mt-4">
+            <form method="post" action="?act=delete" x-show="deleting" x-cloak class="Card Card--elevated mt-4">
                 <label for="CollectionManage-deleteConfirmation" class="label mb-2">{ l.T("collection.edit.enterNameToDelete") }</label>
                 <input x-model="confirmationPhrase" id="CollectionManage-deleteConfirmation" class="input" placeholder={ collection.Name } />
                 <button type="submit"
                     disabled 
                     :disabled={ fmt.Sprintf("confirmationPhrase!==%q", collection.Name) } 
-                    class="btn btn--destructive mt-2">
+                    class="Btn Btn--destructive mt-2">
                     { l.T("common.delete") }
                 </button>
                 @csrf.CSRFInputTempl(ctx)

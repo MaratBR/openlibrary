@@ -19,7 +19,7 @@ templ BookNotFoundPage() {
             Title: title,
         },
     }) {
-        <main class="ol-container py-12">
+        <main class="OlContainer py-12">
             <h1 class="text-8xl mb-2 font-title text-center md:text-left">404</h1>
             <h1 class="ml-4 text-4xl font-title text-center md:text-left">{title}</h1>
 
@@ -61,8 +61,8 @@ templ BookPage(
         }
 
         if !book.IsPubliclyAvailable && isAuthenticated && user.ID == book.Author.ID {
-            <div class="ol-container ol-container--big p-4 bg-yellow-300 text-black border-yellow-600 border-2">
-                {l.T("book.notPubliclyAvailableNotice")} <br /> <a class="link" href={templ.URL(fmt.Sprintf("/books-manager#/books/%d", book.ID))}>{l.T("book.goToBookManager")}</a>
+            <div class="OlContainer OlContainer--big p-4 bg-yellow-300 text-black border-yellow-600 border-2">
+                {l.T("book.notPubliclyAvailableNotice")} <br /> <a class="Link" href={templ.URL(fmt.Sprintf("/books-manager#/books/%d", book.ID))}>{l.T("book.goToBookManager")}</a>
             </div>
         }
 
@@ -70,24 +70,24 @@ templ BookPage(
 
         <div 
             id="book" 
-            class="book-page" 
+            class="BookPage" 
             x-data={ convertBookDetailsToAlpineState(&book, readingListStatus) }>
             @serverData(map[string]any{
                 "bookId": fmt.Sprintf("%d", book.ID),
             })
-            <div class="book-page__left">
+            <div class="BookPage-left">
                 @bookCover(book.Cover.URL, book.Name, 300)
                 @bookReadingList(&book, readingListStatus)
                 <div class="mt-3">
-                    @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), Class: "btn btn--ghost w-full"})
+                    @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), Class: "btn Btn--ghost w-full"})
                 </div>
             </div>
-            <div class="book-page__right">
-                <header class="page-header">
-                    <div class="page-header__body">
-                        <h1 class="page-header__title">{book.Name}</h1>
-                        <p class="page-header__meta">
-                            <a class="link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
+            <div class="BookPage-right">
+                <header class="PageHeader">
+                    <div class="PageHeader-body">
+                        <h1 class="PageHeader-title">{book.Name}</h1>
+                        <p class="PageHeader-meta">
+                            <a class="Link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
                         </p>
                     </div>
                 </header>
@@ -95,13 +95,13 @@ templ BookPage(
                 @bookRating(&book, views)
 
                 <main class="contents" id="slot-book-page">
-                    <div x-ignore class="book-page__summary user-content">
+                    <div x-ignore class="BookPage-summary user-content">
                         @templ.Raw(book.Summary)
                     </div>
-                    <section class="book-page__details" aria-label={l.T("book.details")}>
-                        <div class="book-page__classification">
+                    <section class="BookPage-details" aria-label={l.T("book.details")}>
+                        <div class="BookPage-classification">
                             @bookRatingBadge(book.AgeRating)
-                            <div class="book-page__tags">
+                            <div class="BookPage-tags">
                                 @webcomponents.Tags(webcomponents.TagsProps{
                                     Tags: book.Tags,
                                 })
@@ -109,8 +109,8 @@ templ BookPage(
                         </div>
                     </section>
 
-                    <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) } class="book-page__content-tabs">
-                        <header role="tablist" class="book-page__tab-list">
+                    <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) } class="BookPage-contentTabs">
+                        <header role="tablist" class="BookPage-tabList">
                             <span role="tab"
                                 @click.prevent="tab='reviews'"
                                 if tab == "reviews" {
@@ -151,7 +151,7 @@ templ BookPage(
                             x-show="tab==='toc'" 
                             x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/__fragment/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
                             <div class="h-[600px] mt-4">
-                                <span class="loader mt-4"></span>
+                                <span class="Loader mt-4"></span>
                             </div>
                         </div>
                     </section>
@@ -184,24 +184,24 @@ func convertBookDetailsToAlpineState(book *app.BookDetailsDto, readingList app.N
 
 templ bookRating(book *app.BookDetailsDto, views analytics.MetricValue) {
     {{ l := i18n.GetLocalizer(ctx) }}
-    <div id="rating-card" class="book-page__rating-card">
-        <div class="book-page__rating-summary">
+    <div id="rating-card" class="BookPage-ratingCard">
+        <div class="BookPage-ratingSummary">
             @starRating(book.Rating.Value, 0.34)
-            <span class="book-page__rating-value">{fmt.Sprintf("%.1f", book.Rating.Value)}</span>
-            <span class="book-page__rating-scale">/ 10</span>
+            <span class="BookPage-ratingValue">{fmt.Sprintf("%.1f", book.Rating.Value)}</span>
+            <span class="BookPage-ratingScale">/ 10</span>
         </div>
-        <div class="book-page__stats">
-            <span class="book-page__stat" title={l.T("book.ratings")}>
+        <div class="BookPage-stats">
+            <span class="BookPage-stat" title={l.T("book.ratings")}>
                 <i class="fa-solid fa-square-poll-vertical" aria-hidden="true"></i>
                 <span>{formatInt32(book.Votes)}</span>
                 <span class="sr-only"> {l.T("book.ratings")}</span>
             </span>
-            <span class="book-page__stat" title={l.T("book.reviews")}>
+            <span class="BookPage-stat" title={l.T("book.reviews")}>
                 <i class="fa-solid fa-comment" aria-hidden="true"></i>
                 <span>{formatInt32(book.Reviews)}</span>
                 <span class="sr-only"> {l.T("book.reviews")}</span>
             </span>
-            <span class="book-page__stat" title={l.T("book.views")}>
+            <span class="BookPage-stat" title={l.T("book.views")}>
                 <i class="fa-solid fa-eye" aria-hidden="true"></i>
                 <span>{formatInt32(int32(views.Samples))}</span>
                 <span class="sr-only"> {l.T("book.views")}</span>
@@ -243,7 +243,7 @@ templ bookAdultWarning() {
             </p>
 
             <div class="flex gap-2 mt-6">
-                <button @click="close()" class="btn btn--destructive">
+                <button @click="close()" class="Btn Btn--destructive">
                     Proceed
                 </button>
             </div>

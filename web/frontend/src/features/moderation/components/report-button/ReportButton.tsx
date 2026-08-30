@@ -131,13 +131,13 @@ export function ReportPopup({
   }
 
   return open ? (
-    <dialog ref={setDialog} className="modal" onCancel={close} onClick={backdropClick}>
-      <form className="modal__content grid gap-4" onSubmit={submit}>
+    <dialog ref={setDialog} className="Modal" onCancel={close} onClick={backdropClick}>
+      <form className="Modal-content grid gap-4" onSubmit={submit}>
         <div className="flex items-center justify-between gap-4">
           <h2 className="font-title text-2xl font-semibold">{config.labels.title}</h2>
           <button
             type="button"
-            className="btn btn--icon btn--ghost"
+            className="Btn Btn--icon Btn--ghost"
             aria-label={config.labels.cancel}
             onClick={close}
           >
@@ -164,10 +164,10 @@ export function ReportPopup({
           <textarea className="textarea min-h-28" name="description" maxLength={2000} />
         </label>
         <div className="flex justify-end gap-2">
-          <button type="button" className="btn btn--outline" onClick={close}>
+          <button type="button" className="Btn Btn--outline" onClick={close}>
             {config.labels.cancel}
           </button>
-          <button className="btn btn--primary" type="submit" disabled={submitting || !reason}>
+          <button className="Btn Btn--primary" type="submit" disabled={submitting || !reason}>
             {config.labels.submit}
           </button>
         </div>

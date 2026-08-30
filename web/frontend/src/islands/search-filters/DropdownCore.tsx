@@ -47,13 +47,13 @@ export function DropdownCore({ slotProps = {}, slots = {}, ...props }: DropdownP
   return (
     <div ref={rootRef} className="input-dropdown" data-open={open} {...props}>
       {slots.beforeInput}
-      <input className="dropdown__input" onFocus={handleInputFocus} {...slotProps.input} />
+      <input className="Dropdown-input" onFocus={handleInputFocus} {...slotProps.input} />
 
       <div
         aria-hidden={!open}
         onMouseDown={preventDefault}
         {...slotProps.menu}
-        className={clsx('dropdown__menu', slotProps.menu?.className, slotProps.menu?.className)}
+        className={clsx('Dropdown-menu', slotProps.menu?.className, slotProps.menu?.className)}
       />
     </div>
   )

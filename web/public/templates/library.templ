@@ -17,14 +17,14 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
             Title: l.T("library.title"),
         },
     }) {
-        <header class="hero hero--header library-header">
-            <div class="ol-container flex gap-4">
+        <header class="Hero Hero--header LibraryHeader">
+            <div class="OlContainer flex gap-4">
                 @libraryTab(l.T("library.title"), "/library", true)
                 @libraryTab(l.T("library.archive"), "/library/archive", false)
                 @libraryTab(l.T("library.collections"), "/library/collections", false)
             </div>
         </header>
-        <main class="ol-container">
+        <main class="OlContainer">
             @webcomponents.Island2(webcomponents.Island2Props{
 				Name: "book-card-preview",
 				Data: map[string]string{"selector": ".library-body"},
@@ -56,19 +56,19 @@ templ libraryTab(
     active bool,
 ) {
     if active {
-        <a href="#" aria-current="true" class="library-header__item library-header__item--active">{title}</a>
+        <a href="#" aria-current="true" class="LibraryHeader-item LibraryHeaderItem--active">{title}</a>
     } else {
-        <a href={templ.SafeURL(url)} class="library-header__item">{title}</a>
+        <a href={templ.SafeURL(url)} class="LibraryHeader-item">{title}</a>
     }
 }
 
 
 templ librarySection(label string, books []app.BookLibraryDto) {
-    <section class="library-section">
-        <header class="library-section__header">
+    <section class="LibrarySection">
+        <header class="LibrarySection-header">
             { label }
         </header>
-        <div class="library-section__books">
+        <div class="LibrarySection-books">
             for _, book := range books {
                 @libraryBookCard(book.ID, book.Name, book.Cover)
             }
@@ -79,10 +79,10 @@ templ librarySection(label string, books []app.BookLibraryDto) {
 templ libraryBookCard(bookID int64, name string, cover app.BookCover) {
     <a 
         href={ templ.SafeURL(fmt.Sprintf("/book/%d?ol.from=library", bookID)) } 
-        class="profile-book-card-sm" 
+        class="ProfileBookCardSm" 
         data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
         @bookCover(cover.URL, name, 300)
-        <div class="profile-book-card-sm__title">
+        <div class="ProfileBookCardSm-title">
             { name }
         </div>
     </a>
@@ -99,8 +99,8 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
             Title: l.T("library.title"),
         },
     }) {
-        <header class="hero hero--header library-header">
-            <div class="ol-container flex gap-4">
+        <header class="Hero Hero--header LibraryHeader">
+            <div class="OlContainer flex gap-4">
                 @libraryTab(l.T("library.title"), "/library", false)
                 @libraryTab(l.T("library.archive"), "/library/archive", true)
                 @libraryTab(l.T("library.collections"), "/library/collections", false)
@@ -108,7 +108,7 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
         </header>
 
 
-        <main class="ol-container">
+        <main class="OlContainer">
             @webcomponents.Island2(webcomponents.Island2Props{
 				Name: "book-card-preview",
 				Data: map[string]string{"selector": ".library-body"},
@@ -141,15 +141,15 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
             Title: l.T("library.title"),
         },
     }) {
-        <header class="hero hero--header library-header">
-            <div class="ol-container flex gap-4">
+        <header class="Hero Hero--header LibraryHeader">
+            <div class="OlContainer flex gap-4">
                 @libraryTab(l.T("library.title"), "/library", false)
                 @libraryTab(l.T("library.archive"), "/library/archive", false)
                 @libraryTab(l.T("library.collections"), "/library/collections", true)
             </div>
         </header>
 
-        <main class="ol-container">
+        <main class="OlContainer">
             @webcomponents.Island2(webcomponents.Island2Props{
 				Name: "book-card-preview",
 				Data: map[string]string{"selector": ".library-body"},
@@ -187,7 +187,7 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
                                 class="w-full block text-3xl px-6 h-18 font-medium !outline-none bg-transparent" 
                                 placeholder={l.T("collection.namePlaceholder")} />
                             <div x-collapse x-cloak x-show="name.trim().length>0">
-                                <button type="submit" class="btn btn--outline btn--lg my-4">
+                                <button type="submit" class="Btn Btn--outline Btn--lg my-4">
                                     {l.T("collection.createCollection")}
                                 </button>
                             </div>
@@ -225,15 +225,15 @@ templ collectionsList(collections []app.CollectionDto, booksMap map[int64][]app.
 }
 
 templ libraryCollectionCard(collection app.CollectionDto, books []app.CollectionBookDto) {
-    <li class="library-user-collection">
-        <a href={ templ.SafeURL(fmt.Sprintf("/col/%d", collection.ID)) } class="library-user-collection__header">
+    <li class="LibraryUserCollection">
+        <a href={ templ.SafeURL(fmt.Sprintf("/col/%d", collection.ID)) } class="LibraryUserCollection-header">
             {{
                 name := collection.Name
                 if name == "" {
                     name = "NO_NAME"
                 }
             }}
-            <div class="library-user-collection__name">{ name }</div>
+            <div class="LibraryUserCollection-name">{ name }</div>
 
             <div class="text-secondary-foreground">
                 {{

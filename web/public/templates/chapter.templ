@@ -40,7 +40,7 @@ templ Chapter(
 
         @siteHeaderLayout() {
             <div class="h-full flex-nowrap overflow-x-auto whitespace-nowrap items-center flex gap-2">
-                <a class="link !font-[600] hidden lg:block" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
+                <a class="Link !font-[600] hidden lg:block" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
                     { book.Name }
                 </a>
                 <i class="fa-solid fa-arrow-right"></i>
@@ -60,24 +60,24 @@ templ Chapter(
             if isAuthenticated {
                 data-authenticated="true"
             }
-            class="book-reader"
+            class="BookReader"
             @keydown.escape.window="settingsOpen = false">
 
-            <button x-bind="toggleButton" class="book-reader__settings-button btn btn--icon btn--ghost" aria-label={ l.T("reader.settings") }>
+            <button x-bind="toggleButton" class="BookReader-settingsButton Btn Btn--icon Btn--ghost" aria-label={ l.T("reader.settings") }>
                 <i class="fa-solid fa-sliders" aria-hidden="true"></i>
             </button>
             <div class="fixed right-6 top-32 z-20 md:right-4">
-                @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), ChapterID: chapter.ID, CaptureSelection: true, Class: "btn btn--icon btn--ghost", Label: l.T("common.report"), IconOnly: true})
+                @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), ChapterID: chapter.ID, CaptureSelection: true, Class: "btn Btn--icon Btn--ghost", Label: l.T("common.report"), IconOnly: true})
             </div>
 
 
-            <div class="book-reader__reading-area">
-                <div class="book-reader__chapter">
+            <div class="BookReader-readingArea">
+                <div class="BookReader-chapter">
                     @ChapterContentSection(&chapter, options)
 
-                    <nav class="book-reader__chapter-navigation" aria-label={ l.T("reader.chapterNavigation") }>
+                    <nav class="BookReader-chapterNavigation" aria-label={ l.T("reader.chapterNavigation") }>
                         if chapter.PrevChapter.Valid {
-                            <a class="book-reader__chapter-link book-reader__chapter-link--previous"
+                            <a class="BookReader-chapterLink BookReaderChapterLink--previous"
                                 href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.PrevChapter.Value.ID)) }>
                                 <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                                 <span><small>{ l.T("reader.previous") }</small>{ chapter.PrevChapter.Value.Name }</span>
@@ -87,7 +87,7 @@ templ Chapter(
                         }
 
                         if chapter.NextChapter.Valid {
-                            <a class="book-reader__chapter-link book-reader__chapter-link--next"
+                            <a class="BookReader-chapterLink BookReaderChapterLink--next"
                                 href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.NextChapter.Value.ID)) }>
                                 <span><small>{ l.T("reader.next") }</small>{ chapter.NextChapter.Value.Name }</span>
                                 <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
@@ -97,7 +97,7 @@ templ Chapter(
                         }
                     </nav>
 
-                    <section class="ol-comments mt-12" aria-label={ l.T("comments.title") }>
+                    <section class="OlComments mt-12" aria-label={ l.T("comments.title") }>
                         @ChapterCommentsDiscussion(true)
                     </section>
                 </div>
@@ -126,7 +126,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, options ChapterProgressTrac
         l := i18n.GetLocalizer(ctx)
     }}
 
-    <header class="book-reader__header">
+    <header class="BookReader-header">
         <h1 class="text-3xl font-title">{ chapter.Name }</h1>
     
         <p class="mt-2 text-secondary-foreground">
@@ -158,7 +158,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, options ChapterProgressTrac
             <section 
                 x-data="{status:0}"
                 x-show="status!=2"
-                class="card card--elevated mb-8 grid grid-cols-[auto_1fr] gap-2">
+                class="Card Card--elevated mb-8 grid grid-cols-[auto_1fr] gap-2">
                 <p>
                     if options.JumpedBackward {
                         { l.T("book.readingListYouJumpedBack") }
@@ -168,7 +168,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, options ChapterProgressTrac
                 </p>
                 <div>
                     <button
-                        class="btn btn--secondary relative" 
+                        class="Btn Btn--secondary relative" 
                         :disabled="status==1"
                         @click="if (status != 0) return; status = 1; window.__markChapterAsRead().then(() => {status=2;})">
                         <div :style="`opacity:${status==1 ? 0 : 1}`">
@@ -176,7 +176,7 @@ templ ChapterContentSection(chapter *app.ChapterDto, options ChapterProgressTrac
                             { l.T("book.readingListSetProgress") }
                         </div>
                         <div x-cloak x-show="status==1" class="flex items-center justify-center absolute inset-0">
-                            <span class="loader" />
+                            <span class="Loader" />
                         </div>
                     </button>
                 </div>
@@ -209,16 +209,16 @@ templ ChapterComments(
         DisableFooter: true,
     }) {
         @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapter.ID))
-        <main class="ol-container py-8">
-          <section class="ol-comments" aria-labelledby="chapter-comments-title">
-            <header class="ol-comments__heading-row">
+        <main class="OlContainer py-8">
+          <section class="OlComments" aria-labelledby="chapter-comments-title">
+            <header class="OlComments-headingRow">
               <div>
-                <p class="ol-comments__eyebrow">{ l.T("comments.chapterDiscussion") }</p>
-                <h1 class="ol-comments__title" id="chapter-comments-title">{ l.T("comments.title") }</h1>
-                <p class="ol-comments__context">
-                  <a class="link" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>{ book.Name }</a>
+                <p class="OlComments-eyebrow">{ l.T("comments.chapterDiscussion") }</p>
+                <h1 class="OlComments-title" id="chapter-comments-title">{ l.T("comments.title") }</h1>
+                <p class="OlComments-context">
+                  <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>{ book.Name }</a>
                   <span aria-hidden="true"> · </span>
-                  <a class="link" href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.ID)) }>{ chapter.Name }</a>
+                  <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.ID)) }>{ chapter.Name }</a>
                 </p>
               </div>
             </header>

@@ -142,15 +142,15 @@ function FontRow({ font }: { font: Readonly<Font> }) {
 
   return (
     <div
-      className="be-font-picker-item"
+      className="BeFontPickerItem"
       data-font={font.name}
-      style={{ '--font-family': font.name } as React.CSSProperties}
+      style={{ '--fontFamily': font.name } as React.CSSProperties}
     >
-      <div className="be-font-picker-item__aa apply-font">Aa</div>
+      <div className="BeFontPickerItem-aa apply-font">Aa</div>
 
-      <div className="be-font-picker-item__main">
-        <span className="be-font-picker-item__name apply-font">{font.name}</span>
-        <span className="be-font-picker-item__name-normal">{font.name}</span>
+      <div className="BeFontPickerItem-main">
+        <span className="BeFontPickerItem-name apply-font">{font.name}</span>
+        <span className="BeFontPickerItem-nameNormal">{font.name}</span>
       </div>
     </div>
   )

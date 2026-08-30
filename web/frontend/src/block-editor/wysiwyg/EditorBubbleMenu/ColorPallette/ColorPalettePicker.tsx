@@ -39,16 +39,16 @@ export function ColorPallettePicker({
   onColorChosen: (color: null | { r: number; g: number; b: number }) => void
 }) {
   return (
-    <div className="be-color-palette-picker">
+    <div className="BeColorPalettePicker">
       <button
-        className="be-color-palette-picker__item"
-        style={{ '--color': `var(--foreground)` } as React.CSSProperties}
+        className="BeColorPalettePicker-item"
+        style={{ '--color': `Var(--foreground)` } as React.CSSProperties}
         onClick={() => onColorChosen(null)}
       />
       {COLORS.map(([r, g, b]) => (
         <button
           key={`${r}-${g}-${b}`}
-          className="be-color-palette-picker__item"
+          className="BeColorPalettePicker-item"
           style={{ '--color': `rgb(${r}, ${g}, ${b})` } as React.CSSProperties}
           onClick={() => onColorChosen({ r, g, b })}
         />

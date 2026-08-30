@@ -23,37 +23,37 @@ templ Home(
 
 
 templ Home_MainHeroSection() {
-    <section class="ol-container ol-container--big home-hero-welcome">
-        <div class="home-hero-welcome__bg" />
-        <div class="home-hero-welcome__container">
-            <p class="home-hero-welcome__eyebrow">Welcome to</p>
-            <h1 class="home-hero-welcome__title">OpenLibrary</h1>
+    <section class="OlContainer OlContainer--big HomeHeroWelcome">
+        <div class="HomeHeroWelcome-bg" />
+        <div class="HomeHeroWelcome-container">
+            <p class="HomeHeroWelcome-eyebrow">Welcome to</p>
+            <h1 class="HomeHeroWelcome-title">OpenLibrary</h1>
             <div class="border-t h-0 w-full relative my-8" aria-hidden="true">
                 <div class="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 bg-surface">
                     <img src="/_/embed-assets/svg/accent.svg" class="size-6" />
                 </div>
             </div>
 
-            <p class="home-hero-welcome__text">
+            <p class="HomeHeroWelcome-text">
                 A place to discover stories worth your time. <br />
                 Read, track, and explore books from our community.
             </p>
 
-            <div class="home-hero-welcome__actions">
-                <a class="btn btn--primary" href="/browse">
+            <div class="HomeHeroWelcome-actions">
+                <a class="Btn Btn--primary" href="/browse">
                     Browse library
-                    <i class="btn__icon btn__icon--right fa-solid fa-chevron-right" />
+                    <i class="Btn-icon BtnIcon--right fa-solid fa-chevron-right" />
                 </a>
 
                 {{
                     _, isAuthorized := auth.GetSession(ctx)
                 }}
                 if isAuthorized {
-                    <a class="btn btn--outline" href="/library">
+                    <a class="Btn Btn--outline" href="/library">
                         Your library
                     </a>
                 } else {
-                    <a class="btn btn--outline" href="/signup">
+                    <a class="Btn Btn--outline" href="/signup">
                         Your library
                     </a>
                 }
@@ -66,19 +66,19 @@ templ Home_MostViewedBooks(
     books []app.BookListDto,
     views map[int64]int64,
 ) {
-    <div class="ol-container ol-container--big">
-        <header class="home-header-container">
+    <div class="OlContainer OlContainer--big">
+        <header class="HomeHeaderContainer">
             <span class="home-header">
                 Most viewed books in 2026
             </span>
 
-            <div class="home-header-container__right">
-                <a class="link font-title" href="/browse/most-viewed-2026">
+            <div class="HomeHeaderContainer-right">
+                <a class="Link font-title" href="/browse/most-viewed-2026">
                     View all <i class="fa-solid fa-chevron-right" />
                 </a>
             </div>
 
-            <div class="home-header-container__hr" />
+            <div class="HomeHeaderContainer-hr" />
         </header>
 
         @webcomponents.Carousel(webcomponents.CarouselProps{}) {
@@ -87,21 +87,21 @@ templ Home_MostViewedBooks(
                     {{
                         viewCount, _ := views[book.ID] 
                     }}
-                    <li class="book-recommendation-item">
+                    <li class="BookRecommendationItem">
                         <a href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>
                             // data-views={strconv.FormatInt(viewCount, 10)} 
                             // data-book-card-preview={strconv.FormatInt(book.ID, 10)}
-                            <img loading="lazy" src={book.Cover.URL} class="book-recommendation-item__img"></img>
+                            <img loading="lazy" src={book.Cover.URL} class="BookRecommendationItem-img"></img>
                         </a>
 
-                        <div class="book-recommendation-item__summary">
-                            <div class="book-recommendation-item__name">
-                                <a class="link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>
+                        <div class="BookRecommendationItem-summary">
+                            <div class="BookRecommendationItem-name">
+                                <a class="Link" href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>
                                     { book.Name }
                                 </a>
                             </div>
                             <div>
-                                by <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>{ book.Author.Name }</a>
+                                by <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String())) }>{ book.Author.Name }</a>
                             </div>
                             <div>
                                 <i class="fa-solid fa-eye" />
@@ -139,11 +139,11 @@ templ UIDemo() {
         <div class="p-8">
             <h1>Buttons</h1>
             <div class="flex items-start flex-col flex-wrap gap-2">
-                <button class="btn btn--primary">btn--primary</button>
-                <button class="btn btn--outline">btn--outline</button>
-                <button class="btn btn--ghost">btn--ghost</button>
-                <button class="btn btn--secondary">btn--secondary</button>
-                <button class="btn btn--destructive">btn--destructive</button>
+                <button class="Btn Btn--primary">Btn--primary</button>
+                <button class="Btn Btn--outline">Btn--outline</button>
+                <button class="Btn Btn--ghost">Btn--ghost</button>
+                <button class="Btn Btn--secondary">Btn--secondary</button>
+                <button class="Btn Btn--destructive">Btn--destructive</button>
             </div>
         </div>
     }

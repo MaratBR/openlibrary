@@ -2,16 +2,16 @@
   @apply flex gap-3;
 }
 
-.mod-action-card {
+.ModActionCard {
   @apply transition-shadow cursor-pointer bg-surface rounded-sm border-2 border-slate-400 p-4 max-w-64 
         hover:shadow-md
         data-[active=true]:border-orange-600;
 
-  &__name {
+  &-name {
     @apply font-medium text-lg flex items-center gap-2 mb-2;
   }
 
-  &__description {
+  &-description {
     @apply text-sm block text-secondary-foreground;
   }
 

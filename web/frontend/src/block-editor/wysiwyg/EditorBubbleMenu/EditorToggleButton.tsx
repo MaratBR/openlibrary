@@ -7,7 +7,7 @@ export type EditorToggleButtonProps = {
 export default function EditorToggleButton({ active, ...props }: EditorToggleButtonProps) {
   return (
     <button
-      className="be-listitem be-listitem--toggle"
+      className="BeListitem BeListitem--toggle"
       aria-selected={active ? 'true' : 'false'}
       {...props}
     />

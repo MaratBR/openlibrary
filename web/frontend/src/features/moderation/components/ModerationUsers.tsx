@@ -45,7 +45,7 @@ export default function ModerationUsers({ roles }: { roles: string[] }) {
           </p>
         </header>
 
-        <DashboardContent.Card className="card--elevated p-4 md:p-5 mb-6">
+        <DashboardContent.Card className="Card--elevated p-4 md:p-5 mb-6">
           <Form
             method="get"
             className="grid grid-cols-1 md:grid-cols-[minmax(18rem,1fr)_12rem_12rem_auto] gap-3 items-end"
@@ -83,7 +83,7 @@ export default function ModerationUsers({ roles }: { roles: string[] }) {
                 ...roles.map((role): [string, string] => [role, roleLabel(role)]),
               ]}
             />
-            <button className="btn btn--primary h-10 px-5" type="submit">
+            <button className="Btn Btn--primary h-10 px-5" type="submit">
               {window._('moderationPortal.usersPage.apply')}
             </button>
           </Form>
@@ -178,7 +178,7 @@ function UserRow({ user }: { user: ModerationUserListEntry }) {
   return (
     <Link
       to={`/users/${user.id}`}
-      className="card card--elevated group block p-4 md:p-5 transition-colors hover:bg-foreground/5"
+      className="Card Card--elevated group block p-4 md:p-5 transition-colors hover:bg-foreground/5"
     >
       <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-7">
         <div className="flex items-center gap-4 min-w-0 lg:w-72">
@@ -252,7 +252,7 @@ export function ModerationUsersErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('moderationPortal.users')} />
       <div className="p-8">
-        <div className="card">
+        <div className="Card">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

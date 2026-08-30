@@ -7,7 +7,7 @@
 
   @apply w-full max-w-[100vw] overflow-auto;
 
-  &__list {
+  &-list {
     @apply flex [&>*]:flex-shrink-0 gap-8 flex-nowrap pb-8;
   }
 }
@@ -15,19 +15,19 @@
 .profile-book-card {
   @apply grid grid-cols-[100px_auto] gap-2;
 
-  &__title {
+  &-title {
     @apply cursor-pointer font-medium font-title text-2xl whitespace-break-spaces text-secondary-foreground hover:underline hover:text-foreground;
   }
 
-  &__cover {
+  &-cover {
     float: left;
   }
 }
 
-.profile-book-card-sm {
+.ProfileBookCardSm {
   @apply w-[200px];
 
-  &__title {
+  &-title {
     @apply w-[200px] text-sm font-medium;
   }
 }

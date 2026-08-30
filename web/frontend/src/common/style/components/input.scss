@@ -44,7 +44,7 @@ select.input {
   min-height: 2.75rem;
 }
 
-.select {
+.Select {
   @apply flex h-10 w-full items-center justify-between gap-2 border bg-surface px-3 py-2
     text-sm text-surface-foreground outline-none
     disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
@@ -85,7 +85,7 @@ select.input {
   }
 }
 
-select.select {
+select.Select {
   @apply block appearance-none pr-10;
   background-image:
     linear-gradient(45deg, transparent 50%, var(--secondary-foreground) 50%),
@@ -96,12 +96,12 @@ select.select {
   background-repeat: no-repeat;
   background-size: 0.35rem 0.35rem;
 
-  &[class~='select--sm'] {
+  &[class~='Select--sm'] {
     @apply pr-9;
   }
 }
 
-[dir='rtl'] select.select {
+[dir='rtl'] select.Select {
   @apply pl-10 pr-3;
   background-position:
     1rem 50%,
@@ -124,15 +124,15 @@ textarea.input {
 .input-dropdown {
   @apply border rounded-sm w-full bg-surface relative transition-all;
 
-  .dropdown__input {
+  .Dropdown-input {
     @apply outline-none w-full h-10 px-3 mb-1 bg-transparent;
   }
 
-  .dropdown__menu {
+  .Dropdown-menu {
     @apply hidden absolute left-[-1px] right-[-1px] top-full bg-surface z-30 border border-t-0 rounded-b-sm;
   }
 
-  .dropdown__chips {
+  .Dropdown-chips {
     @apply flex flex-wrap items-center gap-1 m-2 empty:hidden;
   }
 
@@ -140,7 +140,7 @@ textarea.input {
     @apply rounded-b-none shadow-lg;
   }
 
-  &[data-open='true'] .dropdown__menu {
+  &[data-open='true'] .Dropdown-menu {
     @apply shadow-lg;
   }
 
@@ -148,62 +148,62 @@ textarea.input {
     @apply hover:border-primary hover:ring-1 hover:ring-primary;
   }
 
-  &[data-open='true'] .dropdown__menu {
+  &[data-open='true'] .Dropdown-menu {
     @apply block;
   }
 }
 
-.dropdown {
+.Dropdown {
   @apply z-50 min-w-32 overflow-hidden border bg-surface p-1 text-sm text-surface-foreground;
   border-color: var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
 
-  &__item,
-  &__sub-trigger {
+  &-item,
+  &-subTrigger {
     @apply relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5
       outline-none transition-colors
       focus:bg-accent focus:text-accent-foreground
       data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
   }
 
-  &__sub-trigger[data-state='open'] {
+  &-subTrigger[data-state='open'] {
     @apply bg-accent text-accent-foreground;
   }
 
-  &__item--inset,
-  &__sub-trigger--inset,
-  &__label--inset {
+  &-item--inset,
+  &-subTrigger--inset,
+  &-label--inset {
     @apply pl-8;
   }
 
-  &__item--choice {
+  &-item--choice {
     @apply pl-8 pr-2;
   }
 
-  &__indicator {
+  &-indicator {
     @apply absolute left-2 flex h-4 w-4 items-center justify-center;
   }
 
-  &__label {
+  &-label {
     @apply px-2 py-1.5 font-semibold;
   }
 
-  &__separator {
+  &-separator {
     @apply -mx-1 my-1 h-px bg-border;
   }
 
-  &__shortcut {
+  &-shortcut {
     @apply ml-auto text-xs tracking-widest text-secondary-foreground;
   }
 }
 
-.form-control {
+.FormControl {
   &--horizontal {
     @apply md:grid md:grid-cols-[200px_1fr];
   }
 
-  &__label {
+  &-label {
     @apply text-foreground px-2;
 
     & > .label {
@@ -215,19 +215,19 @@ textarea.input {
     }
   }
 
-  &--horizontal &__label {
+  &--horizontal &-label {
     @apply py-2;
   }
 
-  &__value {
+  &-value {
     @apply p-2;
   }
 
-  &__hint {
+  &-hint {
     @apply text-sm text-secondary-foreground;
   }
 
-  &__error {
+  &-error {
     @apply flex items-center gap-1 px-2 mt-1 text-sm;
     color: var(--destructive);
   }

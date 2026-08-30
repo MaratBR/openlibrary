@@ -10,16 +10,16 @@
     right: max(var(--spacing), calc((100vw - var(--ol-container-big-width)) / 2));
   }
 
-  &__items {
+  &-items {
     @apply flex flex-col gap-1 mt-2;
   }
 
-  &__identity {
+  &-identity {
     @apply flex items-center gap-3 p-3 bg-secondary;
     border-radius: var(--radius);
   }
 
-  &__item {
+  &-item {
     @apply px-3 py-2.5 font-medium min-h-11 flex items-center gap-3 w-full
             text-foreground hover:bg-foreground/5 active:bg-accent;
     border-radius: var(--radius);
@@ -27,17 +27,17 @@
       color var(--transition-fast),
       background var(--transition-fast);
 
-    &:hover .UserMenu__item-icon {
+    &:hover .UserMenu-itemIcon {
       @apply text-primary;
     }
   }
 
-  &__item-icon {
+  &-itemIcon {
     @apply w-5 text-center text-secondary-foreground;
     transition: color var(--transition-fast);
   }
 
-  &__separator {
+  &-separator {
     @apply my-1 border-t;
     border-color: var(--border);
   }

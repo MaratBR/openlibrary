@@ -6,9 +6,9 @@ export type ErrorDisplayProps = {
 
 export function ErrorDisplay({ error }: ErrorDisplayProps) {
   return (
-    <div className="error" role="alert">
+    <div className="Error" role="Alert">
       <svg
-        className="error__icon"
+        className="Error-icon"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -21,7 +21,7 @@ export function ErrorDisplay({ error }: ErrorDisplayProps) {
         <path d="M12 8v5" />
         <path d="M12 16.5h.01" />
       </svg>
-      <p className="error__message">{getErrorMessage(error)}</p>
+      <p className="Error-message">{getErrorMessage(error)}</p>
     </div>
   )
 }

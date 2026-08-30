@@ -1,4 +1,4 @@
-.tabs {
+.Tabs {
   --tab-height: 3rem;
   @apply relative flex items-end overflow-x-auto border-b;
   gap: 1.75rem;
@@ -9,7 +9,7 @@
     display: none;
   }
 
-  .tab {
+  .Tab {
     @apply relative inline-flex flex-none items-center whitespace-nowrap cursor-pointer text-secondary-foreground;
     min-height: var(--tab-height);
     padding: 0.7rem 0 0.85rem;
@@ -71,7 +71,7 @@
     }
   }
 
-  &__count {
+  &-count {
     @apply inline-grid place-items-center ml-2 text-secondary-foreground bg-secondary border;
     min-width: 1.35rem;
     height: 1.35rem;
@@ -82,27 +82,27 @@
     font-weight: 600;
   }
 
-  .tab--active &__count,
-  .tab[aria-selected='true'] &__count {
+  .Tab--active &-count,
+  .Tab[aria-selected='true'] &-count {
     color: var(--primary);
     background: var(--accent);
     border-color: transparent;
   }
 
   &--primary,
-  &--primary-b {
+  &--primaryB {
     // Both existing variants now share the editorial underline treatment.
   }
 }
 
 @media (max-width: 48rem) {
-  .tabs {
+  .Tabs {
     --tab-height: 2.75rem;
     gap: 1.25rem;
     margin-inline: -1rem;
     padding-inline: 1rem;
 
-    .tab {
+    .Tab {
       font-size: 0.875rem;
     }
   }

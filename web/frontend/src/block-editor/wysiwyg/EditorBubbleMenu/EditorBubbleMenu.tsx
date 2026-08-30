@@ -17,7 +17,7 @@ export function EditorBubbleMenu({
 
   return (
     <BubbleMenu
-      className="be-bubble-menu"
+      className="BeBubbleMenu"
       // getReferencedVirtualElement={() => {
       //   const textElement = getSelectedTextElement(editor)
       //   return textElement
@@ -36,7 +36,7 @@ export function EditorBubbleMenu({
       editor={editor}
       appendTo={appendTo}
     >
-      <div className="be-bubble-menu__main">
+      <div className="BeBubbleMenu-main">
         <div className="be-toggle-group">
           <EditorToggleButton
             active={bold}
@@ -57,7 +57,7 @@ export function EditorBubbleMenu({
             <i className="fa-solid fa-strikethrough" />
           </EditorToggleButton>
         </div>
-        <div className="be-bubble-menu__delimiter" />
+        <div className="BeBubbleMenu-delimiter" />
         <div className="be-toggle-group">
           <EditorToggleButton
             active={textAlign === 'left'}

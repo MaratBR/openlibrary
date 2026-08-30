@@ -22,22 +22,22 @@ templ BookTOC(
             </section>
         } else {
             <ol-scroll-blocker />
-            <div class="book-toc" role="listbox">
+            <div class="BookToc" role="listbox">
                 <ul class="contain-layout p-1 contain-paint">
                     for i, chapter := range chapters {
                         <li role="listitem" aria-label={ chapter.Name }>
                             <a
                                 href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
                                 if chapter.ID == activeChapterID {
-                                    class="book-toc__item book-toc__item--readingNow"
+                                    class="BookToc-item BookTocItem--readingNow"
                                 } else {
-                                    class="book-toc__item"
+                                    class="BookToc-item"
                                 }
                                 >
-                                <div class="book-toc__num">
+                                <div class="BookToc-num">
                                     <span>{ commonutil.FormatInt(i + 1) }</span>
                                     if chapter.ID == activeChapterID {
-                                        <span class="book-toc__mark">
+                                        <span class="BookToc-mark">
                                             <i class="fa-solid fa-bookmark"></i>
                                         </span>
                                     }

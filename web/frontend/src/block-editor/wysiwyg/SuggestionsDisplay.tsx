@@ -174,15 +174,15 @@ function Suggestions({
             }}
             onKeyDown={handleKeyDown}
             data-command={item.name}
-            className="be-suggestion-item"
+            className="BeSuggestionItem"
           >
-            <div className="be-suggestion-item__name">
-              {item.icon && <div className="be-suggestion-item__icon">{item.icon}</div>}
+            <div className="BeSuggestionItem-name">
+              {item.icon && <div className="BeSuggestionItem-icon">{item.icon}</div>}
               {item.name}
             </div>
 
             {item.description && (
-              <div className="be-suggestion-item__description">{item.description}</div>
+              <div className="BeSuggestionItem-description">{item.description}</div>
             )}
           </li>
         ))}

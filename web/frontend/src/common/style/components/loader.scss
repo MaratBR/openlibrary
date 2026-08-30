@@ -15,7 +15,7 @@
   }
 }
 
-.loader,
+.Loader,
 .with-loader::after {
   --loader-color: var(--foreground);
 
@@ -33,7 +33,7 @@
   animation: flash 0.5s ease-out infinite alternate;
 }
 
-.loader--dark {
+.Loader--dark {
   --loader-color: hsl(210 40% 98%);
 }
 

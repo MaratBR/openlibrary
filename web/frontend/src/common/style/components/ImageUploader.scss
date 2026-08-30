@@ -1,34 +1,34 @@
 .ImageUploader {
   min-height: 300px;
 
-  &__inner {
+  &-inner {
     @apply flex items-center justify-center flex-col rounded-3xl border-2 border-dashed min-h-36;
     & > label {
       @apply cursor-pointer flex items-center justify-center flex-col gap-3 h-full w-full;
     }
   }
 
-  &:has(&__img) {
+  &:has(&-img) {
     @apply grid grid-cols-[auto_1fr] gap-col-2;
   }
 
-  &__img {
+  &-img {
     @apply rounded-3xl overflow-hidden;
   }
 
-  &__err {
+  &-err {
     @apply cursor-pointer flex items-center justify-center flex-col gap-3;
   }
 
-  &__input {
+  &-input {
     @apply hidden;
   }
 
-  &__text {
+  &-text {
     @apply inline-block text-center text-sm font-500 text-secondary-foreground;
   }
 
-  &__icon {
+  &-icon {
     @apply text-4xl text-secondary-foreground;
     display: block !important;
   }

@@ -73,7 +73,7 @@ export default function LoginHistoryPage() {
         <p className="text-secondary-foreground mb-6">
           {window._('moderationPortal.loginHistoryPage.description')}
         </p>
-        <section className="card card--elevated mb-5">
+        <section className="Card Card--elevated mb-5">
           <Form method="get" className="grid gap-4">
             <input
               type="hidden"
@@ -125,7 +125,7 @@ export default function LoginHistoryPage() {
               <FormControl label={window._('moderationPortal.user.dateTo')}>
                 <input className="input" type="date" name="dateTo" defaultValue={filters.dateTo} />
               </FormControl>
-              <button className="btn btn--primary h-10">
+              <button className="Btn Btn--primary h-10">
                 {window._('moderationPortal.user.applyFilters')}
               </button>
             </div>
@@ -138,13 +138,13 @@ export default function LoginHistoryPage() {
           </span>
         </div>
         {history.entries.length ? (
-          <section className="card card--nopad overflow-hidden">
+          <section className="Card Card--nopad overflow-hidden">
             {history.entries.map((entry) => (
               <LoginRow key={entry.id} entry={entry} />
             ))}
           </section>
         ) : (
-          <section className="card py-16 text-center text-secondary-foreground">
+          <section className="Card py-16 text-center text-secondary-foreground">
             {window._('moderationPortal.user.noLoginHistory')}
           </section>
         )}
@@ -177,7 +177,7 @@ function LoginRow({ entry }: { entry: LoginHistoryEntry }) {
       : window._('moderationPortal.user.sessionActive')
   return (
     <div className="p-4 border-b border-border last:border-0 grid lg:grid-cols-[minmax(10rem,1fr)_11rem_10rem_minmax(10rem,1fr)_minmax(12rem,1fr)_7rem] gap-2 items-center">
-      <Link className="link truncate" to={`/users/${entry.userId}`}>
+      <Link className="Link truncate" to={`/users/${entry.userId}`}>
         {entry.userName}
       </Link>
       <span>{dateTimeFormatter.format(new Date(entry.loggedInAt))}</span>
@@ -190,7 +190,7 @@ function LoginRow({ entry }: { entry: LoginHistoryEntry }) {
         {entry.userAgent}
       </span>
       <span
-        className={`chip justify-self-start ${!entry.isTerminated && !expired ? 'chip--primary' : ''}`}
+        className={`chip justify-self-start ${!entry.isTerminated && !expired ? 'Chip--primary' : ''}`}
       >
         {state}
       </span>
@@ -203,7 +203,7 @@ export function LoginHistoryErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('moderationPortal.loginHistory')} />
       <div className="p-8">
-        <div className="card">
+        <div className="Card">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

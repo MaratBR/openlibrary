@@ -7,7 +7,7 @@ export function ColorPallette() {
   const toggle = useBubbleState((x) => x.toggleColorPicker)
 
   return (
-    <button className="be-listitem be-listitem--btn" onClick={toggle}>
+    <button className="BeListitem BeListitem--btn" onClick={toggle}>
       {generateCircleSvg(7, 24)}
     </button>
   )

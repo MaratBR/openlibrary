@@ -39,10 +39,10 @@ export default function ReviewEditor({ rootElement }: ReactIslandProps) {
     <div>
       <RatingInput scale={0.5} value={rating} onInput={setRating} />
 
-      {editor && <RichTextInput editor={editor} className="ol-simple-editor--review mt-4" />}
+      {editor && <RichTextInput editor={editor} className="OlSimpleEditor--review mt-4" />}
 
       <button
-        className="btn btn--lg btn--primary mt-3"
+        className="Btn Btn--lg Btn--primary mt-3"
         onClick={() => handleSave()}
         disabled={!formValid}
       >
@@ -89,9 +89,9 @@ function RatingInput({
       onClick={handleClick}
       style={{ width: 540 * scale, height: 100 * scale }}
     >
-      <div className="star-background h-full w-full opacity-15" />
+      <div className="StarBackground h-full w-full opacity-15" />
       <div
-        className="absolute left-0 top-0 star-background star-background--filled h-full"
+        className="absolute left-0 top-0 StarBackground StarBackground--filled h-full"
         style={{ width: `${calcPerc(value)}%`, backgroundSize: `auto ${scale * 100}px` }}
       />
     </div>

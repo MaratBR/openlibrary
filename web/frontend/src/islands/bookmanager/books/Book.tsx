@@ -32,7 +32,7 @@ export function Book() {
       <DashboardContent.StickyHeader
         title={
           <div className="flex items-center">
-            <NavLink className="btn btn--icon btn--primary mr-4" to="/books">
+            <NavLink className="Btn Btn--icon Btn--primary mr-4" to="/books">
               <i className="fa-solid fa-arrow-left" />
             </NavLink>
             {bookResponse.data.name}

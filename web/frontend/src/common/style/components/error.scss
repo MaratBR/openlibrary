@@ -2,7 +2,7 @@
 //
 // Displays error information/description
 
-.error {
+.Error {
   @apply flex items-start gap-3 p-3 text-sm;
   color: var(--destructive);
   background: var(--destructive-soft);
@@ -10,14 +10,14 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-xs);
 
-  &__icon {
+  &-icon {
     @apply shrink-0;
     width: 1.25rem;
     height: 1.25rem;
     margin-top: 0.0625rem;
   }
 
-  &__message {
+  &-message {
     @apply min-w-0;
     line-height: 1.5;
     overflow-wrap: anywhere;

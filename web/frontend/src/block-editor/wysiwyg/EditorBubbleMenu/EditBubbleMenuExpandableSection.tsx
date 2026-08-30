@@ -52,7 +52,7 @@ export function EditButtonMenuExpandableSection({
   }, [])
 
   return (
-    <div ref={rootRef} className="be-bubble-menu__section">
+    <div ref={rootRef} className="BeBubbleMenu-section">
       <div className="w-full min-w-0 max-w-full" ref={innerRef}>
         {children}
       </div>

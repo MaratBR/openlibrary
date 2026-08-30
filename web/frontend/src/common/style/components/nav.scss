@@ -1,4 +1,4 @@
-.site-header {
+.SiteHeader {
   @apply z-40 w-full sticky top-0 h-[var(--header-height)] border-b;
   border-color: var(--border);
   background: var(--surface);
@@ -8,24 +8,24 @@
     backdrop-filter: blur(12px);
   }
 
-  &__inner {
+  &-inner {
     max-width: var(--ol-container-big-width);
     @apply mx-auto h-full flex flex-nowrap;
 
     @apply lg:items-stretch;
   }
 
-  &__logo {
+  &-logo {
     // main site logo
     @apply px-2 inline-block focus:outline focus:outline-2 outline-offset-[-2px] lg:mr-4 active:bg-surface;
   }
 
-  &__mobile-open {
+  &-mobileOpen {
     @apply p-2 active:outline absolute right-2 top-1 bottom-1 lg:hidden;
   }
 }
 
-.site-nav {
+.SiteNav {
   top: var(--header-height);
   @apply flex flex-col gap-2 fixed z-50 w-screen shadow-lg invisible transition-all opacity-0 bg-surface;
   transform: translateY(-20px);
@@ -37,11 +37,11 @@
     transform: translateY(0px);
   }
 
-  &__user {
+  &-user {
     @apply lg:ml-auto flex items-stretch;
   }
 
-  &__himage {
+  &-himage {
     --scale: 0.5;
     background-image: url('/_/embed-assets/img/headerImage.png');
     height: calc(var(--h) * var(--scale));
@@ -80,16 +80,16 @@
     color var(--transition-fast),
     background var(--transition-fast);
 
-  &__icon {
+  &-icon {
     @apply mr-2;
   }
 }
 
-.nav-user {
+.NavUser {
   @apply relative h-full ml-4 mt-0 w-full
         lg:min-w-12 lg:max-w-24;
 
-  &__btn {
+  &-btn {
     @apply lg:h-full;
   }
 }
@@ -101,10 +101,10 @@
   --dashboard-layout__sidebar-indicator-size: 16px;
 }
 
-.dashboard-layout {
+.DashboardLayout {
   padding-left: var(--dashboard-layout__sidebar-width);
 
-  &__sidebar {
+  &-sidebar {
     @apply h-full fixed bg-surface border-r;
     border-color: var(--border);
     width: var(--dashboard-layout__sidebar-width);
@@ -113,7 +113,7 @@
     top: 0px;
   }
 
-  &__body {
+  &-body {
     @apply min-h-screen min-w-0;
   }
 }
@@ -123,17 +123,17 @@
 }
 
 .dashboard-sidebar-list {
-  & > .dashboard-sidebar-item {
+  & > .DashboardSidebarItem {
   }
 }
 
-.dashboard-sidebar-item {
+.DashboardSidebarItem {
   @apply relative cursor-pointer text-md text-secondary-foreground border-l-4;
   transition:
     color var(--transition-fast),
     background var(--transition-fast);
 
-  &__container {
+  &-container {
     @apply flex flex-row items-center;
   }
 
@@ -150,7 +150,7 @@
     @apply text-foreground bg-highlight;
   }
 
-  &__icon {
+  &-icon {
     @apply absolute left-0 top-0 h-full text-center v-middle;
     height: var(--dashboard-sidebar-item-height);
     width: var(--dashboard-sidebar-item-icon-width);
@@ -160,17 +160,17 @@
     }
   }
 
-  &__label {
+  &-label {
     padding-left: var(--dashboard-sidebar-item-icon-width);
     min-height: var(--dashboard-sidebar-item-height);
     line-height: var(--dashboard-sidebar-item-height);
   }
 }
 
-.dashboard-content {
+.DashboardContent {
   @apply relative px-16;
 
-  &__sticky-header {
+  &-stickyHeader {
     @apply sticky top-0 p-4 backdrop-blur-sm z-1 -mx-16 px-16;
     background-image: linear-gradient(
       color-mix(in srgb, var(--background), transparent 18%),

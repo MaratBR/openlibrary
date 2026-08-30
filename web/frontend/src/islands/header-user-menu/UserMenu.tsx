@@ -79,8 +79,8 @@ function UserMenuBody({ onNavigate }: { onNavigate: () => void }) {
   const isModerator = isAdmin || user.role === 'moderator'
 
   return (
-    <div className="UserMenu__body">
-      <div className="UserMenu__identity">
+    <div className="UserMenu-body">
+      <div className="UserMenu-identity">
         <img className="avatar size-14" src={user.avatar.md} alt="" />
         <div className="min-w-0">
           <div className="font-semibold truncate">{user.name}</div>
@@ -88,7 +88,7 @@ function UserMenuBody({ onNavigate }: { onNavigate: () => void }) {
         </div>
       </div>
 
-      <ul className="UserMenu__items">
+      <ul className="UserMenu-items">
         <MenuItem icon="fa-regular fa-user" href={`/users/${user.id}`} onClick={onNavigate}>
           {window._('common.profile')}
         </MenuItem>
@@ -115,7 +115,7 @@ function UserMenuBody({ onNavigate }: { onNavigate: () => void }) {
             <i className="fa-solid fa-arrow-up-right-from-square ml-auto text-xs" />
           </MenuItem>
         )}
-        <li className="UserMenu__separator" aria-hidden="true" />
+        <li className="UserMenu-separator" aria-hidden="true" />
         <MenuItem icon="fa-solid fa-right-from-bracket" href="/logout" onClick={onNavigate}>
           {window._('common.logout')}
         </MenuItem>
@@ -131,8 +131,8 @@ function MenuItem({
 }: { icon: string } & AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <li>
-      <a className="UserMenu__item" role="menuitem" {...props}>
-        <i className={`${icon} UserMenu__item-icon`} aria-hidden="true" />
+      <a className="UserMenu-item" role="menuitem" {...props}>
+        <i className={`${icon} UserMenu-itemIcon`} aria-hidden="true" />
         {children}
       </a>
     </li>

@@ -48,16 +48,16 @@ window.toast = function (
         div.className = cls
         return div
       }
-      const $layout = d('toast-layout')
-      const $icon = d('toast-layout__icon')
-      const $content = d('toast-layout__content')
+      const $layout = d('ToastLayout')
+      const $icon = d('ToastLayout-icon')
+      const $content = d('ToastLayout-content')
       if (title) {
-        const $title = d('toast-layout__title')
+        const $title = d('ToastLayout-title')
         $title.innerText = title || ''
         $content.appendChild($title)
       }
       if (text) {
-        const $text = d('toast-layout__text')
+        const $text = d('ToastLayout-text')
         $text.innerText = text || ''
         $content.appendChild($text)
       }
@@ -83,7 +83,7 @@ window.toast = function (
       $icon.setAttribute('data-color', type)
 
       if (customContent) {
-        const $customContent = d('toast-layout__customContent')
+        const $customContent = d('ToastLayout-customContent')
         $content.appendChild($customContent)
         const customContentCleanup = customContent($customContent)
         if (customContentCleanup) addCleanup(customContentCleanup)
@@ -94,7 +94,7 @@ window.toast = function (
       if (close) {
         const $close = document.createElement('div')
         $close.innerHTML = '<i class="fa-solid fa-xmark"></i>'
-        $close.classList = 'toast-layout__close'
+        $close.classList = 'ToastLayout-close'
         $layout.appendChild($close)
         let closed = false
         $close.addEventListener('click', () => {

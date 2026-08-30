@@ -46,14 +46,14 @@ templ Login(data LoginData) {
                     </div>
 
                     <div class="flex gap-2 justify-center">
-                        <button type="submit" class="btn btn--lg btn--primary">
+                        <button type="submit" class="Btn Btn--lg Btn--primary">
                             { l.T("login.login") }
                         </button>
                     </div>
 
 
                     <div class="text-center mt-4 text-sm">
-                        { l.T("login.dontHaveAccountYet") } <a class="link" href="/signup">{ l.T("signup.signup") }</a>
+                        { l.T("login.dontHaveAccountYet") } <a class="Link" href="/signup">{ l.T("signup.signup") }</a>
                     </div>
 
                     if data.Error != "" {

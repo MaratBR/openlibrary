@@ -49,7 +49,7 @@ export default function ReportPage() {
         title={
           <div>
             <div className="text-sm font-normal text-secondary-foreground mb-1">
-              <NavLink className="link" to="/reports/search">
+              <NavLink className="Link" to="/reports/search">
                 {window._('moderationPortal.reports')}
               </NavLink>
               <span className="mx-2">/</span>
@@ -59,7 +59,7 @@ export default function ReportPage() {
           </div>
         }
       >
-        <span className="btn btn--outline pointer-events-none">
+        <span className="Btn Btn--outline pointer-events-none">
           <i className="fa-solid fa-circle text-secondary-foreground text-xs mr-2" />
           {capitalize(report.status)}
         </span>
@@ -82,7 +82,7 @@ export default function ReportPage() {
 
 function ReportSummary({ report }: { report: ModerationReportDetail }) {
   return (
-    <section className="card card--elevated">
+    <section className="Card Card--elevated">
       <dl className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <Detail label={window._('moderationPortal.report.reason')} value={report.reason} />
         <Detail
@@ -120,7 +120,7 @@ function ReportedContent({
 }) {
   const book = report.bookContext
   return (
-    <section className="card card--elevated">
+    <section className="Card Card--elevated">
       <h2 className="text-lg font-semibold mb-4">
         {window._('moderationPortal.report.reportedContent')}
         <span className="ml-3 text-sm font-normal text-secondary-foreground">
@@ -171,7 +171,7 @@ function ReportedContent({
                 {window._('moderationPortal.report.wholeBookReported')}
               </p>
             )}
-            <NavLink className="link inline-block mt-3" to={target.to}>
+            <NavLink className="Link inline-block mt-3" to={target.to}>
               <i className="fa-solid fa-arrow-up-right-from-square mr-2" />
               {window._('moderationPortal.report.openTarget')}
             </NavLink>
@@ -181,9 +181,9 @@ function ReportedContent({
         <div className="grid md:grid-cols-[minmax(0,1fr)_auto] gap-5 items-start">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="chip">{report.userContext.role}</span>
+              <span className="Chip">{report.userContext.role}</span>
               <span
-                className={`chip ${report.userContext.isBanned ? 'chip--destructive' : 'chip--primary'}`}
+                className={`chip ${report.userContext.isBanned ? 'Chip--destructive' : 'Chip--primary'}`}
               >
                 {report.userContext.isBanned
                   ? window._('moderationPortal.report.userBanned')
@@ -208,7 +208,7 @@ function ReportedContent({
               />
             </dl>
           </div>
-          <NavLink className="btn btn--outline" to={target.to}>
+          <NavLink className="Btn Btn--outline" to={target.to}>
             {window._('moderationPortal.report.openTarget')}
           </NavLink>
         </div>
@@ -216,13 +216,13 @@ function ReportedContent({
         <div>
           <div className="flex flex-wrap gap-2 mb-3">
             <span
-              className={`chip ${report.commentContext.deletedAt ? 'chip--destructive' : 'chip--primary'}`}
+              className={`chip ${report.commentContext.deletedAt ? 'Chip--destructive' : 'Chip--primary'}`}
             >
               {report.commentContext.deletedAt
                 ? window._('moderationPortal.report.commentRemoved')
                 : window._('moderationPortal.report.commentVisible')}
             </span>
-            <span className="chip">
+            <span className="Chip">
               {window._('moderationPortal.report.relatedReportCount', {
                 count: String(report.commentContext.relatedReports),
               })}
@@ -236,7 +236,7 @@ function ReportedContent({
               <span className="text-secondary-foreground">
                 {window._('moderationPortal.report.commentAuthor')}
               </span>
-              <NavLink className="link block" to={`/users/${report.commentContext.authorId}`}>
+              <NavLink className="Link block" to={`/users/${report.commentContext.authorId}`}>
                 {report.commentContext.authorName}
               </NavLink>
             </div>
@@ -244,7 +244,7 @@ function ReportedContent({
               <span className="text-secondary-foreground">
                 {window._('moderationPortal.report.commentLocation')}
               </span>
-              <NavLink className="link block" to={`/books/${report.commentContext.bookId}`}>
+              <NavLink className="Link block" to={`/books/${report.commentContext.bookId}`}>
                 {report.commentContext.bookName} · {report.commentContext.chapterName}
               </NavLink>
             </div>
@@ -253,7 +253,7 @@ function ReportedContent({
             <time className="text-sm text-secondary-foreground">
               {dateTimeFormatter.format(new Date(report.commentContext.createdAt))}
             </time>
-            <NavLink className="btn btn--outline" to={target.to}>
+            <NavLink className="Btn Btn--outline" to={target.to}>
               {window._('moderationPortal.report.openTarget')}
             </NavLink>
           </div>
@@ -265,7 +265,7 @@ function ReportedContent({
             <div className="font-semibold">{target.label}</div>
             <div className="font-mono text-sm text-secondary-foreground">{report.targetId}</div>
           </div>
-          <NavLink className="btn btn--outline" to={target.to}>
+          <NavLink className="Btn Btn--outline" to={target.to}>
             {window._('moderationPortal.report.openTarget')}
           </NavLink>
         </div>
@@ -286,13 +286,13 @@ function BookContext({ report }: { report: ModerationReportDetail }) {
             minutes: String(book.editedAfterMinutes),
           })}
         </span>
-        <button className="link">
+        <button className="Link">
           {window._('moderationPortal.report.compareChanges')}{' '}
           <i className="fa-solid fa-chevron-right ml-2" />
         </button>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
-        <section className="card">
+        <section className="Card">
           <h2 className="text-lg font-semibold mb-4">
             {window._('moderationPortal.report.contentContext')}
           </h2>
@@ -315,7 +315,7 @@ function BookContext({ report }: { report: ModerationReportDetail }) {
             <dd>{dateTimeFormatter.format(new Date(book.lastUpdated))}</dd>
           </dl>
         </section>
-        <section className="card">
+        <section className="Card">
           <h2 className="text-lg font-semibold mb-4">
             {window._('moderationPortal.report.history')}
           </h2>
@@ -392,7 +392,7 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
     }
   }
   return (
-    <aside className="card xl:sticky xl:top-22">
+    <aside className="Card xl:sticky xl:top-22">
       <h2 className="text-xl font-semibold mb-4">{window._('moderationPortal.report.decision')}</h2>
       {resolved ? (
         <p className="rounded-lg bg-secondary p-4 text-secondary-foreground">
@@ -506,7 +506,7 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
           </label>
           <button
             disabled={disposition === 'action_taken' && !action}
-            className="btn btn--primary w-full"
+            className="Btn Btn--primary w-full"
           >
             <i className="fa-solid fa-shield-halved mr-2" />
             {window._('moderationPortal.report.applyAction')}
@@ -529,7 +529,7 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
 
 function Activity({ report }: { report: ModerationReportDetail }) {
   return (
-    <section className="card">
+    <section className="Card">
       <h2 className="text-lg font-semibold mb-4">{window._('moderationPortal.report.activity')}</h2>
       <Timeline.Root>
         {report.activities.map((activity) => (
@@ -615,7 +615,7 @@ export function ReportErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('moderationPortal.report.title')} />
       <div className="p-8">
-        <div className="card">
+        <div className="Card">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

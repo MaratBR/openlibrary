@@ -42,22 +42,22 @@ function TabsTab({ value, children }: TabProps) {
   return (
     <li
       role="tab"
-      className={clsx('tab', {
-        'tab--active': value === activeValue,
+      className={clsx('Tab', {
+        'Tab--active': value === activeValue,
       })}
       onClick={(e) => {
         e.preventDefault()
         onChangeRef.current(value)
       }}
     >
-      <span className="tabs__tab__title">{children}</span>
+      <span className="TabsTab-title">{children}</span>
     </li>
   )
 }
 
 const TabsBody = forwardRef(
   ({ className, ...props }: HTMLAttributes<HTMLDivElement>, ref: ForwardedRef<HTMLDivElement>) => {
-    return <div ref={ref} className={clsx('tabs__body', className)} {...props} />
+    return <div ref={ref} className={clsx('Tabs-body', className)} {...props} />
   },
 )
 
@@ -67,7 +67,7 @@ const TabsMenu = forwardRef(
     ref: ForwardedRef<HTMLUListElement>,
   ) => {
     return (
-      <ul ref={ref} role="tablist" className={clsx('tabs tabs--primary', className)} {...props}>
+      <ul ref={ref} role="tablist" className={clsx('Tabs Tabs--primary', className)} {...props}>
         {children}
       </ul>
     )

@@ -1,4 +1,4 @@
-.chip {
+.Chip {
   @apply leading-6 px-2 inline-flex items-center gap-1 text-secondary-foreground font-medium text-sm;
   border-radius: calc(var(--radius) - 2px);
 
@@ -22,7 +22,7 @@
     @apply text-base py-1 px-3 font-medium;
   }
 
-  &__close {
+  &-close {
     @apply text-xs text-secondary-foreground hover:text-foreground;
 
     & > i {

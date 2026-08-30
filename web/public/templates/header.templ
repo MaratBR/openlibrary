@@ -6,13 +6,13 @@ import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ siteHeader() {
     @siteHeaderLayout() {
-        <button class="site-header__mobile-open" @click="navOpen=!navOpen">
+        <button class="SiteHeader-mobileOpen" @click="navOpen=!navOpen">
             <svg class="size-6" xmlns="http://www.w3.org/2000/svg" viewBox="F0 0 24 24"><title>menu</title><path class="fill-foreground" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
         </button>
 
         <nav
             id="site-nav" 
-            class="site-nav"
+            class="SiteNav"
             data-open="false"
             :data-open="navOpen">
             { children... }
@@ -37,7 +37,7 @@ templ siteHeader() {
 
             <div 
                 data-open="false"
-                class="fixed top-[var(--header-height)] bg-surface rounded-xl shadow-xl p-4 transition-all opacity-0 pointer-events-none data-[open=true]:pointer-events-auto data-[open=true]:opacity-100"
+                class="fixed Top[var(--headerHeight)] bg-surface rounded-xl shadow-xl p-4 transition-all opacity-0 pointer-events-none data-[open=true]:pointer-events-auto data-[open=true]:opacity-100"
                 style="left: var(--nav-trigger-left, 30vw);" data-nav-portal>
                 123
             </div>
@@ -70,7 +70,7 @@ templ siteHeader() {
             {{
                 _, isAuthorized := auth.GetSession(ctx)
             }}
-            <div class="site-nav__user">
+            <div class="SiteNav-user">
                 if isAuthorized {
                     @navUser()
                 } else {
@@ -86,9 +86,9 @@ templ siteHeader() {
 }
 
 templ siteHeaderLayout() {
-    <header class="site-header" id="site-header">
-        <div class="site-header__inner" x-data="{navOpen:false}">
-            <a href="/" class="site-header__logo">
+    <header class="SiteHeader" id="site-header">
+        <div class="SiteHeader-inner" x-data="{navOpen:false}">
+            <a href="/" class="SiteHeader-logo">
                 <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:hidden" src="/_/embed-assets/logo.svg" />
                 <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
             </a>
@@ -103,8 +103,8 @@ templ navUser() {
     {{
         user := auth.RequireUser(ctx)
     }}
-    <div id="nav-user" class="nav-user">
-        <button class="nav-user__btn">
+    <div id="nav-user" class="NavUser">
+        <button class="NavUser-btn">
             <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
         </button>
         @webcomponents.Island2(webcomponents.Island2Props{

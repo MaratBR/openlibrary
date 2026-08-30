@@ -3,54 +3,54 @@
 // BOOK PAGE         //
 //                   //
 // ----------------- //
-.book-page {
+.BookPage {
   @apply mx-auto max-w-[120ch] px-4 py-8 md:grid md:grid-cols-12 md:gap-10 md:py-10;
 
-  &__left {
+  &-left {
     @apply mb-10 flex flex-col items-center md:col-span-3 md:mb-0;
   }
 
-  &__right {
+  &-right {
     @apply min-w-0 md:col-span-9;
 
-    > .page-header {
+    > .PageHeader {
       @apply mb-4;
     }
   }
 
-  &__details {
+  &-details {
     @apply mt-8;
   }
 
-  &__classification {
+  &-classification {
     @apply flex flex-col gap-4 sm:flex-row sm:items-start;
   }
 
-  &__tags {
+  &-tags {
     @apply min-w-0 flex-1;
   }
 
-  &__rating-card {
+  &-ratingCard {
     @apply flex flex-col gap-4 text-secondary-foreground sm:flex-row sm:items-center;
   }
 
-  &__rating-summary {
+  &-ratingSummary {
     @apply flex items-center gap-2;
   }
 
-  &__rating-value {
+  &-ratingValue {
     @apply ml-1 text-xl font-semibold tabular-nums text-foreground;
   }
 
-  &__rating-scale {
+  &-ratingScale {
     @apply text-sm;
   }
 
-  &__stats {
+  &-stats {
     @apply flex items-center divide-x divide-border sm:ml-8;
   }
 
-  &__stat {
+  &-stat {
     @apply flex min-w-16 items-center justify-center gap-2 px-3 tabular-nums first:pl-0 last:pr-0 sm:first:pl-3;
 
     i {
@@ -58,15 +58,15 @@
     }
   }
 
-  &__summary {
+  &-summary {
     @apply mt-8 text-lg leading-relaxed;
   }
 
-  &__content-tabs {
+  &-contentTabs {
     @apply mt-8 border-t pt-4;
   }
 
-  &__tab-list {
+  &-tabList {
     @apply flex items-baseline gap-4;
   }
 }
@@ -76,16 +76,16 @@
 // BOOK TOC          //
 //                   //
 // ----------------- //
-.book-toc {
+.BookToc {
   ul {
     @apply md:grid md:grid-cols-2 mt-3 gap-1 items-stretch;
   }
 
-  &__search {
+  &-search {
     @apply col-end-2;
   }
 
-  &__item {
+  &-item {
     @apply p-2 text-lg grid grid-cols-[48px_auto] rounded-lg bg-surface border h-full
             hover:bg-surface hover:shadow-sm hover:outline hover:outline-2;
 
@@ -94,11 +94,11 @@
     }
   }
 
-  &__num {
+  &-num {
     @apply flex flex-col items-center gap-2;
   }
 
-  &__mark {
+  &-mark {
     @apply inline-block text-secondary-foreground;
   }
 }
@@ -112,34 +112,34 @@
   @apply md:bg-surface md:shadow-md;
 }
 
-.book-search-card {
+.BookSearchCard {
   @apply border-b-2 relative
         md:grid md:grid-cols-[165px_1fr] md:border-b md:pb-2 md:pt-4;
 
-  &__left {
+  &-left {
     @apply bg-surface md:bg-transparent py-2 mb-4 md:mb-0 flex flex-col items-center justify-start;
   }
 
-  &__right {
+  &-right {
     @apply px-4 md:pl-0 md:pl-2;
   }
 
-  &__link {
+  &-link {
     @apply text-2xl font-title !text-secondary-foreground !hover:text-foreground;
   }
 
-  &__author {
+  &-author {
   }
 
-  &__imglink {
+  &-imglink {
     @apply rounded-r-xl transition-shadow focus:ring focus:ring-foreground focus:ring-offset-4 inline-block h-[200px];
   }
 
-  &:hover &__imglink {
+  &:hover &-imglink {
     @apply scale-[1.02] transition-transform [&>img]:transition-shadow [&>img]:shadow-lg inline-block;
   }
 
-  &__summary {
+  &-summary {
     @apply text-sm mt-4;
   }
 }

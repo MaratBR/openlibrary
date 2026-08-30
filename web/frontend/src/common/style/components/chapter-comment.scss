@@ -1,69 +1,69 @@
-.ol-comments {
+.OlComments {
   --comment-avatar-size: 2.75rem;
   --comment-reply-indent: 4.25rem;
   @apply mx-auto w-full max-w-4xl text-foreground;
 }
 
-.ol-comments__heading-row {
+.OlComments-headingRow {
   @apply mb-6 flex items-end justify-between gap-6;
 }
 
-.ol-comments__eyebrow {
+.OlComments-eyebrow {
   @apply mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-brass;
 }
 
-.ol-comments__title {
+.OlComments-title {
   @apply m-0 font-title text-surface-foreground font-semibold leading-none tracking-tight;
   font-size: clamp(2.5rem, 5vw, 4rem);
 }
 
-.ol-comments__context {
+.OlComments-context {
   @apply mt-2 text-sm text-primary;
 }
 
-.ol-comments__count {
+.OlComments-count {
   @apply text-xs font-normal tabular-nums text-secondary-foreground;
 }
 
-.ol-comment-composer {
+.OlCommentComposer {
   @apply mb-6 grid gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm;
   grid-template-columns: var(--comment-avatar-size) minmax(0, 1fr);
 }
 
-.ol-comment-composer__body,
-.ol-comment__body {
+.OlCommentComposer-body,
+.OlComment-body {
   min-width: 0;
 }
 
-.ol-comment-composer__footer {
+.OlCommentComposer-footer {
   @apply mt-2 flex items-center justify-between gap-4;
 }
 
-.ol-comment-composer__hint {
+.OlCommentComposer-hint {
   @apply m-0 text-xs text-secondary-foreground;
 }
 
-.ol-comment-composer__actions {
+.OlCommentComposer-actions {
   @apply flex shrink-0 gap-2;
 }
 
-.ol-comments__signin {
+.OlComments-signin {
   @apply mb-6 flex justify-center;
 }
 
-.ol-comments__toolbar {
+.OlComments-toolbar {
   @apply flex min-h-11 items-center justify-between gap-4 border-b border-border;
 }
 
-.ol-comments__toolbar-label {
+.OlComments-toolbarLabel {
   @apply flex flex-wrap items-baseline gap-2;
 }
 
-.ol-comments__toolbar-title {
+.OlComments-toolbarTitle {
   @apply font-semibold text-surface-foreground;
 }
 
-.ol-comments__sort {
+.OlComments-sort {
   @apply w-auto min-w-36;
 }
 
@@ -72,7 +72,7 @@
   @apply m-0 list-none p-0;
 }
 
-.ol-comment {
+.OlComment {
   @apply relative grid gap-4 border-b border-border py-4;
   grid-template-columns: var(--comment-avatar-size) minmax(0, 1fr);
 
@@ -81,17 +81,17 @@
   }
 }
 
-.ol-comment__avatar {
+.OlComment-avatar {
   width: var(--comment-avatar-size);
   height: var(--comment-avatar-size);
   @apply block rounded-full border border-border bg-secondary object-cover;
 }
 
-.ol-comment__header {
+.OlComment-header {
   @apply flex min-h-6 flex-wrap items-center gap-2 pr-9;
 }
 
-.ol-comment__author {
+.OlComment-author {
   @apply cursor-pointer text-sm font-semibold text-surface-foreground no-underline;
 
   &:hover {
@@ -99,15 +99,15 @@
   }
 }
 
-.ol-comment__meta {
+.OlComment-meta {
   @apply text-xs text-secondary-foreground;
 }
 
-.ol-comment__author-badge {
+.OlComment-authorBadge {
   @apply inline-flex min-h-5 items-center rounded-sm bg-primary px-2 text-xs font-semibold leading-none text-primary-foreground;
 }
 
-.ol-comment__content {
+.OlComment-content {
   @apply mt-1 text-foreground leading-relaxed;
   overflow-wrap: anywhere;
 
@@ -120,7 +120,7 @@
   }
 }
 
-.ol-comment__actions {
+.OlComment-actions {
   @apply mt-2 flex flex-wrap items-center gap-1;
 }
 
@@ -154,73 +154,73 @@
     content: '';
   }
 
-  .ol-comment {
+  .OlComment {
     grid-template-columns: 2.25rem minmax(0, 1fr);
     @apply gap-3 py-3;
   }
 
-  .ol-comment__avatar {
+  .OlComment-avatar {
     width: 2.25rem;
     height: 2.25rem;
   }
 }
 
-.ol-comment-reply-editor {
+.OlCommentReplyEditor {
   @apply mt-3 rounded-md bg-secondary p-3;
 }
 
-.ol-comment-reply-editor__actions {
+.OlCommentReplyEditor-actions {
   @apply mt-2 flex justify-end gap-2;
 }
 
-.ol-comment-edit {
+.OlCommentEdit {
   @apply mt-2;
 }
 
-.ol-comment-edit__actions {
+.OlCommentEdit-actions {
   @apply mt-2 flex justify-end gap-2;
 }
 
-.ol-comments__empty {
+.OlComments-empty {
   @apply px-4 py-10 text-center text-secondary-foreground;
 }
 
-.ol-comment--highlighted {
+.OlComment--highlighted {
   @apply rounded-md bg-brass-soft px-3;
   margin-inline: -0.75rem;
 }
 
-.ol-comment--deleted .ol-comment__content {
+.OlComment--deleted .OlComment-content {
   @apply italic text-secondary-foreground;
 }
 
 @media (max-width: 42rem) {
-  .ol-comments {
+  .OlComments {
     --comment-avatar-size: 2.4rem;
     --comment-reply-indent: 1rem;
   }
 
-  .ol-comments__heading-row {
+  .OlComments-headingRow {
     @apply items-start;
   }
 
-  .ol-comment-composer {
+  .OlCommentComposer {
     grid-template-columns: 1fr;
 
-    > .ol-comment__avatar {
+    > .OlComment-avatar {
       @apply hidden;
     }
   }
 
-  .ol-comment-composer__footer {
+  .OlCommentComposer-footer {
     @apply flex-col items-start;
   }
 
-  .ol-comment-composer__actions {
+  .OlCommentComposer-actions {
     @apply w-full justify-end;
   }
 
-  .ol-comment {
+  .OlComment {
     @apply gap-3;
   }
 

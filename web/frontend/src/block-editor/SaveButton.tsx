@@ -36,9 +36,9 @@ export function SaveButton() {
         type="button"
         onClick={handleSaveDraft}
         disabled={!chapterNameIsValid || !draftHasPendingChanges || saving}
-        className="btn btn--lg btn--outline min-w-28 flex justify-center items-center"
+        className="Btn Btn--lg Btn--outline min-w-28 flex justify-center items-center"
       >
-        {saving ? <span className="loader" /> : window._('common.save')}
+        {saving ? <span className="Loader" /> : window._('common.save')}
       </button>
 
       <div className="btn-group">
@@ -46,7 +46,7 @@ export function SaveButton() {
           type="button"
           onClick={() => setOpenPublishPopup(true)}
           disabled={!chapterNameIsValid || (!draftHasPendingChanges && !hasNewerRevision) || saving}
-          className="btn btn--primary btn--lg flex justify-center items-center"
+          className="Btn Btn--primary Btn--lg flex justify-center items-center"
         >
           <DraftPendingChangesIndicator />
           {window._('editor.publishDraft')}
@@ -54,7 +54,7 @@ export function SaveButton() {
         <button
           ref={menuButton}
           type="button"
-          className="btn btn--primary btn--lg btn--icon"
+          className="Btn Btn--primary Btn--lg Btn--icon"
           disabled={!chapterNameIsValid || saving}
           aria-label={window._('editor.morePublishingOptions')}
           aria-expanded={openMenu}
@@ -70,10 +70,10 @@ export function SaveButton() {
         onClose={() => setOpenMenu(false)}
         placement="bottom-end"
       >
-        <div className="card card--elevated p-1 min-w-48">
+        <div className="Card Card--elevated p-1 min-w-48">
           <button
             type="button"
-            className="btn btn--ghost w-full justify-start"
+            className="Btn Btn--ghost w-full justify-start"
             onClick={() => {
               setOpenMenu(false)
               setOpenSchedulePopup(true)

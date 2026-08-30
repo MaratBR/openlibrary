@@ -84,16 +84,16 @@ export function Comments(_: ReactIslandProps) {
       {user ? (
         <Composer chapterId={chapterId} avatar={user.avatar.md} />
       ) : (
-        <div className="ol-comments__signin card">
-          <a className="btn btn--primary" href="/login">
+        <div className="OlComments-signin Card">
+          <a className="Btn Btn--primary" href="/login">
             {window._('comments.signInToComment')}
           </a>
         </div>
       )}
-      <div className="ol-comments__toolbar">
-        <div className="ol-comments__toolbar-label">
-          <span className="ol-comments__toolbar-title">{window._('comments.discussion')}</span>
-          <span className="ol-comments__count">
+      <div className="OlComments-toolbar">
+        <div className="OlComments-toolbarLabel">
+          <span className="OlComments-toolbarTitle">{window._('comments.discussion')}</span>
+          <span className="OlComments-count">
             {window._('common.commentsCount', { Count: `${total}` })}
           </span>
         </div>
@@ -105,7 +105,7 @@ export function Comments(_: ReactIslandProps) {
           disabled={loading}
           onValueChange={(value) => changeSort(value as CommentSort)}
         >
-          <SelectTrigger id="ChapterCommentsSort" className="select--sm ol-comments__sort w-64">
+          <SelectTrigger id="ChapterCommentsSort" className="Select--sm OlComments-sort w-64">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -117,7 +117,7 @@ export function Comments(_: ReactIslandProps) {
       </div>
       <div className="ol-comment-list">
         {comments.length === 0 && (
-          <p className="ol-comments__empty">{window._('comments.empty')}</p>
+          <p className="OlComments-empty">{window._('comments.empty')}</p>
         )}
         {comments.map((comment) => (
           <Comment
@@ -129,7 +129,7 @@ export function Comments(_: ReactIslandProps) {
           />
         ))}
         {nextCursor > 0 && (
-          <button className="btn btn--ghost btn--lg mt-4" disabled={loading} onClick={loadMore}>
+          <button className="Btn Btn--ghost Btn--lg mt-4" disabled={loading} onClick={loadMore}>
             {window._('common.loadMore')}
           </button>
         )}
@@ -156,15 +156,15 @@ function Composer({ chapterId, avatar }: { chapterId: string; avatar: string }) 
   }
 
   return (
-    <form className="ol-comment-composer" onSubmit={submit}>
-      <img className="ol-comment__avatar" src={avatar} alt="" />
-      <div className="ol-comment-composer__body">
+    <form className="OlCommentComposer" onSubmit={submit}>
+      <img className="OlComment-avatar" src={avatar} alt="" />
+      <div className="OlCommentComposer-body">
         {editor && <RichTextInput editor={editor} />}
-        <div className="ol-comment-composer__footer">
-          <p className="ol-comment-composer__hint">{window._('comments.kindHint')}</p>
-          <div className="ol-comment-composer__actions">
+        <div className="OlCommentComposer-footer">
+          <p className="OlCommentComposer-hint">{window._('comments.kindHint')}</p>
+          <div className="OlCommentComposer-actions">
             <button
-              className="btn btn--primary"
+              className="Btn Btn--primary"
               disabled={submitting || !editor || editor.isEmpty || content.length > 2000}
             >
               {window._('comments.post')}
@@ -215,16 +215,16 @@ function Comment({
   }
 
   return (
-    <article className={`ol-comment${comment.deleted ? ' ol-comment--deleted' : ''}`}>
-      <img className="ol-comment__avatar" src={comment.user.avatar} alt="" />
-      <div className="ol-comment__body">
-        <header className="ol-comment__header">
-          <a href={`/users/${comment.user.id}`} className="ol-comment__author">
+    <article className={`ol-comment${comment.deleted ? ' OlComment--deleted' : ''}`}>
+      <img className="OlComment-avatar" src={comment.user.avatar} alt="" />
+      <div className="OlComment-body">
+        <header className="OlComment-header">
+          <a href={`/users/${comment.user.id}`} className="OlComment-author">
             {comment.user.name}
           </a>
           <Time value={comment.createdAt} />
           {isEdited(comment.createdAt, updatedAt) && (
-            <span className="ol-comment__meta">{window._('comments.edited')}</span>
+            <span className="OlComment-meta">{window._('comments.edited')}</span>
           )}
         </header>
         {editing ? (
@@ -239,11 +239,11 @@ function Comment({
             }}
           />
         ) : (
-          <div className="ol-comment__content">
+          <div className="OlComment-content">
             <UserContent value={content} />
           </div>
         )}
-        <div className="ol-comment__actions">
+        <div className="OlComment-actions">
           <button
             className="ol-comment-action"
             disabled={!authenticated}
@@ -341,7 +341,7 @@ function Replies({
         />
       ))}
       {cursor > 0 && (
-        <button className="btn btn--ghost mt-2" onClick={load}>
+        <button className="Btn Btn--ghost mt-2" onClick={load}>
           {window._('common.loadMore')}
         </button>
       )}
@@ -382,11 +382,11 @@ function ReplyComposer({ chapterId, parentId }: { chapterId: string; parentId: s
     }
   }
   return (
-    <form className="ol-comment-reply-editor" onSubmit={submit}>
+    <form className="OlCommentReplyEditor" onSubmit={submit}>
       {editor && <RichTextInput editor={editor} />}
-      <div className="ol-comment-reply-editor__actions">
+      <div className="OlCommentReplyEditor-actions">
         <button
-          className="btn btn--primary"
+          className="Btn Btn--primary"
           disabled={submitting || !editor || editor.isEmpty || content.length > 2000}
         >
           {window._('comments.post')}
@@ -428,14 +428,14 @@ function CommentEditor({
   }
 
   return (
-    <form className="ol-comment-edit" onSubmit={submit}>
+    <form className="OlCommentEdit" onSubmit={submit}>
       {editor && <RichTextInput editor={editor} />}
-      <div className="ol-comment-edit__actions">
-        <button type="button" className="btn btn--ghost" disabled={saving} onClick={onCancel}>
+      <div className="OlCommentEdit-actions">
+        <button type="button" className="Btn Btn--ghost" disabled={saving} onClick={onCancel}>
           {window._('common.cancel')}
         </button>
         <button
-          className="btn btn--primary"
+          className="Btn Btn--primary"
           disabled={saving || !editor || editor.isEmpty || content.length > 2000}
         >
           {window._('common.save')}
@@ -447,7 +447,7 @@ function CommentEditor({
 
 function Time({ value }: { value: string }) {
   return (
-    <time className="ol-comment__meta" dateTime={value}>
+    <time className="OlComment-meta" dateTime={value}>
       {relativeTime(value)}
     </time>
   )

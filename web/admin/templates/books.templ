@@ -8,10 +8,10 @@ templ BooksPage() {
 }}
     
     @dashboardLayout("Books") {
-        <div class="dashboard-content">
-            <header class="page-header">
-                <div class="page-header__body">
-                <h1 class="page-header__title">
+        <div class="DashboardContent">
+            <header class="PageHeader">
+                <div class="PageHeader-body">
+                <h1 class="PageHeader-title">
                     {l.T("admin.books.title")}
                 </h1>
                 </div>
@@ -23,7 +23,7 @@ templ BooksPage() {
 
             <div x-data="{id:''}">
                 <input :value="id" @input="id=$event.target.value.replaceAll(/[^0-9]/g, '');$event.target.value=id" class="input w-64" />
-                <button @click="id && (location.href = `/book/${id}`)" class="btn btn--primary">{ l.T("common.open") }</button>
+                <button @click="id && (location.href = `/book/${id}`)" class="Btn Btn--primary">{ l.T("common.open") }</button>
             </div>
         </div>
     }

@@ -1,7 +1,7 @@
-.pagination {
+.Pagination {
   @apply flex flex-wrap gap-1;
 
-  &__item {
+  &-item {
     @apply flex items-center justify-center font-medium text-secondary-foreground
             size-9 min-w-9 bg-transparent border border-transparent;
     border-radius: calc(var(--radius) - 2px);

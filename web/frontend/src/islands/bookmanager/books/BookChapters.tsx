@@ -33,7 +33,7 @@ function Chapter({
   onOpenChapter: (chapter: ManagerBookChapterDto) => void
 }) {
   return (
-    <div data-testid="BookChapters_Chapter" className="card grid cols-2">
+    <div data-testid="BookChapters_Chapter" className="Card grid cols-2">
       <div>
         <span className="text-xl font-medium">{chapter.name}</span>
         {chapter.scheduledAt && (
@@ -44,7 +44,7 @@ function Chapter({
           </p>
         )}
         <div className="flex gap-2 mt-2">
-          <button onClick={() => onOpenChapter(chapter)} className="btn btn--lg btn--primary">
+          <button onClick={() => onOpenChapter(chapter)} className="Btn Btn--lg Btn--primary">
             <i className="fa-solid fa-pen mr-2" />
             {window._('common.edit')}
           </button>
@@ -54,7 +54,7 @@ function Chapter({
       <div>
         <div className="flex gap-1">
           {!chapter.isPubliclyVisible && <HiddenChip />}
-          <div className="chip">
+          <div className="Chip">
             {window._('book.words', { count: formatNumberK(chapter.words) })}
           </div>
         </div>
@@ -65,7 +65,7 @@ function Chapter({
 
 function HiddenChip() {
   return (
-    <div className="chip chip--secondary">
+    <div className="Chip Chip--secondary">
       <i className="fa-solid fa-eye-slash mr-1" />
       {window._('bookManager.edit.chapterHidden')}
     </div>
@@ -100,12 +100,12 @@ function AddChapterButton({ bookId }: { bookId: string }) {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} ref={ref} className="btn btn--outline btn--lg mt-4">
+      <button onClick={() => setOpen(true)} ref={ref} className="Btn Btn--outline Btn--lg mt-4">
         <i className="fa-solid fa-plus mr-2" />
         {window._('bookManager.edit.addChapter')}
       </button>
       <Popper onClose={() => setOpen(false)} open={open} placement="bottom-start" anchorEl={ref}>
-        <div className="card max-w-128 shadow-2xl">
+        <div className="Card max-w-128 shadow-2xl">
           <form action="#" onSubmit={handleSubmit}>
             <div className="flex gap-1">
               <input
@@ -114,7 +114,7 @@ function AddChapterButton({ bookId }: { bookId: string }) {
                 onChange={(e) => setName((e.target as HTMLInputElement).value)}
                 placeholder={window._('bookManager.edit.chapterNamePlaceholder')}
               />
-              <button disabled={!valid} className="btn btn--primary">
+              <button disabled={!valid} className="Btn Btn--primary">
                 {window._('bookManager.edit.addChapter')}
               </button>
             </div>

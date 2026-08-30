@@ -1,16 +1,16 @@
-.be-bubble-menu {
+.BeBubbleMenu {
   @apply bg-surface shadow-sm rounded-2xl font-sans;
   padding: 2px;
 
-  &__delimiter {
+  &-delimiter {
     @apply h-5 border mx-1;
   }
 
-  &__main {
+  &-main {
     @apply flex items-center;
   }
 
-  &__section {
+  &-section {
     @apply w-full min-w-0 max-w-full;
     contain: inline-size;
   }

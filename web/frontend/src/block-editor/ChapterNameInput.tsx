@@ -22,7 +22,7 @@ export function ChapterNameInput() {
         }}
       />
       {!valid && (
-        <p id="chapter-name-error" className="form-control__error" role="alert">
+        <p id="chapter-name-error" className="FormControl-error" role="Alert">
           <i className="fa-solid fa-circle-exclamation" aria-hidden="true" />
           {window._('editor.chapterNameInvalid')}
         </p>

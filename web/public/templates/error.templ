@@ -14,7 +14,7 @@ templ NotFoundPage() {
         htmlLayoutProps: htmlLayoutProps{Title: "404"},
         DisableFooter: true,
     }) {
-        <main class="ol-container py-12">
+        <main class="OlContainer py-12">
             <h1 class="text-8xl mb-2 font-title text-center md:text-left">404</h1>
             <div class="ml-4">
                 <h1 class="text-2xl font-title text-center md:text-left">{l.T("pageNotFound.text")}</h1>
@@ -25,7 +25,7 @@ templ NotFoundPage() {
                     <source srcset={fmt.Sprintf("/_/assets/cats/avif/cat%d.webp", catID)} type="image/webp">
                     <img class="rounded-xl" style="max-width: 300px;" alt="image of a cat" src={fmt.Sprintf("/_/assets/cats/cat%d.jpg", catID)} />
                 </picture>
-                <p class="mt-2 text-xs opacity-40 hover:opacity-100">Image source: <a class="link" target="_blank" href="https://cataas.com/">https://cataas.com/</a></p>
+                <p class="mt-2 text-xs opacity-40 hover:opacity-100">Image source: <a class="Link" target="_blank" href="https://cataas.com/">https://cataas.com/</a></p>
             </div>
         </main>
     }
@@ -39,7 +39,7 @@ templ MethodNotAllowedPage() {
         htmlLayoutProps: htmlLayoutProps{Title: "405"},
         DisableFooter: true,
     }) {
-        <main class="ol-container py-12">
+        <main class="OlContainer py-12">
             <h1 class="text-8xl mb-2 font-title text-center md:text-left">405</h1>
             <div class="ml-4">
                 <h1 class="text-4xl font-title text-center md:text-left">{l.T("methodNotAllowed.title")}</h1>

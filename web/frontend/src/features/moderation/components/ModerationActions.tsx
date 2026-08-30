@@ -31,7 +31,7 @@ export function ModerationActionSelector({
   className?: string
 }) {
   return (
-    <section className={clsx('card', className)}>
+    <section className={clsx('Card', className)}>
       <FormControl label={label} htmlFor={id}>
         <Select value={value} onValueChange={onValueChange}>
           <SelectTrigger id={id} className="w-full">
@@ -69,12 +69,12 @@ export function ModerationConfirmationDialog({
         <h2 className="text-xl font-semibold">{confirmation?.title}</h2>
         <p className="my-3 text-secondary-foreground">{confirmation?.description}</p>
         <div className="flex justify-end gap-2 mt-5">
-          <button disabled={pending} className="btn btn--outline" onClick={onClose}>
+          <button disabled={pending} className="Btn Btn--outline" onClick={onClose}>
             {window._('common.cancel')}
           </button>
           <button
             disabled={pending}
-            className={`btn ${confirmation?.destructive ? 'btn--destructive' : 'btn--primary'}`}
+            className={`btn ${confirmation?.destructive ? 'Btn--destructive' : 'Btn--primary'}`}
             onClick={onConfirm}
           >
             {pending && <span className="circle-loader mr-2" />}
@@ -162,7 +162,7 @@ export function ModerationActionCard({
   className?: string
 }) {
   return (
-    <section className={clsx('card', className)}>
+    <section className={clsx('Card', className)}>
       <h2 className="text-xl font-semibold">{title}</h2>
       <p className="text-secondary-foreground mt-1 mb-5">{description}</p>
       {children}
@@ -201,7 +201,7 @@ export function ModerationReasonActionCard({
             onChange={(event) => setReason(event.target.value)}
           />
         </FormControl>
-        <button className={`btn mt-4 ${destructive ? 'btn--destructive' : 'btn--primary'}`}>
+        <button className={`btn mt-4 ${destructive ? 'Btn--destructive' : 'Btn--primary'}`}>
           {submitLabel}
         </button>
       </form>
@@ -266,7 +266,7 @@ export function ModerationValueActionCard({
             onChange={(event) => setReason(event.target.value)}
           />
         </FormControl>
-        <button className="btn btn--primary justify-self-start">{submitLabel}</button>
+        <button className="Btn Btn--primary justify-self-start">{submitLabel}</button>
       </form>
     </ModerationActionCard>
   )

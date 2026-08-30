@@ -1,13 +1,13 @@
-.admin-form-field {
+.AdminFormField {
   @apply grid grid-cols-[400px_1fr] mb-2;
 
-  &__label {
+  &-label {
     label {
       @apply text-foreground;
     }
   }
 
-  &__value {
+  &-value {
     @apply max-w-[50%];
   }
 }

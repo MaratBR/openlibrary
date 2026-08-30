@@ -60,7 +60,7 @@ export default function ModerationBooks() {
         <p className="text-secondary-foreground mb-6">
           {window._('moderationPortal.booksPage.description')}
         </p>
-        <DashboardContent.Card className="card--elevated p-4 md:p-5 mb-6">
+        <DashboardContent.Card className="Card--elevated p-4 md:p-5 mb-6">
           <Form method="get" className="grid gap-4">
             <label>
               <span className="block text-sm font-medium mb-1.5">
@@ -110,7 +110,7 @@ export default function ModerationBooks() {
                 />
                 {window._('moderationPortal.booksPage.includeDeleted')}
               </label>
-              <button className="btn btn--primary ml-auto">
+              <button className="Btn Btn--primary ml-auto">
                 {window._('moderationPortal.booksPage.apply')}
               </button>
             </div>
@@ -131,7 +131,7 @@ export default function ModerationBooks() {
             ))}
           </div>
         ) : (
-          <div className="card py-16 text-center text-secondary-foreground">
+          <div className="Card py-16 text-center text-secondary-foreground">
             {window._('moderationPortal.booksPage.empty')}
           </div>
         )}
@@ -160,19 +160,19 @@ function BookRow({ book }: { book: ModerationBookListEntry }) {
     book.isPermanentlyRemoved && window._('moderationPortal.booksPage.deleted'),
   ].filter(Boolean)
   return (
-    <Link to={`/books/${book.id}`} className="card card--elevated block hover:bg-foreground/5">
+    <Link to={`/books/${book.id}`} className="Card Card--elevated block hover:bg-foreground/5">
       <div className="flex flex-col md:flex-row md:items-center gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap gap-2 items-center">
             <h3 className="font-semibold text-lg truncate">{book.name}</h3>
             {states.length ? (
               states.map((state) => (
-                <span key={state as string} className="chip chip--destructive">
+                <span key={state as string} className="Chip Chip--destructive">
                   {state}
                 </span>
               ))
             ) : (
-              <span className="chip chip--primary">
+              <span className="Chip Chip--primary">
                 {window._('moderationPortal.booksPage.active')}
               </span>
             )}
@@ -210,7 +210,7 @@ export function ModerationBooksErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('moderationPortal.books')} />
       <div className="p-8">
-        <div className="card">
+        <div className="Card">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

@@ -1,4 +1,4 @@
-.list-item {
+.ListItem {
   @apply flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors;
   word-wrap: normal;
 
@@ -18,15 +18,15 @@
     @apply px-3 py-3;
   }
 
-  &__icon {
+  &-icon {
     @apply w-5 shrink-0 text-center text-secondary-foreground;
   }
 
-  &--selected &__icon {
+  &--selected &-icon {
     @apply text-primary;
   }
 
-  &__content {
+  &-content {
     @apply min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap;
   }
 }

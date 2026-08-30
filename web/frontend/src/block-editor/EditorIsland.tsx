@@ -31,13 +31,13 @@ function EditorIsland({ draft }: { draft: DraftDto }) {
 
   return (
     <>
-      <div className="be-layout">
-        <div className="be-layout__header">
-          <header className="be-header">
-            <div className="be-header__left">
+      <div className="BeLayout">
+        <div className="BeLayout-header">
+          <header className="BeHeader">
+            <div className="BeHeader-left">
               <a
                 href={`/books-manager#/books/${draft.book.id}?t=chapters`}
-                className="be-header__logo"
+                className="BeHeader-logo"
                 aria-label={window._('editor.backToChapters')}
               >
                 <img src="/_/embed-assets/logo.svg" alt="OpenLibrary" />
@@ -48,10 +48,10 @@ function EditorIsland({ draft }: { draft: DraftDto }) {
                 onClick={() => setLeftOpen((value) => !value)}
               />
             </div>
-            <div className="be-header__center">
+            <div className="BeHeader-center">
               <CenterHeader />
             </div>
-            <div className="be-header__right">
+            <div className="BeHeader-right">
               <SidebarToggle
                 open={rightOpen}
                 side="right"
@@ -62,25 +62,25 @@ function EditorIsland({ draft }: { draft: DraftDto }) {
           </header>
         </div>
         <div
-          className="be-layout__body"
+          className="BeLayout-body"
           style={{
             gridTemplateColumns: `${leftOpen ? '260px' : '0'} minmax(0, 1fr) ${rightOpen ? '260px' : '0'}`,
           }}
         >
-          <div className="be-layout__sidebar-clip" aria-hidden={!leftOpen} inert={!leftOpen}>
-            <div className="be-layout__left">
+          <div className="BeLayout-sidebarClip" aria-hidden={!leftOpen} inert={!leftOpen}>
+            <div className="BeLayout-left">
               <WidgetsMenu service={WidgetsService.instance()} />
             </div>
           </div>
-          <div className="be-layout__center">
+          <div className="BeLayout-center">
             <EditorIframe initialContent={draft.content} />
           </div>
           <div
-            className="be-layout__sidebar-clip be-layout__sidebar-clip--right"
+            className="BeLayout-sidebarClip BeLayoutSidebarClip--right"
             aria-hidden={!rightOpen}
             inert={!rightOpen}
           >
-            <div className="be-layout__right">
+            <div className="BeLayout-right">
               <ChapterDetails />
             </div>
           </div>
@@ -104,7 +104,7 @@ function SidebarToggle({
   const label = window._(open ? 'editor.collapseSidebar' : 'editor.expandSidebar')
   const icon = side === 'left' ? 'fa-table-columns' : 'fa-table-columns fa-flip-horizontal'
   return (
-    <button type="button" className="btn btn--icon btn--ghost" onClick={onClick} aria-label={label}>
+    <button type="button" className="Btn Btn--icon Btn--ghost" onClick={onClick} aria-label={label}>
       <i className={`fa-solid ${icon}`} />
     </button>
   )

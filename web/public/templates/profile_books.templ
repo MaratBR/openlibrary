@@ -26,13 +26,13 @@ templ ProfileBooks(
             Title: title,
         },
     }) {
-        <div class="sticky top-[calc(var(--header-height)+10px)] z-20">
-            <nav class="ol-container shadow-md bg-surface rounded-full">
-                <ul class="tabs tabs--primary-b px-6">
-                    <li role="button" class="tab tab--active">
+        <div class="sticky Top[calc(var(--headerHeight)+10px)] z-20">
+            <nav class="OlContainer shadow-md bg-surface rounded-full">
+                <ul class="Tabs Tabs--primaryB px-6">
+                    <li role="button" class="Tab Tab--active">
                         <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ l.T("profile.books") }</a>
                     </li>
-                    <li role="button" class="tab">
+                    <li role="button" class="Tab">
                         <a href={ templ.URL(fmt.Sprintf("/users/%s/collections", user.ID)) }>{ l.T("profile.collections") }</a>
                     </li>
                 </ul>
@@ -41,7 +41,7 @@ templ ProfileBooks(
 
         @i18nExtractKeysByPrefix(l, "search")
 
-        <div class="ol-container my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
+        <div class="OlContainer my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
             @SearchResultFragment(result, explainedQuery, true)
         </div>
     }
@@ -66,13 +66,13 @@ templ ProfileCollections(
             Title: title,
         },
     }) {
-        <div class="sticky top-[calc(var(--header-height)+10px)] z-20">
-            <nav class="ol-container shadow-md bg-surface rounded-full">
-                <ul class="tabs tabs--primary-b px-6">
-                    <li role="button" class="tab">
+        <div class="sticky Top[calc(var(--headerHeight)+10px)] z-20">
+            <nav class="OlContainer shadow-md bg-surface rounded-full">
+                <ul class="Tabs Tabs--primaryB px-6">
+                    <li role="button" class="Tab">
                         <a href={ templ.URL(fmt.Sprintf("/users/%s/books", user.ID)) }>{ l.T("profile.books") }</a>
                     </li>
-                    <li role="button" class="tab tab--active">
+                    <li role="button" class="Tab Tab--active">
                         <a href={ templ.URL(fmt.Sprintf("/users/%s/collections", user.ID)) }>{ l.T("profile.collections") }</a>
                     </li>
                 </ul>
@@ -81,7 +81,7 @@ templ ProfileCollections(
 
         @i18nExtractKeysByPrefix(l, "search")
 
-        <div class="ol-container my-12 px-2">
+        <div class="OlContainer my-12 px-2">
             if result.TotalPages == 0 {
                 @alertInfo() {
                     { l.T("profile.userHasNoCollection") }

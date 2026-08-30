@@ -14,20 +14,20 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
     }}
 
     @dashboardLayout(pageTitle) {
-        <div class="dashboard-content">
+        <div class="DashboardContent">
             // <form x-data={ fmt.Sprintf("{q:%s}", jsonString(query.Query)) } method="get" class="absolute top-16 right-4 flex items-center">
             //     <input value={ query.Query } x-model="q" class="input w-64 mr-2" name="q" placeholder={ l.T("common.search") } />
-            //     <button type="submit" :disabled="q.trim()===''" class="btn btn--secondary">
+            //     <button type="submit" :disabled="q.trim()===''" class="Btn Btn--secondary">
             //         <i class="fa-solid fa-search"></i>
             //     </button>
             // </form>
 
-            <header class="page-header">
-                <div class="page-header__body">
-                    <h1 class="page-header__title">{ pageTitle }</h1>
+            <header class="PageHeader">
+                <div class="PageHeader-body">
+                    <h1 class="PageHeader-title">{ pageTitle }</h1>
                 </div>
 
-                <div class="page-header__actions">
+                <div class="PageHeader-actions">
                     @webcomponents.SimpleSearchForm(webcomponents.SimpleSearchFormProps{
                         ParamName: "q",
                     })
@@ -86,15 +86,15 @@ templ Users(resp app.UserListResponse, query *app.UsersQuery) {
                                 <td>
                                     { user.Name }
                                     <div class="flex gap-3">
-                                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) }>
+                                        <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/users/%s", user.ID)) }>
                                             { l.T("admin.users.profile") }
                                         </a>
                                         |
-                                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/mod/user/%s", user.ID)) }>
+                                        <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/mod/user/%s", user.ID)) }>
                                             { l.T("admin.users.moderation") }
                                         </a>
                                         |
-                                        <a class="link" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s", user.ID)) }>
+                                        <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/admin/users/%s", user.ID)) }>
                                             { l.T("common.edit") }
                                         </a>
                                     </div>
@@ -132,11 +132,11 @@ templ User(user *app.UserDetailsDto) {
     }}
 
     @dashboardLayout(user.Name) {
-        <div class="dashboard-content">
-            <header class="page-header">
-                <div class="page-header__body">
-                <h1 class="page-header__title">
-                    <a href="/admin/users" class="link">{ l.T("admin.users.title") }</a>
+        <div class="DashboardContent">
+            <header class="PageHeader">
+                <div class="PageHeader-body">
+                <h1 class="PageHeader-title">
+                    <a href="/admin/users" class="Link">{ l.T("admin.users.title") }</a>
                     <span class="mx-2 text-secondary-foreground text-[0.8em]">/</span>
                     {user.Name}
                 </h1>
@@ -148,17 +148,17 @@ templ User(user *app.UserDetailsDto) {
                     @csrf.CSRFInputTempl(ctx)
 
                     @userFormSection("user-general-information", l.T("admin.users.generalInformation")) {
-                        <div class="admin-form-field">
-                            <div class="admin-form-field__label">
+                        <div class="AdminFormField">
+                            <div class="AdminFormField-label">
                                 <label>{ l.T("admin.users.name") }</label>
                             </div>
-                            <div class="admin-form-field__value">
+                            <div class="AdminFormField-value">
                                 <input  disabled name="name" class="input" value={ user.Name } />
                             </div>
                         </div>
 
-                        <div class="admin-form-field">
-                            <div class="admin-form-field__label">
+                        <div class="AdminFormField">
+                            <div class="AdminFormField-label">
                                 <label>{ l.T("admin.users.gender") }</label>
                             </div>
                             {{
@@ -169,11 +169,11 @@ templ User(user *app.UserDetailsDto) {
                                     genderType = user.About.Gender
                                 }
                             }}
-                            <div class="admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
+                            <div class="AdminFormField-value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
                                 <select 
                                     x-model="genderType" 
                                     name="gender" 
-                                    class="select">
+                                    class="Select">
                                     <option
                                         if genderType == "" {
                                             selected
@@ -200,11 +200,11 @@ templ User(user *app.UserDetailsDto) {
                             </div>
                         </div>
 
-                        <div class="admin-form-field">
-                            <div class="admin-form-field__label">
+                        <div class="AdminFormField">
+                            <div class="AdminFormField-label">
                                 <label>{ l.T("admin.users.about") }</label>
                             </div>
-                            <div class="admin-form-field__value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
+                            <div class="AdminFormField-value" x-data={ fmt.Sprintf("{genderType:'%s',value:%s}", genderType, jsonString(user.About.Gender)) }>
                                 <textarea rows="8" name="about" class="input">{user.About.Bio}</textarea>
                             </div>
                         </div>
@@ -217,12 +217,12 @@ templ User(user *app.UserDetailsDto) {
                         </div>
                     }
                     @userFormSection("user-permissions", l.T("admin.users.rolesAndPermissions")) {
-                        <div class="admin-form-field">
-                            <div class="admin-form-field__label">
+                        <div class="AdminFormField">
+                            <div class="AdminFormField-label">
                                 <label>{ l.T("admin.users.role") }</label>
                             </div>
-                            <div class="admin-form-field__value">
-                                <select name="role" class="select">
+                            <div class="AdminFormField-value">
+                                <select name="role" class="Select">
                                     for _, role := range app.AllRoles {
                                         <option 
                                             if role == user.Role {
@@ -241,7 +241,7 @@ templ User(user *app.UserDetailsDto) {
 
                     @userFormSection("user-account-management", l.T("admin.users.accountManagement")) {
                         <div x-data="{open:false,pwd:''}">
-                            <div role="button" @click="open=true;$refs.pwdInput.dispatchEvent(new CustomEvent('island:custom:generate-password'))" class="btn btn--outline select-none">
+                            <div role="button" @click="open=true;$refs.pwdInput.dispatchEvent(new CustomEvent('island:custom:generate-password'))" class="Btn Btn--outline select-none">
                                 { l.T("admin.users.resetPassword") }
                             </div>
 
@@ -258,7 +258,7 @@ templ User(user *app.UserDetailsDto) {
                         </div>   
                     }
 
-                    <button type="submit" class="btn btn--lg btn--primary mt-6">
+                    <button type="submit" class="Btn Btn--lg Btn--primary mt-6">
                         { l.T("common.save") }
                     </button>
                 </form>

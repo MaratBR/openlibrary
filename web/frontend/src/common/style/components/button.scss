@@ -20,7 +20,7 @@
   --btn-colors-text: var(--primary-foreground);
 }
 
-.btn {
+.Btn {
   @apply inline-flex justify-center items-center v-middle whitespace-nowrap text-sm font-medium cursor-pointer border
         disabled:pointer-events-none disabled:opacity-50;
   height: var(--btn-height);
@@ -131,7 +131,7 @@
     @apply rounded-sm;
   }
 
-  &__icon {
+  &-icon {
     &--left {
       @apply mr-1;
     }
@@ -141,27 +141,27 @@
 .btn-group {
   @apply inline-flex items-stretch;
 
-  & > .btn:not(:first-child):not(:last-child) {
+  & > .Btn:not(:first-child):not(:last-child) {
     @apply rounded-none;
   }
 
-  & > .btn:not(:first-child) {
+  & > .Btn:not(:first-child) {
     @apply border-l-0;
   }
 
-  & > .btn:not(:last-child) {
+  & > .Btn:not(:last-child) {
     @apply border-r-0;
   }
 
-  & > .btn:first-child {
+  & > .Btn:first-child {
     @apply rounded-r-none;
   }
 
-  & > .btn:last-child {
+  & > .Btn:last-child {
     @apply rounded-l-none;
   }
 
-  & > .btn:not(:last-child)::after {
+  & > .Btn:not(:last-child)::after {
     content: ' ';
     @apply block border-r-1 absolute border-current/30;
     top: 0%;
@@ -169,16 +169,16 @@
     right: 0;
   }
 
-  &--rounded-md {
+  &--roundedMd {
     &,
-    & > .btn {
+    & > .Btn {
       @apply rounded-md;
     }
   }
 }
 
 .btn-list {
-  & > li > .btn {
+  & > li > .Btn {
     @apply block w-full text-start !rounded-none;
   }
 }

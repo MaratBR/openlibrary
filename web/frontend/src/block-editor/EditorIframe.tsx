@@ -21,7 +21,7 @@ export function EditorIframe({ initialContent }: { initialContent: string }) {
       />
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="loader" />
+          <span className="Loader" />
         </div>
       )}
       {!loading && elements && (

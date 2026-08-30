@@ -21,10 +21,10 @@ function FontPickerInternal({ editor }: { editor: ChapterContentEditor }) {
   const openMoreFonts = useMoreFontsState((x) => x.open)
 
   return (
-    <div className="be-font-picker-mini">
+    <div className="BeFontPickerMini">
       {favoriteFonts.map((font) => {
         return (
-          <button key={font} className="be-font-picker-mini__item" style={{ fontFamily: font }}>
+          <button key={font} className="BeFontPickerMini-item" style={{ fontFamily: font }}>
             {font}
           </button>
         )
@@ -36,7 +36,7 @@ function FontPickerInternal({ editor }: { editor: ChapterContentEditor }) {
           editor.chain().setTextSelection(editor.state.selection.from).blur().run()
           toggle()
         }}
-        className="be-font-picker-mini__more"
+        className="BeFontPickerMini-more"
       >
         {window._('common.more')}
       </button>

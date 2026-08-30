@@ -24,7 +24,7 @@ export function PublishChapterPopup({ onClose, open }: { onClose: () => void; op
         customContent(element) {
           const root = createRoot(element)
           root.render(
-            <a className="link" href={`/book/${draft.book.id}/chapters/${draft.chapter.id}`}>
+            <a className="Link" href={`/book/${draft.book.id}/chapters/${draft.chapter.id}`}>
               {window._('editor.viewChapter')}
               &nbsp;
               <i className="fa-solid fa-arrow-up-right-from-square" />
@@ -67,18 +67,18 @@ export function PublishChapterPopup({ onClose, open }: { onClose: () => void; op
       <div className="mt-4 flex gap-1">
         <button
           disabled={publishMutation.isPending}
-          className="btn btn--outline w-32"
+          className="Btn Btn--outline w-32"
           onClick={() => publishMutation.mutate()}
         >
           {publishMutation.isPending ? (
-            <span className="loader" />
+            <span className="Loader" />
           ) : (
             window._('editor.publishDraft')
           )}
         </button>
         <button
           disabled={publishMutation.isPending}
-          className="btn btn--ghost"
+          className="Btn Btn--ghost"
           onClick={() => onClose()}
         >
           {window._('common.cancel')}

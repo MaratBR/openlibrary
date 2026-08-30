@@ -61,12 +61,12 @@ export default function BookModerationPage() {
       <div className="py-8 max-w-360 mx-auto">
         <Header book={loaded.book} />
         <nav>
-          <ul className="tabs tabs--primary mt-4">
+          <ul className="Tabs Tabs--primary mt-4">
             {(['overview', 'actions', 'chapters', 'activity'] as const).map((tab) => (
               <li key={tab}>
                 <NavLink
                   end={tab === 'overview'}
-                  className={`tab ${section === tab ? 'tab--active' : ''}`}
+                  className={`tab ${section === tab ? 'Tab--active' : ''}`}
                   to={
                     tab === 'overview'
                       ? `/books/${loaded.book.id}`
@@ -92,15 +92,15 @@ export default function BookModerationPage() {
 
 function Header({ book }: { book: ModerationBook }) {
   return (
-    <header className="card card--elevated flex flex-col lg:flex-row lg:items-center gap-5">
+    <header className="Card Card--elevated flex flex-col lg:flex-row lg:items-center gap-5">
       <div className="min-w-0 flex-1">
         <h1 className="text-3xl font-semibold truncate">{book.name}</h1>
         <p className="text-sm text-secondary-foreground">
           {window._('moderationPortal.book.bookId')}: {book.id}
         </p>
         <div className="flex gap-2 mt-2">
-          <span className="chip">{book.ageRating}</span>
-          <span className={`chip ${book.isBanned ? 'chip--destructive' : 'chip--primary'}`}>
+          <span className="Chip">{book.ageRating}</span>
+          <span className={`chip ${book.isBanned ? 'Chip--destructive' : 'Chip--primary'}`}>
             {book.isBanned
               ? window._('moderationPortal.book.banned')
               : window._('moderationPortal.book.active')}
@@ -130,7 +130,7 @@ function Metric({ label, value }: { label: string; value: ReactNode }) {
 function Overview({ book }: { book: ModerationBook }) {
   return (
     <div className="grid gap-5">
-      <section className="card">
+      <section className="Card">
         <h2 className="text-xl font-semibold mb-4">
           {window._('moderationPortal.book.generalInfo')}
         </h2>
@@ -138,7 +138,7 @@ function Overview({ book }: { book: ModerationBook }) {
           <Info
             label={window._('moderationPortal.book.author')}
             value={
-              <NavLink className="link" to={`/users/${book.authorUserId}`}>
+              <NavLink className="Link" to={`/users/${book.authorUserId}`}>
                 {book.authorUserName}
               </NavLink>
             }
@@ -158,9 +158,9 @@ function Overview({ book }: { book: ModerationBook }) {
           />
         </dl>
         <h3 className="font-semibold mt-6">{window._('moderationPortal.book.summary')}</h3>
-        <p className="mt-2 whitespace-pre-wrap">{book.summary || '--'}</p>
+        <p className="mt-2 whitespace-pre-wrap">{book.summary || ''}</p>
       </section>
-      <section className="card">
+      <section className="Card">
         <h2 className="text-xl font-semibold mb-4">
           {window._('moderationPortal.book.currentState')}
         </h2>
@@ -173,7 +173,7 @@ function Overview({ book }: { book: ModerationBook }) {
           label={window._('moderationPortal.book.pendingReport')}
           value={
             book.latestPendingReport ? (
-              <NavLink className="link" to={`/reports/${book.latestPendingReport.id}`}>
+              <NavLink className="Link" to={`/reports/${book.latestPendingReport.id}`}>
                 {book.latestPendingReport.number} · {book.latestPendingReport.reason}
               </NavLink>
             ) : (
@@ -331,7 +331,7 @@ function Chapters({ chapters }: { chapters: ModerationBookChapter[] }) {
   const pages = Math.ceil(filtered.length / 100)
   const shown = filtered.slice((page - 1) * 100, page * 100)
   return (
-    <section className="card card--nopad overflow-hidden">
+    <section className="Card Card--nopad overflow-hidden">
       <div className="p-5 border-b border-border">
         <input
           className="input w-full"
@@ -353,7 +353,7 @@ function Chapters({ chapters }: { chapters: ModerationBookChapter[] }) {
           <div className="flex gap-3 justify-between">
             <span className="font-medium">{chapter.name}</span>
             {chapter.hasPendingReports && (
-              <span className="chip chip--destructive">
+              <span className="Chip Chip--destructive">
                 {window._('moderationPortal.book.pendingReport')}
               </span>
             )}
@@ -413,7 +413,7 @@ function Activity({ bookId, log }: { bookId: string; log?: BookModerationLog }) 
 export function BookModerationErrorPage() {
   return (
     <DashboardContent.Root>
-      <div className="card">
+      <div className="Card">
         <ErrorDisplay error={useRouteError()} />
       </div>
     </DashboardContent.Root>

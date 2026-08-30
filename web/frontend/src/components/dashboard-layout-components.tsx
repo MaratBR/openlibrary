@@ -3,7 +3,7 @@ import { HTMLAttributes, ReactNode } from 'react'
 
 function DashboardContent_Root({ children }: { children: ReactNode }) {
   return (
-    <section className="dashboard-content" data-testid="DashboardContent_Root">
+    <section className="DashboardContent" data-testid="DashboardContent_Root">
       {children}
     </section>
   )
@@ -11,7 +11,7 @@ function DashboardContent_Root({ children }: { children: ReactNode }) {
 
 function DashboardContent_Card({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={clsx('card', className)} data-testid="DashboardContent_Card" {...props}>
+    <div className={clsx('Card', className)} data-testid="DashboardContent_Card" {...props}>
       {children}
     </div>
   )
@@ -25,12 +25,12 @@ function DashboardContent_StickyHeader({
   children?: ReactNode
 }) {
   return (
-    <div className="dashboard-content__sticky-header" data-testid="DashboardContent_StickyHeader">
-      <header className="page-header">
-        <div className="page-header__body">
-          <h1 className="page-header__title">{title}</h1>
+    <div className="DashboardContent-stickyHeader" data-testid="DashboardContent_StickyHeader">
+      <header className="PageHeader">
+        <div className="PageHeader-body">
+          <h1 className="PageHeader-title">{title}</h1>
         </div>
-        {children && <div className="page-header__actions">{children}</div>}
+        {children && <div className="PageHeader-actions">{children}</div>}
       </header>
     </div>
   )

@@ -43,13 +43,13 @@ export function ScheduleChapterPopup({ onClose }: { onClose: () => void }) {
       <div className="flex gap-2 mt-4">
         <button
           type="button"
-          className="btn btn--primary"
+          className="Btn Btn--primary"
           disabled={!valid || mutation.isPending}
           onClick={() => mutation.mutate()}
         >
           {window._(scheduledAt ? 'editor.reschedule' : 'editor.schedule')}
         </button>
-        <button type="button" className="btn btn--ghost" onClick={onClose}>
+        <button type="button" className="Btn Btn--ghost" onClick={onClose}>
           {window._('common.cancel')}
         </button>
       </div>

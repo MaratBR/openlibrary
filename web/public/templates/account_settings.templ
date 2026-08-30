@@ -14,9 +14,9 @@ templ AccountSettings(settingsType string, settings any) {
 			Title: l.T("common.settings"),
 		},
 	}) {
-		<main class="ol-container ol-container--big py-10">
+		<main class="OlContainer OlContainer--big py-10">
 			<div class="grid items-start gap-6 md:grid-cols-[240px_minmax(0,1fr)]">
-				<aside class="card overflow-hidden p-2">
+				<aside class="Card overflow-hidden p-2">
 					<h1 class="px-3 py-2 font-title text-2xl">{ l.T("common.settings") }</h1>
 					<nav aria-label={ l.T("accountSettings.navigation") }>
 						<ul class="flex flex-col gap-1">
@@ -28,7 +28,7 @@ templ AccountSettings(settingsType string, settings any) {
 					</nav>
 				</aside>
 
-				<section class="card p-4 md:p-6" x-data={ dataExpression }>
+				<section class="Card p-4 md:p-6" x-data={ dataExpression }>
 					<header class="mb-6 flex min-h-10 items-center justify-between gap-4 border-b pb-4">
 						<h2 class="font-title text-3xl">{ settingsTitle(l, settingsType) }</h2>
 						<div class="text-sm text-secondary-foreground" aria-live="polite">
@@ -125,9 +125,9 @@ templ settingsField(label string, description string) {
 
 templ settingsSwitch(model string, label string) {
 	<label class="inline-flex items-center gap-3">
-		<span class="switch">
+		<span class="Switch">
 			<input type="checkbox" x-model={ model } @change="requestSave()"/>
-			<span class="switch__slider"></span>
+			<span class="Switch-slider"></span>
 		</span>
 		<span>{ label }</span>
 	</label>
@@ -139,7 +139,7 @@ templ aboutSettingsFields(l *i18n.Localizer) {
 			<textarea class="textarea min-h-40" x-model="settings.about" @input="requestSave()"></textarea>
 		}
 		@settingsField(l.T("accountSettings.about.gender"), l.T("accountSettings.about.genderDescription")) {
-			<select class="select" x-model="settings.gender" @change="requestSave()">
+			<select class="Select" x-model="settings.gender" @change="requestSave()">
 				<option value="">{ l.T("gender.ratherNotSay") }</option>
 				<option value="m">{ l.T("gender.m") }</option>
 				<option value="f">{ l.T("gender.f") }</option>
@@ -172,7 +172,7 @@ templ moderationSettingsFields(l *i18n.Localizer) {
 			@settingsSwitch("settings.showAdultContent", l.T("accountSettings.moderation.showAdultContent"))
 		}
 		@settingsField(l.T("accountSettings.moderation.censoredTagsMode"), l.T("accountSettings.moderation.censoredTagsModeDescription")) {
-			<select class="select" x-model="settings.censoredTagsMode" @change="requestSave()">
+			<select class="Select" x-model="settings.censoredTagsMode" @change="requestSave()">
 				<option value="none">{ l.T("accountSettings.moderation.censorModeNone") }</option>
 				<option value="hide">{ l.T("accountSettings.moderation.censorModeHide") }</option>
 				<option value="censor">{ l.T("accountSettings.moderation.censorModeCensor") }</option>
@@ -187,7 +187,7 @@ templ moderationSettingsFields(l *i18n.Localizer) {
 templ customizationSettingsFields(l *i18n.Localizer) {
 	<div>
 		@settingsField(l.T("accountSettings.customization.defaultTheme"), l.T("accountSettings.customization.defaultThemeDescription")) {
-			<select class="select" x-model="settings.defaultTheme" @change="requestSave();OLTheme.theme.set(settings.defaultTheme||'system')">
+			<select class="Select" x-model="settings.defaultTheme" @change="requestSave();OLTheme.theme.set(settings.defaultTheme||'system')">
 				<option value="">{ l.T("uiTheme.system") }</option>
 				<option value="light">{ l.T("uiTheme.light") }</option>
 				<option value="dark">{ l.T("uiTheme.dark") }</option>

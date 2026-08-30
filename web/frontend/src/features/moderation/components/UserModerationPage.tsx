@@ -126,7 +126,7 @@ export default function UserModerationPage() {
       <div className="py-8 max-w-360 mx-auto">
         <UserHeader user={user} />
         <nav aria-label={window._('moderationPortal.user.navigation')}>
-          <ul className="tabs tabs--primary mt-4">
+          <ul className="Tabs Tabs--primary mt-4">
             <UserTab active={section === 'overview'} end to={`/users/${user.id}`}>
               {window._('moderationPortal.user.overview')}
             </UserTab>
@@ -156,7 +156,7 @@ export function UserModerationErrorPage() {
   return (
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('moderationPortal.user.title')} />
-      <div className="card">
+      <div className="Card">
         <ErrorDisplay error={error} />
       </div>
     </DashboardContent.Root>
@@ -176,7 +176,7 @@ function UserTab({
 }) {
   return (
     <li>
-      <NavLink end={end} className={`tab ${active ? 'tab--active' : ''}`} to={to}>
+      <NavLink end={end} className={`tab ${active ? 'Tab--active' : ''}`} to={to}>
         {children}
       </NavLink>
     </li>
@@ -185,7 +185,7 @@ function UserTab({
 
 function UserHeader({ user }: { user: ModerationUser }) {
   return (
-    <header className="card card--elevated">
+    <header className="Card Card--elevated">
       <div className="flex flex-col xl:flex-row xl:items-center gap-6">
         <div className="flex items-center gap-4 min-w-0 xl:min-w-96">
           <img className="avatar flex-none" src={user.avatar} alt="" />
@@ -195,8 +195,8 @@ function UserHeader({ user }: { user: ModerationUser }) {
               {window._('moderationPortal.user.userId')}: {user.id}
             </p>
             <div className="flex flex-wrap gap-2 mt-2">
-              <span className="chip">{user.role}</span>
-              <span className={`chip ${user.isBanned ? 'chip--destructive' : 'chip--primary'}`}>
+              <span className="Chip">{user.role}</span>
+              <span className={`chip ${user.isBanned ? 'Chip--destructive' : 'Chip--primary'}`}>
                 {user.isBanned
                   ? window._('moderationPortal.user.banned')
                   : window._('moderationPortal.user.active')}
@@ -255,7 +255,7 @@ function Overview({
   const accountAge = formatAccountAge(user.joinedAt)
   return (
     <div className="grid gap-5">
-      <section className="card">
+      <section className="Card">
         <h2 className="text-xl font-semibold mb-4">{window._('moderationPortal.user.account')}</h2>
         <dl className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <Signal
@@ -284,7 +284,7 @@ function Overview({
           />
         </dl>
       </section>
-      <section className="card">
+      <section className="Card">
         <h2 className="text-xl font-semibold mb-4">
           {window._('moderationPortal.user.accountSignals')}
         </h2>
@@ -320,14 +320,14 @@ function RecentContent({
           <div key={book.id} className="py-3 border-b border-border last:border-0">
             <div className="flex items-center justify-between gap-3">
               <a
-                className="link font-medium truncate"
+                className="Link font-medium truncate"
                 href={`/book/${book.id}`}
                 target="_blank"
                 rel="noreferrer"
               >
                 {book.name}
               </a>
-              <NavLink className="link text-sm shrink-0" to={`/books/${book.id}`}>
+              <NavLink className="Link text-sm shrink-0" to={`/books/${book.id}`}>
                 {window._('moderationPortal.user.moderate')}
               </NavLink>
             </div>
@@ -375,10 +375,10 @@ function PreviewCard({
   children: ReactNode
 }) {
   return (
-    <section className="card">
+    <section className="Card">
       <div className="flex justify-between items-center gap-4">
         <h2 className="text-xl font-semibold">{title}</h2>
-        <NavLink className="link text-sm" to={to}>
+        <NavLink className="Link text-sm" to={to}>
           {link}
         </NavLink>
       </div>
@@ -475,7 +475,7 @@ function Activity({
         >
           {reports?.entries.map((report) => (
             <div key={report.id} className="py-3 border-b border-border last:border-0">
-              <NavLink className="link font-medium" to={`/reports/${report.id}`}>
+              <NavLink className="Link font-medium" to={`/reports/${report.id}`}>
                 {report.number} · {report.reason}
               </NavLink>
               <div className="text-sm text-secondary-foreground">
@@ -530,14 +530,14 @@ function ResourcePage({
             <div>
               <div className="flex items-center justify-between gap-3">
                 <a
-                  className="link font-medium truncate"
+                  className="Link font-medium truncate"
                   href={`/book/${book.id}`}
                   target="_blank"
                   rel="noreferrer"
                 >
                   {book.name}
                 </a>
-                <NavLink className="link text-sm shrink-0" to={`/books/${book.id}`}>
+                <NavLink className="Link text-sm shrink-0" to={`/books/${book.id}`}>
                   {window._('moderationPortal.user.moderate')}
                 </NavLink>
               </div>
@@ -585,7 +585,7 @@ function ResourcePage({
           data={data.reports}
           render={(report: ModerationUserReportsPage['entries'][number]) => (
             <div>
-              <NavLink className="link font-medium" to={`/reports/${report.id}`}>
+              <NavLink className="Link font-medium" to={`/reports/${report.id}`}>
                 {report.number} · {report.reason}
               </NavLink>
               <div>{report.description}</div>
@@ -611,13 +611,13 @@ function PagedList<T>({
   render: (entry: T) => ReactNode
 }) {
   return (
-    <section className="card card--nopad overflow-hidden">
+    <section className="Card Card--nopad overflow-hidden">
       <div className="p-6 border-b border-border">
         <h2 className="text-xl font-semibold">{title}</h2>
       </div>
       {!data ? (
         <div className="min-h-32 grid place-items-center">
-          <span className="loader" />
+          <span className="Loader" />
         </div>
       ) : data.entries.length === 0 ? (
         <EmptyState text={window._('moderationPortal.user.noEntries')} />
@@ -803,7 +803,7 @@ function TemporaryBanCard({
             onChange={(event) => setReason(event.target.value)}
           />
         </FormControl>
-        <button className="btn btn--destructive justify-self-start">
+        <button className="Btn Btn--destructive justify-self-start">
           {window._('moderationPortal.user.temporaryBan')}
         </button>
       </form>

@@ -21,10 +21,10 @@ export function WidgetsMenu({ service }: { service: WidgetsService }) {
             type="button"
             key={widget.name}
             disabled={!editor}
-            className="be-widget-card"
+            className="BeWidgetCard"
             onClick={() => editor && widget.apply(editor)}
           >
-            <span className="be-widget-card__icon">{widget.icon}</span>
+            <span className="BeWidgetCard-icon">{widget.icon}</span>
             <span>{widget.name}</span>
           </button>
         ))}

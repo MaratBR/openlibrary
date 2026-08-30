@@ -20,7 +20,7 @@ export default function Switch({
   ...props
 }: SwitchProps) {
   return (
-    <label className="switch" {...props}>
+    <label className="Switch" {...props}>
       <input
         disabled={disabled}
         onChange={(e) => {
@@ -32,7 +32,7 @@ export default function Switch({
         type="checkbox"
         {...slotProps.input}
       />
-      <span className="switch__slider" {...slotProps.slider} />
+      <span className="Switch-slider" {...slotProps.slider} />
     </label>
   )
 }

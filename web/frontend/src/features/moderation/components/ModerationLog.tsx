@@ -37,7 +37,7 @@ export function ModerationLog({
   showTarget?: boolean
 }) {
   return (
-    <section className="card card--nopad overflow-hidden">
+    <section className="Card Card--nopad overflow-hidden">
       {entries.length ? (
         entries.map((entry, index) => (
           <ModerationLogEntry
@@ -73,7 +73,7 @@ export function ModerationLogEntry({
             <strong>{formatAction(entry.action)}</strong>
             {showTarget && (
               <>
-                <span className="chip">{entry.targetType}</span>
+                <span className="Chip">{entry.targetType}</span>
                 <TargetLink type={entry.targetType} id={entry.targetId} />
               </>
             )}
@@ -100,7 +100,7 @@ function TargetLink({ type, id }: { type: string; id: string }) {
     comment: `/comments/${id}`,
   }
   return routes[type] ? (
-    <NavLink className="link text-sm" to={routes[type]}>
+    <NavLink className="Link text-sm" to={routes[type]}>
       {id}
     </NavLink>
   ) : (

@@ -5,7 +5,7 @@ import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 
 templ tag(t app.DefinedTagDto) {
-    <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", t.ID)) } class="tag">
+    <a href={ templ.SafeURL(fmt.Sprintf("/tag/%d", t.ID)) } class="Tag">
         { t.Name }
     </a>
 }
@@ -20,29 +20,29 @@ templ TagPage(tag app.TagDetailsItemDto) {
             Title: tag.Name,
         },
     }) {
-        <main class="ol-container">
-            <header class="page-header pt-16">
-                <div class="page-header__body">
-                    <h1 class="page-header__title">{tag.Name}</h1>
-                    <div class="page-header__meta empty:hidden">
+        <main class="OlContainer">
+            <header class="PageHeader pt-16">
+                <div class="PageHeader-body">
+                    <h1 class="PageHeader-title">{tag.Name}</h1>
+                    <div class="PageHeader-meta empty:hidden">
                     if tag.IsAdult {
-                        <span class="chip chip--destructive cursor-help" title={ l.T("tag.adultDescription") }>
+                        <span class="Chip Chip--destructive cursor-help" title={ l.T("tag.adultDescription") }>
                             { l.T("common.adult") }
                         </span>
                     }
                     if tag.IsSpoiler {
-                        <span class="chip border cursor-help" title={ l.T("tag.spoilerDescription") }>
+                        <span class="Chip border cursor-help" title={ l.T("tag.spoilerDescription") }>
                             { l.T("common.spoiler") }
                         </span>
                     }
                     </div>
 
-                    <p class="page-header__description text-lg">{tag.Description}</p>
+                    <p class="PageHeader-description text-lg">{tag.Description}</p>
 
-                    <div class="page-header__meta">
-                        <a class="link" href={templ.URL(fmt.Sprintf("/search?it=%d", tag.ID))}>{l.T("common.books")}</a>
+                    <div class="PageHeader-meta">
+                        <a class="Link" href={templ.URL(fmt.Sprintf("/search?it=%d", tag.ID))}>{l.T("common.books")}</a>
                         &bull;
-                        <a class="link" href={templ.URL(fmt.Sprintf("/collections?it=%d", tag.ID))}>{l.T("common.collections")}</a>
+                        <a class="Link" href={templ.URL(fmt.Sprintf("/collections?it=%d", tag.ID))}>{l.T("common.collections")}</a>
                     </div>
                 </div>
             </header>

@@ -19,8 +19,8 @@ const navigation = [
 
 export default function ModerationLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="dashboard-layout">
-      <aside className="dashboard-layout__sidebar">
+    <div className="DashboardLayout">
+      <aside className="DashboardLayout-sidebar">
         <Logo />
         <ul className="dashboard-sidebar-list">
           {navigation.map((item) => (
@@ -34,7 +34,7 @@ export default function ModerationLayout({ children }: { children: ReactNode }) 
         </ul>
       </aside>
 
-      <div className="dashboard-layout__body">{children}</div>
+      <div className="DashboardLayout-body">{children}</div>
     </div>
   )
 }
@@ -50,10 +50,10 @@ function Logo() {
 
 function SidebarItem({ icon, label, to }: { icon?: JSX.Element; label: string; to: To }) {
   return (
-    <li className="dashboard-sidebar-item">
-      <NavLink to={to} className="dashboard-sidebar-item__container">
-        <div className="dashboard-sidebar-item__icon">{icon}</div>
-        <div className="dashboard-sidebar-item__label">{label}</div>
+    <li className="DashboardSidebarItem">
+      <NavLink to={to} className="DashboardSidebarItem-container">
+        <div className="DashboardSidebarItem-icon">{icon}</div>
+        <div className="DashboardSidebarItem-label">{label}</div>
       </NavLink>
     </li>
   )

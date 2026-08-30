@@ -23,7 +23,7 @@ templ SearchPage(
     }) {
         @i18nExtractKeysByPrefix(l, "search")
 
-        <div class="ol-container my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
+        <div class="OlContainer my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
             @SearchResultFragment(result, explainedQuery, false)
         </div>
     }
@@ -56,9 +56,9 @@ templ SearchResultFragment(
         @jsonTemplate("data-search-explained-query", explainedQuery)
 
         if !disableHeader {
-            <header class="page-header">
-                <div class="page-header__body">
-                    <h1 class="page-header__title">
+            <header class="PageHeader">
+                <div class="PageHeader-body">
+                    <h1 class="PageHeader-title">
                         if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
                             {{ firstTag := explainedQuery.IncludeTags[0] }}
                             { firstTag.Name }
@@ -75,7 +75,7 @@ templ SearchResultFragment(
         </form>
 
         <div class="flex gap-2 my-4">
-            <button @click="openFilters=!openFilters" class="btn btn--outline">
+            <button @click="openFilters=!openFilters" class="Btn Btn--outline">
                 <i class="fa-solid fa-filter"></i>
                 {l.T("search.filters")}
                 if activeFilters > 0 {
@@ -132,18 +132,18 @@ templ SearchResultFragment(
 }
 
 templ bookSearchCard(id int64, name, slug, summary string, cover app.BookCover, authorName string, authorID uuid.UUID, tags []app.DefinedTagDto) {
-    <li role="listitem" id={ fmt.Sprintf("book-%d", id) } class="book-search-card">
-        <div class="book-search-card__left">
-            <a class="book-search-card__imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", id)) }>
+    <li role="listitem" id={ fmt.Sprintf("book-%d", id) } class="BookSearchCard">
+        <div class="BookSearchCard-left">
+            <a class="BookSearchCard-imglink" href={ templ.SafeURL(fmt.Sprintf("/book/%d", id)) }>
                 @bookCover(cover.URL, name, 200)
             </a>
         </div>
         
-        <div class="book-search-card__right">
-            <a href={ templ.SafeURL(fmt.Sprintf("/book/%s-%d", slug, id)) } class="link book-search-card__link">{ name }</a>                    
+        <div class="BookSearchCard-right">
+            <a href={ templ.SafeURL(fmt.Sprintf("/book/%s-%d", slug, id)) } class="Link BookSearchCard-link">{ name }</a>                    
             <br />
             by
-            <a class="link book-search-card__author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", authorID.String())) }>
+            <a class="Link BookSearchCard-author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", authorID.String())) }>
                 { authorName }
             </a>
 
@@ -153,7 +153,7 @@ templ bookSearchCard(id int64, name, slug, summary string, cover app.BookCover, 
                 })
 
                 if summary != "" {
-                    <div class="book-search-card__summary user-content" x-ignore>
+                    <div class="BookSearchCard-summary user-content" x-ignore>
                         @templ.Raw(summary)
                     </div>
                 }
@@ -194,10 +194,10 @@ templ SimpleSearch() {
             <form method="get" action="/search">
                 <input placeholder={l.T("search.search")} class="w-96 input rounded-full text-lg p-6" name="q" />
                 <div class="flex gap-2 justify-center mt-8">
-                    <a href="/random" class="btn btn--secondary">
+                    <a href="/random" class="Btn Btn--secondary">
                         {l.T("search.feelingLucky")}
                     </a>
-                    <button type="submit" class="btn btn--secondary">
+                    <button type="submit" class="Btn Btn--secondary">
                         {l.T("search.doSearch")}
                     </button>
                 </div>

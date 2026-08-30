@@ -1,4 +1,4 @@
-.tag {
+.Tag {
   @apply inline-block overflow-hidden px-2 bg-surface border rounded-sm
         hover:text-foreground hover:bg-highlight
         focus-visible:ring focus-visible:ring-primary focus-visible:border-primary focus-visible:ring-inset focus-visible:outline-none;
@@ -10,20 +10,20 @@
   line-height: 1.7em;
 
 
-  &__adult {
+  &-adult {
     @apply text-destructive font-semibold text-sm;
   }
 }
 
 .tags {
   &--sm {
-    .tag {
+    .Tag {
       @apply text-sm p-1;
     }
   }
 
   &--xs {
-    .tag {
+    .Tag {
       @apply text-xs p-0.5;
     }
   }

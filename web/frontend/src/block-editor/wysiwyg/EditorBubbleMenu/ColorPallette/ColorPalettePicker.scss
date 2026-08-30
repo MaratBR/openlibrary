@@ -1,7 +1,7 @@
-.be-color-palette-picker {
+.BeColorPalettePicker {
     @apply flex w-full min-w-0 flex-wrap gap-2;
 
-    &__item {
+    &-item {
         @apply transition-transform size-6 rounded-full transition-shadow;
 
         &:hover{

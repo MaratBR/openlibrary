@@ -31,8 +31,8 @@ export function PasswordInput({
     const valid = isValid(type, validation)
     return (
       <li aria-valid={valid}>
-        <i className="password-input__ok-icon fa-solid fa-circle-check" />
-        <i className="password-input__err-icon fa-solid fa-circle-xmark" />
+        <i className="PasswordInput-okIcon fa-solid fa-circle-check" />
+        <i className="PasswordInput-errIcon fa-solid fa-circle-xmark" />
         {label}
       </li>
     )
@@ -48,7 +48,7 @@ export function PasswordInput({
         onChange={handleChange}
         id={id}
       />
-      <ul className="password-input__requirements">
+      <ul className="PasswordInput-requirements">
         {renderRequirement('symbols', window._('password.mustHaveSymbol'))}
         {renderRequirement('differentCases', window._('password.mustHaveCases'))}
         {renderRequirement('digits', window._('password.mustHaveDigits'))}

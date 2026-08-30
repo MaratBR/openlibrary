@@ -36,19 +36,19 @@ export default function TagsInput({ tags = [], onInput, id }: TagsInputProps) {
     <DropdownCore
       slots={{
         beforeInput: (
-          <div className="dropdown__chips">
+          <div className="Dropdown-chips">
             {tags.map((tag) => (
-              <span key={tag.id} className="tag">
+              <span key={tag.id} className="Tag">
                 {tag.name}
 
-                {tag.adult && <span className="tag__adult">&nbsp;18+</span>}
+                {tag.adult && <span className="Tag-adult">&nbsp;18+</span>}
 
                 <button
                   onClick={(e) => {
                     e.preventDefault()
                     remove(tag)
                   }}
-                  className="chip__close"
+                  className="Chip-close"
                   aria-label={window._('search.removeTag')}
                 >
                   <i className="fa-solid fa-xmark !text-[20px]" />
@@ -69,7 +69,7 @@ export default function TagsInput({ tags = [], onInput, id }: TagsInputProps) {
             <ul>
               {searchResults.map((tag) =>
                 tags.some((x) => x.id === tag.id) ? null : (
-                  <li key={tag.id} onClick={() => add(tag)} role="button" className="list-item">
+                  <li key={tag.id} onClick={() => add(tag)} role="button" className="ListItem">
                     {tag.name}
                   </li>
                 ),

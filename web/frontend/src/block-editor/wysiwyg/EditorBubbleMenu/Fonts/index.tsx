@@ -8,7 +8,7 @@ export function Fonts() {
   const toggle = useBubbleState((x) => x.toggleFontPicker)
 
   return (
-    <button className="be-listitem be-listitem--btn" onClick={toggle}>
+    <button className="BeListitem BeListitem--btn" onClick={toggle}>
       <i className="fa-solid fa-font"></i>{' '}
     </button>
   )

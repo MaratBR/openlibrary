@@ -76,7 +76,7 @@ function ChapterEditForm({
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-medium">{chapter.name}</h2>
-        <button type="button" className="btn btn--icon btn--ghost" onClick={onClose}>
+        <button type="button" className="Btn Btn--icon Btn--ghost" onClick={onClose}>
           <i className="fa-solid fa-xmark" />
         </button>
       </div>
@@ -108,21 +108,21 @@ function ChapterEditForm({
       </FormControl>
 
       {willBecomePublic && (
-        <div className="alert alert--warning" role="alert">
+        <div className="Alert Alert--warning" role="Alert">
           {window._('bookManager.edit.chapterPublishWarning')}
         </div>
       )}
 
       <button
         type="submit"
-        className="btn btn--primary"
+        className="Btn Btn--primary"
         disabled={!normalizedName.valid || saveMutation.isPending}
       >
         {window._('common.save')}
       </button>
 
       <div className="mt-6">
-        <a href={`/books-manager/book/${bookId}/chapter/${chapter.id}`} className="link">
+        <a href={`/books-manager/book/${bookId}/chapter/${chapter.id}`} className="Link">
           {window._('bookManager.edit.goToEditor')}
         </a>
       </div>

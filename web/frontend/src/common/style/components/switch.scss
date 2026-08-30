@@ -1,5 +1,5 @@
 /* The switch itself */
-.switch {
+.Switch {
   position: relative;
   display: inline-block;
   width: 48px;
@@ -7,14 +7,14 @@
   height: 26px;
 }
 
-.switch input {
+.Switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
 /* The slider (the visual part of the switch) */
-.switch__slider {
+.Switch-slider {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -30,7 +30,7 @@
 }
 
 /* The slider circle (the knob) */
-.switch__slider:before {
+.Switch-slider:before {
   position: absolute;
   content: '';
   height: 18px;
@@ -45,23 +45,23 @@
 }
 
 /* When the switch is checked (turned on) */
-input:checked + .switch__slider {
+input:checked + .Switch-slider {
   @apply bg-primary;
   border-color: var(--primary);
 }
 
-input:disabled + .switch__slider {
+input:disabled + .Switch-slider {
   opacity: 0.48;
 }
 
-input:checked + .switch__slider:before {
+input:checked + .Switch-slider:before {
   transform: translateX(22px) scale(var(--scale, 1));
 }
 
-.switch:hover .switch__slider:before {
+.Switch:hover .Switch-slider:before {
   --scale: 0.94;
 }
 
-.switch input:focus-visible + .switch__slider {
+.Switch input:focus-visible + .Switch-slider {
   box-shadow: var(--focus-ring);
 }

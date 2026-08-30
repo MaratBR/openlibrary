@@ -15,7 +15,7 @@ executeAfterDOMIsReady(() => {
       const { scrollY } = window
       const newIsBlurred = scrollY > 10
       if (newIsBlurred != isBlurred) {
-        header.classList.toggle('site-header--blurred', newIsBlurred)
+        header.classList.toggle('SiteHeader--blurred', newIsBlurred)
         isBlurred = newIsBlurred
       }
     }, 100),

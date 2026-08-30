@@ -44,7 +44,7 @@ export default function BookEdit() {
         title={
           <div className="flex items-center">
             <NavLink
-              className="btn btn--icon btn--primary mr-4"
+              className="Btn Btn--icon Btn--primary mr-4"
               to={`/books/${bookResponse.data.id}`}
             >
               <i className="fa-solid fa-arrow-left" />
@@ -53,7 +53,7 @@ export default function BookEdit() {
           </div>
         }
       />
-      <div className="card mb-4">
+      <div className="Card mb-4">
         <form className="space-y-2">
           <FormControl htmlFor="name-input" label={window._('bookManager.edit.name')}>
             <input
@@ -89,16 +89,16 @@ export default function BookEdit() {
           </FormControl>
 
           <div className="mt-4 flex">
-            <button className="btn btn--primary" onClick={() => saveMutation.mutate()}>
+            <button className="Btn Btn--primary" onClick={() => saveMutation.mutate()}>
               {window._('common.save')}
             </button>
           </div>
         </form>
       </div>
 
-      <div className="card mb-4">
+      <div className="Card mb-4">
         <a
-          className="btn btn--outline"
+          className="Btn Btn--outline"
           href={`/book/${bookResponse.data.id}`}
           target="_blank"
           rel="noreferrer"

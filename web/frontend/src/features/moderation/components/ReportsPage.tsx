@@ -38,10 +38,10 @@ export default function ReportsPage({ view }: { view: 'overview' | 'search' }) {
       <DashboardContent.StickyHeader title={window._('moderationPortal.reports')} />
       <div className="w-full max-w-360 mx-auto px-4 md:px-8 py-7">
         <nav aria-label={window._('moderationPortal.reportsPage.navigation')}>
-          <ul className="tabs tabs--primary mb-6">
+          <ul className="Tabs Tabs--primary mb-6">
             <li>
               <NavLink
-                className={({ isActive }) => `tab ${isActive ? 'tab--active' : ''}`}
+                className={({ isActive }) => `tab ${isActive ? 'Tab--active' : ''}`}
                 end
                 to="/reports"
               >
@@ -50,7 +50,7 @@ export default function ReportsPage({ view }: { view: 'overview' | 'search' }) {
             </li>
             <li>
               <NavLink
-                className={({ isActive }) => `tab ${isActive ? 'tab--active' : ''}`}
+                className={({ isActive }) => `tab ${isActive ? 'Tab--active' : ''}`}
                 to="/reports/search"
               >
                 {window._('moderationPortal.reportsPage.search')}
@@ -77,7 +77,7 @@ function ReportsSearch({
   const { reports, filters } = data
   return (
     <div>
-      <DashboardContent.Card className="card--elevated p-4 md:p-5 mb-6">
+      <DashboardContent.Card className="Card--elevated p-4 md:p-5 mb-6">
         <Form
           method="get"
           className="grid md:grid-cols-[minmax(18rem,1fr)_14rem_auto] gap-3 items-end"
@@ -102,7 +102,7 @@ function ReportsSearch({
             </label>
             <TargetTypeSelect key={filters.targetType} targetType={filters.targetType} />
           </div>
-          <button className="btn btn--primary h-10 px-5" type="submit">
+          <button className="Btn Btn--primary h-10 px-5" type="submit">
             {window._('moderationPortal.reportsPage.apply')}
           </button>
         </Form>
@@ -122,7 +122,7 @@ function ReportsSearch({
             <NavLink
               key={report.id}
               to={`/reports/${report.id}`}
-              className="card card--elevated group block p-4 md:p-5 hover:bg-foreground/5"
+              className="Card Card--elevated group block p-4 md:p-5 hover:bg-foreground/5"
             >
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 grid place-items-center shrink-0">
@@ -216,7 +216,7 @@ export function ReportsErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('moderationPortal.reports')} />
       <div className="p-8">
-        <div className="card">
+        <div className="Card">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

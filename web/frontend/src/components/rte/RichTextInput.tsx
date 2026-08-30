@@ -10,9 +10,9 @@ export type RichTextInputProps = {
 
 export function RichTextInput({ editor, className = '', toolbar }: RichTextInputProps) {
   return (
-    <div className={`ol-simple-editor ${className}`.trim()}>
+    <div className={`OlSimpleEditor ${className}`.trim()}>
       {typeof toolbar === 'function' ? toolbar(editor) : (toolbar ?? <Toolbar editor={editor} />)}
-      <EditorContent editor={editor} className="ol-simple-editor__content user-content" />
+      <EditorContent editor={editor} className="OlSimpleEditor-content user-content" />
     </div>
   )
 }

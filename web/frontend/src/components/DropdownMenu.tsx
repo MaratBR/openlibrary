@@ -55,7 +55,7 @@ export function DropdownMenuSubTrigger({
 }: ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & { inset?: boolean }) {
   return (
     <DropdownMenuPrimitive.SubTrigger
-      className={cn('dropdown__sub-trigger', inset && 'dropdown__sub-trigger--inset', className)}
+      className={cn('Dropdown-subTrigger', inset && 'DropdownSubTrigger--inset', className)}
       {...props}
     >
       {children}
@@ -68,7 +68,7 @@ export function DropdownMenuSubContent({
   className,
   ...props
 }: ComponentProps<typeof DropdownMenuPrimitive.SubContent>) {
-  return <DropdownMenuPrimitive.SubContent className={cn('dropdown', className)} {...props} />
+  return <DropdownMenuPrimitive.SubContent className={cn('Dropdown', className)} {...props} />
 }
 
 export function DropdownMenuContent({
@@ -79,7 +79,7 @@ export function DropdownMenuContent({
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
-        className={cn('dropdown', className)}
+        className={cn('Dropdown', className)}
         sideOffset={sideOffset}
         {...props}
       />
@@ -94,7 +94,7 @@ export function DropdownMenuItem({
 }: ComponentProps<typeof DropdownMenuPrimitive.Item> & { inset?: boolean }) {
   return (
     <DropdownMenuPrimitive.Item
-      className={cn('dropdown__item', inset && 'dropdown__item--inset', className)}
+      className={cn('Dropdown-item', inset && 'DropdownItem--inset', className)}
       {...props}
     />
   )
@@ -109,10 +109,10 @@ export function DropdownMenuCheckboxItem({
   return (
     <DropdownMenuPrimitive.CheckboxItem
       checked={checked}
-      className={cn('dropdown__item dropdown__item--choice', className)}
+      className={cn('Dropdown-item DropdownItem--choice', className)}
       {...props}
     >
-      <span className="dropdown__indicator">
+      <span className="Dropdown-indicator">
         <DropdownMenuPrimitive.ItemIndicator>
           <CheckIcon className="h-4 w-4" />
         </DropdownMenuPrimitive.ItemIndicator>
@@ -129,10 +129,10 @@ export function DropdownMenuRadioItem({
 }: ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
   return (
     <DropdownMenuPrimitive.RadioItem
-      className={cn('dropdown__item dropdown__item--choice', className)}
+      className={cn('Dropdown-item DropdownItem--choice', className)}
       {...props}
     >
-      <span className="dropdown__indicator">
+      <span className="Dropdown-indicator">
         <DropdownMenuPrimitive.ItemIndicator>
           <DotIcon className="h-4 w-4" />
         </DropdownMenuPrimitive.ItemIndicator>
@@ -149,7 +149,7 @@ export function DropdownMenuLabel({
 }: ComponentProps<typeof DropdownMenuPrimitive.Label> & { inset?: boolean }) {
   return (
     <DropdownMenuPrimitive.Label
-      className={cn('dropdown__label', inset && 'dropdown__label--inset', className)}
+      className={cn('Dropdown-label', inset && 'DropdownLabel--inset', className)}
       {...props}
     />
   )
@@ -160,10 +160,10 @@ export function DropdownMenuSeparator({
   ...props
 }: ComponentProps<typeof DropdownMenuPrimitive.Separator>) {
   return (
-    <DropdownMenuPrimitive.Separator className={cn('dropdown__separator', className)} {...props} />
+    <DropdownMenuPrimitive.Separator className={cn('Dropdown-separator', className)} {...props} />
   )
 }
 
 export function DropdownMenuShortcut({ className, ...props }: ComponentProps<'span'>) {
-  return <span className={cn('dropdown__shortcut', className)} {...props} />
+  return <span className={cn('Dropdown-shortcut', className)} {...props} />
 }

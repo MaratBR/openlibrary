@@ -71,13 +71,13 @@ export default function SignUpForm({ data: dataParam }: ReactIslandProps) {
 
   return (
     <div ref={rootElementRef} className="overflow-auto" style={{ scrollbarWidth: 'thin' }}>
-      <div className="form-control">
-        <div className="form-control__label">
+      <div className="FormControl">
+        <div className="FormControl-label">
           <label htmlFor="username" className="label">
             {window._('login.username')}
           </label>
         </div>
-        <div className="form-control__value">
+        <div className="FormControl-value">
           <input
             required
             name="username"
@@ -90,13 +90,13 @@ export default function SignUpForm({ data: dataParam }: ReactIslandProps) {
         </div>
       </div>
 
-      <div className="form-control">
-        <div className="form-control__label">
+      <div className="FormControl">
+        <div className="FormControl-label">
           <label htmlFor="email" className="label">
             {window._('login.email')}
           </label>
         </div>
-        <div className="form-control__value">
+        <div className="FormControl-value">
           <input
             required
             name="email"
@@ -109,13 +109,13 @@ export default function SignUpForm({ data: dataParam }: ReactIslandProps) {
         </div>
       </div>
 
-      <div className="form-control">
-        <div className="form-control__label">
+      <div className="FormControl">
+        <div className="FormControl-label">
           <label htmlFor="password" className="label">
             {window._('login.password')}
           </label>
         </div>
-        <div className="form-control__value">
+        <div className="FormControl-value">
           <PasswordInput
             id="password"
             name="password"
@@ -126,13 +126,13 @@ export default function SignUpForm({ data: dataParam }: ReactIslandProps) {
         </div>
       </div>
 
-      <div className="form-control">
-        <div className="form-control__label">
+      <div className="FormControl">
+        <div className="FormControl-label">
           <label htmlFor="repeatPassword" className="label">
             {window._('signup.repeatPassword')}
           </label>
         </div>
-        <div className="form-control__value">
+        <div className="FormControl-value">
           <input
             required
             onChange={(e) => setRepeatPassword((e.target as HTMLInputElement).value)}
@@ -152,9 +152,9 @@ export default function SignUpForm({ data: dataParam }: ReactIslandProps) {
           onClick={() => {
             setSubmitting(true)
           }}
-          className="btn btn--lg btn--primary"
+          className="Btn Btn--lg Btn--primary"
         >
-          {submitting ? <span className="loader" /> : window._('signup.signup')}
+          {submitting ? <span className="Loader" /> : window._('signup.signup')}
         </button>
       </div>
     </div>

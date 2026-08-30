@@ -84,8 +84,8 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                     @click="primaryAction()"
                     :disabled="primaryDisabled()"
                     :aria-busy="busy"
-                    class="btn btn--primary flex-1">
-                    <i class="btn__icon btn__icon--left fa-solid" :class="busy ? 'fa-spinner fa-spin' : primaryIcon()"></i>
+                    class="Btn Btn--primary flex-1">
+                    <i class="Btn-icon BtnIcon--left fa-solid" :class="busy ? 'fa-spinner fa-spin' : primaryIcon()"></i>
                     <span class="px-1" x-text="primaryLabel()">{readingListPrimaryLabel(l, readingListStatus)}</span>
                 </button>
 
@@ -95,7 +95,7 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                     :aria-expanded="open"
                     aria-haspopup="menu"
                     aria-label="Change reading status"
-                    class="btn btn--primary w-12 shrink-0 px-0">
+                    class="Btn Btn--primary w-12 shrink-0 px-0">
                     <i class="fa-solid fa-chevron-down text-sm transition-transform duration-200" :class="open && 'rotate-180'"></i>
                 </button>
             </div>
@@ -107,7 +107,7 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                 @click.outside="open = false"
                 @keydown.escape.window="open = false"
                 role="menu"
-                class="card card--elevated absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden">
+                class="Card Card--elevated absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden">
                 <a
                     x-show="rl?.status === 'reading' && rl?.chapterId"
                     :href="chapterUrl()"
@@ -126,13 +126,13 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                             :aria-checked={ fmt.Sprintf("rl?.status === '%s'", status) }
                             :aria-disabled={ fmt.Sprintf("busy || rl?.status === '%s'", status) }
                             :tabindex={ fmt.Sprintf("busy || rl?.status === '%s' ? -1 : 0", status) }
-                            :class={ fmt.Sprintf("rl?.status === '%s' && 'list-item--selected'", status) }
+                            :class={ fmt.Sprintf("rl?.status === '%s' && 'ListItem--selected'", status) }
                             @click={ fmt.Sprintf("!busy && rl?.status !== '%s' && status('%s')", status, status) }
                             @keydown.enter.prevent={ fmt.Sprintf("!busy && rl?.status !== '%s' && status('%s')", status, status) }
                             @keydown.space.prevent={ fmt.Sprintf("!busy && rl?.status !== '%s' && status('%s')", status, status) }
-                            class="list-item">
-                            <i class={ "list-item__icon fa-solid " + readingListStatusIcon(status) }></i>
-                            <span class="list-item__content" x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }></span>
+                            class="ListItem">
+                            <i class={ "ListItem-icon fa-solid " + readingListStatusIcon(status) }></i>
+                            <span class="ListItem-content" x-text={ fmt.Sprintf("i18n['readingList.%s']", status) }></span>
                             <i
                                 class="fa-solid fa-check text-primary opacity-0"
                                 :class={ fmt.Sprintf("rl?.status === '%s' && 'opacity-100'", status) }></i>
@@ -141,8 +141,8 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                 </ul>
             </div>
         } else {
-            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="btn btn--lg btn--primary w-full">
-                <i class="btn__icon btn__icon--left fa-solid fa-bookmark"></i>
+            <a href={ templ.SafeURL(fmt.Sprintf("/login?ol.from=book.want_to_read&next=%s", url.QueryEscape(fmt.Sprintf("/book/%d", book.ID)))) } class="Btn Btn--lg Btn--primary w-full">
+                <i class="Btn-icon BtnIcon--left fa-solid fa-bookmark"></i>
                 {l.T("readingList.want_to_read")}
             </a>
         }

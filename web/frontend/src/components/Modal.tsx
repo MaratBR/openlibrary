@@ -44,11 +44,11 @@ export default function Modal({ open, children, onClose, slotProps = {} }: Modal
   if (!shouldRender) return null
 
   return createPortal(
-    <div ref={ref} className="modal" onClick={handleClick}>
+    <div ref={ref} className="Modal" onClick={handleClick}>
       <div
         ref={animationRef}
         {...slotProps.content}
-        className={clsx('modal__content', slotProps.content?.className)}
+        className={clsx('Modal-content', slotProps.content?.className)}
       >
         {children}
       </div>

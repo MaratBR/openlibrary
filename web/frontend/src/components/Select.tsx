@@ -57,10 +57,10 @@ export function SelectTrigger({
   ...props
 }: ComponentProps<typeof SelectPrimitive.Trigger>) {
   return (
-    <SelectPrimitive.Trigger className={cn('select', className)} {...props}>
+    <SelectPrimitive.Trigger className={cn('Select', className)} {...props}>
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="select__icon h-4 w-4 shrink-0 opacity-60" />
+        <ChevronDownIcon className="Select-icon h-4 w-4 shrink-0 opacity-60" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -77,7 +77,7 @@ export function SelectContent({
     <SelectPrimitive.Portal container={portalContainer ?? undefined}>
       <SelectPrimitive.Content
         className={cn(
-          'select__content relative z-50 max-h-[var(--radix-select-content-available-height)] min-w-32 overflow-hidden rounded-md border border-border bg-surface text-surface-foreground shadow-md',
+          'Select-content relative z-50 MaxH[var(--radixSelectContentAvailableHeight)] min-w-32 overflow-hidden rounded-md border border-border bg-surface text-surface-foreground shadow-md',
           position === 'popper' &&
             'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
           className,
@@ -90,7 +90,7 @@ export function SelectContent({
           className={cn(
             'p-1',
             position === 'popper' &&
-              'h-[var(--radix-select-trigger-height)] min-w-[var(--radix-select-trigger-width)]',
+              'H[var(--radixSelectTriggerHeight)] MinW[var(--radixSelectTriggerWidth)]',
           )}
         >
           {children}

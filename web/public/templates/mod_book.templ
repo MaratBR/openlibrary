@@ -34,12 +34,12 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
 
         <div 
             x-data={string(dataJson)}
-            class="ol-container ol-container--big">
-            <header class="page-header mt-8">
-                <div class="page-header__body">
-                <h1 class="page-header__title">{book.Name}</h1>
+            class="OlContainer OlContainer--big">
+            <header class="PageHeader mt-8">
+                <div class="PageHeader-body">
+                <h1 class="PageHeader-title">{book.Name}</h1>
 
-                <div class="page-header__meta">
+                <div class="PageHeader-meta">
                     if book.IsBanned {
                         <div class="bg-red-700 text-white px-3 rounded-full leading-8 font-medium flex items-center">
                             <span class="material-symbols-outlined mr-1">gavel</span>
@@ -96,7 +96,7 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
                 <div 
                     x-cloak x-show="action==='permDelete'" 
                     aria-hidden="true" :aria-hidden="action!=='permDelete'"
-                    class="card mb-8 mt-2 p-4">
+                    class="Card mb-8 mt-2 p-4">
                     <p class="mb-4">{_tt(l, "mod.confirmDangerousAction", map[string]string{
                         "challenge": data.Challenge,
                     })}</p>
@@ -107,12 +107,12 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
                 <button 
                     disabled 
                     :disabled="!action || !reason || (action === 'permDelete' && challenge !== challengeInput)" 
-                    class="btn btn--secondary btn--lg" type="submit">{l.T("mod.performAction")}</button>
+                    class="Btn Btn--secondary Btn--lg" type="submit">{l.T("mod.performAction")}</button>
             </form>
 
             <hr class="my-8" />
 
-            <section class="overflow-hidden border card p-0 shadow-md">
+            <section class="overflow-hidden border Card p-0 shadow-md">
                 <header class="p-2">
                     <h2 class="text-xl">{ l.T("mod.book.log.recentActions") }</h2>
                     <p>
@@ -124,7 +124,7 @@ templ ModBook(book app.BookModerationInfo, recentBookLogs app.BookLogResult) {
 
                 @modLogTable(recentBookLogs.Entries)
 
-                <a class="link text-lg p-4 inline-block" href={templ.SafeURL(fmt.Sprintf("/mod/book/%d/log", book.ID))}>Open full book log</a>
+                <a class="Link text-lg p-4 inline-block" href={templ.SafeURL(fmt.Sprintf("/mod/book/%d/log", book.ID))}>Open full book log</a>
             </section>
         </div>
     }
@@ -135,18 +135,18 @@ templ modBookAction(
     disabled bool,
 ) {
     <li 
-        class="mod-action-card"
+        class="ModActionCard"
         role="button"
         aria-disabled={ fmt.Sprintf("%t", disabled) }
         if !disabled {
             @click={fmt.Sprintf("action='%s'", id)} :data-active={fmt.Sprintf("action=='%s'", id)}
         }
         >
-        <span class="mod-action-card__name">
+        <span class="ModActionCard-name">
             <i class="fa-solid fa-shield-halved"></i>
             {name}
         </span>
-        <span class="mod-action-card__description">{description}</span>
+        <span class="ModActionCard-description">{description}</span>
     </li>
 }
 
@@ -210,12 +210,12 @@ templ ModBookLog(book app.BookModerationInfo, logs app.BookLogResult) {
     // TODO: i18n
     @modLayout("Mod - " + book.Name + " - activity log") {
         <div 
-            class="ol-container ol-container--big">
+            class="OlContainer OlContainer--big">
 
-            <header class="page-header mt-8">
-                <div class="page-header__body">
-                <h1 class="page-header__title">
-                    <a class="link" href={ templ.SafeURL(fmt.Sprintf("/mod/book/%d", book.ID)) }>
+            <header class="PageHeader mt-8">
+                <div class="PageHeader-body">
+                <h1 class="PageHeader-title">
+                    <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/mod/book/%d", book.ID)) }>
                         { book.Name }
                     </a>
                     <i class="fa-solid fa-chevron-right"></i>

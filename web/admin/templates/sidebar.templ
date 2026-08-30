@@ -6,7 +6,7 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 templ sidebar() {
     {{ l := i18n.GetLocalizer(ctx) }}
-    <aside class="dashboard-layout__sidebar">
+    <aside class="DashboardLayout-sidebar">
         <div class="flex justify-center my-4">
             <img class="h-20 dark:hidden" src="/_/embed-assets/logo.svg" alt="OpenLibrary" />
             <img class="h-20 hidden dark:block" src="/_/embed-assets/logo-dark.svg" alt="OpenLibrary" />
@@ -53,9 +53,9 @@ templ sidebarItem(href, icon string) {
     
     <li
         if isCurrent {
-            class="dashboard-sidebar-item dashboard-sidebar-item--active"
+            class="DashboardSidebarItem DashboardSidebarItem--active"
         } else {
-            class="dashboard-sidebar-item"
+            class="DashboardSidebarItem"
         }
         >
         <a 
@@ -63,10 +63,10 @@ templ sidebarItem(href, icon string) {
                 data-link-active="true"
             }
             href={templ.SafeURL(href)}>
-            <div class="dashboard-sidebar-item__icon">
+            <div class="DashboardSidebarItem-icon">
                 <i class={ icon }></i>
             </div>
-            <div class="dashboard-sidebar-item__label">
+            <div class="DashboardSidebarItem-label">
                 { children... }
             </div>
         </a>

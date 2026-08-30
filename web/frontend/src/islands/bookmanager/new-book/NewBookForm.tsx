@@ -25,7 +25,7 @@ export default function NewBookForm() {
       <DashboardContent.StickyHeader
         title={
           <div className="flex items-center">
-            <NavLink className="btn btn--icon btn--primary mr-4" to="/books">
+            <NavLink className="Btn Btn--icon Btn--primary mr-4" to="/books">
               <i className="fa-solid fa-arrow-left" />
             </NavLink>
             {window._('bookManager.newBook.title')}
@@ -84,7 +84,7 @@ export default function NewBookForm() {
                 disabled={name.trim().length < 2}
                 onClick={() => setStage(1)}
                 type="button"
-                className="btn btn--lg btn--primary mt-8 rounded-full"
+                className="Btn Btn--lg Btn--primary mt-8 rounded-full"
               >
                 {window._('bookManager.newBook.next')}
               </button>
@@ -120,7 +120,7 @@ export default function NewBookForm() {
                   disabled={rating === ''}
                   onClick={() => setStage(2)}
                   type="button"
-                  className="btn btn--lg btn--primary mt-8 rounded-full"
+                  className="Btn Btn--lg Btn--primary mt-8 rounded-full"
                 >
                   {window._('bookManager.newBook.next')}
                 </button>
@@ -135,7 +135,7 @@ export default function NewBookForm() {
               <button
                 onClick={() => setStage(3)}
                 type="button"
-                className="btn btn--lg btn--primary mt-8 rounded-full"
+                className="Btn Btn--lg Btn--primary mt-8 rounded-full"
               >
                 {window._('bookManager.newBook.next')}
               </button>
@@ -152,7 +152,7 @@ export default function NewBookForm() {
                 <dt>{window._('bookManager.newBook.tags')}:</dt>
                 <dd className="tags items-start flex flex-wrap gap-2">
                   {tags.map((x) => (
-                    <a className="tag" key={x.id} href={`/tags/${x.id}`}>
+                    <a className="Tag" key={x.id} href={`/tags/${x.id}`}>
                       {x.name}
                     </a>
                   ))}
@@ -163,10 +163,10 @@ export default function NewBookForm() {
                 onClick={() => {
                   setLoading(true)
                 }}
-                className="btn btn--lg btn--primary mt-8 rounded-full"
+                className="Btn Btn--lg Btn--primary mt-8 rounded-full"
               >
                 {loading ? (
-                  <span className="loader loader--dark" />
+                  <span className="Loader Loader--dark" />
                 ) : (
                   window._('bookManager.newBook.create')
                 )}

@@ -14,8 +14,8 @@ export function FormControl({
   error?: string
 }) {
   return (
-    <div className="form-control">
-      <div className="form-control__label ">
+    <div className="FormControl">
+      <div className="FormControl-label ">
         {htmlFor ? (
           <label className="label" htmlFor={htmlFor}>
             {label}
@@ -24,16 +24,16 @@ export function FormControl({
           <span className="label">{label}</span>
         )}
 
-        {description && <p className="form-control__hint">{description}</p>}
+        {description && <p className="FormControl-hint">{description}</p>}
       </div>
 
-      <div className="form-control__value">
+      <div className="FormControl-value">
         {children}
         {error && (
           <p
             id={htmlFor ? `${htmlFor}-error` : undefined}
-            className="form-control__error"
-            role="alert"
+            className="FormControl-error"
+            role="Alert"
           >
             <i className="fa-solid fa-circle-exclamation" aria-hidden="true" />
             {error}

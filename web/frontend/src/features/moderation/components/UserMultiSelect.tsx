@@ -46,7 +46,7 @@ export function UserMultiSelect({
     <div>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button type="button" className="select w-full justify-between">
+          <button type="button" className="Select w-full justify-between">
             <span className={value.length ? '' : 'text-secondary-foreground'}>
               {value.length
                 ? window._('moderationPortal.loginHistoryPage.usersSelected', {
@@ -57,7 +57,7 @@ export function UserMultiSelect({
             <i className="fa-solid fa-chevron-down text-xs opacity-60" />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-72 p-0">
+        <PopoverContent className="W[var(--radixPopoverTriggerWidth)] min-w-72 p-0">
           <div className="p-2 border-b border-border">
             <input
               className="input w-full"
@@ -124,7 +124,7 @@ export function UserMultiSelect({
             <button
               key={user.id}
               type="button"
-              className="chip hover:bg-foreground/10"
+              className="Chip hover:bg-foreground/10"
               onClick={() => toggle(user)}
             >
               {user.name}

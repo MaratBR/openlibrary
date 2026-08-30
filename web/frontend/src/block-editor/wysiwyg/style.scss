@@ -14,7 +14,7 @@
   overflow-y: auto;
 }
 
-.be-suggestion-item {
+.BeSuggestionItem {
   @apply p-4 border-b last:border-none;
 
   &:focus {
@@ -25,11 +25,11 @@
     @apply text-primary;
   }
 
-  &__name {
+  &-name {
     @apply font-[500] text-lg;
   }
 
-  &__icon {
+  &-icon {
     @apply mr-1 inline-block;
   }
 }

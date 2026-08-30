@@ -24,7 +24,7 @@ export default function AuditLogPage() {
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('moderationPortal.auditLog')} />
       <div className="grid gap-5 max-w-360 mx-auto">
-        <section className="card">
+        <section className="Card">
           <FormControl label={window._('moderationPortal.audit.targetType')}>
             <Select value={targetType || 'all'} onValueChange={change}>
               <SelectTrigger className="w-full sm:w-72">
@@ -54,7 +54,7 @@ export default function AuditLogPage() {
 export function AuditLogErrorPage() {
   return (
     <DashboardContent.Root>
-      <div className="card">
+      <div className="Card">
         <ErrorDisplay error={useRouteError()} />
       </div>
     </DashboardContent.Root>

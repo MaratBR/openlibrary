@@ -1,11 +1,11 @@
-.ol-simple-editor {
+.OlSimpleEditor {
   @apply bg-surface rounded-xl border border-border;
 
-  &__toolbar {
+  &-toolbar {
     @apply bg-surface rounded-lg m-2 p-2 shadow-sm flex items-center gap-1 h-12;
   }
 
-  &__btn {
+  &-btn {
     @apply size-8 bg-surface rounded-md flex items-center justify-center
             hover:bg-primary hover:text-primary-foreground transition-colors;
 
@@ -14,11 +14,11 @@
     }
   }
 
-  &__delimiter {
+  &-delimiter {
     @apply border h-5 mx-2;
   }
 
-  &__content {
+  &-content {
     @apply px-3 text-sm;
     min-height: 4.75rem;
 
@@ -28,7 +28,7 @@
     }
   }
 
-  &--review &__content {
+  &--review &-content {
     min-height: 18.75rem;
   }
 }

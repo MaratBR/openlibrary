@@ -24,11 +24,11 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
 
 
     @dashboardLayout("Tags") {
-        <div class="dashboard-content">
-            <header class="page-header">
-                <div class="page-header__body">
-                    <h1 class="page-header__title">Tags</h1>
-                    <p class="page-header__description">View list of tags and create new tags or edit existing ones.</p>
+        <div class="DashboardContent">
+            <header class="PageHeader">
+                <div class="PageHeader-body">
+                    <h1 class="PageHeader-title">Tags</h1>
+                    <p class="PageHeader-description">View list of tags and create new tags or edit existing ones.</p>
                 </div>
             </header>
 
@@ -65,15 +65,15 @@ templ TagsList(result app.ListTagsResult, searchRequest TagsSearchRequest) {
                         for _, tag := range result.Tags {
                             <tr>
                                 <td>
-                                    <a class="link link--primary" href={ templ.SafeURL(fmt.Sprintf("/admin/tags/tag-details/%d", tag.ID)) }>{ tag.Name }</a>
+                                    <a class="Link Link--primary" href={ templ.SafeURL(fmt.Sprintf("/admin/tags/tag-details/%d", tag.ID)) }>{ tag.Name }</a>
                                     if tag.IsDefault {
                                         <i>({ l.T("admin.tags.default") })</i>
                                     }
                                     <br />
                                     
                                     <span class="text-xs">
-                                        <a class="link" href={ fmt.Sprintf("/tag/%d", tag.ID) }>{ l.T("common.view") }</a> |
-                                        <a target="_blank" class="link" href={ fmt.Sprintf("/search?it=%d", tag.ID) }>
+                                        <a class="Link" href={ fmt.Sprintf("/tag/%d", tag.ID) }>{ l.T("common.view") }</a> |
+                                        <a target="_blank" class="Link" href={ fmt.Sprintf("/search?it=%d", tag.ID) }>
                                             { l.T("admin.tags.books") }
                                             <i class="fa-solid fa-up-right-from-square"></i>
                                         </a>
@@ -142,17 +142,17 @@ templ tagsPagination(result *app.ListTagsResult) {
         }
     }}
 
-    <nav role="listbox" class="pagination">
+    <nav role="listbox" class="Pagination">
         for i := result.Page - left; i < result.Page; i++ {
-            <a href={ getTagsPageURL(ctx, i) } class="pagination__item">
+            <a href={ getTagsPageURL(ctx, i) } class="Pagination-item">
                 { fmt.Sprintf("%d", i) }
             </a>
         }
-        <a href="#" x-init="$el.href=window.location.href" class="pagination__item pagination__item--active">
+        <a href="#" x-init="$el.href=window.location.href" class="Pagination-item PaginationItem--active">
             { fmt.Sprintf("%d", result.Page) }
         </a>
         for i := result.Page + 1; i <= result.Page + right; i++ {
-            <a href={ getTagsPageURL(ctx, i) } class="pagination__item">
+            <a href={ getTagsPageURL(ctx, i) } class="Pagination-item">
                 { fmt.Sprintf("%d", i) }
             </a>
         }
@@ -163,10 +163,10 @@ templ Tag(tag app.TagDetailsItemDto) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
     @dashboardLayout("Admin - " + tag.Name) {
-        <div class="dashboard-content">
-            <header class="page-header">
-                <div class="page-header__body">
-                    <h1 class="page-header__title">{ tag.Name }</h1>
+        <div class="DashboardContent">
+            <header class="PageHeader">
+                <div class="PageHeader-body">
+                    <h1 class="PageHeader-title">{ tag.Name }</h1>
 
                     <article class="admin-card mt-4 p-4">
                     if tag.Description == "" {
@@ -188,11 +188,11 @@ templ Tag(tag app.TagDetailsItemDto) {
             </div>
 
             <div class="flex gap-2 mt-10">
-                <a href={templ.URL(fmt.Sprintf("/admin/tags/tag-details/%d/edit", tag.ID))} class="btn btn--lg btn--outline" x-init>
+                <a href={templ.URL(fmt.Sprintf("/admin/tags/tag-details/%d/edit", tag.ID))} class="Btn Btn--lg Btn--outline" x-init>
                     { l.T("common.edit") }
                 </a>
 
-                <button class="btn btn--lg btn--destructive" x-init @click="alert('not implemented')">
+                <button class="Btn Btn--lg Btn--destructive" x-init @click="alert('not implemented')">
                     { l.T("common.delete") }
                 </button>
             </div>
@@ -204,13 +204,13 @@ templ TagEdit(tag app.TagDetailsItemDto) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
     @dashboardLayout("Admin - " + tag.Name) {
-        <div class="dashboard-content">
+        <div class="DashboardContent">
             <form method="post">
                 @csrf.CSRFInputTempl(ctx)
 
-                <header class="page-header">
-                    <div class="page-header__body w-full">
-                    <input autocomplete="off" name="name" required value={tag.Name} class="page-header__title input-transparent w-full border-b-2 border-current bg-transparent">
+                <header class="PageHeader">
+                    <div class="PageHeader-body w-full">
+                    <input autocomplete="off" name="name" required value={tag.Name} class="PageHeader-title input-transparent w-full border-b-2 border-current bg-transparent">
 
                     <article class="admin-card mt-4">
                         <textarea maxlength="500" rows="10" name="description" class="textarea p-4 w-full" placeholder={l.T("admin.tags.noDescription")}>{tag.Description}</textarea>
@@ -219,8 +219,8 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                 </header>
 
                 <div class="admin-card p-4 space-y-4">
-                    <div class="admin-form-field">
-                        <div class="admin-form-field__label">
+                    <div class="AdminFormField">
+                        <div class="AdminFormField-label">
                             <label for="type">{l.T("admin.tags.synonymOf")}</label>
                         </div>
                         {{
@@ -239,7 +239,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                                 synonymOfTagJson = "null"
                             }
                         }}
-                        <div class="admin-form-field__value" x-data={fmt.Sprintf("{tag:%s,open:false}", synonymOfTagJson)}>
+                        <div class="AdminFormField-value" x-data={fmt.Sprintf("{tag:%s,open:false}", synonymOfTagJson)}>
                             <input :value="tag?tag.id:''" name="synonymOf" type="hidden" />
                             <span class="mb-2 inline-block">
                                 <span 
@@ -251,7 +251,7 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                                     {tag.SynonymOf.Value.Name}
                                 </span>
                             </span><br />
-                            <button type="button" class="btn btn--sm btn--secondary" @click="open=true">
+                            <button type="button" class="Btn Btn--sm Btn--secondary" @click="open=true">
                                 {l.T("common.change")}
                             </button>
                             <ol-island 
@@ -263,12 +263,12 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                                 :data="JSON.stringify({open})"  />
                         </div>
                     </div>
-                    <div class="admin-form-field">
-                        <div class="admin-form-field__label">
+                    <div class="AdminFormField">
+                        <div class="AdminFormField-label">
                             <label for="type">{l.T("admin.tags.type")}</label>
                         </div>
-                        <div class="admin-form-field__value">
-                            <select id="type" name="type" class="select">
+                        <div class="AdminFormField-value">
+                            <select id="type" name="type" class="Select">
                                 for _, cat := range app.TagsCategoryList {
                                     <option 
                                         if tag.Category == cat {
@@ -279,46 +279,46 @@ templ TagEdit(tag app.TagDetailsItemDto) {
                             </select>
                         </div>
                     </div>
-                    <div class="admin-form-field">
-                        <div class="admin-form-field__label">
+                    <div class="AdminFormField">
+                        <div class="AdminFormField-label">
                             <label for="adult">{l.T("admin.tags.adult")}</label>
                             <p class="text-secondary-foreground">
                                 {l.T("admin.tags.adultDescription")}
                             </p>
                         </div>
-                        <div class="admin-form-field__value">
-                            <label class="switch">
+                        <div class="AdminFormField-value">
+                            <label class="Switch">
                                 <input
                                     if tag.IsAdult {
                                         checked
                                     }
                                     id="adult" name="adult" type="checkbox">
-                                <span class="switch__slider" />
+                                <span class="Switch-slider" />
                             </label>
                         </div>
                     </div>
-                    <div class="admin-form-field">
-                        <div class="admin-form-field__label">
+                    <div class="AdminFormField">
+                        <div class="AdminFormField-label">
                             <label for="spoiler">{l.T("admin.tags.spoiler")}</label>
                             <p class="text-secondary-foreground">
                                 {l.T("admin.tags.spoilerDescription")}
                             </p>
                         </div>
-                        <div class="admin-form-field__value">
-                            <label class="switch">
+                        <div class="AdminFormField-value">
+                            <label class="Switch">
                                 <input
                                     if tag.IsSpoiler {
                                         checked
                                     } 
                                     id="spoiler" name="spoiler" type="checkbox">
-                                <span class="switch__slider" />
+                                <span class="Switch-slider" />
                             </label>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex gap-2 mt-10">
-                    <button class="btn btn--lg btn--primary" type="submit">
+                    <button class="Btn Btn--lg Btn--primary" type="submit">
                         { l.T("common.save") }
                     </button>
                 </div>

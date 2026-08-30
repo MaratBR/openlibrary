@@ -3,7 +3,7 @@
   --ol-container-big-width: 120rch;
 }
 
-.ol-container {
+.OlContainer {
   --container-width: var(--ol-container-width);
 
   width: min(100vw, var(--container-width));
@@ -19,26 +19,26 @@
   padding-left: max(0px, calc((100% - 120ch) / 2));
 }
 
-.page-header {
+.PageHeader {
   @apply mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between;
 
-  &__body {
+  &-body {
     @apply min-w-0;
   }
 
-  &__title {
+  &-title {
     @apply break-words font-title text-4xl font-semibold leading-tight;
   }
 
-  &__description {
+  &-description {
     @apply mt-2 max-w-3xl text-secondary-foreground;
   }
 
-  &__meta {
+  &-meta {
     @apply mt-3 flex flex-wrap items-center gap-2;
   }
 
-  &__actions {
+  &-actions {
     @apply flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto;
   }
 }
