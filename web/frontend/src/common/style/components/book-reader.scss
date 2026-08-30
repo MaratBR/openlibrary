@@ -142,4 +142,8 @@
   font-size: var(--book-font-size, 18px);
   line-height: 1.75;
   @apply relative;
+
+  p:empty::before {
+    content: "\00a0";
+  }
 }

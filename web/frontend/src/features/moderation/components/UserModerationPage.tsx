@@ -43,7 +43,7 @@ import {
 } from './ModerationActions'
 import { ModerationLog, ModerationLogEntry } from './ModerationLog'
 import SanitizeHTML from '@/common/SanitizeHTML'
-import { queryClient } from '@/preact/queryCache'
+import { queryClient } from '@/react/queryCache'
 import { OLAPIResponse } from '@/features/http-client'
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' })

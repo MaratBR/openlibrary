@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useAtomValue } from 'jotai'
 import { Widget } from './core'
 import { WidgetsService } from './service'
-import { useWYSIWYG } from '../wysiwyg/state'
+import { wysiwygEditorAtom } from '../wysiwyg/state'
 
 export function WidgetsMenu({ service }: { service: WidgetsService }) {
   const [widgets, setWidgets] = useState<Widget[]>([])
-  const editor = useWYSIWYG((state) => state.editor)
+  const editor = useAtomValue(wysiwygEditorAtom)
 
   useEffect(() => {
     service.getWidgets().then(setWidgets)

@@ -1,8 +1,9 @@
-import { useBEState } from './state'
+import { useAtom, useAtomValue } from 'jotai'
+import { chapterNameAtom, chapterNameIsValidAtom } from './state'
 
 export function ChapterNameInput() {
-  const chapterName = useBEState((s) => s.chapterName)
-  const valid = chapterName.trim().length > 0 && Array.from(chapterName.trim()).length <= 70
+  const [chapterName, setChapterName] = useAtom(chapterNameAtom)
+  const valid = useAtomValue(chapterNameIsValidAtom)
 
   return (
     <div className="my-4">
@@ -17,7 +18,7 @@ export function ChapterNameInput() {
         aria-invalid={!valid}
         aria-describedby={!valid ? 'chapter-name-error' : undefined}
         onChange={(e) => {
-          useBEState.getState().setChapterName((e.target as HTMLInputElement).value)
+          setChapterName(e.currentTarget.value)
         }}
       />
       {!valid && (

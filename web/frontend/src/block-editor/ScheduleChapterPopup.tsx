@@ -1,15 +1,18 @@
 import { useMemo, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { useBEState } from './state'
+import { useAtomValue, useSetAtom } from 'jotai'
+import { draftAtom, scheduleDraftAtom } from './state'
+import { appRuntime } from '@/effect/runtime'
 
 export function ScheduleChapterPopup({ onClose }: { onClose: () => void }) {
-  const scheduledAt = useBEState((state) => state.draft?.scheduledAt)
+  const scheduledAt = useAtomValue(draftAtom)?.scheduledAt
+  const scheduleDraft = useSetAtom(scheduleDraftAtom)
   const [value, setValue] = useState(() => toLocalInputValue(scheduledAt ?? oneHourFromNow()))
   const selectedDate = useMemo(() => new Date(value), [value])
   const valid = value !== '' && !Number.isNaN(selectedDate.getTime()) && selectedDate > new Date()
 
   const mutation = useMutation({
-    mutationFn: () => useBEState.getState().saveAndScheduleDraft(selectedDate),
+    mutationFn: () => appRuntime.runPromise(scheduleDraft(selectedDate)),
     onSuccess() {
       window.toast({
         title: window._(scheduledAt ? 'editor.chapterRescheduled' : 'editor.chapterScheduled'),

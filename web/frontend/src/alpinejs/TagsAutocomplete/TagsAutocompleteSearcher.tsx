@@ -1,6 +1,6 @@
 import { DefinedTagDto } from '@/features/search'
 import TagsInput from '@/components/TagsInput'
-import { Wrapper } from '@/preact'
+import { Wrapper } from '@/react'
 import { useMemo, useRef, useState } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 

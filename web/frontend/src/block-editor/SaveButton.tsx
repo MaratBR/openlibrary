@@ -1,31 +1,33 @@
 import { useRef, useState } from 'react'
+import { useAtomValue, useSetAtom } from 'jotai'
 import {
-  useBEState,
+  chapterNameIsValidAtom,
+  draftAtom,
+  draftHasNewerRevisionAtom,
+  draftHasPendingChangesAtom,
+  saveDraftAtom,
+  savingAtom,
   useDraftHasChanges,
-  useDraftHasNewerRevision,
-  useDraftHasPendingChanges,
-  useChapterNameIsValid,
 } from './state'
 import { PublishChapterPopup } from './PublishChapterPopup'
 import { ScheduleChapterPopup } from './ScheduleChapterPopup'
 import Popper from '@/components/Popper'
+import { appRuntime } from '@/effect/runtime'
 
 export function SaveButton() {
   const draftHasPendingChanges = useDraftHasChanges()
-  const hasNewerRevision = useDraftHasNewerRevision()
-  const saving = useBEState((s) => s.saving)
-  const chapterNameIsValid = useChapterNameIsValid()
+  const hasNewerRevision = useAtomValue(draftHasNewerRevisionAtom)
+  const saving = useAtomValue(savingAtom)
+  const chapterNameIsValid = useAtomValue(chapterNameIsValidAtom)
+  const saveDraft = useSetAtom(saveDraftAtom)
   const [openPublishPopup, setOpenPublishPopup] = useState(false)
   const [openSchedulePopup, setOpenSchedulePopup] = useState(false)
   const [openMenu, setOpenMenu] = useState(false)
   const menuButton = useRef<HTMLButtonElement | null>(null)
-  const scheduledAt = useBEState((state) => state.draft?.scheduledAt)
+  const scheduledAt = useAtomValue(draftAtom)?.scheduledAt
 
   function handleSaveDraft() {
-    void useBEState
-      .getState()
-      .saveDraft()
-      .catch((error) => window.toast.error(error))
+    void appRuntime.runPromise(saveDraft()).catch((error) => window.toast.error(error))
   }
 
   return (
@@ -90,7 +92,7 @@ export function SaveButton() {
 }
 
 function DraftPendingChangesIndicator() {
-  const hasPendingChanges = useDraftHasPendingChanges()
+  const hasPendingChanges = useAtomValue(draftHasPendingChangesAtom)
   return (
     <div
       style={{

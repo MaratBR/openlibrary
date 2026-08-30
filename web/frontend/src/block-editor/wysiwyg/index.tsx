@@ -1,23 +1,21 @@
-import { useLayoutEffect } from 'react'
+import { useEffect } from 'react'
+import { useAtomValue, useSetAtom } from 'jotai'
+import { Effect } from 'effect'
 import './style.scss'
 import { ChapterContentEditor, ChapterContentEditorOptions } from './editor'
 import { EditorContent } from '@tiptap/react'
 import { EditorBubbleMenu } from './EditorBubbleMenu'
 import EditorFloatingMenu from './EditorFloatingMenu'
-import { useWYSIWYG } from './state'
+import { mountWysiwygEditorAtom, wysiwygEditorAtom } from './state'
 
 export function WYSIWYGEditor({ editorOptions }: { editorOptions: ChapterContentEditorOptions }) {
-  const editor = useWYSIWYG((s) => s.editor)
+  const editor = useAtomValue(wysiwygEditorAtom)
+  const mountEditor = useSetAtom(mountWysiwygEditorAtom)
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const editor = new ChapterContentEditor(editorOptions)
-    useWYSIWYG.getState().init(editor)
-
-    return () => {
-      editor.destroy()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    return Effect.runSync(mountEditor(editor))
+  }, [editorOptions, mountEditor])
 
   if (!editor) return null
 

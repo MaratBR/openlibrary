@@ -1,174 +1,123 @@
-import { create } from 'zustand/react'
-import {
-  httpScheduleDraft,
-  httpUpdateAndPublishDraft,
-  httpUpdateDraft,
-  httpUpdateDraftChapterName,
-} from '@/api/bm'
+import { atom, useAtomValue } from 'jotai'
+import type { Getter, Setter } from 'jotai'
+import { Effect } from 'effect'
+import { BookManagerApi } from '@/features/book-manager/api'
 import { DraftDto } from './contracts'
-import { useWYSIWYG, useWYSIWYGHasChanges } from './wysiwyg/state'
+import { wysiwygContentModifiedAtom, wysiwygEditorAtom } from './wysiwyg/state'
 
-export type BEState = {
-  saving: boolean
-  autoSave: boolean
-  draft: DraftDto | null
-  chapterName: string
-  error: unknown | null
+export const draftAtom = atom<DraftDto | null>(null)
+export const chapterNameAtom = atom('')
+export const savingAtom = atom(false)
+export const saveErrorAtom = atom<unknown | null>(null)
 
-  chapterNameWasChanged(): boolean
-  init(draft: DraftDto): void
-  setChapterName(name: string): void
-  saveDraft(): Promise<void>
-  saveAndPublishDraft(makePublic: boolean): Promise<void>
-  saveAndScheduleDraft(scheduledAt: Date): Promise<void>
+export const initializeDraftAtom = atom(null, (_get, set, draft: DraftDto) => {
+  set(draftAtom, draft)
+  set(chapterNameAtom, draft.chapterName)
+  set(savingAtom, false)
+  set(saveErrorAtom, null)
+})
+
+export const chapterNameWasChangedAtom = atom((get) => {
+  const draft = get(draftAtom)
+  return draft !== null && get(chapterNameAtom) !== draft.chapterName
+})
+
+export const chapterNameIsValidAtom = atom((get) => {
+  const name = get(chapterNameAtom).trim()
+  return name.length > 0 && Array.from(name).length <= 70
+})
+
+export const draftHasPendingChangesAtom = atom((get) => {
+  const draft = get(draftAtom)
+  if (!draft) return false
+  return new Date(draft.updatedAt ?? draft.createdAt) > new Date(draft.chapter.contentUpdatedAt)
+})
+
+// TODO: compare the draft's base revision with the current chapter revision.
+export const draftHasNewerRevisionAtom = atom(true)
+
+function saveDraft(get: Getter, set: Setter) {
+  return Effect.gen(function* () {
+    yield* Effect.sync(() => {
+      set(savingAtom, true)
+      set(saveErrorAtom, null)
+    })
+    const draft = get(draftAtom)
+    if (!draft)
+      return yield* Effect.fail(new Error('cannot save draft - no draft information is available'))
+    const identity = { bookId: draft.book.id, chapterId: draft.chapter.id, draftId: draft.id }
+    const api = yield* BookManagerApi
+    const chapterName = get(chapterNameAtom)
+    if (get(chapterNameWasChangedAtom)) {
+      yield* api.updateDraftChapterName(identity, chapterName)
+    }
+    const editor = get(wysiwygEditorAtom)
+    const updatedDraft = yield* api.updateDraft(identity, editor?.getHTML() ?? '')
+    yield* Effect.sync(() => {
+      set(wysiwygContentModifiedAtom, false)
+      set(draftAtom, updatedDraft)
+    })
+    return updatedDraft
+  }).pipe(
+    Effect.tapError((error) => Effect.sync(() => set(saveErrorAtom, error))),
+    Effect.ensuring(Effect.sync(() => set(savingAtom, false))),
+  )
 }
 
-export const useBEState = create<BEState>((set, get) => ({
-  saving: false,
-  autoSave: true,
-  draft: null,
-  chapterName: '',
-  error: null,
+export const saveDraftAtom = atom(null, (get, set) => saveDraft(get, set))
 
-  chapterNameWasChanged() {
-    const { chapterName, draft } = get()
-    if (!draft) return false
-    return chapterName !== draft.chapterName
-  },
-
-  init(draft) {
-    set({
-      draft,
-      chapterName: draft.chapterName,
-      saving: false,
-      error: null,
+export const publishDraftAtom = atom(null, (get, set, makePublic: boolean) =>
+  Effect.gen(function* () {
+    yield* Effect.sync(() => {
+      set(savingAtom, true)
+      set(saveErrorAtom, null)
     })
-  },
-
-  setChapterName(name) {
-    set({
-      chapterName: name,
-    })
-  },
-
-  async saveDraft() {
-    set({
-      saving: true,
-    })
-    try {
-      const { draft, chapterName, chapterNameWasChanged } = get()
-      if (!draft) throw new Error('cannot save draft - no draft information is available')
-
-      // first update chapter name if necessary
-      if (chapterNameWasChanged()) {
-        const response = await httpUpdateDraftChapterName(
-          draft.book.id,
-          draft.chapter.id,
-          draft.id,
-          chapterName,
-        )
-        response.throwIfError()
-      }
-
-      const wysiwyg = useWYSIWYG.getState()
-      const content = wysiwyg.getContent()
-      const response = await httpUpdateDraft(draft.book.id, draft.chapter.id, draft.id, content)
-      response.throwIfError()
-      wysiwyg.markContentAsFresh()
-
-      set({ saving: false, draft: response.data })
-    } catch (error: unknown) {
-      set({
-        error,
-        saving: false,
-      })
-      throw error
+    const draft = get(draftAtom)
+    if (!draft)
+      return yield* Effect.fail(new Error('cannot save draft - no draft information is available'))
+    const identity = { bookId: draft.book.id, chapterId: draft.chapter.id, draftId: draft.id }
+    const api = yield* BookManagerApi
+    const chapterName = get(chapterNameAtom)
+    if (get(chapterNameWasChangedAtom)) {
+      yield* api.updateDraftChapterName(identity, chapterName)
     }
-  },
-
-  async saveAndPublishDraft(makePublic: boolean) {
-    set({
-      saving: true,
+    const editor = get(wysiwygEditorAtom)
+    const updatedDraft = yield* api.publishDraft(identity, editor?.getHTML() ?? '', makePublic)
+    yield* Effect.sync(() => {
+      set(wysiwygContentModifiedAtom, false)
+      set(draftAtom, updatedDraft)
     })
-    try {
-      const { draft, chapterName, chapterNameWasChanged } = get()
-      if (!draft) throw new Error('cannot save draft - no draft information is available')
+    return updatedDraft
+  }).pipe(
+    Effect.tapError((error) => Effect.sync(() => set(saveErrorAtom, error))),
+    Effect.ensuring(Effect.sync(() => set(savingAtom, false))),
+  ),
+)
 
-      // first update chapter name if necessary
-      if (chapterNameWasChanged()) {
-        const response = await httpUpdateDraftChapterName(
-          draft.book.id,
-          draft.chapter.id,
-          draft.id,
-          chapterName,
-        )
-        response.throwIfError()
-      }
-
-      const wysiwyg = useWYSIWYG.getState()
-      const content = wysiwyg.getContent()
-      const response = await httpUpdateAndPublishDraft(
-        draft.book.id,
-        draft.chapter.id,
-        draft.id,
-        content,
-        makePublic,
+export const scheduleDraftAtom = atom(null, (get, set, scheduledAt: Date) =>
+  Effect.gen(function* () {
+    yield* set(saveDraftAtom)
+    yield* Effect.sync(() => set(savingAtom, true))
+    const draft = get(draftAtom)
+    if (!draft)
+      return yield* Effect.fail(
+        new Error('cannot schedule draft - no draft information is available'),
       )
-      response.throwIfError()
-      wysiwyg.markContentAsFresh()
-
-      set({ saving: false, draft: response.data })
-    } catch (error: unknown) {
-      set({
-        error,
-        saving: false,
-      })
-      throw error
-    }
-  },
-
-  async saveAndScheduleDraft(scheduledAt: Date) {
-    await get().saveDraft()
-    set({ saving: true })
-    try {
-      const { draft } = get()
-      if (!draft) throw new Error('cannot schedule draft - no draft information is available')
-      const response = await httpScheduleDraft(
-        draft.book.id,
-        draft.chapter.id,
-        draft.id,
-        scheduledAt.toISOString(),
-      )
-      response.throwIfError()
-      set({ saving: false, error: null, draft: response.data })
-    } catch (error: unknown) {
-      set({ error, saving: false })
-      throw error
-    }
-  },
-}))
+    const api = yield* BookManagerApi
+    const updatedDraft = yield* api.scheduleDraft(
+      { bookId: draft.book.id, chapterId: draft.chapter.id, draftId: draft.id },
+      scheduledAt,
+    )
+    yield* Effect.sync(() => set(draftAtom, updatedDraft))
+    return updatedDraft
+  }).pipe(
+    Effect.tapError((error) => Effect.sync(() => set(saveErrorAtom, error))),
+    Effect.ensuring(Effect.sync(() => set(savingAtom, false))),
+  ),
+)
 
 export function useDraftHasChanges() {
-  const contentWasChanged = useWYSIWYGHasChanges()
-  const chapterNameChanged = useBEState((s) => s.chapterNameWasChanged())
+  const contentWasChanged = useAtomValue(wysiwygContentModifiedAtom)
+  const chapterNameChanged = useAtomValue(chapterNameWasChangedAtom)
   return chapterNameChanged || contentWasChanged
-}
-
-export function useChapterNameIsValid() {
-  return useBEState((s) => {
-    const name = s.chapterName.trim()
-    return name.length > 0 && Array.from(name).length <= 70
-  })
-}
-
-export function useDraftHasPendingChanges() {
-  return useBEState((s) => {
-    const draft = s.draft
-    if (!draft) return false
-    return new Date(draft.updatedAt ?? draft.createdAt) > new Date(draft.chapter.contentUpdatedAt)
-  })
-}
-
-export function useDraftHasNewerRevision() {
-  return true
 }

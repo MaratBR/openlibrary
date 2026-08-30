@@ -1,4 +1,4 @@
-import { AnchorHTMLAttributes, useEffect, useRef, useState } from 'react'
+import { AnchorHTMLAttributes, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useUserSelfData } from '@/api/auth/user'
 import './UserMenu.scss'
 import { ModalAnimation, useAnimation } from '@/lib/animate'
@@ -9,7 +9,7 @@ export function UserMenu() {
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const [open, setOpen] = useState(false)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const trigger = document.querySelector<HTMLButtonElement>('#nav-user > button')
     if (!trigger) {
       console.error('Cannot find user header button')
@@ -26,7 +26,7 @@ export function UserMenu() {
     }
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open) return
 
     const onClickOutside = (event: MouseEvent) => {
@@ -55,7 +55,7 @@ export function UserMenu() {
     }
   }, [open])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     triggerRef.current?.setAttribute('aria-expanded', String(open))
   }, [open])
 

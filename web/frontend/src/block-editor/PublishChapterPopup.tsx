@@ -1,39 +1,36 @@
 import { useState } from 'react'
-import { useBEState } from './state'
+import { useAtomValue, useSetAtom } from 'jotai'
+import { draftAtom, publishDraftAtom } from './state'
 import { useMutation } from '@tanstack/react-query'
 
 import { ModalAnimation, useAnimation } from '@/lib/animate'
 import Switch from '@/components/Switch'
 import { createRoot } from 'react-dom/client'
+import { appRuntime } from '@/effect/runtime'
 
 export function PublishChapterPopup({ onClose, open }: { onClose: () => void; open: boolean }) {
-  const isHidden = useBEState((s) => s.draft?.isChapterPubliclyAvailable === false)
+  const isHidden = useAtomValue(draftAtom)?.isChapterPubliclyAvailable === false
+  const publishDraft = useSetAtom(publishDraftAtom)
   const [makePublic, setMakePublic] = useState(true)
 
   const publishMutation = useMutation({
     mutationFn: async () => {
-      await useBEState.getState().saveAndPublishDraft(makePublic)
+      const draft = await appRuntime.runPromise(publishDraft(makePublic))
       onClose()
 
       window.toast({
         title: window._('editor.chapterPublished'),
         duration: 15000,
         customContent(element) {
-          const { draft } = useBEState.getState()
-
-          if (!draft) {
-            element.innerText = 'ERROR: no draft in state, cannot display toast message'
-          } else {
-            const root = createRoot(element)
-            root.render(
-              <a className="link" href={`/book/${draft.book.id}/chapters/${draft.chapter.id}`}>
-                {window._('editor.viewChapter')}
-                &nbsp;
-                <i className="fa-solid fa-arrow-up-right-from-square" />
-              </a>,
-            )
-            return () => root.unmount()
-          }
+          const root = createRoot(element)
+          root.render(
+            <a className="link" href={`/book/${draft.book.id}/chapters/${draft.chapter.id}`}>
+              {window._('editor.viewChapter')}
+              &nbsp;
+              <i className="fa-solid fa-arrow-up-right-from-square" />
+            </a>,
+          )
+          return () => root.unmount()
         },
       })
     },

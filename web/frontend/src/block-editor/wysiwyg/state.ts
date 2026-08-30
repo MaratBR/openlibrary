@@ -1,52 +1,23 @@
-import { create } from 'zustand/react'
+import { atom } from 'jotai'
+import { Effect } from 'effect'
 import { ChapterContentEditor } from './editor'
 
-export type WYSIWYGState = {
-  editor: ChapterContentEditor | null
-  contentModified: boolean
+export const wysiwygEditorAtom = atom<ChapterContentEditor | null>(null)
+export const wysiwygContentModifiedAtom = atom(false)
 
-  init(editor: ChapterContentEditor): void
-  getContent(): string
-  markContentAsFresh(): void
-}
+export const mountWysiwygEditorAtom = atom(null, (_get, set, editor: ChapterContentEditor) =>
+  Effect.sync(() => {
+    const handleUpdate = () => set(wysiwygContentModifiedAtom, true)
 
-export const useWYSIWYG = create<WYSIWYGState>((set, get) => ({
-  editor: null,
-  contentModified: false,
+    editor.on('update', handleUpdate)
+    set(wysiwygEditorAtom, editor)
+    set(wysiwygContentModifiedAtom, false)
 
-  init(editor) {
-    set({ editor })
-
-    const onUpdate = () => {
-      if (!get().contentModified) set({ contentModified: true })
+    return () => {
+      editor.off('update', handleUpdate)
+      set(wysiwygEditorAtom, null)
+      set(wysiwygContentModifiedAtom, false)
+      editor.destroy()
     }
-
-    const onDestroy = () => {
-      set({ editor: null, contentModified: false })
-      editor.off('update', onUpdate)
-      editor.off('destroy', onDestroy)
-    }
-
-    editor.on('destroy', onDestroy)
-    editor.on('update', onUpdate)
-  },
-
-  getContent() {
-    if (!this.editor) {
-      return ''
-    }
-
-    const html = this.editor.getHTML()
-
-    return html
-  },
-
-  markContentAsFresh() {
-    set({ contentModified: false })
-  },
-}))
-
-export function useWYSIWYGHasChanges() {
-  const contentModified = useWYSIWYG((s) => s.contentModified)
-  return contentModified
-}
+  }),
+)

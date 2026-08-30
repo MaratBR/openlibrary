@@ -20,7 +20,7 @@ Recommendation: define a discriminated result pipeline. Parse non-2xx bodies wit
 
 ### TS-03: Browser failures are not observable outside developer consoles
 
-Evidence: the shared logger is only a styled console wrapper (`web/frontend/src/logger.ts`). Island loading/data errors are logged and swallowed (`web/frontend/src/lib/island/island-element.ts:76-110,168-177,196-208`). React's error boundary also only calls `console.error` (`web/frontend/src/preact/wrapper.tsx:31-35`). No global `error`/`unhandledrejection` reporting or telemetry client was found.
+Evidence: the shared logger is only a styled console wrapper (`web/frontend/src/logger.ts`). Island loading/data errors are logged and swallowed (`web/frontend/src/lib/island/island-element.ts:76-110,168-177,196-208`). React's error boundary also only calls `console.error` (`web/frontend/src/react/wrapper.tsx:31-35`). No global `error`/`unhandledrejection` reporting or telemetry client was found.
 
 Impact: production-only chunk-load failures, contract errors, and render crashes are invisible unless a user supplies console output. Server request IDs are not carried into browser reports.
 

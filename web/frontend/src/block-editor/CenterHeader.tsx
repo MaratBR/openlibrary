@@ -1,7 +1,8 @@
-import { useBEState } from './state'
+import { useAtomValue } from 'jotai'
+import { draftAtom } from './state'
 
 export function CenterHeader() {
-  const scheduledAt = useBEState((state) => state.draft?.scheduledAt)
+  const scheduledAt = useAtomValue(draftAtom)?.scheduledAt
 
   return (
     <div className="flex justify-center items-center h-full">

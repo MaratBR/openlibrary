@@ -1,8 +1,9 @@
-import { useLayoutEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { createStore, Provider, useAtomValue } from 'jotai'
 import { ReactIslandProps } from '@/islands/common/react-island'
 import './BookManagerEditor.scss'
 import type { DraftDto } from './contracts'
-import { useBEState } from './state'
+import { draftAtom, initializeDraftAtom } from './state'
 import { EditorIframe } from './EditorIframe'
 import { SaveButton } from './SaveButton'
 import { CenterHeader } from './CenterHeader'
@@ -11,12 +12,22 @@ import { MoreFonts } from './MoreFonts'
 
 export default function EditorIslandComponent({ data }: ReactIslandProps) {
   const { draft } = useMemo(() => data as { draft: DraftDto }, [data])
+  const store = useMemo(() => {
+    const store = createStore()
+    store.set(initializeDraftAtom, draft)
+    return store
+  }, [draft])
+
+  return (
+    <Provider store={store}>
+      <EditorIsland draft={draft} />
+    </Provider>
+  )
+}
+
+function EditorIsland({ draft }: { draft: DraftDto }) {
   const [leftOpen, setLeftOpen] = useState(true)
   const [rightOpen, setRightOpen] = useState(true)
-
-  useLayoutEffect(() => {
-    useBEState.getState().init(draft)
-  }, [draft])
 
   return (
     <>
@@ -100,7 +111,7 @@ function SidebarToggle({
 }
 
 function ChapterDetails() {
-  const draft = useBEState((state) => state.draft)
+  const draft = useAtomValue(draftAtom)
   if (!draft) return null
   return (
     <section className="p-4 space-y-4">
