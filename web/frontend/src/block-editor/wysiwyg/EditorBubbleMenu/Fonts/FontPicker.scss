@@ -1,11 +1,14 @@
 .BeFontPickerMini {
-    @apply grid grid-cols-2 p-2;
+    &-list {
+    }
 
-    &-item, &-more {
-        @apply hover:text-primary text-lg p-1 text-center rounded-sm hover:bg-highlight;
+    &-item {
+        @apply cursor-pointer px-3 py-2 transition
+            hover:text-primary hover:bg-foreground/10;
     }
 
     &-more {
-        @apply font-semibold;
+        @apply w-full text-start px-3 py-2
+            hover:underline hover:underline-offset-2 hover:decoration-2;
     }
 }

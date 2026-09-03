@@ -562,14 +562,6 @@ allUsers = "All users"
 notFound = "Пользователь not found"
 notFoundDescription = "There are a lot of people that exist. But not this one though."
 
-[user.books]
-
-[user.favorites]
-
-[user.followers]
-
-[user.following]
-
 [readingList]
 want_to_read = "Want to read"
 startReading = "Начать чтение"

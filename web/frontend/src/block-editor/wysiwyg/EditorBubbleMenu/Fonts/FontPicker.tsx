@@ -20,15 +20,29 @@ function FontPickerInternal({ editor }: { editor: ChapterContentEditor }) {
   const toggle = useBubbleState((x) => x.toggleFontPicker)
   const openMoreFonts = useMoreFontsState((x) => x.open)
 
+  function handleApplyFont(font: string) {
+    editor.chain().setFontFamily(font).focus().run()
+  }
+
   return (
     <div className="BeFontPickerMini">
-      {favoriteFonts.map((font) => {
-        return (
-          <button key={font} className="BeFontPickerMini-item" style={{ fontFamily: font }}>
-            {font}
-          </button>
-        )
-      })}
+      <ul className="BeFontPickerMini-list">
+        {favoriteFonts.map((font) => {
+          return (
+            <li
+              role="listitem"
+              key={font}
+              className="BeFontPickerMini-item"
+              style={{ fontFamily: font }}
+              onClick={() => handleApplyFont(font)}
+            >
+              {font}
+            </li>
+          )
+        })}
+      </ul>
+
+      <hr />
 
       <button
         onClick={() => {

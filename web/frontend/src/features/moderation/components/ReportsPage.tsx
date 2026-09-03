@@ -41,7 +41,7 @@ export default function ReportsPage({ view }: { view: 'overview' | 'search' }) {
           <ul className="Tabs Tabs--primary mb-6">
             <li>
               <NavLink
-                className={({ isActive }) => `tab ${isActive ? 'Tab--active' : ''}`}
+                className={({ isActive }) => `Tab ${isActive ? 'Tab--active' : ''}`}
                 end
                 to="/reports"
               >
@@ -50,7 +50,7 @@ export default function ReportsPage({ view }: { view: 'overview' | 'search' }) {
             </li>
             <li>
               <NavLink
-                className={({ isActive }) => `tab ${isActive ? 'Tab--active' : ''}`}
+                className={({ isActive }) => `Tab ${isActive ? 'Tab--active' : ''}`}
                 to="/reports/search"
               >
                 {window._('moderationPortal.reportsPage.search')}

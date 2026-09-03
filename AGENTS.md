@@ -59,7 +59,7 @@ Use `app.Nullable[T]` for optional domain/JSON values where surrounding code alr
 
 The styling system intentionally combines shared SCSS components and UnoCSS:
 
-- Look in `web/frontend/src/common/style/components` before creating new controls. Prefer established classes such as `.btn`, `.btn--primary`, `.btn--outline`, `.btn--ghost`, `.btn-group`, `.card`, and `.card--elevated` for consistent visual behavior.
+- Look in `web/frontend/src/common/style/components` before creating new controls. Prefer established classes such as `.btn`, `.btn--primary`, `.btn--outline`, `.btn--ghost`, `.BtnGroup`, `.card`, and `.card--elevated` for consistent visual behavior.
 - Use UnoCSS utilities for local layout, spacing, responsive behavior, positioning, and small one-off presentation details.
 - Add a component-scoped SCSS class when a coherent visual pattern is reused or utility-heavy markup becomes difficult to read. Avoid adding a generic global class for a single local element.
 - Reuse theme tokens (`primary`, `secondary`, `surface`, `foreground`, `border`, etc.) instead of literal colors. Use `secondary-foreground` for subdued text, `secondary` for subdued surfaces, and `foreground/5` for neutral interaction feedback. Their CSS variables and Uno mappings are defined in `theme.css` and `uno.config.ts`.

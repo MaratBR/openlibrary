@@ -24,10 +24,10 @@ templ TabsList(props TabsListProps) {
             <li
                 :class={ fmt.Sprintf("{tab:true,'tab--active':tab === %q}", tab.ID) }
                 if tab.ID == defaultTab {
-                    class="tab tab--active"
+                    class="Tab Tab--active"
                     aria-current="true"
                 } else {
-                    class="tab"
+                    class="Tab"
                 }
                 :aria-current={ fmt.Sprintf("tab === %q", tab.ID) }
                 role="tab"

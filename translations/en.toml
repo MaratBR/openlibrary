@@ -558,17 +558,12 @@ VeryStrong = "Very strong"
 
 [user]
 allUsers = "All users"
-
 notFound = "User not found"
 notFoundDescription = "There are a lot of people that exist. But not this one though."
-
-[user.books]
-
-[user.favorites]
-
-[user.followers]
-
-[user.following]
+books = "Books"
+followers = "Followers"
+following = "Following"
+favrotites = "Favorites"
 
 [readingList]
 want_to_read = "Want to read"

@@ -42,12 +42,12 @@ templ PaginationImpl(
         }}
         for _, page := range order {
             if page == opts.Page {
-                <a href="#" class="pagination__item pagination__item--active">
+                <a href="#" class="Pagination-item Pagination-item--active">
                     { fmt.Sprintf("%d", opts.Page) }
                 </a>
             } else {
                 <a 
-                    href={ getPageURL(ctx, page) } class="pagination__item" 
+                    href={ getPageURL(ctx, page) } class="Pagination-item" 
                     if opts.UseAlpineJsAjax {
                         x-target.push="PaginationAjaxSlot"
                     }

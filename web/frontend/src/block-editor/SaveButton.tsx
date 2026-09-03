@@ -41,7 +41,7 @@ export function SaveButton() {
         {saving ? <span className="Loader" /> : window._('common.save')}
       </button>
 
-      <div className="btn-group">
+      <div className="BtnGroup">
         <button
           type="button"
           onClick={() => setOpenPublishPopup(true)}

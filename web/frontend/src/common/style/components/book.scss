@@ -144,7 +144,7 @@
   }
 }
 
-.book-cover {
+.BookCover {
   @apply overflow-hidden h-[calc(200px*var(--cover-scale,1))] inline-block rounded-r-xl;
 
   img {

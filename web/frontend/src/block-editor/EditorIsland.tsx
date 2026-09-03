@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { createStore, Provider, useAtomValue } from 'jotai'
+import { useAtomValue } from 'jotai'
 import { ReactIslandProps } from '@/islands/common/react-island'
+import { jotaiStore } from '@/react'
 import './BookManagerEditor.scss'
 import type { DraftDto } from './contracts'
 import { draftAtom, initializeDraftAtom } from './state'
@@ -12,17 +13,11 @@ import { MoreFonts } from './MoreFonts'
 
 export default function EditorIslandComponent({ data }: ReactIslandProps) {
   const { draft } = useMemo(() => data as { draft: DraftDto }, [data])
-  const store = useMemo(() => {
-    const store = createStore()
-    store.set(initializeDraftAtom, draft)
-    return store
+  useMemo(() => {
+    jotaiStore.set(initializeDraftAtom, draft)
   }, [draft])
 
-  return (
-    <Provider store={store}>
-      <EditorIsland draft={draft} />
-    </Provider>
-  )
+  return <EditorIsland draft={draft} />
 }
 
 function EditorIsland({ draft }: { draft: DraftDto }) {

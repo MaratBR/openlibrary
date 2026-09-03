@@ -22,7 +22,7 @@ templ ReportButton(props ReportButtonProps) {
         label := props.Label
         if label == "" { label = l.T("common.report") }
         buttonClass := props.Class
-        if buttonClass == "" { buttonClass = "btn btn--ghost" }
+        if buttonClass == "" { buttonClass = "Btn Btn--ghost" }
         triggerID := olhttp.GetID(ctx)
         data := map[string]any{
             "targetType": props.TargetType,

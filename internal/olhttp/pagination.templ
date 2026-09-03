@@ -54,10 +54,10 @@ templ PaginationImpl(
 
     }}
 
-    <nav role="listbox" class="pagination">
+    <nav role="listbox" class="Pagination">
         if opts.Page != 1 {
             <a 
-                href={ getPageURL(ctx, 1) } class="pagination__item" 
+                href={ getPageURL(ctx, 1) } class="Pagination-item" 
                 if opts.UseAlpineJsAjax {
                     x-target.push="PaginationAjaxSlot"
                 }
@@ -70,7 +70,7 @@ templ PaginationImpl(
                 href := getPageURL(ctx, uint32(i))
             }}
             <a 
-                href={ href } class="pagination__item" 
+                href={ href } class="Pagination-item" 
                 if opts.UseAlpineJsAjax {
                     x-target.push="PaginationAjaxSlot"
                 }
@@ -78,7 +78,7 @@ templ PaginationImpl(
                 { fmt.Sprintf("%d", i) }
             </a>
         }
-        <a href="#" class="pagination__item pagination__item--active">
+        <a href="#" class="Pagination-item Pagination-item--active">
             { fmt.Sprintf("%d", opts.Page) }
         </a>
         for i := int(opts.Page) + 1; i <= int(opts.Page) + right - 1; i++ {
@@ -86,7 +86,7 @@ templ PaginationImpl(
                 href := getPageURL(ctx, uint32(i))
             }}
             <a 
-                href={ href } class="pagination__item" 
+                href={ href } class="Pagination-item" 
                 if opts.UseAlpineJsAjax {
                     x-target.push="PaginationAjaxSlot"
                 }
@@ -96,7 +96,7 @@ templ PaginationImpl(
         }
         if opts.Page < opts.TotalPages {
             <a 
-                href={ getPageURL(ctx, opts.TotalPages) } class="pagination__item" 
+                href={ getPageURL(ctx, opts.TotalPages) } class="Pagination-item" 
                 if opts.UseAlpineJsAjax {
                     x-target.push="PaginationAjaxSlot"
                 }

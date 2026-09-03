@@ -104,7 +104,7 @@ ol-island:has(> .BeLayout) {
         text-secondary-foreground hover:bg-foreground/10 hover:text-foreground;
 }
 
-.be-toggle-group {
+.BeToggleGroup {
   @apply flex items-center rounded-xl;
 }
 

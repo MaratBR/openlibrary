@@ -37,7 +37,7 @@ export function EditorBubbleMenu({
       appendTo={appendTo}
     >
       <div className="BeBubbleMenu-main">
-        <div className="be-toggle-group">
+        <div className="BeToggleGroup">
           <EditorToggleButton
             active={bold}
             onClick={() => editor.chain().focus().toggleBold().run()}
@@ -58,7 +58,7 @@ export function EditorBubbleMenu({
           </EditorToggleButton>
         </div>
         <div className="BeBubbleMenu-delimiter" />
-        <div className="be-toggle-group">
+        <div className="BeToggleGroup">
           <EditorToggleButton
             active={textAlign === 'left'}
             onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -84,7 +84,7 @@ export function EditorBubbleMenu({
             <i className="fa-solid fa-align-justify" />
           </EditorToggleButton>
         </div>
-        <div className="be-toggle-group">
+        <div className="BeToggleGroup">
           <ColorPallette />
           <Fonts />
         </div>

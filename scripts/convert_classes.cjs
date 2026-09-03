@@ -6,7 +6,7 @@ const ROOT = process.argv[2] || '.'
 const FILE_EXTENSIONS = new Set(['.ts', '.tsx', '.templ', '.html'])
 
 const TYPE_CLASSES = ['primary', 'secondary', 'destructive']
-const BTN_TYPE_CLASSES = TYPE_CLASSES.map((c) => `btn--${c}`)
+const BTN_TYPE_CLASSES = TYPE_CLASSES.map((c) => `Btn--${c}`)
 const STYLE_CLASSES = ['btn--ghost', 'btn--outline', 'btn--icon']
 
 function processClassList(classString) {
@@ -22,8 +22,8 @@ function processClassList(classString) {
   if (plainType) {
     // Remove all plain color classes and add the converted one
     classes = classes.filter((c) => !TYPE_CLASSES.includes(c))
-    if (!classes.includes(`btn--${plainType}`)) {
-      classes.push(`btn--${plainType}`)
+    if (!classes.includes(`Btn--${plainType}`)) {
+      classes.push(`Btn--${plainType}`)
     }
   }
 

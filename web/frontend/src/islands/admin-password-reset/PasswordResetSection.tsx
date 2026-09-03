@@ -47,7 +47,7 @@ export default function PasswordReset({ rootElement }: ReactIslandProps) {
           {window._(`passwordStrength.${pwdEval.strength}`)}
         </div>
       </div>
-      <button onClick={handleCancel} className="Btn Btn--secondary btn-sm">
+      <button onClick={handleCancel} className="Btn Btn--secondary Btn-sm">
         {window._('common.cancel')}
       </button>
     </div>

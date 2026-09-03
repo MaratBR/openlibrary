@@ -3,12 +3,16 @@ import { Component, ReactNode } from 'react'
 import { queryClient } from './queryCache'
 import React from 'react'
 import { ErrorDisplay } from '@/components/error'
+import { Provider as JotaiProvider } from 'jotai'
+import { jotaiStore } from './store'
 
 export default function Wrapper({ children }: { children: ReactNode }) {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </ErrorBoundary>
+    <JotaiProvider store={jotaiStore}>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </ErrorBoundary>
+    </JotaiProvider>
   )
 }
 

@@ -74,7 +74,7 @@ export function ModerationConfirmationDialog({
           </button>
           <button
             disabled={pending}
-            className={`btn ${confirmation?.destructive ? 'Btn--destructive' : 'Btn--primary'}`}
+            className={`Btn ${confirmation?.destructive ? 'Btn--destructive' : 'Btn--primary'}`}
             onClick={onConfirm}
           >
             {pending && <span className="circle-loader mr-2" />}
@@ -201,7 +201,7 @@ export function ModerationReasonActionCard({
             onChange={(event) => setReason(event.target.value)}
           />
         </FormControl>
-        <button className={`btn mt-4 ${destructive ? 'Btn--destructive' : 'Btn--primary'}`}>
+        <button className={`Btn mt-4 ${destructive ? 'Btn--destructive' : 'Btn--primary'}`}>
           {submitLabel}
         </button>
       </form>

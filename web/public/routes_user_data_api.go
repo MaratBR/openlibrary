@@ -5,11 +5,13 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/go-chi/chi/v5"
+	"github.com/joomcode/errorx"
 )
 
 type apiControllerUserData struct {
@@ -27,10 +29,12 @@ func (c *apiControllerUserData) Register(r chi.Router) {
 
 func (c *apiControllerUserData) get(w http.ResponseWriter, r *http.Request) {
 	session := auth.RequireSession(r.Context())
+	key, _ := url.QueryUnescape(chi.URLParam(r, "key"))
 	data, err := c.service.Get(r.Context(), app.GetUserDataQuery{
 		UserID: session.UserID,
-		Key:    chi.URLParam(r, "key"),
+		Key:    key,
 	})
+
 	if err != nil {
 		c.writeError(w, err)
 		return
@@ -67,7 +71,7 @@ func (c *apiControllerUserData) set(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *apiControllerUserData) writeError(w http.ResponseWriter, err error) {
-	if errors.Is(err, app.ErrUserDataKeyNotAllowed) || errors.Is(err, app.ErrUserDataTooLarge) {
+	if errors.Is(err, app.ErrUserDataTooLarge) || errorx.IsOfType(err, app.ErrTypeUserDataKeyNotAllowed) {
 		apiWriteUnprocessableEntity(w, err)
 		return
 	}

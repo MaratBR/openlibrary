@@ -30,6 +30,7 @@ import {
   ModerationValueActionCard,
 } from './ModerationActions'
 import { ModerationLog } from './ModerationLog'
+import SanitizeHTML from '@/common/SanitizeHTML'
 
 const date = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' })
 async function data<T>(promise: Promise<{ throwIfError(): void; data: T }>) {
@@ -66,7 +67,7 @@ export default function BookModerationPage() {
               <li key={tab}>
                 <NavLink
                   end={tab === 'overview'}
-                  className={`tab ${section === tab ? 'Tab--active' : ''}`}
+                  className={`Tab ${section === tab ? 'Tab--active' : ''}`}
                   to={
                     tab === 'overview'
                       ? `/books/${loaded.book.id}`
@@ -158,7 +159,9 @@ function Overview({ book }: { book: ModerationBook }) {
           />
         </dl>
         <h3 className="font-semibold mt-6">{window._('moderationPortal.book.summary')}</h3>
-        <p className="mt-2 whitespace-pre-wrap">{book.summary || ''}</p>
+        <div className="mt-2">
+          <SanitizeHTML value={book.summary} />
+        </div>
       </section>
       <section className="Card">
         <h2 className="text-xl font-semibold mb-4">

@@ -45,7 +45,7 @@ test('transforms nested and compound SCSS selectors', () => {
   }
   &[data-ready] &__button--scroll-left {}
 }`
-  const components = discoverComponents([source, 'class="carousel carousel__button"'])
+  const components = discoverComponents([source, 'class="carousel Carousel-button"'])
   assert.equal(
     transformSource(source, '.scss', components),
     `.Carousel {

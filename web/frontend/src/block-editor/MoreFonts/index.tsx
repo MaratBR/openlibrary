@@ -9,6 +9,9 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import './MoreFonts.scss'
 import { ChapterContentEditor } from '../wysiwyg/editor'
 import { useFonts } from '../fonts/state'
+import { atom, useAtom, useAtomValue } from 'jotai'
+import { jotaiStore } from '@/react'
+import EditorToggleButton from '../wysiwyg/EditorBubbleMenu/EditorToggleButton'
 
 export type MoreFontsState = {
   opened: boolean
@@ -39,6 +42,10 @@ export const useMoreFontsState = create<MoreFontsState>()((set) => ({
     set({ opened: false })
   },
 }))
+
+const boldEnabledAtom = atom(false)
+const italicEnabledAtom = atom(false)
+const testPhraseAtom = atom('')
 
 export function MoreFonts() {
   const opened = useMoreFontsState((x) => x.opened)
@@ -77,9 +84,35 @@ export function MoreFonts() {
           className="text-3xl pl-8 pt-8 pb-4 outline-none"
           placeholder="Search fonts"
         />
+
+        <Toggles />
       </div>
       <FontsList fonts={filteredFonts} />
     </Modal>
+  )
+}
+
+function Toggles() {
+  const [bold, setBold] = useAtom(boldEnabledAtom)
+  const [italic, setItalic] = useAtom(italicEnabledAtom)
+  const [testPhrase, setTestPhrase] = useAtom(testPhraseAtom)
+
+  return (
+    <div className="BeToggleGroup pl-8 pb-1 gap-1">
+      <EditorToggleButton active={bold} onClick={() => setBold(!bold)}>
+        <i className="fa-solid fa-bold" />
+      </EditorToggleButton>
+      <EditorToggleButton active={italic} onClick={() => setItalic(!italic)}>
+        <i className="fa-solid fa-italic" />
+      </EditorToggleButton>
+      <div>
+        <input
+          placeholder={window._('editor.fonts.testPhrase')}
+          value={testPhrase}
+          onChange={(e) => setTestPhrase(e.target.value)}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -140,16 +173,27 @@ function FontRow({ font }: { font: Readonly<Font> }) {
     return () => clearInterval(t)
   }, [font.name])
 
+  const bold = useAtomValue(boldEnabledAtom)
+  const italic = useAtomValue(italicEnabledAtom)
+  const testPhrase = useAtomValue(testPhraseAtom).trim()
+
   return (
     <div
       className="BeFontPickerItem"
       data-font={font.name}
-      style={{ '--fontFamily': font.name } as React.CSSProperties}
+      role="listitem"
+      style={
+        {
+          '--font-family': font.name,
+          fontWeight: bold ? 'bold' : 'normal',
+          fontStyle: italic ? 'italic' : 'normal',
+        } as React.CSSProperties
+      }
     >
       <div className="BeFontPickerItem-aa apply-font">Aa</div>
 
       <div className="BeFontPickerItem-main">
-        <span className="BeFontPickerItem-name apply-font">{font.name}</span>
+        <span className="BeFontPickerItem-name apply-font">{testPhrase || font.name}</span>
         <span className="BeFontPickerItem-nameNormal">{font.name}</span>
       </div>
     </div>

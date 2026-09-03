@@ -3,16 +3,17 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"errors"
 
+	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/gofrs/uuid"
 )
 
 const UserDataMaxSize = 20 * 1024
 
 var (
-	ErrUserDataKeyNotAllowed = errors.New("user data key is not allowed")
-	ErrUserDataTooLarge      = errors.New("user data exceeds the 20KB size limit")
+	UserDataErrors               = apperror.AppErrors.NewSubNamespace("user_data")
+	ErrTypeUserDataKeyNotAllowed = UserDataErrors.NewType("key_not_allowed")
+	ErrUserDataTooLarge          = UserDataErrors.NewType("size_limit").New("user data exceeds the 20KB size limit")
 )
 
 type GetUserDataQuery struct {
