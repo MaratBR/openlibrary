@@ -4,10 +4,14 @@
 //                   //
 // ----------------- //
 .BookPage {
-  @apply mx-auto max-w-[120ch] px-4 py-8 md:grid md:grid-cols-12 md:gap-10 md:py-10;
+  @apply mx-auto max-w-[1200px] px-4 py-8 md:grid md:grid-cols-12 md:gap-10 md:py-10;
 
   &-left {
     @apply mb-10 flex flex-col items-center md:col-span-3 md:mb-0;
+
+    > #reading-list {
+      @apply w-[200px];
+    }
   }
 
   &-right {
@@ -19,15 +23,20 @@
   }
 
   &-details {
-    @apply mt-8;
+    @apply mt-6;
   }
 
-  &-classification {
-    @apply flex flex-col gap-4 sm:flex-row sm:items-start;
+  &-metadata {
+    @apply flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-secondary-foreground;
+
+    > span:not(:last-child)::after {
+      @apply ml-3 text-border;
+      content: '·';
+    }
   }
 
   &-tags {
-    @apply min-w-0 flex-1;
+    @apply mt-4 min-w-0;
   }
 
   &-ratingCard {
@@ -47,11 +56,15 @@
   }
 
   &-stats {
-    @apply flex items-center divide-x divide-border sm:ml-8;
+    @apply flex flex-wrap items-center gap-y-2 sm:ml-5;
   }
 
   &-stat {
-    @apply flex min-w-16 items-center justify-center gap-2 px-3 tabular-nums first:pl-0 last:pr-0 sm:first:pl-3;
+    @apply flex items-center gap-2 px-3 tabular-nums first:pl-0 last:pr-0;
+
+    &:not(:last-child) {
+      @apply border-r border-border;
+    }
 
     i {
       @apply text-primary;
@@ -59,7 +72,19 @@
   }
 
   &-summary {
-    @apply mt-8 text-lg leading-relaxed;
+    @apply mt-3 max-w-4xl text-lg leading-relaxed;
+  }
+
+  &-summarySection {
+    @apply mt-8;
+  }
+
+  &-sectionTitle {
+    @apply font-title text-2xl font-medium;
+  }
+
+  &-externalLinks {
+    @apply mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-secondary-foreground;
   }
 
   &-contentTabs {

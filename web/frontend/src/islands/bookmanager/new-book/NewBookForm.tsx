@@ -150,7 +150,7 @@ export default function NewBookForm() {
                 <dt>{window._('bookManager.newBook.ageRating')}:</dt>
                 <dd>{rating}</dd>
                 <dt>{window._('bookManager.newBook.tags')}:</dt>
-                <dd className="tags items-start flex flex-wrap gap-2">
+                <dd className="Tags items-start flex flex-wrap gap-2">
                   {tags.map((x) => (
                     <a className="Tag" key={x.id} href={`/tags/${x.id}`}>
                       {x.name}

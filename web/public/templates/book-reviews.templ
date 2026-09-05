@@ -152,13 +152,13 @@ templ BookMyReview(
             </div>
 
 
-            <div class="pt-6 pb-8 rounded-xl items-start gap-4 my-8" x-show="!edit">
+            <div class="my-4 rounded-xl py-4" x-show="!edit">
                 if authorized {
-                    <div class="flex flex-col items-center">
-                        <span class="mt-3 block text-3xl font-title font-semibold">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <span class="block text-2xl font-title font-semibold">
                             @templ.Raw(l.T("book.whatDoYouThink"))
                         </span>
-                        <div class="flex gap-6 items-center mt-4">
+                        <div class="flex flex-wrap gap-4 items-center">
                             {{
                                 var (
                                     initialValue float64
@@ -198,7 +198,7 @@ templ BookMyReview(
                         </div>
                     </div>
                 } else {
-                    <span class="mt-3 block text-3xl font-title font-semibold">
+                    <span class="block text-2xl font-title font-semibold">
                         @templ.Raw(l.T("book.whatDoYouThink"))
                     </span>
                     {{
@@ -227,4 +227,3 @@ templ collapsibleRawHtml(id, html string) {
         </div>
    }
 }
-

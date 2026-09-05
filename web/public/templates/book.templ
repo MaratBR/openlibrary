@@ -43,7 +43,7 @@ templ BookPage(
 ) {
     {{
         l := i18n.GetLocalizer(ctx)
-        tab := "reviews"
+        tab := "toc"
         user, isAuthenticated := auth.GetUser(ctx)
     }}
 
@@ -78,9 +78,6 @@ templ BookPage(
             <div class="BookPage-left">
                 @bookCover(book.Cover.URL, book.Name, 300)
                 @bookReadingList(&book, readingListStatus)
-                <div class="mt-3">
-                    @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), Class: "Btn Btn--ghost w-full"})
-                </div>
             </div>
             <div class="BookPage-right">
                 <header class="PageHeader">
@@ -90,36 +87,44 @@ templ BookPage(
                             <a class="Link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
                         </p>
                     </div>
+                    <div class="PageHeader-actions">
+                        @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), Class: "Btn Btn--ghost Btn--icon", IconOnly: true})
+                    </div>
                 </header>
 
                 @bookRating(&book, views)
 
                 <main class="contents" id="slot-book-page">
-                    <div x-ignore class="BookPage-summary user-content">
-                        @templ.Raw(book.Summary)
-                    </div>
                     <section class="BookPage-details" aria-label={l.T("book.details")}>
-                        <div class="BookPage-classification">
-                            @bookRatingBadge(book.AgeRating)
-                            <div class="BookPage-tags">
-                                @webcomponents.Tags(webcomponents.TagsProps{
-                                    Tags: book.Tags,
-                                })
-                            </div>
+                        <div class="BookPage-metadata">
+                            <span>{_tt(l, "book.chapters", map[string]string{"count": formatNumber(int64(book.Chapters))})}</span>
+                            <span>{_tt(l, "book.words", map[string]string{"count": formatNumber(int64(book.Words))})}</span>
+                            <span>{l.T("book.published")} <time datetime={book.CreatedAt.Format("2006-01-02")}>{relativeTime(l, book.CreatedAt)}</time></span>
+                            <span>
+                                {l.T("book.contentRating")}:
+                                @bookRatingBadge(book.AgeRating)
+                            </span>
                         </div>
+                        if len(book.Tags) > 0 {
+                            <div class="BookPage-tags">
+                                @webcomponents.Tags(webcomponents.TagsProps{Tags: book.Tags, MaxTags: 7})
+                            </div>
+                        }
                     </section>
+
+                    if book.Summary != "" {
+                        <section class="BookPage-summarySection" aria-labelledby="book-summary-title">
+                            <h2 id="book-summary-title" class="BookPage-sectionTitle">{l.T("book.about")}</h2>
+                            <div x-ignore class="BookPage-summary user-content">
+                                @templ.Raw(book.Summary)
+                            </div>
+                        </section>
+                    }
+
+                    @bookExternalLinks(book.ExternalLinks, l.T("book.sources"))
 
                     <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) } class="BookPage-contentTabs">
                         <header role="tablist" class="BookPage-tabList">
-                            <span role="tab"
-                                @click.prevent="tab='reviews'"
-                                if tab == "reviews" {
-                                    data-active="true"
-                                }
-                                :data-active="tab==='reviews'"
-                                class="cursor-pointer font-title text-2xl my-2 font-medium text-secondary-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
-                                { l.T("reviews.title") }
-                            </span>
                             <span role="tab" data-no-instant
                                 @click.prevent="tab='toc'"
                                 if tab == "toc" {
@@ -127,7 +132,16 @@ templ BookPage(
                                 }
                                 :data-active="tab==='toc'"
                                 class="cursor-pointer font-title text-2xl my-2 font-medium text-secondary-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
-                                { l.T("book.toc") }
+                                {_tt(l, "book.chapters", map[string]string{"count": formatNumber(int64(book.Chapters))})}
+                            </span>
+                            <span role="tab"
+                                @click.prevent="tab='reviews'"
+                                if tab == "reviews" {
+                                    data-active="true"
+                                }
+                                :data-active="tab==='reviews'"
+                                class="cursor-pointer font-title text-2xl my-2 font-medium text-secondary-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
+                                {_tt(l, "book.reviewsWithCount", map[string]string{"count": formatNumber(int64(book.Reviews))})}
                             </span>
                         </header>
 
@@ -158,6 +172,18 @@ templ BookPage(
                 </main>
             </div>
         </div>
+    }
+}
+
+templ bookExternalLinks(links []app.BookExternalLinkDto, label string) {
+    if len(links) > 0 {
+        <section class="BookPage-externalLinks" aria-label={label}>
+            for _, link := range links {
+                <a class="Link" href={templ.SafeURL(link.URL)} target="_blank" rel="noopener noreferrer">
+                    {link.Label} <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
+                </a>
+            }
+        </section>
     }
 }
 
@@ -193,18 +219,11 @@ templ bookRating(book *app.BookDetailsDto, views analytics.MetricValue) {
         <div class="BookPage-stats">
             <span class="BookPage-stat" title={l.T("book.ratings")}>
                 <i class="fa-solid fa-square-poll-vertical" aria-hidden="true"></i>
-                <span>{formatInt32(book.Votes)}</span>
-                <span class="sr-only"> {l.T("book.ratings")}</span>
-            </span>
-            <span class="BookPage-stat" title={l.T("book.reviews")}>
-                <i class="fa-solid fa-comment" aria-hidden="true"></i>
-                <span>{formatInt32(book.Reviews)}</span>
-                <span class="sr-only"> {l.T("book.reviews")}</span>
+                <span>{formatNumber(int64(book.Votes))} {l.T("book.ratings")}</span>
             </span>
             <span class="BookPage-stat" title={l.T("book.views")}>
                 <i class="fa-solid fa-eye" aria-hidden="true"></i>
-                <span>{formatInt32(int32(views.Samples))}</span>
-                <span class="sr-only"> {l.T("book.views")}</span>
+                <span>{formatNumber(views.Samples)} {l.T("book.views")}</span>
             </span>
         </div>
     </div>

@@ -84,9 +84,10 @@ templ bookReadingList(book *app.BookDetailsDto, readingListStatus app.Nullable[a
                     @click="primaryAction()"
                     :disabled="primaryDisabled()"
                     :aria-busy="busy"
-                    class="Btn Btn--primary flex-1">
+                    :title="primaryLabel()"
+                    class="Btn Btn--primary min-w-0 flex-1">
                     <i class="Btn-icon BtnIcon--left fa-solid" :class="busy ? 'fa-spinner fa-spin' : primaryIcon()"></i>
-                    <span class="px-1" x-text="primaryLabel()">{readingListPrimaryLabel(l, readingListStatus)}</span>
+                    <span class="min-w-0 truncate px-1" x-text="primaryLabel()">{readingListPrimaryLabel(l, readingListStatus)}</span>
                 </button>
 
                 <button

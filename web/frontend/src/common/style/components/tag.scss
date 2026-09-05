@@ -15,7 +15,7 @@
   }
 }
 
-.tags {
+.Tags {
   &--sm {
     .Tag {
       @apply text-sm p-1;
@@ -29,7 +29,7 @@
   }
 }
 
-ul.tags {
+ul.Tags {
   & > li {
     @apply inline-block me-1;
   }

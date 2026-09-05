@@ -104,7 +104,10 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 		Summary:         book.Summary,
 		Words:           int(book.Words),
 		WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),
+		Chapters:        int(book.Chapters),
 		CreatedAt:       book.CreatedAt.Time,
+		// TODO: Populate ExternalLinks when book source-link persistence is added.
+		ExternalLinks: []BookExternalLinkDto{},
 		Collections:     []BookCollectionDto{},
 		Author: BookDetailsAuthorDto{
 			ID:   authorID,

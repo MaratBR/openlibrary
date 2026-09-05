@@ -21,7 +21,9 @@ type BookDetailsDto struct {
 	Tags                []DefinedTagDto       `json:"tags"`
 	Words               int                   `json:"words"`
 	WordsPerChapter     int                   `json:"wordsPerChapter"`
+	Chapters            int                   `json:"chapters"`
 	CreatedAt           time.Time             `json:"createdAt"`
+	ExternalLinks       []BookExternalLinkDto `json:"externalLinks"`
 	Collections         []BookCollectionDto   `json:"collections"`
 	Author              BookDetailsAuthorDto  `json:"author"`
 	Permissions         BookUserPermissions   `json:"permissions"`
@@ -34,6 +36,14 @@ type BookDetailsDto struct {
 	IsPubliclyAvailable bool                  `json:"isPubliclyAvailable"`
 	Slug                string                `json:"slug"`
 	FirstChapterID      Nullable[int64]       `json:"firstChapterId"`
+}
+
+// BookExternalLinkDto is a link to a book hosted or supported elsewhere.
+// Persistence for these links will be added separately; keeping the page DTO
+// ready lets the UI render any supported source without source-specific markup.
+type BookExternalLinkDto struct {
+	Label string `json:"label"`
+	URL   string `json:"url"`
 }
 
 type BookAdultWarning struct {
