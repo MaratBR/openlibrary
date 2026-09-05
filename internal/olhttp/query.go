@@ -17,7 +17,7 @@ func URLQueryParamInt64(r *http.Request, name string) (int64, error) {
 	}
 	intValue, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		return 0, errTypeInvalidInt64.Wrap(err, "failed to parse int64 query parameter "+name)
+		return 0, errTypeInvalidInt64.Wrap(err, "failed to parse int64 query parameter %s", name)
 	}
 	return intValue, nil
 }

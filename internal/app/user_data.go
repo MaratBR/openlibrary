@@ -13,6 +13,7 @@ const UserDataMaxSize = 20 * 1024
 var (
 	UserDataErrors               = apperror.AppErrors.NewSubNamespace("user_data")
 	ErrTypeUserDataKeyNotAllowed = UserDataErrors.NewType("key_not_allowed")
+	ErrUserDataKeyNotAllowed     = ErrTypeUserDataKeyNotAllowed.New("user data key is not allowed")
 	ErrUserDataTooLarge          = UserDataErrors.NewType("size_limit").New("user data exceeds the 20KB size limit")
 )
 

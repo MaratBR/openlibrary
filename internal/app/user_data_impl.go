@@ -66,7 +66,7 @@ func validateUserDataKey(key string, ignoreWhitelist bool) error {
 		return nil
 	}
 	if _, ok := userDataKeyWhitelist[key]; !ok {
-		return ErrTypeUserDataKeyNotAllowed.New("not allowed user data key %s", key)
+		return ErrUserDataKeyNotAllowed
 	}
 	return nil
 }
