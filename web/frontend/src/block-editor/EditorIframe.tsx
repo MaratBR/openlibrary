@@ -1,14 +1,25 @@
-import { SyntheticEvent, useState } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 import { EditorElements } from './EditorElements'
 import { WYSIWYGEditor } from './wysiwyg'
 import { ChapterNameInput } from './ChapterNameInput'
 import { createPortal } from 'react-dom'
+import { appRuntime } from '@/effect/runtime'
+import { FontsLoader } from '@/features/fonts-loader/loader'
+
+const fontsLoader = appRuntime.runSync(FontsLoader)
 
 // loads and iframe inside of which we will have the content of the
 // chapter
 export function EditorIframe({ initialContent }: { initialContent: string }) {
   const [loading, setLoading] = useState(true)
   const [elements, setElements] = useState<EditorElements | null>(null)
+
+  useEffect(() => {
+    if (elements === null) return
+    return () => {
+      void appRuntime.runPromise(fontsLoader.detachIframe(elements.iframe))
+    }
+  }, [elements])
 
   return (
     <>
@@ -43,11 +54,12 @@ export function EditorIframe({ initialContent }: { initialContent: string }) {
     </>
   )
 
-  function handleLoad(event: SyntheticEvent<HTMLIFrameElement>) {
+  async function handleLoad(event: SyntheticEvent<HTMLIFrameElement>) {
     const iframe = event.target
     if (!(iframe instanceof HTMLIFrameElement)) return
     const elements = new EditorElements(iframe)
 
+    await appRuntime.runPromise(fontsLoader.attachIframe(iframe))
     setElements(elements)
     setLoading(false)
   }

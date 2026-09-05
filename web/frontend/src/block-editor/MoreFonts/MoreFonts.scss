@@ -29,4 +29,22 @@
     &-nameNormal {
         @apply text-secondary-foreground;
     }
+
+    @apply cursor-pointer;
+
+    &:hover:not(&:has(&-starButton:hover)) {
+        @apply ring ring-inset ring-offset-3;
+    }
+
+    &-star {
+        @apply relative;
+    }
+
+    &-starButton {
+        @apply absolute inset-2 rounded-lg flex items-center justify-center text-2xl hover:bg-highlight;
+
+        &[aria-selected=true] {
+            @apply text-yellow-600;
+        }
+    }
 }

@@ -4,6 +4,11 @@ import { EditButtonMenuExpandableSection } from '../EditBubbleMenuExpandableSect
 import { useBubbleState } from '../state'
 
 import './FontPicker.scss'
+import { useFavoriteFonts } from '@/block-editor/fonts/state'
+import { useEffect } from 'react'
+import { appRuntime } from '@/effect/runtime'
+import { Effect } from 'effect'
+import { FontsLoader } from '@/features/fonts-loader/loader'
 
 export function FontPicker({ editor }: { editor: ChapterContentEditor }) {
   const open = useBubbleState((x) => x.fontPickerOpen)
@@ -16,9 +21,20 @@ export function FontPicker({ editor }: { editor: ChapterContentEditor }) {
 }
 
 function FontPickerInternal({ editor }: { editor: ChapterContentEditor }) {
-  const favoriteFonts = ['Poppins', 'Merriweather', 'Literata']
+  const favoriteFonts = useFavoriteFonts()
   const toggle = useBubbleState((x) => x.toggleFontPicker)
   const openMoreFonts = useMoreFontsState((x) => x.open)
+
+  useEffect(() => {
+    if (favoriteFonts.length > 0) {
+      appRuntime.runPromise(
+        Effect.gen(function* () {
+          const fontLoader = yield* FontsLoader
+          yield* fontLoader.addFonts(favoriteFonts)
+        }),
+      )
+    }
+  }, [favoriteFonts])
 
   function handleApplyFont(font: string) {
     editor.chain().setFontFamily(font).focus().run()
@@ -27,19 +43,21 @@ function FontPickerInternal({ editor }: { editor: ChapterContentEditor }) {
   return (
     <div className="BeFontPickerMini">
       <ul className="BeFontPickerMini-list">
-        {favoriteFonts.map((font) => {
-          return (
-            <li
-              role="listitem"
-              key={font}
-              className="BeFontPickerMini-item"
-              style={{ fontFamily: font }}
-              onClick={() => handleApplyFont(font)}
-            >
-              {font}
-            </li>
-          )
-        })}
+        {(favoriteFonts.length === 0 ? ['Poppins', 'Merriweather', 'Literata'] : favoriteFonts).map(
+          (font) => {
+            return (
+              <li
+                role="listitem"
+                key={font}
+                className="BeFontPickerMini-item"
+                style={{ fontFamily: font }}
+                onClick={() => handleApplyFont(font)}
+              >
+                {font}
+              </li>
+            )
+          },
+        )}
       </ul>
 
       <hr />

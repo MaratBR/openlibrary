@@ -3,13 +3,14 @@ import { useAtomValue } from 'jotai'
 import { ReactIslandProps } from '@/islands/common/react-island'
 import { jotaiStore } from '@/react'
 import './BookManagerEditor.scss'
-import type { DraftDto } from './contracts'
 import { draftAtom, initializeDraftAtom } from './state'
 import { EditorIframe } from './EditorIframe'
 import { SaveButton } from './SaveButton'
 import { CenterHeader } from './CenterHeader'
 import { WidgetsMenu, WidgetsService } from './widgets'
 import { MoreFonts } from './MoreFonts'
+import { DraftDto } from '@/backend-types'
+import { useInitializeEditorFonts } from './fonts/state'
 
 export default function EditorIslandComponent({ data }: ReactIslandProps) {
   const { draft } = useMemo(() => data as { draft: DraftDto }, [data])
@@ -21,6 +22,7 @@ export default function EditorIslandComponent({ data }: ReactIslandProps) {
 }
 
 function EditorIsland({ draft }: { draft: DraftDto }) {
+  useInitializeEditorFonts()
   const [leftOpen, setLeftOpen] = useState(true)
   const [rightOpen, setRightOpen] = useState(true)
 

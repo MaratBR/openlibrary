@@ -82,6 +82,7 @@
     "clsx": "^2.1.1",
     "effect": "4.0.0-rc.112",
     "jotai": "^2.20.3",
+    "jotai-family": "^1.1.0",
     "ky": "^1.14.1",
     "overlayscrollbars": "^2.13.0",
     "p-queue": "^9.3.3",

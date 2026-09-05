@@ -58,9 +58,11 @@ func (c *apiControllerUserData) set(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	key, _ := url.QueryUnescape(chi.URLParam(r, "key"))
+
 	err := c.service.Set(r.Context(), app.SetUserDataQuery{
 		UserID: session.UserID,
-		Key:    chi.URLParam(r, "key"),
+		Key:    key,
 		Data:   data,
 	})
 	if err != nil {

@@ -4,14 +4,15 @@ import { create } from 'zustand'
 import { FontsLoader } from '@/features/fonts-loader/loader'
 import { Font } from '@/features/fonts-loader/api'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import './MoreFonts.scss'
 import { ChapterContentEditor } from '../wysiwyg/editor'
-import { useFonts } from '../fonts/state'
+import { useFavoriteFontState, useFonts } from '../fonts/state'
 import { atom, useAtom, useAtomValue } from 'jotai'
-import { jotaiStore } from '@/react'
 import EditorToggleButton from '../wysiwyg/EditorBubbleMenu/EditorToggleButton'
+
+const fontsLoader = appRuntime.runSync(FontsLoader)
 
 export type MoreFontsState = {
   opened: boolean
@@ -53,11 +54,7 @@ export function MoreFonts() {
 
   const [search, setSearch] = useState('')
 
-  const { fonts, init } = useFonts()
-
-  useEffect(() => {
-    if (opened) void appRuntime.runPromise(init())
-  }, [opened, init])
+  const { fonts } = useFonts()
 
   const filteredFonts = useMemo(() => {
     const trimmed = search.trim().toLowerCase()
@@ -167,7 +164,7 @@ function FontsList({ fonts }: { fonts: ReadonlyArray<Readonly<Font>> }) {
 function FontRow({ font }: { font: Readonly<Font> }) {
   useLayoutEffect(() => {
     const t = setTimeout(() => {
-      FontsLoader.ensureFontLoaded(font.name)
+      void appRuntime.runPromise(fontsLoader.ensureFontLoaded(font.name)).catch(() => undefined)
     }, 600)
 
     return () => clearInterval(t)
@@ -196,6 +193,26 @@ function FontRow({ font }: { font: Readonly<Font> }) {
         <span className="BeFontPickerItem-name apply-font">{testPhrase || font.name}</span>
         <span className="BeFontPickerItem-nameNormal">{font.name}</span>
       </div>
+
+      <div className="BeFontPickerItem-star">
+        <FavoriteFontButton font={font.name} />
+      </div>
     </div>
+  )
+}
+
+function FavoriteFontButton({ font }: { font: string }) {
+  const { select, selected } = useFavoriteFontState(font)
+
+  return (
+    <button
+      className="BeFontPickerItem-starButton"
+      aria-selected={selected}
+      onClick={() => {
+        select(!selected)
+      }}
+    >
+      {selected ? <i className="fa-solid fa-star"></i> : <i className="fa-regular fa-star"></i>}
+    </button>
   )
 }

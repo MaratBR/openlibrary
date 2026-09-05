@@ -22,10 +22,17 @@ export class FontsApi extends Context.Service<
     Effect.gen(function* () {
       const httpClient = yield* HttpClient
       const getGoogleFonts = Effect.fn('FontsApi.getGoogleFonts')(function* () {
+        yield* Effect.logDebug('Requesting Google fonts').pipe(
+          Effect.annotateLogs('service', 'FontsApi'),
+        )
         const response = yield* Effect.tryPromise(() =>
           httpClient.get('/_api/fonts/google').then((r) => r.json()),
         )
-        return yield* Schema.decodeUnknownEffect(Schema.Array(Font))(response)
+        const fonts = yield* Schema.decodeUnknownEffect(Schema.Array(Font))(response)
+        yield* Effect.logDebug('Received Google fonts').pipe(
+          Effect.annotateLogs({ service: 'FontsApi', count: fonts.length }),
+        )
+        return fonts
       })
       return FontsApi.of({ getGoogleFonts })
     }),
