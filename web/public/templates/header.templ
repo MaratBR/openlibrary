@@ -5,7 +5,9 @@ import "github.com/MaratBR/openlibrary/internal/auth"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ siteHeader() {
-    @siteHeaderLayout() {
+    @webcomponents.SiteHeaderRoot() {
+        @webcomponents.SiteHeaderLogo()
+
         <button class="SiteHeader-mobileOpen" @click="navOpen=!navOpen">
             <svg class="size-6" xmlns="http://www.w3.org/2000/svg" viewBox="F0 0 24 24"><title>menu</title><path class="fill-foreground" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
         </button>
@@ -83,20 +85,6 @@ templ siteHeader() {
         </nav>
         <div class="site-nav-overlay" @click="navOpen=false" :data-open="navOpen" />
     }
-}
-
-templ siteHeaderLayout() {
-    <header class="SiteHeader" id="site-header">
-        <div class="SiteHeader-inner" x-data="{navOpen:false}">
-            <a href="/" class="SiteHeader-logo">
-                <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:hidden" src="/_/embed-assets/logo.svg" />
-                <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
-            </a>
-            { children... }
-        </div>
-    </header>
-
-        
 }
 
 templ navUser() {

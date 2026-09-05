@@ -1,0 +1,16 @@
+package webcomponents
+
+templ SiteHeaderLogo() {
+    <a href="/" class="SiteHeader-logo">
+        <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:hidden" src="/_/embed-assets/logo.svg" />
+        <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
+    </a>
+}
+
+templ SiteHeaderRoot() {
+    <header class="SiteHeader" id="site-header">
+        <div class="SiteHeader-inner" x-data="{navOpen:false}">
+            { children... }
+        </div>
+    </header>
+}

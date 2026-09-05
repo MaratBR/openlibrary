@@ -9,6 +9,7 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 import "github.com/MaratBR/openlibrary/internal/auth"
 import "net/url"
+import "time"
 
 func chapterFontStylesheets(fonts []string) []string {
     stylesheets := make([]string, 0, len(fonts))
@@ -38,15 +39,20 @@ templ Chapter(
     @htmlLayout(htmlLayoutProps{Title: chapter.Name, CSS: chapterFontStylesheets(chapter.Fonts)}) {
         @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapter.ID))
 
-        @siteHeaderLayout() {
-            <div class="h-full flex-nowrap overflow-x-auto whitespace-nowrap items-center flex gap-2">
-                <a class="Link !font-[600] hidden lg:block" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
-                    { book.Name }
-                </a>
-                <i class="fa-solid fa-arrow-right"></i>
-                <span class="font-semibold">
-                    { chapter.Name }
-                </span>
+        @webcomponents.SiteHeaderRoot() {
+            <div class="h-full w-full flex flex-col justify-center items-center">
+                    if len(chapter.Name) > 115 {
+                        <span class="font-semibold text-center text-sm line-clamp-2 mx-4">
+                            { chapter.Name }
+                        </span>
+                    } else {
+                        <span class="font-semibold text-lg">
+                            { chapter.Name }
+                        </span>
+                    }
+                // <a class="Link text-sm" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
+                //     { book.Name }
+                // </a>
             </div>
             <div class="mx-auto" />
         }
@@ -121,21 +127,28 @@ templ ChapterContentIframe() {
     }
 }
 
-templ ChapterContentSection(chapter *app.ChapterDto, options ChapterProgressTrackerOptions) {
+templ bookReaderHeader(name string, words int32, createdAt time.Time) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
 
     <header class="BookReader-header">
-        <h1 class="text-3xl font-title">{ chapter.Name }</h1>
+        <h1 class="text-5xl font-title">{ name }</h1>
     
         <p class="mt-2 text-secondary-foreground">
             { l.TData("book.words", map[string]string{
-                "count": commonutil.FormatInt(int(chapter.Words)),
-            }) } &bull; <time datetime={ chapter.CreatedAt.String() }>{ relativeTime(l, chapter.CreatedAt) }</time>
+                "count": commonutil.FormatInt(int(words)),
+            }) } &bull; <time datetime={ createdAt.String() }>{ relativeTime(l, createdAt) }</time>
         </p>
     </header>
+}
 
+templ ChapterContentSection(chapter *app.ChapterDto, options ChapterProgressTrackerOptions) {
+    {{
+        l := i18n.GetLocalizer(ctx)
+    }}
+
+    @bookReaderHeader(chapter.Name, chapter.Words, chapter.CreatedAt)
 
     if options.Enable {
         <script>

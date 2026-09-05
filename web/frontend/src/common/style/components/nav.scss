@@ -1,5 +1,5 @@
 .SiteHeader {
-  @apply z-40 w-full sticky top-0 h-[var(--header-height)] border-b;
+  @apply z-40 w-full sticky top-0 h-[var(--header-height)];
   border-color: var(--border);
   background: var(--surface);
 

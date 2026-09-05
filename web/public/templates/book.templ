@@ -176,6 +176,13 @@ templ BookPage(
 }
 
 templ bookExternalLinks(links []app.BookExternalLinkDto, label string) {
+    {{
+        links = append(links, app.BookExternalLinkDto{
+            Label: "Patreon",
+            URL: "https://www.patreon.com/cw/Actus",
+        })
+    }}
+
     if len(links) > 0 {
         <section class="BookPage-externalLinks" aria-label={label}>
             for _, link := range links {

@@ -52,11 +52,16 @@
   }
 
   &-chapterNavigation {
-    @apply mt-12 grid grid-cols-2 overflow-hidden rounded-lg border bg-surface shadow-sm;
+    @apply 
+      grid grid-cols-2 gap-2 overflow-hidden
+      mt-12 -mx-4 px-4 -mb-8 pb-8;
   }
 
   &-chapterLink {
-    @apply flex min-w-0 items-center gap-3 p-4 transition-colors hover:bg-foreground/5 focus-visible:ring;
+    @apply 
+      flex min-w-0 items-center gap-3 p-4 transition-all bg-surface rounded-lg shadow-sm 
+      hover:shadow-xl
+      focus-visible:ring;
 
     span {
       @apply min-w-0 truncate font-medium;
