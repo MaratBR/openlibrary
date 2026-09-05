@@ -11,3 +11,5 @@ This guide applies to `docs/development`.
   remove obsolete advice rather than documenting competing paths.
 - Link to canonical repository files and commands instead of duplicating long
   configuration or code snippets.
+- For raster image resizing and AVIF/WebP/PNG variants, follow
+  [`image-assets.md`](image-assets.md).

@@ -6,11 +6,22 @@
     }
 
     &-bg {
-        @apply absolute inset-0 bg-no-repeat pointer-events-none
-            bg-[url(/_/embed-assets/img/books.png)]
-            dark:bg-[url(/_/embed-assets/img/books_dark.png)];
+        @apply absolute inset-0 bg-no-repeat pointer-events-none;
+        background-image: image-set(
+            url("/_/embed-assets/img/books.avif") type("image/avif"),
+            url("/_/embed-assets/img/books.webp") type("image/webp"),
+            url("/_/embed-assets/img/books.png") type("image/png")
+        );
         background-position: 100% 45%;
         background-size: 58%;
+
+        .dark & {
+            background-image: image-set(
+                url("/_/embed-assets/img/books_dark.avif") type("image/avif"),
+                url("/_/embed-assets/img/books_dark.webp") type("image/webp"),
+                url("/_/embed-assets/img/books_dark.png") type("image/png")
+            );
+        }
     }
 
     &-eyebrow {
