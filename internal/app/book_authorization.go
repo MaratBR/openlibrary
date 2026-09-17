@@ -1,6 +1,6 @@
 package app
 
-import "github.com/gofrs/uuid"
+import "uuid"
 
 type userBookPermissionState struct {
 	CanView bool
@@ -8,7 +8,7 @@ type userBookPermissionState struct {
 }
 
 type getUserBookPermissionsStateRequest struct {
-	UserID            uuid.NullUUID
+	UserID            Nullable[uuid.UUID]
 	BookAuthorID      uuid.UUID
 	IsPubliclyVisible bool
 }
@@ -18,8 +18,8 @@ func getUserBookPermissionsState(
 ) userBookPermissionState {
 	if req.UserID.Valid {
 		return userBookPermissionState{
-			CanView: req.IsPubliclyVisible || req.UserID.UUID == req.BookAuthorID,
-			IsOwner: req.UserID.UUID == req.BookAuthorID,
+			CanView: req.IsPubliclyVisible || req.UserID.Value == req.BookAuthorID,
+			IsOwner: req.UserID.Value == req.BookAuthorID,
 		}
 	} else {
 		return userBookPermissionState{

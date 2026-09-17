@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 var (
@@ -238,7 +238,7 @@ func (s *loginHistoryService) GetUserLoginHistory(ctx context.Context, q GetLogi
 		return ModerationPage[LoginHistoryEntry]{}, err
 	}
 	q.Search = strings.TrimSpace(q.Search)
-	if len(q.UserIDs) == 0 && q.UserID != uuid.Nil {
+	if len(q.UserIDs) == 0 && q.UserID != uuid.Nil() {
 		q.UserIDs = []uuid.UUID{q.UserID}
 	}
 	if len(q.UserIDs) > 20 {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 // go2tsdef:generate

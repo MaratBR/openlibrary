@@ -3,12 +3,12 @@ package public
 import (
 	"testing"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 func TestModerationUserIDsFilter(t *testing.T) {
-	first := uuid.Must(uuid.NewV4())
-	second := uuid.Must(uuid.NewV4())
+	first := uuid.NewV4()
+	second := uuid.NewV4()
 	ids, err := moderationUserIDsFilter(first.String() + ", " + second.String() + "," + first.String())
 	if err != nil {
 		t.Fatal(err)
@@ -30,7 +30,7 @@ func TestModerationUserIDsFilterRejectsInvalidAndExcessiveValues(t *testing.T) {
 		if value != "" {
 			value += ","
 		}
-		value += uuid.Must(uuid.NewV4()).String()
+		value += uuid.NewV4().String()
 	}
 	if _, err := moderationUserIDsFilter(value); err == nil {
 		t.Fatal("expected excessive user count error")

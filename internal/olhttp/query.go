@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 func URLQueryParamInt64(r *http.Request, name string) (int64, error) {
@@ -25,9 +25,9 @@ func URLQueryParamInt64(r *http.Request, name string) (int64, error) {
 func URLQueryParamUUID(r *http.Request, name string) (uuid.UUID, error) {
 	value := r.URL.Query().Get(name)
 	if len(value) == 0 {
-		return uuid.Nil, nil
+		return uuid.Nil(), nil
 	}
-	return uuid.FromString(value)
+	return uuid.Parse(value)
 }
 
 func GetInt32FromQuery(values url.Values, key string) app.Int32 {
@@ -189,7 +189,7 @@ func GetUUIDArray(value url.Values, key string) []uuid.UUID {
 
 	uuidArr := []uuid.UUID{}
 	for _, str := range strArr {
-		id, err := uuid.FromString(str)
+		id, err := uuid.Parse(str)
 		if err != nil {
 			continue
 		}

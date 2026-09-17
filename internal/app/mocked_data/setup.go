@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type Setup struct {

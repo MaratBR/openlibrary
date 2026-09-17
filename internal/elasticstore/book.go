@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/k3a/html2text"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"uuid"
 )
 
 type BookIndex struct {

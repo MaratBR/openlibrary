@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/gofrs/uuid"
 	"go.uber.org/zap"
+	"uuid"
 )
 
 type ReportTargetType string

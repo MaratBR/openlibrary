@@ -14,11 +14,11 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/knadh/koanf/parsers/toml/v2"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
+	"uuid"
 )
 
 type options struct {

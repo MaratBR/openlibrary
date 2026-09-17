@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 const UserDataMaxSize = 20 * 1024

@@ -78,14 +78,14 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 	if userID.Valid {
 		ratingAndReview, err = b.reviewService.GetReview(r.Context(), app.GetReviewQuery{
 			BookID: bookID,
-			UserID: userID.UUID,
+			UserID: userID.Value,
 		})
 		if err != nil {
 			write500(w, r, err)
 			return
 		}
 
-		readingListStatus, err = b.readingListService.GetStatus(r.Context(), userID.UUID, bookID)
+		readingListStatus, err = b.readingListService.GetStatus(r.Context(), userID.Value, bookID)
 		if err != nil {
 			write500(w, r, err)
 			return

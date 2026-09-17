@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 var (
@@ -70,7 +70,7 @@ func (d BookDetailsDto) GetAdultWarning() (warnData BookAdultWarning) {
 
 type GetBookQuery struct {
 	ID          int64
-	ActorUserID uuid.NullUUID
+	ActorUserID Nullable[uuid.UUID]
 }
 
 type GetBookChaptersQuery struct {
@@ -171,7 +171,7 @@ type BookCollectionDto struct {
 type GetBookChapterQuery struct {
 	BookID      int64
 	ChapterID   int64
-	ActorUserID uuid.NullUUID
+	ActorUserID Nullable[uuid.UUID]
 }
 
 type GetBookChapterResult struct {

@@ -1,6 +1,6 @@
 module github.com/MaratBR/openlibrary
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
@@ -14,7 +14,6 @@ require (
 	github.com/ggicci/httpin v0.20.4
 	github.com/go-chi/chi/v5 v5.3.1
 	github.com/go-faker/faker/v4 v4.10.0
-	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gosimple/slug v1.15.0
 	github.com/h2non/bimg v1.1.9
 	github.com/hjson/hjson-go/v4 v4.6.0
@@ -39,7 +38,6 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tdewolff/minify/v2 v2.24.16
 	github.com/urfave/cli/v3 v3.10.1
-	github.com/zeebo/assert v1.3.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.66.0
 	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.44.0
@@ -60,7 +58,6 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/coder/websocket v1.8.15 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect

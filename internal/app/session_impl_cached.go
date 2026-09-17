@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/MaratBR/openlibrary/internal/app/cache"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type cachedSessionService struct {

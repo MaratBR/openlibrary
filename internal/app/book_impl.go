@@ -108,12 +108,12 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 		CreatedAt:       book.CreatedAt.Time,
 		// TODO: Populate ExternalLinks when book source-link persistence is added.
 		ExternalLinks: []BookExternalLinkDto{},
-		Collections:     []BookCollectionDto{},
+		Collections:   []BookCollectionDto{},
 		Author: BookDetailsAuthorDto{
 			ID:   authorID,
 			Name: book.AuthorName,
 		},
-		Permissions:         BookUserPermissions{CanEdit: query.ActorUserID.Valid && authorID == query.ActorUserID.UUID},
+		Permissions:         BookUserPermissions{CanEdit: query.ActorUserID.Valid && authorID == query.ActorUserID.Value},
 		Cover:               getBookCover(s.uploadService, book.Cover, book.ID),
 		Rating:              float64ToNullable(book.Rating),
 		Reviews:             book.TotalReviews,

@@ -9,7 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/gravatar"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type userService struct {
@@ -327,7 +327,7 @@ func (u *userService) GetUserDetails(ctx context.Context, query GetUserQuery) (*
 		IsFollowing: user.IsFollowing,
 	}
 
-	if !query.UserID.Valid || details.ID != query.UserID.UUID {
+	if !query.UserID.Valid || details.ID != query.UserID.Value {
 		if user.PrivacyHideStats {
 			details.Followers = -1
 			details.Following = -1

@@ -3,7 +3,7 @@ package templates
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
-import "github.com/gofrs/uuid"
+import "uuid"
 import "github.com/MaratBR/openlibrary/internal/auth"
 import "strconv"
 import "net/url"
@@ -19,7 +19,7 @@ templ bookTopReviews(
 
     <ul class="space-y-2">
         for _, review := range reviews {
-            if !userId.Valid || userId.UUID != review.User.ID {
+            if !userId.Valid || userId.Value != review.User.ID {
                 @bookReview(review, review.User.ID == authorID)
             }
         }
@@ -106,7 +106,7 @@ templ BookMyReview(
     }">
         if ratingAndReview.Review.Valid {
             {{ review := ratingAndReview.Review.Value }}
-            <div x-ref="myReview" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden">
+            <div x-ref="myReview" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 bg-surface nojs-hidden">
                 @jsonTemplate("island-review-editor-data", ratingAndReview.Review.Value)
                 <div class="grid grid-cols-[110px_auto]" x-show="!edit&&!loading">
                     <div>
@@ -143,7 +143,7 @@ templ BookMyReview(
         }
         
         if !ratingAndReview.Review.Valid {
-            <div x-show="edit" x-cloak class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 nojs-hidden">
+            <div x-show="edit" x-cloak class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 bg-surface nojs-hidden">
                 <ol-island 
                     src="/_/assets/islands/review-editor.js" 
                     :active="loading||edit"

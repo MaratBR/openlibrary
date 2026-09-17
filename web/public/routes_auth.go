@@ -14,8 +14,8 @@ import (
 	"github.com/MaratBR/openlibrary/internal/session"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid"
 	"github.com/knadh/koanf/v2"
+	"uuid"
 )
 
 type authController struct {

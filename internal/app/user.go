@@ -7,7 +7,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type UserRole string
@@ -128,7 +128,7 @@ type SelfUserDto struct {
 
 type GetUserQuery struct {
 	ID     uuid.UUID
-	UserID uuid.NullUUID
+	UserID Nullable[uuid.UUID]
 }
 
 type UserPrivacySettings struct {
@@ -196,7 +196,7 @@ type UserListResponse struct {
 
 type UpdateUserCommand struct {
 	UserID      uuid.UUID
-	ActorUserID uuid.NullUUID
+	ActorUserID Nullable[uuid.UUID]
 	Password    string
 	Role        Nullable[UserRole]
 	About       string

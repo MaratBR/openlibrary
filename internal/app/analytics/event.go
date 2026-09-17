@@ -6,8 +6,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"go.uber.org/fx"
+	"uuid"
 )
 
 type EventType string
@@ -65,13 +65,14 @@ type EventSink interface {
 }
 
 type EventMetadata struct {
-	UserID uuid.NullUUID
-	IP     net.IP
+	UserID    uuid.UUID
+	HasUserID bool
+	IP        net.IP
 }
 
 func (m EventMetadata) UniqueID() string {
-	if m.UserID.Valid {
-		return "U" + m.UserID.UUID.String()
+	if m.HasUserID {
+		return "U" + m.UserID.String()
 	}
 
 	if m.IP != nil {

@@ -7,7 +7,7 @@ import (
 	"math/rand/v2"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type ModerationUserInfo struct {
@@ -127,7 +127,7 @@ func (s *moderationUserService) SearchUsers(ctx context.Context, query Moderatio
 	}
 	page, size, limit, offset := normalizeModerationPage(query.Page, query.PageSize)
 	var searchID *uuid.UUID
-	if parsed, err := uuid.FromString(query.Search); err == nil {
+	if parsed, err := uuid.Parse(query.Search); err == nil {
 		searchID = &parsed
 	}
 	entries, total, err := s.repo.SearchUsers(ctx, query.Search, searchID, query.Banned, query.Role, limit, offset)

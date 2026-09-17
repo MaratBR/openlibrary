@@ -8,7 +8,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type profileController struct {

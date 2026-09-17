@@ -6,8 +6,8 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"uuid"
 )
 
 type readingListService struct {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/gofrs/uuid"
 	"github.com/joomcode/errorx"
+	"uuid"
 )
 
 var (

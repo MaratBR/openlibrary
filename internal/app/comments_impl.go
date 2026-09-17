@@ -7,7 +7,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type commentsService struct {
@@ -85,7 +85,7 @@ func (c *commentsService) GetList(ctx context.Context, query GetCommentsQuery) (
 		}
 
 		if query.ActorUserID.Valid {
-			err = c.fillWithLikedAtData(ctx, queries, result.Comments, query.ActorUserID.UUID)
+			err = c.fillWithLikedAtData(ctx, queries, result.Comments, query.ActorUserID.Value)
 			if err != nil {
 				return
 			}
@@ -154,7 +154,7 @@ func (c *commentsService) GetReplies(ctx context.Context, query GetCommentReplie
 		result.NextCursor = uint32(unixTs)
 
 		if query.ActorUserID.Valid {
-			err = c.fillWithLikedAtData(ctx, queries, result.Comments, query.ActorUserID.UUID)
+			err = c.fillWithLikedAtData(ctx, queries, result.Comments, query.ActorUserID.Value)
 			if err != nil {
 				return
 			}

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 func GetSession(ctx context.Context) (*app.SessionInfo, bool) {
@@ -44,12 +44,12 @@ func RequireSession(ctx context.Context) *app.SessionInfo {
 	return sessionInfo
 }
 
-func GetNullableUserID(ctx context.Context) uuid.NullUUID {
+func GetNullableUserID(ctx context.Context) app.Nullable[uuid.UUID] {
 	session, ok := GetSession(ctx)
 	if !ok {
-		return uuid.NullUUID{}
+		return app.Null[uuid.UUID]()
 	}
-	return uuid.NullUUID{Valid: true, UUID: session.UserID}
+	return app.Value(session.UserID)
 }
 
 func attachSessionInfo(r *http.Request, sessionInfo *app.SessionInfo, user *app.SelfUserDto) *http.Request {

@@ -302,3 +302,15 @@ create index ix_user_bans_user_created_at on user_bans (user_id, created_at desc
 create index ix_defined_tags_lowercased_name on defined_tags (lowercased_name text_pattern_ops);
 create index ix_defined_tags_type_lowercased_name on defined_tags (tag_type, lowercased_name text_pattern_ops);
 create index ix_defined_tags_synonym_of on defined_tags (synonym_of);
+
+create table notifications (
+    key text primary key,
+    user_id uuid not null references users (id),
+    created_at timestamptz not null default now(),
+    "type" text not null,
+    title text not null default '',
+    content text not null default '',
+    metadata jsonb
+);
+
+create index ix_notifications_user_id on notifications (user_id, created_at desc);

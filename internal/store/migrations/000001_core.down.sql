@@ -1,3 +1,4 @@
+drop table if exists notifications;
 drop table if exists user_reader_preferences;
 drop table if exists site_config;
 drop table if exists draft_log;

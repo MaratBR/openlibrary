@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 func TestEventToMetricPreservesFields(t *testing.T) {
@@ -25,7 +25,7 @@ func TestEventToMetricPreservesFields(t *testing.T) {
 }
 
 func TestEventMetadataUniqueID(t *testing.T) {
-	userID := uuid.Must(uuid.NewV4())
+	userID := uuid.NewV4()
 	tests := []struct {
 		name string
 		meta EventMetadata
@@ -33,7 +33,7 @@ func TestEventMetadataUniqueID(t *testing.T) {
 	}{
 		{
 			name: "user takes precedence over IP",
-			meta: EventMetadata{UserID: uuid.NullUUID{UUID: userID, Valid: true}, IP: net.ParseIP("192.0.2.1")},
+			meta: EventMetadata{UserID: userID, HasUserID: true, IP: net.ParseIP("192.0.2.1")},
 			want: "U" + userID.String(),
 		},
 		{name: "anonymous IP", meta: EventMetadata{IP: net.ParseIP("192.0.2.1")}, want: "192.0.2.1"},

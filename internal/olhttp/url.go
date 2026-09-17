@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 var (
@@ -32,11 +32,11 @@ func URLParamInt64(r *http.Request, name string) (int64, error) {
 func URLParamUUID(r *http.Request, name string) (uuid.UUID, error) {
 	value := chi.URLParam(r, name)
 	if len(value) == 0 {
-		return uuid.Nil, nil
+		return uuid.Nil(), nil
 	}
-	id, err := uuid.FromString(value)
+	id, err := uuid.Parse(value)
 	if err != nil {
-		return uuid.Nil, errTypeInvalidUUID.Wrap(err, "failed to parse uuid url parameter")
+		return uuid.Nil(), errTypeInvalidUUID.Wrap(err, "failed to parse uuid url parameter")
 	}
 	return id, nil
 }

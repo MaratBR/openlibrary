@@ -5,7 +5,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/go-faker/faker/v4"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type fakeUser struct {
@@ -28,10 +28,7 @@ func CreateUsers(
 		if err != nil {
 			panic(err)
 		}
-		user.ID, err = uuid.NewV4()
-		if err != nil {
-			panic(err)
-		}
+		user.ID = uuid.NewV4()
 
 		result, err := signUpService.SignUp(context.Background(), app.SignUpCommand{
 			Username:                  user.Name,

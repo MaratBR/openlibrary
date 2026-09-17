@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type reportRepoStub struct {
@@ -83,7 +83,7 @@ func TestModerationReportRequiresModerator(t *testing.T) {
 func TestModerationReportDecisionValidationAndPersistence(t *testing.T) {
 	repo := &reportRepoStub{result: Report{ID: 42, Status: "unreviewed"}}
 	svc := NewModerationReportService(moderationAuthStub{}, repo, nil, reportActionExecutorStub{})
-	actor := uuid.Must(uuid.NewV4())
+	actor := uuid.NewV4()
 	err := svc.DecideReport(context.Background(), DecideModerationReportCommand{ActorUserID: actor, ReportID: 42, Disposition: ReportDispositionNoViolation, PolicyReason: " No policy violation ", InternalNote: " reviewed "})
 	if err != nil {
 		t.Fatal(err)
@@ -191,7 +191,7 @@ func TestReportServiceCreatesServerIDAndNormalizesText(t *testing.T) {
 	repo := &reportRepoStub{exists: true}
 	svc := NewReportService(repo)
 	report, err := svc.Create(context.Background(), CreateReportCommand{
-		ReporterUserID: uuid.Must(uuid.NewV4()), TargetType: ReportTargetBook, TargetID: " 42 ",
+		ReporterUserID: uuid.NewV4(), TargetType: ReportTargetBook, TargetID: " 42 ",
 		Reason: " Spam ", Description: " repeated links ", BookChapterID: Value[int64](7), BookExcerpt: " selected text ",
 	})
 	if err != nil {

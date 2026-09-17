@@ -12,7 +12,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type apiControllerModeration struct {
@@ -894,7 +894,7 @@ func moderationUserIDsFilter(value string) ([]uuid.UUID, error) {
 	result := make([]uuid.UUID, 0, len(parts))
 	seen := make(map[uuid.UUID]struct{}, len(parts))
 	for _, part := range parts {
-		id, err := uuid.FromString(strings.TrimSpace(part))
+		id, err := uuid.Parse(strings.TrimSpace(part))
 		if err != nil {
 			return nil, err
 		}

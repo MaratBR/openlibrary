@@ -11,9 +11,9 @@ import (
 	elasticstore "github.com/MaratBR/openlibrary/internal/elasticstore"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/lib/gset"
-	"github.com/gofrs/uuid"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"go.opentelemetry.io/otel/attribute"
+	"uuid"
 )
 
 type searchService struct {

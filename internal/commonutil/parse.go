@@ -1,13 +1,13 @@
 package commonutil
 
-import "github.com/gofrs/uuid"
+import "uuid"
 
 func ParseStringArrayToUUID(ids []string) []uuid.UUID {
 	uuids := []uuid.UUID{}
 	for _, id := range ids {
-		id := uuid.FromStringOrNil(id)
-		if id != uuid.Nil {
-			uuids = append(uuids, id)
+		parsed, err := uuid.Parse(id)
+		if err == nil && parsed != uuid.Nil() {
+			uuids = append(uuids, parsed)
 		}
 	}
 	return uuids

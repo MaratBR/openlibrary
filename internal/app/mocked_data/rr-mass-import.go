@@ -14,7 +14,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	royalroadapi "github.com/MaratBR/openlibrary/internal/royalroadapi"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 func massImport(ctx context.Context, dir string, userIds []uuid.UUID, service app.BookManagerService, tagsService app.TagsService, workers int) error {

@@ -12,8 +12,8 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/email"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 	"github.com/knadh/koanf/v2"
+	"uuid"
 )
 
 type signUpService struct {

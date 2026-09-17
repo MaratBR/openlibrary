@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"uuid"
 )
 
 func timeToTimestamptz(t time.Time) pgtype.Timestamptz {
@@ -27,11 +27,7 @@ func timeNullableDbToDomain(t pgtype.Timestamptz) Nullable[time.Time] {
 }
 
 func uuidV4() uuid.UUID {
-	u, err := uuid.NewV4()
-	if err != nil {
-		panic(err)
-	}
-	return u
+	return uuid.NewV4()
 }
 
 func uuidDbToDomain(v pgtype.UUID) uuid.UUID {
@@ -42,9 +38,9 @@ func uuidDomainToDb(v uuid.UUID) pgtype.UUID {
 	return pgtype.UUID{Bytes: [16]byte(v), Valid: true}
 }
 
-func uuidNullableDomainToDb(v uuid.NullUUID) pgtype.UUID {
+func uuidNullableDomainToDb(v Nullable[uuid.UUID]) pgtype.UUID {
 	if v.Valid {
-		return uuidDomainToDb(v.UUID)
+		return uuidDomainToDb(v.Value)
 	}
 	return pgtype.UUID{Valid: false}
 }

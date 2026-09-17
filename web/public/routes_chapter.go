@@ -64,7 +64,7 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 	options := c.getChapterProgressTrackerOptions(r, &chapterResult.Chapter)
 	preferences := templates.GetReaderPreferencesFromCookies(r)
 	if userID.Valid {
-		storedPreferences, preferencesErr := c.readerPreferences.Get(r.Context(), userID.UUID)
+		storedPreferences, preferencesErr := c.readerPreferences.Get(r.Context(), userID.Value)
 		if preferencesErr != nil {
 			writeApplicationError(w, r, preferencesErr)
 			return

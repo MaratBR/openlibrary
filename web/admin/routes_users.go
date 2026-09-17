@@ -12,7 +12,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/ggicci/httpin"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type usersController struct {
@@ -72,7 +72,7 @@ func (c *usersController) sendUserEditForm(w http.ResponseWriter, r *http.Reques
 
 	user, err := c.service.GetUserDetails(r.Context(), app.GetUserQuery{
 		ID:     userID,
-		UserID: uuid.NullUUID{Valid: true, UUID: currentUser.ID},
+		UserID: app.Value(currentUser.ID),
 	})
 	if err != nil {
 		olhttp.Write500(w, r, err)
@@ -119,7 +119,7 @@ func (c *usersController) UserUpdate(w http.ResponseWriter, r *http.Request) {
 		About:       input.About,
 		Gender:      input.GetGender(),
 		Role:        input.GetRole(),
-		ActorUserID: uuid.NullUUID{Valid: true, UUID: currentUser.ID},
+		ActorUserID: app.Value(currentUser.ID),
 		UserID:      userID,
 	})
 

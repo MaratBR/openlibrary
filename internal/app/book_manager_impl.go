@@ -20,8 +20,8 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/app/imgconvert"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 	"github.com/minio/minio-go/v7"
+	"uuid"
 )
 
 type BookManagerServiceDeps struct {

@@ -8,7 +8,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type sessionService struct {

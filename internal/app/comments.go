@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 var (
@@ -19,7 +19,7 @@ var (
 )
 
 type GetCommentsQuery struct {
-	ActorUserID uuid.NullUUID
+	ActorUserID Nullable[uuid.UUID]
 	Limit       int32
 	Cursor      uint32
 	ChapterID   int64
@@ -79,7 +79,7 @@ type GetCommentsResult struct {
 	Total      int64
 }
 type GetCommentRepliesQuery struct {
-	ActorUserID uuid.NullUUID
+	ActorUserID Nullable[uuid.UUID]
 	Limit       int32
 	Cursor      uint32
 	CommentID   int64

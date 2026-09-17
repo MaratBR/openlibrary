@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 var ErrInvalidReportAction = apperror.AppErrors.NewType("invalid_report_action").New("action is not valid for this report target")
@@ -54,7 +54,7 @@ func (e *reportActionExecutor) Execute(ctx context.Context, report Report, cmd D
 	reason := cmd.PolicyReason
 	switch report.TargetType {
 	case ReportTargetUser:
-		id, err := uuid.FromString(report.TargetID)
+		id, err := uuid.Parse(report.TargetID)
 		if err != nil {
 			return ErrInvalidReportAction
 		}

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type loginHistoryRepoStub struct {
@@ -51,7 +51,7 @@ func TestLoginHistoryRejectsInvalidFilters(t *testing.T) {
 }
 
 func TestLoginHistoryPromotesScopedUserToUserFilter(t *testing.T) {
-	userID := uuid.Must(uuid.NewV4())
+	userID := uuid.NewV4()
 	repo := &loginHistoryRepoStub{}
 	_, err := NewLoginHistoryService(moderationAuthStub{}, repo).GetUserLoginHistory(context.Background(), GetLoginHistoryQuery{UserID: userID})
 	if err != nil {

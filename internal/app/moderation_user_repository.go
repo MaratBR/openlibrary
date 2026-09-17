@@ -6,14 +6,14 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
+	"uuid"
 )
 
 type moderationUserRepository struct{ queries *store.Queries }
 
 func (r *moderationUserRepository) SearchUsers(ctx context.Context, search string, searchID *uuid.UUID, banned, role string, limit, offset int32) ([]ModerationUserListEntry, int64, error) {
-	dbSearchID := uuidDomainToDb(uuid.Nil)
+	dbSearchID := uuidDomainToDb(uuid.Nil())
 	if searchID != nil {
 		dbSearchID = uuidDomainToDb(*searchID)
 	} else {

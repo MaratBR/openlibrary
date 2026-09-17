@@ -13,7 +13,8 @@ func GetAnalyticsViewMetadata(r *http.Request) analytics.EventMetadata {
 	ip := olhttp.GetIP(r)
 
 	return analytics.EventMetadata{
-		IP:     ip,
-		UserID: userID,
+		IP:        ip,
+		UserID:    userID.Value,
+		HasUserID: userID.Valid,
 	}
 }

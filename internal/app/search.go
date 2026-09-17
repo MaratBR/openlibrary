@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type Int32 struct {
@@ -97,7 +97,7 @@ func (s BookSearchSort) IsImplemented() bool {
 }
 
 type BookSearchQuery struct {
-	UserID uuid.NullUUID
+	UserID Nullable[uuid.UUID]
 
 	Query string
 	Sort  BookSearchSort
@@ -161,7 +161,7 @@ type BookExtremes struct {
 }
 
 type NormalizedSearchRequest struct {
-	UserID uuid.NullUUID
+	UserID Nullable[uuid.UUID]
 
 	Words           Int32Range
 	Chapters        Int32Range

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type moderationAuthStub struct{ err error }

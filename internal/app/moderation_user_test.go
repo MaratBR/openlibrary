@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type moderationUserRepoStub struct {
@@ -83,7 +83,7 @@ func TestModerationUserServiceReturnsRepositoryData(t *testing.T) {
 func TestModerationUserSearchRecognizesExactUUID(t *testing.T) {
 	repo := &moderationUserRepoStub{}
 	svc := NewModerationUserService(moderationAuthStub{}, repo)
-	want := uuid.Must(uuid.NewV4())
+	want := uuid.NewV4()
 	if _, err := svc.SearchUsers(context.Background(), ModerationUsersQuery{Search: want.String(), Page: 1, PageSize: 20}); err != nil {
 		t.Fatal(err)
 	}

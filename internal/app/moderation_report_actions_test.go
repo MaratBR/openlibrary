@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type reportBookActionsStub struct{ called string }
@@ -76,7 +76,7 @@ func (s *reportContentActionsStub) ChangeUserAbout(context.Context, ModerateUser
 }
 
 func TestReportActionExecutorDispatchesEveryAvailableAction(t *testing.T) {
-	userID := uuid.Must(uuid.NewV4())
+	userID := uuid.NewV4()
 	tests := []struct {
 		action string
 		report Report

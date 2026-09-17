@@ -5,7 +5,7 @@ import (
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type booksSearchRequest struct {

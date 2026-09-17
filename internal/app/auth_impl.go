@@ -7,8 +7,8 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
+	"uuid"
 )
 
 type authService struct {

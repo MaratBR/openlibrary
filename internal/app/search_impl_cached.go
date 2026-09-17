@@ -103,13 +103,13 @@ func getSearchRequestCacheKey(req *BookSearchQuery) string {
 		binary.BigEndian.PutUint64(buf[:], uint64(len(req.IncludeUsers)))
 		h.Write(buf[:])
 		for _, id := range req.IncludeUsers {
-			h.Write(id.Bytes())
+			h.Write(id[:])
 		}
 
 		binary.BigEndian.PutUint64(buf[:], uint64(len(req.ExcludeUsers)))
 		h.Write(buf[:])
 		for _, id := range req.ExcludeUsers {
-			h.Write(id.Bytes())
+			h.Write(id[:])
 		}
 
 		binary.BigEndian.PutUint64(buf[:], uint64(len(req.IncludeTags)))

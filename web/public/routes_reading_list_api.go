@@ -9,7 +9,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid"
+	"uuid"
 )
 
 type apiControllerReadingList struct {

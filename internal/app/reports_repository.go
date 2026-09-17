@@ -8,8 +8,8 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/store"
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
+	"uuid"
 )
 
 type reportRepository struct{ db DB }
@@ -30,7 +30,7 @@ func (r *reportRepository) TargetExists(ctx context.Context, targetType ReportTa
 	)
 	switch targetType {
 	case ReportTargetUser:
-		id, parseErr := uuid.FromString(targetID)
+		id, parseErr := uuid.Parse(targetID)
 		if parseErr != nil {
 			return false, nil
 		}

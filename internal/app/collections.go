@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"uuid"
 )
 
 var (
