@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+type PollerResult struct {
+	PolledAt      time.Time
+	Notifications []Notification
+}
+
 type Poller interface {
-	Poll(ctx context.Context, lastPoll time.Time, maxItems int) ([]Notification, error)
+	Poll2(ctx context.Context, lastPoll time.Time, maxItems int) (PollerResult, error)
+	Poll(ctx context.Context, maxItems int) (PollerResult, error)
 }

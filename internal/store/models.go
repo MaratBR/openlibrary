@@ -455,6 +455,17 @@ type ModerationLog struct {
 	Reason      string
 }
 
+type Notification struct {
+	ID        int64
+	Key       string
+	UserID    pgtype.UUID
+	CreatedAt pgtype.Timestamptz
+	Type      string
+	Title     string
+	Content   string
+	Metadata  []byte
+}
+
 type OlAnalyticsBookPopularityBucket struct {
 	BookID      int64
 	BucketType  OlAnalyticsBucketPeriodType

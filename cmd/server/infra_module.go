@@ -111,9 +111,9 @@ func connectToDatabase(config *koanf.Koanf, log *zap.SugaredLogger) dal.DB {
 }
 
 func createMailService(cfg *koanf.Koanf, log *zap.SugaredLogger) (email.Service, error) {
-	type_ := cfg.String("mail.type")
+	mailType := cfg.String("mail.type")
 
-	switch type_ {
+	switch mailType {
 	case "mailgun":
 		{
 			domain := cfg.String("mailgun.domain")
@@ -138,7 +138,7 @@ func createMailService(cfg *koanf.Koanf, log *zap.SugaredLogger) (email.Service,
 		log.Warn("empty mail.type value - falling back to console email service")
 		return email.NewConsole(), nil
 	default:
-		return nil, fmt.Errorf("unknown email type: %s", type_)
+		return nil, fmt.Errorf("unknown email type: %s", mailType)
 	}
 }
 

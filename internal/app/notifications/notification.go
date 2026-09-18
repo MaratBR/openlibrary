@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"regexp"
+	"time"
 	"unicode/utf8"
 	"uuid"
 
@@ -34,6 +35,7 @@ type Notification struct {
 	userID                                uuid.UUID
 	key, notificationType, Content, Title string
 	Data                                  map[string]string
+	CreatedAt                             time.Time
 }
 
 func (n Notification) Type() string {
@@ -65,6 +67,10 @@ func newNotification(key, notificationType, content, title string, userID uuid.U
 		return Notification{}, err
 	}
 
+	if data == nil {
+		data = make(map[string]string)
+	}
+
 	return Notification{
 		key:              key,
 		notificationType: notificationType,
@@ -72,6 +78,7 @@ func newNotification(key, notificationType, content, title string, userID uuid.U
 		Title:            title,
 		Data:             data,
 		userID:           userID,
+		CreatedAt:        time.Now(),
 	}, nil
 }
 

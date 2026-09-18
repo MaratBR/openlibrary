@@ -1,0 +1,22 @@
+{
+	"Custom JSON marshal/unmarshal": {
+      "prefix": "jsonmarshal",
+      "body": [
+        "func (v ${1:TypeName}) MarshalJSON() ([]byte, error) {",
+        "\ttype Alias ${1:TypeName}",
+        "\treturn json.Marshal(Alias(v))",
+        "}",
+        "",
+        "func (v *${1:TypeName}) UnmarshalJSON(data []byte) error {",
+        "\ttype Alias ${1:TypeName}",
+        "\tvar decoded Alias",
+        "\tif err := json.Unmarshal(data, &decoded); err != nil {",
+        "\t\treturn err",
+        "\t}",
+        "\t*v = ${1:TypeName}(decoded)",
+        "\treturn nil",
+        "}"
+      ],
+      "description": "Generate safe custom JSON MarshalJSON and UnmarshalJSON methods"
+    }
+}

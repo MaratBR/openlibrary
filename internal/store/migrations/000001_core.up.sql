@@ -304,7 +304,8 @@ create index ix_defined_tags_type_lowercased_name on defined_tags (tag_type, low
 create index ix_defined_tags_synonym_of on defined_tags (synonym_of);
 
 create table notifications (
-    key text primary key,
+    id bigint generated always as identity primary key,
+    key text not null,
     user_id uuid not null references users (id),
     created_at timestamptz not null default now(),
     "type" text not null,
@@ -313,4 +314,5 @@ create table notifications (
     metadata jsonb
 );
 
+create unique index uq_notifications_user_id_key on notifications (user_id, key);
 create index ix_notifications_user_id on notifications (user_id, created_at desc);

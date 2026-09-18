@@ -23,7 +23,7 @@ type MetricRecord struct {
 }
 
 func NewMetricRecord(
-	type_ MetricType,
+	metricType MetricType,
 	value float64,
 	bookID int64,
 	occurredAt time.Time,
@@ -31,7 +31,7 @@ func NewMetricRecord(
 	return MetricRecord{
 		Samples:    1,
 		Value:      value,
-		Type:       type_,
+		Type:       metricType,
 		BookID:     bookID,
 		OccurredAt: occurredAt,
 	}
