@@ -23,6 +23,10 @@ with pgx and SQLC, templ, Alpine.js, React, SCSS with UnoCSS, Vite, and pnpm.
 
 - Project development documentation belongs in `docs/development`. Keep it
   current when a workflow or convention changes.
+- For new features and substantial behavior changes, follow
+  [`docs/development/spec-driven-development.md`](docs/development/spec-driven-development.md):
+  agree on observable requirements before implementation, then record the
+  implementation plan and track the work in `specs/<feature>/`.
 - Prerequisites and libvips setup are documented in `README.md`. Typical local
   startup uses `docker compose up -d`, `make migrate_db`, `make ui_watch`, and
   `make main_watch`.
