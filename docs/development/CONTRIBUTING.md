@@ -25,7 +25,6 @@ Never edit generated sources directly:
 
 - Change `.templ` files, then run `templ generate`.
 - Change `internal/store/query.*.sql`, then run `make db_sqlc`.
-- Change `cmd/server/olproto/search.proto`, then regenerate its protobuf output.
 - `make codegen` runs SQLC and templ generation together. Generated templ files
   are ignored and should not be committed.
 
