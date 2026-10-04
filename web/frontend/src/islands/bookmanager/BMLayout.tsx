@@ -1,41 +1,25 @@
-import { JSX, ReactNode } from 'react'
-import { NavLink, To } from 'react-router'
+import { ReactNode } from 'react'
+import { NavLink, useNavigation } from 'react-router'
 
 export default function BMLayout({ children }: { children: ReactNode }) {
+  const navigation = useNavigation()
   return (
-    <div className="DashboardLayout">
-      <aside className="DashboardLayout-sidebar">
-        <Logo />
-        <ul className="dashboard-sidebar-list">
-          <SidebarItem
-            icon={<i className="fa-solid fa-book" />}
-            label={window._('bookManager.books.title')}
-            to="/books"
-          />
-        </ul>
-      </aside>
-
-      <div className="DashboardLayout-body">{children}</div>
+    <div className="BM">
+      <header className="BM-masthead">
+        <NavLink to="/books" aria-label={window._('bookManager.title')}>
+          <img className="h-12 dark:hidden" src="/_/embed-assets/logo.svg" alt="" />
+          <img className="h-12 hidden dark:block" src="/_/embed-assets/logo-dark.svg" alt="" />
+        </NavLink>
+        <NavLink to="/books" className="Btn Btn--ghost">
+          {window._('bookManager.books.title')}
+        </NavLink>
+      </header>
+      <main className="BM-main" aria-busy={navigation.state === 'loading'}>
+        {navigation.state === 'loading' && (
+          <p role="status">{window._('bookManager.ui.loading')}</p>
+        )}
+        {children}
+      </main>
     </div>
-  )
-}
-
-function Logo() {
-  return (
-    <div className="flex justify-center my-4">
-      <img className="h-20 dark:hidden" src="/_/embed-assets/logo.svg" />
-      <img className="h-20 hidden dark:block" src="/_/embed-assets/logo-dark.svg" />
-    </div>
-  )
-}
-
-function SidebarItem({ icon, label, to }: { icon?: JSX.Element; label: string; to: To }) {
-  return (
-    <li className="DashboardSidebarItem">
-      <NavLink to={to}>
-        <div className="DashboardSidebarItem-icon">{icon}</div>
-        <div className="DashboardSidebarItem-label">{label}</div>
-      </NavLink>
-    </li>
   )
 }

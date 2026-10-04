@@ -33,7 +33,7 @@ export function FormControl({
           <p
             id={htmlFor ? `${htmlFor}-error` : undefined}
             className="FormControl-error"
-            role="Alert"
+            role="alert"
           >
             <i className="fa-solid fa-circle-exclamation" aria-hidden="true" />
             {error}

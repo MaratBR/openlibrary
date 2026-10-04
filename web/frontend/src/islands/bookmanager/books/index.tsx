@@ -1,177 +1,205 @@
 import { BMBookAPI, ManagerBookDto } from '@/api/bm/book'
-import { BookCover } from '@/components/BookCover'
 import { DashboardContent } from '@/components/dashboard-layout-components'
-import Modal from '@/components/Modal'
 import { Pagination } from '@/components/Pagination'
 import { getPage } from '@/lib/url'
-import { formatNumberK } from '@/util/fmt'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import { LoaderFunctionArgs, NavLink, useLoaderData } from 'react-router'
+import { LoaderFunctionArgs, NavLink, useLoaderData, useRevalidator } from 'react-router'
+import { Counts, CoverImage, ManagerDialog, RequestError, usePageTitle } from '../ui'
 
-export const booksRouteLoader = async ({ params: _, request }: LoaderFunctionArgs) => {
-  const page = getPage(request.url)
-
+export const booksRouteLoader = async ({ request }: LoaderFunctionArgs) => {
   const resp = await BMBookAPI.getInstance().getBooks({
     size: 20,
-    page,
+    page: getPage(request.url),
     search: '',
   })
-
-  return {
-    booksResponse: resp,
-  }
+  resp.throwIfError()
+  return { booksResponse: resp }
 }
 
 export function Books() {
   const { booksResponse } = useLoaderData<Awaited<ReturnType<typeof booksRouteLoader>>>()
-
+  const [notice, setNotice] = useState('')
+  usePageTitle(window._('bookManager.books.title'))
   return (
     <DashboardContent.Root>
       <DashboardContent.StickyHeader title={window._('bookManager.books.title')}>
         <NavLink to="/books/new" className="Btn Btn--lg Btn--primary">
-          <i className="fa-solid fa-plus mr-2" />
-          {window._('bookManager.books.addBook')}
+          + {window._('bookManager.books.addBook')}
         </NavLink>
       </DashboardContent.StickyHeader>
-
-      <DashboardContent.Card>
-        <div className="my-2 ml-4">
+      <p className="text-secondary-foreground mb-6">
+        {window._('bookManager.ui.libraryDescription')}
+      </p>
+      <p role="status">{notice}</p>
+      {booksResponse.data.books.length ? (
+        <div className="BM-grid">
+          {booksResponse.data.books.map((book) => (
+            <BookCard key={`${book.id}-${book.isTrashed}`} book={book} onChanged={setNotice} />
+          ))}
+        </div>
+      ) : (
+        <div className="Card space-y-4">
+          <p>{window._('bookManager.ui.emptyLibrary')}</p>
+          <NavLink className="Btn Btn--primary" to="/books/new">
+            {window._('bookManager.books.addBook')}
+          </NavLink>
+        </div>
+      )}
+      {booksResponse.data.totalPages > 1 && (
+        <div className="mt-6 flex flex-wrap">
           <Pagination.Facade
             page={booksResponse.data.page}
-            size={10}
+            size={5}
             totalPages={booksResponse.data.totalPages}
           />
         </div>
-
-        <table className="table">
-          <tbody>
-            {booksResponse.data.books.map((book) => (
-              <BookRow key={book.id} book={book} />
-            ))}
-          </tbody>
-        </table>
-      </DashboardContent.Card>
+      )}
     </DashboardContent.Root>
   )
 }
 
-function BookRow({ book }: { book: ManagerBookDto }) {
-  const [trashed, setTrashed] = useState(book.isTrashed)
-
-  return (
-    <tr>
-      <td style={{ width: 166 }}>
-        <BookCover cover={book.cover} />
-      </td>
-      <td>
-        <div>
-          <span className="text-lg font-medium">{book.name}</span>
-        </div>
-
-        <div className="flex gap-1">
-          <div className="Chip Chip--secondary Chip--lg">
-            {window._('book.chapters', { count: formatNumberK(book.chapters) })}
-          </div>
-
-          <div className="Chip Chip--secondary Chip--lg">
-            {window._('book.words', { count: formatNumberK(book.words) })}
-          </div>
-        </div>
-      </td>
-      <td>
-        <div className="flex gap-2">
-          <NavLink to={`/books/${book.id}`} className="Btn Btn--lg Btn--primary">
-            <i className="fa-solid fa-pen mr-2" />
-            {window._('common.edit')}
-          </NavLink>
-          <TrashBookButton book={book} trashed={trashed} onTrashedChanged={setTrashed} />
-        </div>
-      </td>
-    </tr>
-  )
-}
-
-function TrashBookButton({
+function BookCard({
   book,
-  onTrashedChanged,
-  trashed,
+  onChanged,
 }: {
   book: ManagerBookDto
-  trashed: boolean
-  onTrashedChanged: (trashed: boolean) => void
+  onChanged: (message: string) => void
 }) {
-  const [openTrashModal, setOpenTrashModal] = useState(false)
-  const [openUntrashModal, setOpenUntrashModal] = useState(false)
-
-  const trashBookMutation = useMutation({
-    mutationFn: async (trash: boolean) => {
+  const [confirm, setConfirm] = useState(false)
+  const revalidator = useRevalidator()
+  const mutation = useMutation({
+    mutationFn: async () => {
       const response = await BMBookAPI.getInstance().trashBook({
-        trash,
         id: book.id,
+        trash: !book.isTrashed,
       })
       response.throwIfError()
+    },
+    onSuccess: async () => {
+      setConfirm(false)
+      onChanged(
+        window._(
+          book.isTrashed
+            ? 'bookManager.books.restoreBook.trashedBookNotif'
+            : 'bookManager.books.trashBook.trashedBookNotif',
+        ),
+      )
       window.toast({
         title: window._('common.operationSuccessful'),
-        text: trash
-          ? window._('bookManager.books.trashBook.trashedBookNotif')
-          : window._('bookManager.books.restoreBook.trashedBookNotif'),
+        text: window._(
+          book.isTrashed
+            ? 'bookManager.books.restoreBook.trashedBookNotif'
+            : 'bookManager.books.trashBook.trashedBookNotif',
+        ),
       })
-      setOpenTrashModal(false)
-      setOpenUntrashModal(false)
-      onTrashedChanged(trash)
+      await revalidator.revalidate()
     },
   })
-
+  const action = window._(book.isTrashed ? 'bookManager.ui.restore' : 'common.trash')
+  const title = window._(
+    book.isTrashed ? 'bookManager.ui.restoreTitle' : 'bookManager.ui.trashTitle',
+    { name: book.name },
+  )
   return (
-    <>
-      <button
-        onClick={() => {
-          if (trashed) {
-            setOpenUntrashModal(true)
-          } else {
-            setOpenTrashModal(true)
+    <article className="BM-bookCard">
+      <NavLink to={`/books/${book.id}`} className="BM-bookArt" aria-label={book.name}>
+        <CoverImage cover={book.cover} />
+      </NavLink>
+      <details
+        className="BM-actions"
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            e.currentTarget.open = false
+            e.currentTarget.querySelector('summary')?.focus()
           }
         }}
-        className="Btn Btn--lg Btn--outline Btn--destructive"
       >
-        {trashed ? window._('common.untrash') : window._('common.trash')}
-      </button>
-      <Modal onClose={() => setOpenTrashModal(false)} open={openTrashModal}>
-        <div className="max-w-128">
-          <h2 className="text-lg font-semibold">{window._('bookManager.books.trashBook.title')}</h2>
-          <p className="my-2">{window._('bookManager.books.trashBook.description')}</p>
-          <div className="flex gap-2 mt-4">
-            <button onClick={() => setOpenTrashModal(false)} className="Btn Btn--primary">
-              {window._('common.cancel')}
-            </button>
-            <button className="Btn Btn--destructive" onClick={() => trashBookMutation.mutate(true)}>
-              {trashBookMutation.isPending && <span className="circle-loader mr-1" />}
-              {window._('common.trash')}
-            </button>
-          </div>
+        <summary
+          className="Btn Btn--icon Btn--outline"
+          aria-label={window._('bookManager.ui.actions', { name: book.name })}
+        >
+          ···
+        </summary>
+        <div>
+          <button
+            className="Btn Btn--ghost"
+            onClick={(e) => {
+              const menu = e.currentTarget.closest('details')
+              menu?.removeAttribute('open')
+              menu?.querySelector('summary')?.focus()
+              mutation.reset()
+              setConfirm(true)
+            }}
+          >
+            {action}
+          </button>
         </div>
-      </Modal>
-      <Modal onClose={() => setOpenUntrashModal(false)} open={openUntrashModal}>
-        <div className="max-w-128">
-          <h2 className="text-lg font-semibold">
-            {window._('bookManager.books.restoreBook.title')}
-          </h2>
-          <p className="my-2">{window._('bookManager.books.restoreBook.description')}</p>
-          <div className="flex gap-2 mt-4">
-            <button onClick={() => setOpenUntrashModal(false)} className="Btn Btn--primary">
+      </details>
+      <div className="BM-bookBody">
+        <p className="text-sm text-secondary-foreground">
+          {window._(
+            book.isTrashed
+              ? 'bookManager.books.trashed'
+              : book.isBanned
+                ? 'bookManager.books.banned'
+                : book.isPubliclyVisible
+                  ? 'bookManager.ui.public'
+                  : 'bookManager.ui.hidden',
+          )}{' '}
+          · {book.ageRating}
+        </p>
+        <h2 className="BM-bookTitle">
+          <NavLink to={`/books/${book.id}`} title={book.name}>
+            {book.name}
+          </NavLink>
+        </h2>
+        <p className="text-sm text-secondary-foreground">
+          <Counts chapters={book.chapters} words={book.words} />
+        </p>
+      </div>
+      <footer className="BM-cardFooter">
+        <NavLink className="Link" to={`/books/${book.id}/edit`}>
+          {window._('bookManager.ui.editDetails')}
+        </NavLink>
+        <NavLink className="Link" to={`/books/${book.id}?t=chapters`}>
+          {window._('bookManager.edit.chapters')}
+        </NavLink>
+      </footer>
+      {confirm && (
+        <ManagerDialog
+          title={title}
+          onClose={() => {
+            if (!mutation.isPending) setConfirm(false)
+          }}
+        >
+          <h2 className="text-xl">{title}</h2>
+          <p className="my-4">
+            {window._(
+              book.isTrashed
+                ? 'bookManager.books.restoreBook.description'
+                : 'bookManager.books.trashBook.description',
+            )}
+          </p>
+          {mutation.isError && <RequestError />}
+          <div className="flex gap-2">
+            <button
+              className="Btn Btn--outline"
+              disabled={mutation.isPending}
+              onClick={() => setConfirm(false)}
+            >
               {window._('common.cancel')}
             </button>
             <button
               className="Btn Btn--destructive"
-              onClick={() => trashBookMutation.mutate(false)}
+              disabled={mutation.isPending}
+              onClick={() => mutation.mutate()}
             >
-              {trashBookMutation.isPending && <span className="circle-loader mr-1" />}
-              {window._('common.untrash')}
+              {mutation.isPending ? window._('bookManager.ui.saving') : action}
             </button>
           </div>
-        </div>
-      </Modal>
-    </>
+        </ManagerDialog>
+      )}
+    </article>
   )
 }

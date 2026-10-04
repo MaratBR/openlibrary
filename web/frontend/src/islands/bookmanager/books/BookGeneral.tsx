@@ -1,43 +1,54 @@
 import { ManagerBookDetailsDto } from '@/api/bm/book'
 import SanitizeHTML from '@/common/SanitizeHTML'
-import { DashboardContent } from '@/components/dashboard-layout-components'
-import { formatNumber, formatNumberK } from '@/util/fmt'
-import { NavLink } from 'react-router'
+import { Counts, CoverImage } from '../ui'
 
 export function BookGeneral({ book }: { book: ManagerBookDetailsDto }) {
   return (
-    <>
-      <DashboardContent.Card className="mt-4">
-        <div className="flex gap-2">
-          <div className="bg-gradient-to-b from-lime-500 to-lime-300 p-6 rounded-2xl text-3xl font-semibold text-white max-w-64">
-            <div>{window._('book.words', { count: formatNumberK(book.words) })}</div>
-            <div className="text-lg opacity-80 leading-5">
-              {window._('book.wordsPerChapter', { count: formatNumberK(book.wordsPerChapter) })}
-            </div>
+    <div className="Card space-y-6">
+      <div className="flex gap-6 flex-wrap items-center">
+        <CoverImage cover={book.cover} />
+        <div className="space-y-3 min-w-0">
+          <p>
+            {window._(
+              book.isBanned
+                ? 'bookManager.books.banned'
+                : book.isPubliclyVisible
+                  ? 'bookManager.ui.public'
+                  : 'bookManager.ui.hidden',
+            )}{' '}
+            · {book.ageRating}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {book.tags.map((tag) => (
+              <span key={tag.id} className="Tag">
+                {tag.name}
+              </span>
+            ))}
           </div>
-
-          <div className="bg-gradient-to-b p-6 rounded-2xl text-3xl font-semibold max-w-64 bg-highlight">
-            <div>{window._('book.chapters', { count: formatNumber(book.chapters.length) })}</div>
-          </div>
+          <a className="Link" href={`/book/${book.id}`} target="_blank" rel="noreferrer">
+            {window._('bookManager.ui.publicPage')} ↗
+          </a>
         </div>
-
-        <div className="flex gap-1 my-4">
-          <NavLink className="Btn Btn--outline" to={`/books/${book.id}/edit`}>
-            <i className="fa-solid fa-pen mr-2" />
-            {window._('common.edit')}
-          </NavLink>
-        </div>
-
-        <dl className="dl">
-          <dt className="dt">{window._('bookManager.edit.name')}</dt>
-          <dd className="dd">{book.name}</dd>
-
-          <dt className="dt">{window._('bookManager.edit.summary')}</dt>
-          <dd className="dd">
-            <SanitizeHTML value={book.summary} />
-          </dd>
-        </dl>
-      </DashboardContent.Card>
-    </>
+      </div>
+      <div className="bg-secondary rounded-xl p-4 space-y-2">
+        <Counts chapters={book.chapters.length} words={book.words} />
+        <p className="text-secondary-foreground">
+          {window._('bookManager.ui.wordsPerChapter', {
+            count: book.wordsPerChapter.toLocaleString(),
+          })}
+        </p>
+      </div>
+      <section>
+        <h2 className="text-xl mb-3">{window._('bookManager.edit.summary')}</h2>
+        {book.summary
+          .replace(/<[^>]*>/g, '')
+          .replace(/&nbsp;/g, '')
+          .trim() ? (
+          <SanitizeHTML value={book.summary} />
+        ) : (
+          <p className="text-secondary-foreground">{window._('bookManager.ui.noSummary')}</p>
+        )}
+      </section>
+    </div>
   )
 }

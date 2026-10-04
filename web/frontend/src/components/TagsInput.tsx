@@ -44,6 +44,7 @@ export default function TagsInput({ tags = [], onInput, id }: TagsInputProps) {
                 {tag.adult && <span className="Tag-adult">&nbsp;18+</span>}
 
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.preventDefault()
                     remove(tag)
@@ -69,8 +70,14 @@ export default function TagsInput({ tags = [], onInput, id }: TagsInputProps) {
             <ul>
               {searchResults.map((tag) =>
                 tags.some((x) => x.id === tag.id) ? null : (
-                  <li key={tag.id} onClick={() => add(tag)} role="button" className="ListItem">
-                    {tag.name}
+                  <li key={tag.id}>
+                    <button
+                      type="button"
+                      onClick={() => add(tag)}
+                      className="ListItem w-full text-left"
+                    >
+                      {tag.name}
+                    </button>
                   </li>
                 ),
               )}

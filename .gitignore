@@ -23,3 +23,5 @@ __vips/
 build/
 
 openlibrary.private.toml
+
+.playwright-mcp

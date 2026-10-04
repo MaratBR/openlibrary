@@ -111,8 +111,8 @@
   }
 
   &-item {
-    @apply p-2 text-lg grid grid-cols-[48px_auto] rounded-lg bg-surface border h-full
-            hover:bg-surface hover:shadow-sm hover:outline hover:outline-2;
+    @apply p-2 text-lg grid grid-cols-[48px_auto] rounded-xl bg-surface h-full
+            hover:shadow-sm hover:outline hover:outline-2;
 
     &--readingNow {
       @apply border-primary outline-primary outline outline-2;

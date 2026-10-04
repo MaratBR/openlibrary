@@ -9,7 +9,12 @@ const Pagination_Root = forwardRef(
     ref: React.ForwardedRef<HTMLElement>,
   ) => {
     return (
-      <nav ref={ref} role="listbox" className={clsx('Pagination', className)} {...props}>
+      <nav
+        ref={ref}
+        aria-label={window._('common.pagination')}
+        className={clsx('Pagination', className)}
+        {...props}
+      >
         {children}
       </nav>
     )
@@ -36,7 +41,8 @@ const Pagination_Item = forwardRef(
     return (
       <Component
         ref={ref}
-        role="listbox"
+        aria-current={active ? 'page' : undefined}
+        disabled={Component === 'button' ? disabled : undefined}
         className={clsx('Pagination-item', {
           'PaginationItem--active': active,
         })}

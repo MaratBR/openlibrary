@@ -1,180 +1,195 @@
-import { useState } from 'react'
-import { Fragment } from 'react'
-import clsx from 'clsx'
+import { useRef, useState } from 'react'
 import CSRFInput from '@/components/CSRFInput'
 import TagsInput from '@/components/TagsInput'
+import AgeRatingInput from '@/components/AgeRatingInput'
 import { DefinedTagDto } from '@/features/search'
 import { DashboardContent } from '@/components/dashboard-layout-components'
-import { NavLink } from 'react-router'
+import { BackToBooks, usePageTitle, useUnsavedChanges } from '../ui'
 
 export default function NewBookForm() {
-  const [stage, _setStage] = useState(0)
-  const [activeStage, setActiveStage] = useState(0)
+  const [stage, setStage] = useState(0)
+  const [furthest, setFurthest] = useState(0)
   const [name, setName] = useState('')
   const [rating, setRating] = useState('')
   const [tags, setTags] = useState<DefinedTagDto[]>([])
   const [loading, setLoading] = useState(false)
-
-  const setStage = (stage: number) => {
-    setActiveStage(stage)
-    _setStage(stage)
+  const submitting = useRef(false)
+  const validName = name.trim().length >= 2
+  const validRating = window.__server__.ageRatings.includes(rating)
+  const canVisit = (target: number) =>
+    target <= furthest && (target === 0 || validName) && (target <= 1 || validRating)
+  const next = () => {
+    if ((stage === 0 && !validName) || (stage === 1 && !validRating)) return
+    const target = Math.min(3, stage + 1)
+    setStage(target)
+    setFurthest(Math.max(furthest, target))
   }
-
+  const guard = useUnsavedChanges(!loading && (!!name || !!rating || !!tags.length))
+  usePageTitle(window._('bookManager.newBook.title'))
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader
-        title={
-          <div className="flex items-center">
-            <NavLink className="Btn Btn--icon Btn--primary mr-4" to="/books">
-              <i className="fa-solid fa-arrow-left" />
-            </NavLink>
-            {window._('bookManager.newBook.title')}
-          </div>
-        }
-      />
-
-      <DashboardContent.Card className="p-4">
+      <BackToBooks />
+      <DashboardContent.StickyHeader title={window._('bookManager.newBook.title')} />
+      <div className="Card max-w-200 mx-auto">
+        <p role="status" className="text-secondary-foreground mb-4">
+          {window._('bookManager.ui.step', { count: String(stage + 1) })}
+        </p>
+        <ol className="flex flex-wrap gap-2 mb-6">
+          {[0, 1, 2, 3].map((i) => (
+            <li key={i}>
+              <button
+                type="button"
+                className={`Btn ${stage === i ? 'Btn--primary' : 'Btn--ghost'}`}
+                aria-current={stage === i ? 'step' : undefined}
+                disabled={!canVisit(i) || loading}
+                onClick={() => setStage(i)}
+              >
+                {window._(`bookManager.newBook.stageLabel${i}`)}
+              </button>
+            </li>
+          ))}
+        </ol>
         <form
-          className="space-y-4 md:space-y-0 md:px-0 md:grid md:grid-cols-[150px_1fr] md:gap-2"
           action="/books-manager/new"
           method="post"
+          className="space-y-6"
+          onSubmit={(event) => {
+            if (submitting.current) {
+              event.preventDefault()
+              return
+            }
+            if (stage !== 3) {
+              event.preventDefault()
+              next()
+              return
+            }
+            if (!validName || !validRating) {
+              event.preventDefault()
+              return
+            }
+            guard.allowUnload()
+            submitting.current = true
+            setLoading(true)
+          }}
+          onKeyDown={(event) => {
+            // Step navigation shares button validation; tag-search Enter belongs to the tag control.
+            if (
+              event.key === 'Enter' &&
+              stage < 3 &&
+              (event.target as HTMLElement).tagName === 'INPUT' &&
+              stage !== 2
+            ) {
+              event.preventDefault()
+              next()
+            }
+          }}
         >
+          <p role="status">{loading ? window._('bookManager.ui.creating') : ''}</p>
           <CSRFInput />
-
-          <ul className="flex flex-col pt-8 gap-2">
-            {Array.from({ length: 4 }).map((_v, i) => {
-              const canNavigateTo = stage >= i && activeStage !== i
-
-              return (
-                <li
-                  onClick={canNavigateTo ? () => setActiveStage(i) : undefined}
-                  className={clsx('text-wrap text-secondary-foreground', {
-                    '!text-foreground hover:underline cursor-pointer': canNavigateTo,
-                    'font-[600] !text-foreground': activeStage === i,
-                  })}
-                  key={i}
-                >
-                  {window._(`bookManager.newBook.stageLabel${i}`)}
-                </li>
-              )
-            })}
-          </ul>
-          <section>
-            {stage > 0 && name && <h2 className="text-xl font-semibold mb-8">{name}</h2>}
-
-            <fieldset className="w-96" style={activeStage === 0 ? {} : { display: 'none' }}>
+          <input type="hidden" name="name" value={name.trim()} />
+          <input type="hidden" name="ageRating" value={rating} />
+          <input type="hidden" name="tags" value={tags.map((x) => x.id).join(',')} />
+          {stage === 0 && (
+            <section className="space-y-3">
+              <label className="label" htmlFor="new-book-name">
+                {window._('bookManager.newBook.bookName')}
+              </label>
+              <p id="new-name-help" className="text-secondary-foreground">
+                {window._('bookManager.ui.nameHelp')}
+              </p>
               <input
-                value={name}
-                onInput={(e) => setName((e.target as HTMLInputElement).value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setStage(1)
-                  }
-                }}
                 autoFocus
-                placeholder={window._('bookManager.newBook.namePlaceholder')}
-                required
+                id="new-book-name"
                 className="input"
-                name="name"
+                value={name}
+                aria-describedby="new-name-help"
+                aria-invalid={!!name && !validName}
+                onChange={(e) => setName(e.currentTarget.value)}
               />
-
-              <button
-                disabled={name.trim().length < 2}
-                onClick={() => setStage(1)}
-                type="button"
-                className="Btn Btn--lg Btn--primary mt-8 rounded-full"
-              >
-                {window._('bookManager.newBook.next')}
-              </button>
+            </section>
+          )}
+          {stage === 1 && (
+            <fieldset className="space-y-3">
+              <legend className="label">{window._('bookManager.newBook.ageRating')}</legend>
+              <p className="text-secondary-foreground">
+                {window._('bookManager.newBook.selectRating')}
+              </p>
+              <AgeRatingInput value={rating} onChange={setRating} name="rating-choice" />
             </fieldset>
-
-            <fieldset className="w-96" style={activeStage === 1 ? {} : { display: 'none' }}>
-              <p className="my-4">{window._('bookManager.newBook.selectRating')}</p>
-              <fieldset className="flex gap-2">
-                {window.__server__.ageRatings.map((ageRating) => {
-                  const id = `new-book-${ageRating}`
-                  return (
-                    <Fragment key={ageRating}>
-                      <input
-                        key={ageRating}
-                        id={id}
-                        className="age-rating-input"
-                        name="ageRating"
-                        value={ageRating}
-                        type="radio"
-                        checked={ageRating === rating}
-                        onChange={() => setRating(ageRating)}
-                      />
-                      <label data-rating={ageRating} className="age-rating" htmlFor={id}>
-                        {ageRating}
-                      </label>
-                    </Fragment>
-                  )
-                })}
-              </fieldset>
-
-              <div className="mt-4">
-                <button
-                  disabled={rating === ''}
-                  onClick={() => setStage(2)}
-                  type="button"
-                  className="Btn Btn--lg Btn--primary mt-8 rounded-full"
-                >
-                  {window._('bookManager.newBook.next')}
-                </button>
-              </div>
-            </fieldset>
-
-            <fieldset className="w-[500px]" style={activeStage === 2 ? {} : { display: 'none' }}>
-              <p className="mb-4">{window._('bookManager.newBook.selectTags')}</p>
-              <TagsInput tags={tags} onInput={setTags} />
-              <input hidden name="tags" value={tags.map((x) => x.id).join(',')} />
-
-              <button
-                onClick={() => setStage(3)}
-                type="button"
-                className="Btn Btn--lg Btn--primary mt-8 rounded-full"
-              >
-                {window._('bookManager.newBook.next')}
-              </button>
-            </fieldset>
-
-            <div style={activeStage === 3 ? {} : { display: 'none' }}>
+          )}
+          {stage === 2 && (
+            <section className="space-y-3">
+              <label className="label" htmlFor="new-book-tags">
+                {window._('bookManager.ui.optionalTags')}
+              </label>
+              <p className="text-secondary-foreground">
+                {window._('bookManager.newBook.selectTags')}
+              </p>
+              <TagsInput id="new-book-tags" tags={tags} onInput={setTags} />
+            </section>
+          )}
+          {stage === 3 && (
+            <section className="space-y-4">
+              <h2 className="text-xl">{window._('bookManager.ui.review')}</h2>
               <p>{window._('bookManager.newBook.pleaseReview')}</p>
-
-              <dl className="mt-4 dl">
-                <dt>{window._('bookManager.newBook.bookName')}:</dt>
+              <p className="bg-secondary p-4 rounded-xl">
+                {window._('bookManager.ui.creationVisibility')}
+              </p>
+              <dl className="space-y-2">
+                <dt className="font-semibold">{window._('bookManager.newBook.bookName')}</dt>
                 <dd>{name}</dd>
-                <dt>{window._('bookManager.newBook.ageRating')}:</dt>
+                <dt className="font-semibold">{window._('bookManager.newBook.ageRating')}</dt>
                 <dd>{rating}</dd>
-                <dt>{window._('bookManager.newBook.tags')}:</dt>
-                <dd className="Tags items-start flex flex-wrap gap-2">
-                  {tags.map((x) => (
-                    <a className="Tag" key={x.id} href={`/tags/${x.id}`}>
-                      {x.name}
-                    </a>
-                  ))}
+                <dt className="font-semibold">{window._('bookManager.newBook.tags')}</dt>
+                <dd className="flex flex-wrap gap-2">
+                  {tags.length
+                    ? tags.map((tag) => (
+                        <span className="Tag" key={tag.id}>
+                          {tag.name}
+                        </span>
+                      ))
+                    : window._('bookManager.ui.noTags')}
                 </dd>
               </dl>
-
+            </section>
+          )}
+          <div className="flex justify-between gap-3">
+            {stage > 0 ? (
               <button
-                onClick={() => {
-                  setLoading(true)
-                }}
-                className="Btn Btn--lg Btn--primary mt-8 rounded-full"
+                type="button"
+                className="Btn Btn--outline"
+                disabled={loading}
+                onClick={() => setStage(stage - 1)}
               >
-                {loading ? (
-                  <span className="Loader Loader--dark" />
-                ) : (
-                  window._('bookManager.newBook.create')
-                )}
+                {window._('bookManager.ui.previous')}
               </button>
-            </div>
-          </section>
+            ) : (
+              <span />
+            )}
+            {stage < 3 ? (
+              <button
+                key="next"
+                type="button"
+                className="Btn Btn--primary"
+                disabled={(stage === 0 && !validName) || (stage === 1 && !validRating)}
+                onClick={next}
+              >
+                {window._('bookManager.newBook.next')}
+              </button>
+            ) : (
+              <button
+                key="create"
+                type="submit"
+                className="Btn Btn--primary"
+                disabled={loading || !validName || !validRating}
+              >
+                {window._(loading ? 'bookManager.ui.creating' : 'bookManager.ui.create')}
+              </button>
+            )}
+          </div>
         </form>
-      </DashboardContent.Card>
+      </div>
+      {guard.prompt}
     </DashboardContent.Root>
   )
 }

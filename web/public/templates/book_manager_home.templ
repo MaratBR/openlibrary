@@ -23,6 +23,7 @@ templ bmLayout(title string, additionalCSS ...string) {
 		}}
 		@i18nExtractKeysByPrefix(l, "common")
 		@i18nExtractKeysByPrefix(l, "bookManager")
+		@i18nExtractKeys(l, []string{"search.removeTag"})
 		// TODO optimize?
 		@i18nExtractKeysByPrefix(l, "book")
 		{ children... }

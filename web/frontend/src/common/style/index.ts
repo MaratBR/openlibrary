@@ -7,3 +7,5 @@ import '@fontsource/atkinson-hyperlegible/latin-400.css'
 import '@fontsource/atkinson-hyperlegible/latin-700.css'
 import '@fontsource/opendyslexic/latin-400.css'
 import '@fontsource/opendyslexic/latin-700.css'
+
+import '../../islands/bookmanager/manager.scss'
