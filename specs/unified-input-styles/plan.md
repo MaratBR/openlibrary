@@ -20,7 +20,9 @@ Current manager styling scopes focus, rating selection, and editor rules under
 local layout separately from field appearance and move reusable control rules
 into the appropriate shared component stylesheet.
 
-Use the current shared input treatment and theme tokens as the baseline. Align
+Use shared theme tokens with a Book Manager-inspired primary outline, offset gap,
+and soft halo defined in the shared `control-focus` mixin. Add subtle field depth
+and a subdued editor toolbar surface. Align
 native/custom selects and compound field frames while preserving their internal
 layout and interaction semantics. Scope rating-choice rules to a shared
 interactive primitive so static badges retain display styling. Keep intentional

@@ -4,95 +4,171 @@
 //                   //
 // ----------------- //
 .BookPage {
-  @apply mx-auto max-w-[1200px] px-4 py-8 md:grid md:grid-cols-12 md:gap-10 md:py-10;
+  @apply mx-auto max-w-[1200px] px-4 py-7;
+  --book-muted: color-mix(in srgb, var(--foreground) 85%, var(--background));
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 40px;
+    padding: 40px 24px;
+  }
 
   &-left {
-    @apply mb-10 flex flex-col items-center md:col-span-3 md:mb-0;
+    @apply mb-8 flex min-w-0 flex-col items-center md:mb-0;
 
     > #reading-list {
-      @apply w-[200px];
+      @apply w-[260px] mt-5;
+      .Btn {
+        min-height: 44px;
+      }
     }
   }
 
-  &-right {
-    @apply min-w-0 md:col-span-9;
+  &-cover {
+    @apply w-[200px] overflow-hidden bg-secondary;
+    aspect-ratio: 2 / 3;
+    border-radius: 4px 12px 12px 4px;
+    box-shadow: var(--shadow-md);
+  }
 
+  &-coverFallback {
+    @apply flex h-full items-center justify-center p-6 text-center font-title text-2xl;
+    overflow-wrap: anywhere;
+  }
+
+  &-right {
+    @apply min-w-0;
     > .PageHeader {
-      @apply mb-4;
+      @apply mb-6 flex-row items-start gap-4;
+      .PageHeader-body {
+        min-width: 0;
+        flex: 1;
+      }
+      .PageHeader-title {
+        @apply text-3xl md:text-[40px] font-medium leading-tight;
+        letter-spacing: -0.025em;
+        overflow-wrap: anywhere;
+      }
+      .PageHeader-meta {
+        @apply mt-3;
+        overflow-wrap: anywhere;
+      }
+      .PageHeader-actions {
+        width: auto;
+        flex-shrink: 0;
+        .Btn {
+          min-width: 44px;
+          min-height: 44px;
+        }
+      }
     }
   }
 
   &-details {
-    @apply mt-6;
+    @apply mt-6 rounded-xl border border-border bg-surface p-4 md:p-5;
   }
-
+  &-metadata .age-rating {
+    @apply border border-border bg-secondary text-foreground px-2 py-1 text-sm;
+  }
   &-metadata {
-    @apply flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-secondary-foreground;
-
-    > span:not(:last-child)::after {
-      @apply ml-3 text-border;
-      content: '·';
-    }
+    @apply flex flex-wrap items-center gap-x-4 gap-y-2 text-sm;
+    color: var(--book-muted);
   }
-
   &-tags {
     @apply mt-4 min-w-0;
+    .Tags > li {
+      max-width: 100%;
+    }
+    .Tag {
+      max-width: 100%;
+      height: auto;
+      overflow-wrap: anywhere;
+    }
   }
-
   &-ratingCard {
-    @apply flex flex-col gap-4 text-secondary-foreground sm:flex-row sm:items-center;
+    @apply flex flex-wrap items-center gap-x-6 gap-y-3 text-sm;
+    color: var(--book-muted);
   }
-
   &-ratingSummary {
-    @apply flex items-center gap-2;
+    @apply flex flex-wrap items-center gap-2;
   }
-
   &-ratingValue {
     @apply ml-1 text-xl font-semibold tabular-nums text-foreground;
   }
-
   &-ratingScale {
     @apply text-sm;
   }
-
   &-stats {
-    @apply flex flex-wrap items-center gap-y-2 sm:ml-5;
+    @apply flex flex-wrap items-center gap-x-4 gap-y-2;
   }
-
   &-stat {
-    @apply flex items-center gap-2 px-3 tabular-nums first:pl-0 last:pr-0;
-
-    &:not(:last-child) {
-      @apply border-r border-border;
-    }
-
+    @apply flex items-center gap-2 tabular-nums;
     i {
       @apply text-primary;
     }
   }
-
   &-summary {
-    @apply mt-3 max-w-4xl text-lg leading-relaxed;
+    @apply mt-3 text-base md:text-lg leading-relaxed;
+    max-width: 65ch;
+    overflow-wrap: anywhere;
   }
-
   &-summarySection {
     @apply mt-8;
   }
-
   &-sectionTitle {
     @apply font-title text-2xl font-medium;
   }
-
   &-externalLinks {
-    @apply mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-secondary-foreground;
+    @apply mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm;
+    overflow-wrap: anywhere;
   }
-
   &-contentTabs {
-    @apply mt-8 border-t pt-4;
+    @apply mt-8 min-w-0;
   }
-
   &-tabList {
-    @apply flex items-baseline gap-4;
+    @apply flex flex-wrap items-stretch gap-x-6 border-b border-border;
+  }
+  &-tab {
+    @apply py-4 font-title text-xl md:text-2xl font-medium;
+    min-height: 48px;
+    border-bottom: 3px solid transparent;
+    color: var(--book-muted);
+    overflow-wrap: anywhere;
+    &[aria-selected='true'] {
+      @apply text-foreground border-primary;
+    }
+    &:hover {
+      @apply text-foreground;
+    }
+  }
+  &-panel {
+    @apply min-w-0 pt-4;
+    overflow-wrap: anywhere;
+  }
+  :where(a, button, [tabindex]):focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 3px;
+  }
+  .BookToc-item {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+  &-review .avatar {
+    max-width: 48px;
+    max-height: 48px;
+  }
+  .user-content img {
+    max-width: 100%;
+    height: auto;
+  }
+  .user-content pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .user-content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
   }
 }
 

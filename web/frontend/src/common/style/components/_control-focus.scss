@@ -1,0 +1,6 @@
+// Shared by field frames and keyboard-focusable choice controls.
+@mixin ring($color: var(--primary)) {
+  outline: 2px solid $color;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, $color, transparent 90%);
+}

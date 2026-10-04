@@ -66,6 +66,20 @@ export function setupNavigation(parent: HTMLElement) {
   const contentTemplates = findAllNavigationContents(parent)
   const findAllTriggers = findAllNavigationTriggers(parent)
 
+  const positionPortal = () => {
+    const trigger = findAllTriggers.find((item) => item.name === active.get())
+    if (!trigger) return
+
+    const bounds = trigger.element.getBoundingClientRect()
+    const headerBottom = parent.querySelector('.SiteHeader')?.getBoundingClientRect().bottom ?? bounds.bottom
+    const left = Math.max(12, Math.min(bounds.left, window.innerWidth - portal.offsetWidth - 12))
+    portal.style.left = `${left}px`
+    portal.style.top = `${Math.max(headerBottom, bounds.bottom) + 8}px`
+  }
+
+  window.addEventListener('resize', positionPortal)
+  window.addEventListener('scroll', positionPortal, { passive: true })
+
   const setShowDebounced = debounce(show.set.bind(show), 350)
 
   for (const triggerInfo of findAllTriggers) {
@@ -78,6 +92,11 @@ export function setupNavigation(parent: HTMLElement) {
     }, 400)
 
     triggerInfo.element.addEventListener('mouseenter', onMouseEnter)
+    triggerInfo.element.addEventListener('focus', () => {
+      active.set(triggerInfo.name)
+      setShowDebounced.cancel()
+      show.set(true)
+    })
 
     triggerInfo.element.addEventListener('mouseleave', () => {
       onMouseEnter.cancel()
@@ -95,11 +114,33 @@ export function setupNavigation(parent: HTMLElement) {
     setShowDebounced(false)
   })
 
+  parent.addEventListener('focusout', (event) => {
+    const next = event.relatedTarget
+    if (next instanceof Node && (portal.contains(next) || findAllTriggers.some((item) => item.element.contains(next)))) return
+    setShowDebounced(false)
+  })
+
+  portal.addEventListener('focusin', () => setShowDebounced.cancel())
+  parent.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !show.get()) return
+    onEscape()
+  })
+  const onEscape = () => {
+    findAllTriggers.find((item) => item.name === active.get())?.element.focus()
+    show.set(false)
+    setShowDebounced.cancel()
+  }
+
   const portalContentReady = new Subject(false)
 
   new Derived([portalContentReady, show], (portalReady, show) => portalReady && show).subscribe(
     (visible) => {
       portal.setAttribute('data-open', visible ? 'true' : 'false')
+      portal.inert = !visible
+      for (const trigger of findAllTriggers) {
+        trigger.element.setAttribute('aria-expanded', String(visible && trigger.name === active.get()))
+      }
+      if (visible) positionPortal()
     },
   )
 
@@ -114,25 +155,8 @@ export function setupNavigation(parent: HTMLElement) {
     portal.appendChild(content)
 
     if (trigger) {
-      const { left, bottom, top, right } = trigger.element.getBoundingClientRect()
-
-      if (!portalContentReady.get()) {
-        portal.classList.add('no-transition')
-      }
-
-      window.requestAnimationFrame(() => {
-        portal.style.setProperty('--navTriggerLeft', `${left}px`)
-        portal.style.setProperty('--nav-trigger-bottom', `${bottom}px`)
-        portal.style.setProperty('--nav-trigger-top', `${top}px`)
-        portal.style.setProperty('--nav-trigger-right', `${right}px`)
-
-        if (!portalContentReady.get()) {
-          window.requestAnimationFrame(() => {
-            portal.classList.remove('no-transition')
-            portalContentReady.set(true)
-          })
-        }
-      })
+      positionPortal()
+      portalContentReady.set(true)
     }
   })
 }

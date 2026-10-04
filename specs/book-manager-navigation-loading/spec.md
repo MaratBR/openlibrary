@@ -7,7 +7,7 @@ while manager data loads. The current masthead only links within the manager;
 initial route loading and subsequent navigation show a text loading message.
 
 This is a follow-up to [Book Manager refresh](../book-manager-refresh/spec.md).
-Status: proposed; implementation has not started.
+Status: implemented; browser acceptance checks and full build verification remain pending.
 
 ## Scope
 

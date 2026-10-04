@@ -72,14 +72,14 @@ export default function RangeInput({ value, onInput, disableNegative = false }: 
   return (
     <div className="grid grid-cols-2 max-w-80">
       <input
-        className="input rounded-r-none border-r-0 hover:border-primary hover:ring-1 hover:ring-primary !outline-none transition-all"
+        className="input input--joined-start"
         type="number"
         value={value.min ?? ''}
         onInput={handleMinChange}
         onKeyDown={handleKeyDown}
       />
       <input
-        className="input rounded-l-none hover:border-primary hover:ring-1 hover:ring-primary !outline-none transition-all"
+        className="input input--joined-end"
         type="number"
         value={value.max ?? ''}
         onInput={handleMaxChange}

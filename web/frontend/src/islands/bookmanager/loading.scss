@@ -1,0 +1,70 @@
+.BM-masthead {
+  flex-wrap: wrap;
+}
+.BM-loading .BM-placeholder {
+  display: block;
+  width: 100%;
+  height: 1rem;
+  border-radius: var(--radius);
+}
+.BM-loading .BM-placeholder--short {
+  width: 55%;
+}
+.BM-loading .BM-placeholder--heading {
+  width: min(24rem, 80%);
+  height: 2.5rem;
+}
+.BM-loading .BM-placeholder--title {
+  width: 75%;
+  height: 1.75rem;
+}
+.BM-loading .BM-placeholder--cover {
+  width: 116px;
+  height: 174px;
+  flex-shrink: 0;
+}
+.BM-loading .BM-placeholder--field {
+  height: 2.75rem;
+}
+.BM-loading .BM-placeholder--editor {
+  height: 20rem;
+}
+.BM-loading .BM-placeholder--button {
+  width: 10rem;
+  height: 2.75rem;
+}
+.BM-loading .BM-placeholder--back {
+  width: 8rem;
+  margin: 1rem 0;
+}
+.BM-loading .BM-placeholder--description {
+  width: min(32rem, 90%);
+  margin-bottom: 1.5rem;
+}
+.BM-loadingHeader {
+  padding: 1.5rem 0;
+}
+.BM-loadingTabs {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.BM-loadingTabs .BM-placeholder {
+  width: 5rem;
+  max-width: 25%;
+}
+.BM-loadingMetadata {
+  width: min(20rem, 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .BM-loading .skeleton {
+    animation: none;
+  }
+}
+
+.BM-dialog--loading,
+.BM-dialog--loading::backdrop {
+  visibility: hidden;
+}

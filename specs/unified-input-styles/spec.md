@@ -7,7 +7,7 @@ Manager currently customizes shared controls through its container styling;
 shared `.input`, `.Select`, and compound fields also have differing treatments.
 The same control and state should look consistent wherever it appears.
 
-Status: proposed; implementation has not started.
+Status: implemented; live application interaction verification remains pending.
 
 ## Scope
 
@@ -49,5 +49,6 @@ No validation, persistence, form-flow, or editor functionality changes are inclu
 
 ## Open questions
 
-- None. Use the current shared input design and site tokens as the baseline;
-  reconcile differing select/compound styles into that common treatment.
+- None. Use site tokens with the stronger Book Manager-inspired focus treatment:
+  a primary outline, separated from the field by a small gap, with a soft halo.
+  Apply the same modern treatment to shared fields and interactive choices.

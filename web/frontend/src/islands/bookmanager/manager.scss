@@ -156,40 +156,7 @@
 .BM,
 .BM-dialog {
   overflow-wrap: anywhere;
-  :focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 3px;
-  }
-  .OlSimpleEditor-toolbar {
-    flex-wrap: wrap;
-    height: auto;
-  }
-  .OlSimpleEditor-content {
-    min-height: 200px;
-  }
-  .ProseMirror {
-    scroll-margin-block: 80px;
-  }
-  .age-rating-input {
-    display: block;
-    position: absolute;
-    opacity: 0;
-    width: 1px;
-    height: 1px;
-  }
-  .age-rating {
-    background: var(--secondary);
-    color: var(--foreground);
-    border: 1px solid var(--border);
-  }
-  .age-rating-input:checked + .age-rating {
-    background: var(--primary);
-    color: var(--primary-foreground);
-  }
-  .age-rating-input:focus-visible + .age-rating {
-    outline: 2px solid var(--primary);
-    outline-offset: 4px;
-  }
+
 }
 .BM-dialog {
   position: fixed;

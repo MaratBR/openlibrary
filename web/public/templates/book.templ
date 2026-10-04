@@ -68,15 +68,21 @@ templ BookPage(
 
         @i18nExtractKeysByPrefix(l, "book")
 
-        <div 
-            id="book" 
-            class="BookPage" 
+        <div
+            id="book"
+            class="BookPage"
             x-data={ convertBookDetailsToAlpineState(&book, readingListStatus) }>
             @serverData(map[string]any{
                 "bookId": fmt.Sprintf("%d", book.ID),
             })
             <div class="BookPage-left">
-                @bookCover(book.Cover.URL, book.Name, 300)
+                <div class="BookPage-cover">
+                    if book.Cover.URL != "" {
+                        @bookCover(book.Cover.URL, book.Name, 300)
+                    } else {
+                        <div class="BookPage-coverFallback">{book.Name}</div>
+                    }
+                </div>
                 @bookReadingList(&book, readingListStatus)
             </div>
             <div class="BookPage-right">
@@ -124,45 +130,43 @@ templ BookPage(
                     @bookExternalLinks(book.ExternalLinks, l.T("book.sources"))
 
                     <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) } class="BookPage-contentTabs">
-                        <header role="tablist" class="BookPage-tabList">
-                            <span role="tab" data-no-instant
-                                @click.prevent="tab='toc'"
-                                if tab == "toc" {
-                                    data-active="true"
-                                }
-                                :data-active="tab==='toc'"
-                                class="cursor-pointer font-title text-2xl my-2 font-medium text-secondary-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
+                        <header role="tablist" aria-label={l.T("book.details")} class="BookPage-tabList"
+                            @keydown.right.prevent="tab = tab === 'toc' ? 'reviews' : 'toc'; $nextTick(() => $refs[tab].focus())"
+                            @keydown.left.prevent="tab = tab === 'toc' ? 'reviews' : 'toc'; $nextTick(() => $refs[tab].focus())"
+                            @keydown.home.prevent="tab = 'toc'; $nextTick(() => $refs.toc.focus())"
+                            @keydown.end.prevent="tab = 'reviews'; $nextTick(() => $refs.reviews.focus())">
+                            <button type="button" role="tab" id="book-tab-toc" x-ref="toc"
+                                aria-controls="slot-book-toc" aria-selected="true" :aria-selected="tab==='toc'"
+                                tabindex="0" :tabindex="tab==='toc' ? 0 : -1"
+                                @click="tab='toc'" class="BookPage-tab">
                                 {_tt(l, "book.chapters", map[string]string{"count": formatNumber(int64(book.Chapters))})}
-                            </span>
-                            <span role="tab"
-                                @click.prevent="tab='reviews'"
-                                if tab == "reviews" {
-                                    data-active="true"
-                                }
-                                :data-active="tab==='reviews'"
-                                class="cursor-pointer font-title text-2xl my-2 font-medium text-secondary-foreground hover:underline data-[active]:text-3xl data-[active]:text-foreground">
+                            </button>
+                            <button type="button" role="tab" id="book-tab-reviews" x-ref="reviews"
+                                aria-controls="book-panel-reviews" aria-selected="false" :aria-selected="tab==='reviews'"
+                                tabindex="-1" :tabindex="tab==='reviews' ? 0 : -1"
+                                @click="tab='reviews'" class="BookPage-tab">
                                 {_tt(l, "book.reviewsWithCount", map[string]string{"count": formatNumber(int64(book.Reviews))})}
-                            </span>
+                            </button>
                         </header>
 
                         <div
-                            role="tabpanel"
+                            role="tabpanel" id="book-panel-reviews" aria-labelledby="book-tab-reviews" tabindex="0"
                             if tab != "reviews" {
                                 x-cloak
-                            } 
-                            class="contents" 
+                            }
+                            class="BookPage-panel"
                             x-show="tab==='reviews'">
                             @BookMyReview(book.ID, ratingAndReview)
                             @bookTopReviews(topReviews, book.Author.ID)
                         </div>
 
-                        <div 
-                            role="tabpanel" 
-                            class="contents" 
-                            id="slot-book-toc" 
-                            x-merge="replace" 
-                            x-cloak 
-                            x-show="tab==='toc'" 
+                        <div
+                            role="tabpanel" aria-labelledby="book-tab-toc" tabindex="0"
+                            class="BookPage-panel"
+                            id="slot-book-toc"
+                            x-merge="replace"
+                            x-cloak
+                            x-show="tab==='toc'"
                             x-init={ fmt.Sprintf(`let load=()=>$ajax('/book/%d/__fragment/toc');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, book.ID) }>
                             <div class="h-[600px] mt-4">
                                 <span class="Loader mt-4"></span>
@@ -176,12 +180,6 @@ templ BookPage(
 }
 
 templ bookExternalLinks(links []app.BookExternalLinkDto, label string) {
-    {{
-        links = append(links, app.BookExternalLinkDto{
-            Label: "Patreon",
-            URL: "https://www.patreon.com/cw/Actus",
-        })
-    }}
 
     if len(links) > 0 {
         <section class="BookPage-externalLinks" aria-label={label}>
@@ -257,7 +255,7 @@ templ bookAdultWarning() {
             setTimeout(() => $root.remove(), 150);
         }
     }">
-        <div x-ref="card" class="w-128 bg-surface px-8 py-12 rounded-lg shadow-md transition">
+        <div x-ref="card" class="w-128 max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] overflow-auto bg-surface px-8 py-12 rounded-lg shadow-md transition">
             <h1 class="text-4xl mb-8 font-bold">
                 Potential adult content
             </h1>

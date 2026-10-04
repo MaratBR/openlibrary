@@ -133,6 +133,26 @@ export function useUnsavedChanges(dirty: boolean, pending = false) {
     window.addEventListener('beforeunload', prevent)
     return () => window.removeEventListener('beforeunload', prevent)
   }, [dirty, pending])
+  // Match guarded editor links: modified primary clicks also use Stay/Discard.
+  // Capture only the shell's document link; router links keep using useBlocker.
+  useEffect(() => {
+    if (!dirty && !pending) return
+    const followSiteLink = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0) return
+      const anchor =
+        event.target instanceof Element
+          ? event.target.closest<HTMLAnchorElement>('a[data-manager-site-link]')
+          : null
+      if (!anchor) return
+      event.preventDefault()
+      if (!pending)
+        setAction(() => () => {
+          window.location.href = anchor.href
+        })
+    }
+    document.addEventListener('click', followSiteLink)
+    return () => document.removeEventListener('click', followSiteLink)
+  }, [dirty, pending])
   const stay = () => {
     setAction(null)
     if (blocker.state === 'blocked') blocker.reset()

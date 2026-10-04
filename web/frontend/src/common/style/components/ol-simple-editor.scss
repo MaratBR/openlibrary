@@ -1,12 +1,12 @@
 .OlSimpleEditor {
-  @apply bg-surface rounded-xl border border-border;
+  padding: 0;
 
   &-toolbar {
-    @apply bg-surface rounded-lg m-2 p-2 shadow-sm flex items-center gap-1 h-12;
+    @apply bg-secondary rounded-md m-2 p-2 flex items-center gap-1 flex-wrap;
   }
 
   &-btn {
-    @apply size-8 bg-surface rounded-md flex items-center justify-center
+    @apply size-8 bg-transparent rounded-md flex items-center justify-center
             hover:bg-primary hover:text-primary-foreground transition-colors;
 
     &--active {
@@ -19,13 +19,22 @@
   }
 
   &-content {
-    @apply px-3 text-sm;
+    @apply px-3;
     min-height: 4.75rem;
 
     .ProseMirror {
       min-height: inherit;
       padding-block: 0.75rem;
+      scroll-margin-block: 80px;
+
+      &:focus {
+        outline: none;
+      }
     }
+  }
+
+  &--long &-content {
+    min-height: 12.5rem;
   }
 
   &--review &-content {

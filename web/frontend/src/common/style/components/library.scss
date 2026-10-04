@@ -1,12 +1,19 @@
 .LibraryHeader {
-  &-item {
-    @apply text-3xl font-medium p-2 rounded-xl font-text;
+  > .OlContainer {
+    @apply flex flex-wrap gap-1 sm:gap-4;
+    min-width: 0;
+  }
 
-    &:not(&--active) {
+  &-item {
+    @apply text-base sm:text-2xl md:text-3xl font-medium p-2 rounded-xl font-text;
+    min-width: 0;
+    overflow-wrap: anywhere;
+
+    &:not([aria-current="true"]) {
       @apply transition-colors duration-75 hover:bg-primary/20 hover:text-primary active:bg-primary/15;
     }
 
-    &--active {
+    &[aria-current="true"] {
       @apply underline;
     }
   }

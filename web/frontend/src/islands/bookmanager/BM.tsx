@@ -1,11 +1,12 @@
 import { ReactIslandProps } from '../common/react-island'
-import { createHashRouter, Navigate, Outlet, NavLink } from 'react-router'
+import { createHashRouter, Navigate, Outlet, NavLink, useParams } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import BMLayout from './BMLayout'
 import { Books, booksRouteLoader } from './books'
 import { Book, bookRouteLoader } from './books/Book'
 import BookEdit from './books/BookEdit'
 import { usePageTitle } from './ui'
+import { ManagerSkeleton } from './loading'
 import NewBookForm from './new-book/NewBookForm'
 
 const router = createHashRouter([
@@ -34,7 +35,7 @@ const router = createHashRouter([
       },
       {
         path: '/books/:bookId',
-        element: <Book />,
+        element: <BookRoute />,
         loader: bookRouteLoader,
         errorElement: <RouteError />,
         hydrateFallbackElement: <Loading />,
@@ -58,8 +59,14 @@ export default function BM(_props: ReactIslandProps) {
   return <RouterProvider router={router} />
 }
 
+// A new book must not inherit the previous book's open chapter panel or local state.
+function BookRoute() {
+  const { bookId } = useParams()
+  return <Book key={bookId} />
+}
+
 function Loading() {
-  return <p role="status">{window._('bookManager.ui.loading')}</p>
+  return <ManagerSkeleton />
 }
 function RouteError() {
   usePageTitle(window._('bookManager.ui.unavailable'))

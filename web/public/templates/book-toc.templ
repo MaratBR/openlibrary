@@ -14,7 +14,7 @@ templ BookTOC(
 ) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
-    <div class="contents" id="slot-book-toc" x-cloak x-show="tab==='toc'">
+    <div role="tabpanel" aria-labelledby="book-tab-toc" tabindex="0" class="BookPage-panel" id="slot-book-toc" x-cloak x-show="tab==='toc'">
         if len(chapters) == 0 {
             <section id="empty_toc" class="mt-4 p-2 border rounded-lg bg-surface shadow-md">
                 <h1 class="font-title text-xl font-semibold mb-2">{l.T("book.emptyToc")}</h1>
@@ -29,7 +29,7 @@ templ BookTOC(
                             <a
                                 href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
                                 if chapter.ID == activeChapterID {
-                                    class="BookToc-item BookTocItem--readingNow"
+                                    class="BookToc-item BookToc-item--readingNow"
                                 } else {
                                     class="BookToc-item"
                                 }

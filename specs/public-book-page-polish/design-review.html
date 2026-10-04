@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Public book page — proposal</title>
+<style>:root {
+  --header-height: 64px;
+  --font-book: Merriweather, serif;
+  --font-title: Literata, 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-text: Poppins, Inter, ui-sans-serif, system-ui, sans-serif;
+  --shadow-xs: 0 1px 2px rgb(23 37 31 / 5%);
+  --shadow-sm: 0 1px 2px rgb(23 37 31 / 5%), 0 5px 18px rgb(23 37 31 / 4%);
+  --shadow-md: 0 2px 4px rgb(23 37 31 / 5%), 0 14px 36px rgb(23 37 31 / 8%);
+  --transition-fast: 140ms ease;
+  --transition-normal: 220ms ease;
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+.theme-default {
+  --background: #f7f4ed;
+  --foreground: #2e342f;
+  --surface: #fffdf8;
+  --surface-foreground: #17251f;
+  --primary: #123f31;
+  --primary-foreground: #fffdf8;
+  --secondary: #f1eee6;
+  --secondary-foreground: #73756f;
+  --accent: #e5ede8;
+  --accent-foreground: #123f31;
+  --destructive: #8d3434;
+  --destructive-foreground: #fffdf8;
+  --border: #ddd7ca;
+  --border-strong: #c8c0b1;
+  --input: #c8c0b1;
+  --ring: #a37b2c;
+  --brass: #a37b2c;
+  --brass-soft: #f5ecd8;
+  --success: #426948;
+  --success-soft: #e8f0e6;
+  --warning: #8a6723;
+  --warning-soft: #f6edd9;
+  --destructive-soft: #f8e9e6;
+  --radius: 0.5rem;
+  --chart-1: hsl(12 76 61);
+  --chart-2: hsl(173 58 39);
+  --chart-3: hsl(197 37 24);
+  --chart-4: hsl(43 74 66);
+  --chart-5: hsl(27 87 67);
+  --highlight: #ebe7dc;
+  --focus-ring: 0 0 0 3px rgb(163 123 44 / 24%);
+}
+
+.dark {
+  --background: #151615;
+  --foreground: #d9dad5;
+  --surface: #1d1f1d;
+  --surface-foreground: #f4f1e9;
+  --primary: #a5c4b5;
+  --primary-foreground: #17221d;
+  --secondary: #292b28;
+  --secondary-foreground: #aaaca6;
+  --accent: #303a34;
+  --accent-foreground: #edf0ec;
+  --destructive: #d98787;
+  --destructive-foreground: #2b1010;
+  --border: #3a3d39;
+  --border-strong: #50544e;
+  --input: #50544e;
+  --ring: #c8a65d;
+  --brass: #c8a65d;
+  --brass-soft: #3e3525;
+  --success: #90bd96;
+  --success-soft: #29352b;
+  --warning: #d6b66e;
+  --warning-soft: #423821;
+  --destructive-soft: #432727;
+  --chart-1: hsl(220 70 50);
+  --chart-2: hsl(160 60 45);
+  --chart-3: hsl(30 80 55);
+  --chart-4: hsl(280 65 60);
+  --chart-5: hsl(340 75 55);
+  --highlight: #30322f;
+  --focus-ring: 0 0 0 3px rgb(200 166 93 / 28%);
+}
+
+*{box-sizing:border-box}body{margin:0;background:#e4e4df;color:#242a25;font:15px/1.6 system-ui}h1,h2,h3{font-family:Literata,Georgia,serif;line-height:1.2}body>header{padding:24px;max-width:1280px;margin:auto}h1{margin:0 0 12px}button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid var(--foreground);outline-offset:4px}.boards{display:grid;gap:24px;padding:0 24px 24px}.board{overflow:auto} .caption{margin:0 0 8px}.screen{background:var(--background);color:var(--foreground);width:1280px;min-height:720px}.screen.mobile{width:360px}.shell{height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:24px;font-family:Georgia,serif;font-size:22px}.shell span:last-child{margin-left:auto;font:14px system-ui}.page{max-width:1200px;margin:auto;padding:40px 24px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:48px}.left{display:flex;flex-direction:column;align-items:center;gap:20px}.cover{width:200px;aspect-ratio:2/3;display:grid;place-items:center;padding:24px;background:var(--secondary);border:1px solid var(--border);border-radius:4px 12px 12px 4px;box-shadow:var(--shadow-md);font:24px/1.3 Georgia,serif;text-align:center;overflow-wrap:anywhere}.actions{display:flex;width:200px}.actions button{background:var(--primary);color:var(--primary-foreground);border:0;padding:12px;min-height:44px}.actions button:first-child{flex:1;border-radius:8px 0 0 8px}.actions button:last-child{border-left:1px solid currentColor;border-radius:0 8px 8px 0}.identity{display:flex;align-items:start;gap:16px}.identity>div{min-width:0;flex:1}.identity h2{font-size:40px;letter-spacing:-.025em;margin:0 0 12px;overflow-wrap:anywhere}.identity a{color:var(--primary);text-decoration:underline;text-underline-offset:4px}.report{color:var(--foreground);background:transparent;border:1px solid var(--border);border-radius:8px;min-width:44px;min-height:44px}.rating{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:24px;font-size:14px}.rating strong{font-size:20px}.muted{color:var(--secondary-foreground)}.details{margin-top:24px;padding:20px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}.meta,.tags{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px}.tags{margin-top:16px;gap:8px}.tag{background:var(--secondary);padding:4px 10px;border-radius:6px}.summary{margin-top:32px;max-width:65ch}.summary h3{font-size:24px;margin:0 0 12px}.summary p{font-size:17px;line-height:1.8;margin:0}.sources{margin-top:20px;font-size:14px}.sources a{color:var(--primary)}.tabs{display:flex;flex-wrap:wrap;gap:24px;margin-top:32px;border-bottom:1px solid var(--border)}.tabs button{font:22px Georgia,serif;padding:16px 0;border:0;border-bottom:3px solid transparent;background:transparent;color:var(--secondary-foreground);min-height:48px}.tabs button[aria-selected=true]{border-bottom-color:var(--primary);color:var(--foreground)}.panel{padding:20px 0}.chapter{padding:14px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);margin-bottom:8px;overflow-wrap:anywhere}.mobile .shell{padding:0 16px}.mobile .page{padding:28px 16px;display:flex;flex-direction:column;gap:32px}.mobile .identity h2{font-size:30px}.mobile .details{padding:16px}.mobile .summary p{font-size:16px}.mobile .rating{gap:8px 16px}.mobile .tabs{gap:20px}.mobile .tabs button{font-size:21px}
+</style><body><header><h1>Public book page: proposed polish</h1><p>Design study only. All titles, authors, tags, summary, sources and counts below are sample fixtures, not live book data. The site shell is context only and remains unchanged.</p><p>Four boards show desktop and mobile in both themes. Scroll wide boards horizontally on smaller screens. Tabs are interactive; reading-list and report buttons are visual examples.</p></header><main class="boards" id="boards"></main>
+<template id="page"><div class="shell"><span>OpenLibrary</span><span>Explore · Sign in</span></div><div class="page"><aside class="left"><div class="cover">Sample book<br>Missing-cover treatment</div><div class="actions"><button type="button">Want to read</button><button type="button" aria-label="Change reading list status">⌄</button></div></aside><div class="right"><header class="identity"><div><h2>A Journey Beyond the Last Library</h2><a href="#" onclick="return false">Sample author with a long display name</a></div><button class="report" aria-label="Report book">⚑</button></header><div class="rating"><span><strong>0.0</strong> <span class="muted">/ 10</span></span><span class="muted">0 ratings</span><span class="muted">0 views</span></div><section class="details"><div class="meta"><span>0 chapters</span><span>0 words</span><span>Published today</span><span>Content rating: PG</span></div><div class="tags"><span class="tag">Fantasy</span><span class="tag">Adventure</span><span class="tag">A longer sample tag</span></div></section><section class="summary"><h3>About this book</h3><p>This sample summary demonstrates a quiet reading surface and a comfortable line length. The title and author establish the book’s identity, while counts and tags remain easy to scan. Existing rich text, links, lists and paragraphs will retain their formatting.</p></section><div class="sources"><a href="#" onclick="return false">Sample DTO-provided source ↗</a></div><div class="tabs" role="tablist" aria-label="Book content"><button role="tab" aria-selected="true" data-tab="chapters">0 chapters</button><button role="tab" aria-selected="false" data-tab="reviews">Reviews (0)</button></div><div class="panel" role="tabpanel">This book has no chapters yet.</div></div></div></template>
+<script>for(const dark of [false,true])for(const mobile of [false,true]){const board=document.createElement('section');board.className='board';const caption=document.createElement('h2');caption.className='caption';caption.textContent=(dark?'Dark':'Light')+' · '+(mobile?'360px mobile':'1280px desktop');board.append(caption);const screen=document.createElement('div');screen.className='screen theme-default'+(dark?' dark':'')+(mobile?' mobile':'');screen.append(document.querySelector('#page').content.cloneNode(true));board.append(screen);document.querySelector('#boards').append(board);const tabs=[...screen.querySelectorAll('[role=tab]')];tabs.forEach((tab,i)=>{tab.id='tab-'+dark+'-'+mobile+'-'+i;tab.setAttribute('aria-controls','panel-'+dark+'-'+mobile);tab.tabIndex=i===0?0:-1;const select=()=>{tabs.forEach(t=>{t.setAttribute('aria-selected',String(t===tab));t.tabIndex=t===tab?0:-1});const panel=screen.querySelector('.panel');panel.id='panel-'+dark+'-'+mobile;panel.setAttribute('aria-labelledby',tab.id);panel.textContent=tab.dataset.tab==='chapters'?'This book has no chapters yet.':'What do you think? Sign in to write a review.'};tab.onclick=select;tab.onkeydown=e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?1:1-i;tabs[next].click();tabs[next].focus()}};if(i===0)select()})}</script></body></html>

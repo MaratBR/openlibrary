@@ -1,3 +1,5 @@
+@use './control-focus';
+
 @use './content-rating';
 
 .age-rating {
@@ -6,22 +8,37 @@
 }
 
 .age-rating-input {
-  @apply appearance-none w-0 h-0 hidden;
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
 
   & + .age-rating {
-    @apply cursor-pointer transition-shadow relative;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--foreground);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-xs);
+    transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
 
-    &::after {
-      content: ' ';
-      @apply absolute block inset-0 bg-transparent transition-colors rounded-md pointer-events-none;
-    }
-
-    &:hover::after {
-      @apply bg-white/30;
-    }
+  &:not(:disabled):not(:checked) + .age-rating:hover {
+    background: var(--accent);
+    border-color: var(--primary);
   }
 
   &:checked + .age-rating {
-    @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  &:focus-visible + .age-rating {
+    @include control-focus.ring;
+  }
+
+  &:disabled + .age-rating {
+    opacity: 0.8;
+    cursor: default;
   }
 }

@@ -1,0 +1,126 @@
+const fs = require('fs')
+const path = require('path')
+const assert = require('assert/strict')
+const { createRequire } = require('module')
+const { chromium } = createRequire(fs.realpathSync('node_modules/@playwright/mcp/package.json'))('playwright')
+const esbuild = require('esbuild')
+
+async function main() {
+  const bundle = await esbuild.build({
+    stdin: { contents: `import island from './web/frontend/src/islands/book-card-preview'; window.preview = island.mount(document.querySelector('#root'), {selector:'#root'});`, resolveDir: process.cwd() },
+    bundle: true, write: false, format: 'iife', loader: { '.scss': 'empty' },
+    alias: { '@': path.resolve('web/frontend/src') },
+  })
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium-browser' })
+  try {
+    const page = await browser.newPage({ viewport: { width: 1000, height: 700 } })
+    let release
+    await page.route('**/__fragment/preview-card', async route => {
+      if (route.request().url().includes('/book/2/')) await new Promise(resolve => { release = resolve })
+      await route.fulfill({ contentType: 'text/html', body: '<article class="BookCardPreview"><header class="BookCardPreview-header"><div class="BookCardPreview-cover"></div><div class="BookCardPreview-heading"><h2 class="BookCardPreview-title">Hi</h2><p class="BookCardPreview-author">Author</p></div></header><div class="BookCardPreview-summary user-content"><p>Short.</p></div></article>' })
+    })
+    await page.route('http://preview.test/', route => route.fulfill({ contentType: 'text/html', body: '' }))
+    await page.goto('http://preview.test/')
+    await page.setContent('<div id="root"><a href="#" data-book-card-preview="1" style="position:absolute;top:20px;left:10px">Book</a><a href="#" data-book-card-preview="2" style="position:absolute;top:300px;left:10px">Slow book</a></div>')
+    await page.addStyleTag({ content: fs.readFileSync('dist/common.css', 'utf8') + fs.readFileSync('dist/alpinejs.css', 'utf8') })
+    await page.addScriptTag({ content: bundle.outputFiles[0].text })
+    await page.locator('[data-book-card-preview="1"]').hover()
+    const popup = page.locator('.BookCardPreviewPopover')
+    await popup.waitFor({ state: 'visible' })
+    await page.waitForTimeout(200)
+    let box = await popup.boundingBox()
+    assert.equal(box.width, 400)
+    assert(box.height >= 180)
+    assert(box.x >= 12 && box.y >= 12 && box.x + box.width <= 988)
+    // Check each side in the requested priority order with controlled geometry.
+    for (const [left, top, side] of [[100, 280, 'right'], [870, 280, 'left'], [330, 280, 'top'], [330, 20, 'bottom']]) {
+      await page.setViewportSize({ width: side === 'top' || side === 'bottom' ? 700 : 1000, height: 700 })
+      await page.mouse.move(690, 690)
+      await page.locator('[data-book-card-preview="1"]').evaluate((el, coords) => {
+        el.style.left = `${coords[0]}px`; el.style.top = `${coords[1]}px`
+      }, [left, top])
+      await page.locator('[data-book-card-preview="1"]').hover()
+      await popup.waitFor({ state: 'visible' })
+      await page.waitForTimeout(200)
+      const anchor = await page.locator('[data-book-card-preview="1"]').boundingBox()
+      box = await popup.boundingBox()
+      if (side === 'right') assert(box.x >= anchor.x + anchor.width + 11)
+      if (side === 'left') assert(box.x + box.width <= anchor.x - 11)
+      if (side === 'top') assert(box.y + box.height <= anchor.y - 11)
+      if (side === 'bottom') assert(box.y >= anchor.y + anchor.height + 11)
+    }
+    await page.mouse.move(690, 690)
+    await page.locator('[data-book-card-preview="1"]').evaluate(el => { el.style.left = '10px'; el.style.top = '20px' })
+    await page.locator('[data-book-card-preview="1"]').hover()
+    await popup.waitFor({ state: 'visible' })
+    await page.setViewportSize({ width: 320, height: 600 })
+    await page.waitForTimeout(100)
+    box = await popup.boundingBox()
+    assert(box.x >= 12 && box.x + box.width <= 308)
+    await page.locator('[data-book-card-preview="2"]').hover()
+    await page.waitForTimeout(300)
+    assert(release, 'slow preview requested')
+    await page.mouse.move(300, 550)
+    release()
+    await page.waitForTimeout(200)
+    assert.equal(await popup.isVisible(), false, 'stale response stays hidden')
+    const touch = async (type, x = 20, y = 20) => page.locator('[data-book-card-preview="1"]').dispatchEvent(type, {
+      pointerType: 'touch', pointerId: 1, isPrimary: true, clientX: x, clientY: y,
+    })
+    await touch('pointerdown')
+    await page.waitForTimeout(100)
+    await touch('pointerup')
+    await page.waitForTimeout(500)
+    assert.equal(await popup.isVisible(), false, 'short tap does not open')
+    await touch('pointerdown')
+    await touch('pointermove', 50, 50)
+    await page.waitForTimeout(550)
+    assert.equal(await popup.isVisible(), false, 'scroll gesture cancels long press')
+    await touch('pointerup')
+    await touch('pointerdown')
+    await page.waitForTimeout(600)
+    await touch('pointerup')
+    box = await popup.boundingBox()
+    assert(box, 'long press opens preview')
+    assert(Math.abs(box.x + box.width / 2 - 160) < 1)
+    assert(Math.abs(box.y + box.height / 2 - 300) < 1)
+    assert.equal(await page.locator('.BookCardPreviewLayer').evaluate(el => getComputedStyle(el).backdropFilter), 'blur(8px)')
+    assert.equal(await page.evaluate(() => document.body.style.overflow), 'hidden')
+    const clickAllowed = await page.locator('[data-book-card-preview="1"]').evaluate(el => el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })))
+    assert.equal(clickAllowed, false, 'long press suppresses navigation')
+    await page.mouse.click(310, 590)
+    assert.equal(await popup.isVisible(), false, 'backdrop dismisses')
+    assert.equal(await page.evaluate(() => document.body.style.overflow), '')
+    await touch('pointerdown')
+    await page.waitForTimeout(600)
+    await touch('pointerup')
+    await page.keyboard.press('Escape')
+    assert.equal(await popup.isVisible(), false, 'Escape dismisses')
+    await page.locator('[data-book-card-preview="1"]').evaluate(el => { el.style.left = '20px'; el.style.top = '20px' })
+    const cdp = await page.context().newCDPSession(page)
+    await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true })
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 30, y: 28 }] })
+    await page.waitForTimeout(650)
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+    await page.waitForTimeout(100)
+    assert.equal(await popup.isVisible(), true, 'native touch release keeps preview open')
+    await page.mouse.click(310, 590)
+    await page.evaluate(() => window.preview.dispose())
+    assert.equal(await popup.count(), 0)
+    for (const width of [320, 375, 768]) {
+      await page.setViewportSize({ width, height: 600 })
+      for (const labels of [['My library', 'Archive', 'Collections'], ['Моя библиотека', 'Архив', 'Коллекции']]) {
+        await page.setContent(`<header class="Hero Hero--header LibraryHeader"><div class="OlContainer flex gap-4">${labels.map((label, i) => `<a class="LibraryHeader-item" ${i === 0 ? 'aria-current="true"' : ''} href="#">${label}</a>`).join('')}</div></header>`)
+        await page.addStyleTag({ content: fs.readFileSync('dist/common.css', 'utf8') })
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `library header fits ${width}px`)
+        for (const link of await page.locator('.LibraryHeader-item').all()) {
+          const rect = await link.boundingBox()
+          assert(rect.x >= 0 && rect.x + rect.width <= width)
+        }
+        assert.equal(await page.locator('[aria-current]').evaluate(el => getComputedStyle(el).textDecorationLine), 'underline')
+      }
+    }
+    console.log('PASS: desktop right/left/top/bottom, sizing, resize, stale response, touch long press, tap/movement cancellation, centered blurred backdrop, dismissal, disposal, responsive library header')
+  } finally { await browser.close() }
+}
+main().catch(error => { console.error(error); process.exitCode = 1 })

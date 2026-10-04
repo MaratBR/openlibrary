@@ -26,7 +26,7 @@ export function SimpleTagInputModal({ data, rootElement }: ReactIslandProps) {
       <div className="admin-card">
         <div className="p-2">
           <input
-            className="input text-xl h-12"
+            className="input"
             value={searchValue}
             onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
           />

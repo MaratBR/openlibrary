@@ -2,36 +2,36 @@ package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
-import "github.com/MaratBR/openlibrary/internal/app/content"
 
 templ BookPreviewPartial(book app.BookDetailsDto) {
-    <div class="relative h-full p-4 overflow-hidden">
-        <h1 class="font-semibold text-2xl">{ book.Name }</h1>
-
-        <div x-ignore class="mt-4 text-sm user-content">
-            {{
-                const maxLength = 400
-                summary := book.Summary
-
-                if len(summary) > maxLength {
-                    summary = summary[:maxLength] + "..."
-                    var err error
-                    summary, err = content.FixHTML(summary)
-                    if err != nil {
-                        summary = `<p><em>Failed to fix HTML</em></p>`
-                    }
+    <article class="BookCardPreview">
+        <header class="BookCardPreview-header">
+            <div class="BookCardPreview-cover" aria-hidden="true">
+                if book.Cover.URL != "" {
+                    <img src={ book.Cover.URL } alt=""/>
+                } else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 6v14M3 4c4-1 6 0 9 2 3-2 5-3 9-2v14c-4-1-6 0-9 2-3-2-5-3-9-2V4Z"></path></svg>
                 }
-            }}
-            
-            @templ.Raw(summary)
-        </div>
-
-        <div class="Tabs--xs absolute bottom-0 pt-2 bg-surface">
-            @webcomponents.Tags(webcomponents.TagsProps{
-                Tags: book.Tags,
-                MaxTags: 5,
-            })
-        </div>
-    
-    </div>
+            </div>
+            <div class="BookCardPreview-heading">
+                <h2 class="BookCardPreview-title">{ book.Name }</h2>
+                if book.Author.Name != "" {
+                    <p class="BookCardPreview-author">{ book.Author.Name }</p>
+                }
+            </div>
+        </header>
+        if book.Summary != "" {
+            <div x-ignore class="BookCardPreview-summary user-content">
+                @templ.Raw(book.Summary)
+            </div>
+        }
+        if len(book.Tags) > 0 {
+            <footer class="BookCardPreview-tags Tags--xs">
+                @webcomponents.Tags(webcomponents.TagsProps{
+                    Tags: book.Tags[:min(len(book.Tags), 5)],
+                    MaxTags: 5,
+                })
+            </footer>
+        }
+    </article>
 }

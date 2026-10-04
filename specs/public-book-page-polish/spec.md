@@ -7,7 +7,8 @@ but its presentation needs stronger hierarchy and a more appealing finish.
 Readers should quickly recognize the book, author, reading actions, and content
 sections within the site's existing visual identity.
 
-Status: proposed; implementation has not started. Book page means the public
+Status: visual proposal in `design-review.html` approved by the user on
+2026-10-04 (“looks ok”); implemented; verification recorded in `verification.md`. Book page means the public
 `/book/{slug}-{id}` page, not the manager overview.
 
 ## Scope
@@ -47,7 +48,7 @@ or global site shell is included.
   selected state and support keyboard operation with associated panels. Tab
   selection does not change text size enough to move surrounding layout.
 
-## Open questions
+## Design decision
 
-- The exact visual treatment needs approval of the proposal in AC-1 before
-  implementation. This does not block preparing the spec or visual exploration.
+The user approved `design-review.html` on 2026-10-04 (“looks ok”). The
+implementation follows that direction; see `design.md` and `verification.md`.

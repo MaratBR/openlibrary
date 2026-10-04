@@ -120,7 +120,7 @@ function ChapterEditForm({
               />
             </FormControl>
             <FormControl label={window._('bookManager.edit.summary')}>
-              <RichTextInput editor={summaryEditor} />
+              <RichTextInput editor={summaryEditor} className="OlSimpleEditor--long" />
             </FormControl>
             <FormControl
               label={window._('bookManager.edit.isPubliclyVisible')}

@@ -31,16 +31,16 @@ templ bookReview(
     isAuthor bool,
 ) {
     <div
-        class="group grid grid-cols-[auto_1fr] gap-6 p-4 relative border-b last:border-b-0"
+        class="BookPage-review group grid grid-cols-[auto_minmax(0,1fr)] gap-3 sm:gap-6 p-4 relative border-b last:border-b-0"
         id={fmt.Sprintf("review-%s", review.User.ID.String())}>
 
         <div>
-            <img class="avatar" src={ review.User.Avatar } />
+            <img class="avatar max-w-full h-auto" src={ review.User.Avatar } />
         </div>
 
 
         <div>
-            <span class="mb-2 flex gap-1">
+            <span class="mb-2 flex flex-wrap gap-1">
                 <a class="Link text-lg" href={ templ.SafeURL(fmt.Sprintf("/users/%s", review.User.ID)) }>{ review.User.Name }</a>
                 if isAuthor {
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@ templ bookReview(
             @collapsibleRawHtml(fmt.Sprintf("review-%s", review.User.ID.String()), review.Content)
         </div>
 
-        <div class="text-secondary-foreground transition-opacity opacity-0 group-hover:opacity-100 absolute top-2 right-2 flex gap-2">
+        <div class="text-secondary-foreground transition-opacity sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 absolute top-2 right-2 flex gap-2">
             <button class="Btn Btn--icon Btn--primary">
                 <i class="fa-solid fa-flag"></i>
             </button>
@@ -108,13 +108,13 @@ templ BookMyReview(
             {{ review := ratingAndReview.Review.Value }}
             <div x-ref="myReview" class="shadow-[0_0_16px] shadow-foreground/10 rounded-xl p-4 bg-surface nojs-hidden">
                 @jsonTemplate("island-review-editor-data", ratingAndReview.Review.Value)
-                <div class="grid grid-cols-[110px_auto]" x-show="!edit&&!loading">
+                <div class="grid grid-cols-[48px_minmax(0,1fr)] sm:grid-cols-[110px_minmax(0,1fr)] gap-3" x-show="!edit&&!loading">
                     <div>
-                        <img class="avatar" src={ review.User.Avatar } />
+                        <img class="avatar max-w-full h-auto" src={ review.User.Avatar } />
                     </div>
 
                     <div>
-                        <div class="flex gap-4 items-center">
+                        <div class="flex flex-wrap gap-4 items-center">
                             @starRatingControllable(float64(review.Rating), 0.5, templ.Attributes{
                                 "id": "current-review-rating",
                             })
