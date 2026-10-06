@@ -1,14 +1,16 @@
-package templates 
+package templates
 
+import "github.com/MaratBR/openlibrary/internal/i18n"
 
 templ Forbidden() {
+    {{ l := i18n.GetLocalizer(ctx) }}
     @baseLayout("403") {
-        <main class="mt-20 max-w-screen-md mx-auto p-8 bg-surface">
-            <h1 class="font-title text-4xl">
-                403 Forbidden
-            </h1>
-
-            <p>You do not have sufficient permissions to access this page</p>
+        <main class="Admin-frame py-12">
+            <section class="admin-card">
+                <h1 class="font-title text-4xl">403</h1>
+                <p class="my-4">{l.T("admin.ui.forbidden")}</p>
+                <a href="/" class="Btn Btn--primary">{l.T("admin.goBackToSite")}</a>
+            </section>
         </main>
     }
 }

@@ -1,0 +1,19 @@
+.Admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  min-width: 0;
+  > label {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+.Admin-help {
+  color: var(--secondary-foreground);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}

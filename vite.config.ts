@@ -65,7 +65,6 @@ const ENTRIES = [
   'islands/public', // all islands available in public pages
   'islands/signup',
   'islands/review-editor',
-  'islands/admin-password-reset',
 
   'islands/bookmanager',
 

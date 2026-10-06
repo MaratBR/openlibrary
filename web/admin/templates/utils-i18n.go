@@ -61,3 +61,7 @@ func relativeTime(l *i18n.Localizer, t time.Time) string {
 	})
 	return v
 }
+
+func i18nExtractKeysByPrefix(l *i18n.Localizer, prefix string) templ.ComponentScript {
+	return i18nKeys(l.TT(prefix))
+}

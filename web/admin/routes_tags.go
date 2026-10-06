@@ -11,79 +11,23 @@ import (
 	"github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 
-	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/ggicci/httpin"
-	"github.com/go-chi/chi/v5"
-	"github.com/knadh/koanf/v2"
 )
 
 type tagsController struct {
-	db      app.DB
-	cfg     *koanf.Koanf
 	service app.TagsService
 }
 
-func newTagsController(db app.DB, cfg *koanf.Koanf, service app.TagsService) *tagsController {
-	return &tagsController{db: db, cfg: cfg, service: service}
-}
-
-func (c *tagsController) Setup(r chi.Router) {
-	r.Get("/", c.Home)
-	r.Get("/tag-details/{id}", c.Tag)
-	r.Get("/tag-details/{id}/edit", c.TagEdit)
-	r.With(httpin.NewInput(&tagEditBody{})).Post("/tag-details/{id}/edit", c.TagEdit)
-
-}
-
-func (c *tagsController) Home(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query()
-	page := olhttp.GetPage(query, "p")
-	searchQuery := query.Get("q")
-	onlyAdultTags := olhttp.GetBoolDefault(query, "onlyAdultTags", false)
-	onlyParentTags := olhttp.GetBoolDefault(query, "onlyParentTags", false)
-
-	tags, err := c.service.List(r.Context(), app.ListTagsQuery{
-		Page:           page,
-		PageSize:       50,
-		SearchQuery:    searchQuery,
-		OnlyParentTags: onlyParentTags,
-		OnlyAdultTags:  onlyAdultTags,
-	})
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	templates.TagsList(tags, templates.TagsSearchRequest{
-		SearchQuery:    searchQuery,
-		OnlyParentTags: onlyParentTags,
-		OnlyAdultTags:  onlyAdultTags,
-	}).Render(r.Context(), w)
-}
-
-func (c *tagsController) Tag(w http.ResponseWriter, r *http.Request) {
-	id, err := olhttp.URLParamInt64(r, "id")
-	if err != nil {
-		olhttp.Write500(w, r, err)
-		return
-	}
-
-	tag, err := c.service.GetTag(r.Context(), id)
-	if err != nil {
-		olhttp.Write500(w, r, err)
-		return
-	}
-
-	templates.Tag(tag).Render(r.Context(), w)
+func newTagsController(service app.TagsService) *tagsController {
+	return &tagsController{service: service}
 }
 
 type tagEditBody struct {
-	Adult       string `in:"form=adult,required"`
-	Spoiler     string `in:"form=spoiler,required"`
+	Adult       string `in:"form=adult"`
+	Spoiler     string `in:"form=spoiler"`
 	Name        string `in:"form=name,required"`
 	Type        string `in:"form=type,required"`
-	Description string `in:"form=description,required"`
+	Description string `in:"form=description"`
 	SynonymOf   string `in:"form=synonymOf"`
 }
 
@@ -122,15 +66,8 @@ func (c *tagsController) TagEdit(w http.ResponseWriter, r *http.Request) {
 			l.T("admin.tags.updatedSuccessfully"),
 		))
 
-		http.Redirect(w, r, fmt.Sprintf("/admin/tags/tag-details/%d", id), http.StatusFound)
+		http.Redirect(w, r, fmt.Sprintf("/admin#/tags/%d", id), http.StatusSeeOther)
 		return
 	}
 
-	tag, err := c.service.GetTag(r.Context(), id)
-	if err != nil {
-		olhttp.Write500(w, r, err)
-		return
-	}
-
-	templates.TagEdit(tag).Render(r.Context(), w)
 }

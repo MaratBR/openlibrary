@@ -1,4 +1,7 @@
 import Alpine from 'alpinejs'
+import { Islands } from '@/alpinejs/island'
+
+Islands.register('admin/App', () => import('@/features/admin').then((module) => module.AdminIsland))
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-expect-error
 import ajax from '@imacrayon/alpine-ajax'

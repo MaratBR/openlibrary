@@ -1,10 +1,16 @@
 package templates
 
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
 templ NotFound() {
-    @dashboardLayout("404") {
-        <div class="DashboardContent">
-            <h1 class="text-4xl font-title mt-4">404</h1>
-            <p class="mt-2 text-lg">Page not found</p>
-        </div>
+    {{ l := i18n.GetLocalizer(ctx) }}
+    @baseLayout("404") {
+        <main class="Admin-frame py-12">
+            <section class="admin-card">
+                <h1 class="font-title text-4xl">{l.T("admin.ui.notFound")}</h1>
+                <p class="my-4">{l.T("admin.ui.notFoundDescription")}</p>
+                <a href="/admin" class="Btn Btn--primary">{l.T("admin.ui.backHome")}</a>
+            </section>
+        </main>
     }
 }

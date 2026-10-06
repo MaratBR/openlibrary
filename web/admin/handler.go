@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/MaratBR/openlibrary/internal/app"
-	"github.com/MaratBR/openlibrary/internal/app/cache"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
@@ -12,15 +11,12 @@ import (
 	"github.com/MaratBR/openlibrary/web/webinfra"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
-	"github.com/knadh/koanf/v2"
-	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 var FXModule = fx.Module("http_admin", fx.Provide(
 	newTagsController,
-	newBooksController,
 	newDebugController,
 	newLoginController,
 	newUsersController,
@@ -32,17 +28,12 @@ type Handler struct {
 }
 
 func newHandler(
-	db app.DB,
-	cfg *koanf.Koanf,
-	cache *cache.Cache,
 	sessionService app.SessionService,
 	userService app.UserService,
-	osClient *opensearchapi.Client,
 	loginController *loginController,
 	tagsController *tagsController,
 	usersController *usersController,
 	debugController *debugController,
-	booksController *booksController,
 
 	flashMiddleware flash.Middleware,
 	log *zap.SugaredLogger,
@@ -61,41 +52,17 @@ func newHandler(
 		}, log))
 
 		// anonymous area
-		h.r.HandleFunc("/login", loginController.Login)
+		r.Get("/login", loginController.Login)
 
 		// authorization required
 		r.Group(func(r chi.Router) {
-			r.Use(func(next http.Handler) http.Handler {
-				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					session, ok := auth.GetSession(r.Context())
-					if !ok {
-						http.Redirect(w, r, "/admin/login", http.StatusFound)
-						return
-					}
-					if session.UserRole != app.RoleAdmin {
-						w.WriteHeader(http.StatusForbidden)
-						templates.Forbidden().Render(r.Context(), w)
-						return
-					}
-					next.ServeHTTP(w, r)
-				})
-			})
+			r.Use(requireAdmin)
+			setupSPA(r, usersController, tagsController, debugController)
 
-			r.Route("/tags", func(r chi.Router) {
-				tagsController.Setup(r)
-			})
+			// Preserve old form submissions while all GET screens use the SPA.
+			r.With(httpin.NewInput(updateUserRequest{})).Post("/users/{id}", usersController.UserUpdate)
+			r.With(httpin.NewInput(&tagEditBody{})).Post("/tags/tag-details/{id}/edit", tagsController.TagEdit)
 
-			r.Route("/users", func(r chi.Router) {
-				r.Get("/", usersController.Users)
-				r.Get("/{id}", usersController.User)
-				r.With(httpin.NewInput(updateUserRequest{})).Post("/{id}", usersController.UserUpdate)
-			})
-
-			r.Route("/books", func(r chi.Router) {
-				booksController.Register(r)
-			})
-
-			r.Handle("/debug", http.HandlerFunc(debugController.Actions))
 		})
 	})
 	return h
@@ -108,5 +75,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminNotFound(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
 	templates.NotFound().Render(r.Context(), w)
 }

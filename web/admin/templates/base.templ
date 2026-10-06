@@ -4,33 +4,12 @@ import "github.com/MaratBR/openlibrary/internal/olhttp"
 import "github.com/MaratBR/openlibrary/internal/flash"
 
 templ flashes() {
-    {{
-        arr := flash.PullFlashes(ctx)
-    }}
-
+    {{ arr := flash.PullFlashes(ctx) }}
     if len(arr) > 0 {
-        <div style="left: var(--dashboard-layout__sidebar-width);" class="fixed top-0 right-0 p-1 z-20">
+        <div class="Admin-frame">
             for _, f := range arr {
-                <div x-data="{}" class="bg-emerald-400 border-emerald-800 border p-2 relative min-h-10">
-                    @f
-
-                    <button class="absolute right-0 top-0 hover:bg-highlight flex items-center justify-center size-10" @click="$root.remove()">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
+                <div role="status" class="Admin-notice">@f</div>
             }
-        </div>
-    }
-}
-
-templ dashboardLayout(title string) {
-    @baseLayout(title) {
-        <div class="DashboardLayout">
-            @flashes()
-            @sidebar()
-            <div class="DashboardLayout-body">
-                { children... }
-            </div>
         </div>
     }
 }
@@ -42,6 +21,8 @@ templ baseLayout(title string) {
         CSS: []string{ "/_/assets/common.css", "/_/assets/admin-common.css", "/_/embed-assets/fonts.css" },
         InstantClick: false,
     }) {
+        <div id="client-flashes" class="contents" />
+        @flashes()
         { children... }
     }
 }

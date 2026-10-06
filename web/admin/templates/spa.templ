@@ -1,0 +1,22 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
+
+templ AdminSPA() {
+    {{ l := i18n.GetLocalizer(ctx) }}
+    @baseLayout(l.T("admin.ui.title")) {
+        @i18nExtractKeysByPrefix(l, "admin")
+        @i18nExtractKeysByPrefix(l, "common")
+        @i18nExtractKeysByPrefix(l, "role")
+        @i18nExtractKeysByPrefix(l, "gender")
+        @i18nExtractKeysByPrefix(l, "tag")
+        @i18nExtractKeysByPrefix(l, "passwordStrength")
+        @webcomponents.Island2(webcomponents.Island2Props{
+            Name: "admin/App",
+            ShowLoader: true,
+        }) {
+            <p class="p-4" role="status">{l.T("admin.ui.loading")}</p>
+        }
+    }
+}

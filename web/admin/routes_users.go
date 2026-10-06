@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -10,9 +11,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/i18n"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
 
-	"github.com/MaratBR/openlibrary/web/admin/templates"
 	"github.com/ggicci/httpin"
-	"uuid"
 )
 
 type usersController struct {
@@ -32,54 +31,6 @@ func getUserRoles(query url.Values, key string) []app.UserRole {
 		}
 	}
 	return roles
-}
-
-func (c *usersController) Users(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query()
-	page := olhttp.GetPage(query, "p")
-	pageSize := olhttp.GetPageSize(query, "ps", 1, 100, 20)
-	roles := getUserRoles(query, "usersFilter.role")
-	searchQuery := query.Get("q")
-
-	appQuery := app.UsersQuery{
-		Page:     page,
-		PageSize: pageSize,
-		Role:     roles,
-		Query:    searchQuery,
-	}
-
-	users, err := c.service.ListUsers(r.Context(), appQuery)
-	if err != nil {
-		olhttp.Write500(w, r, err)
-		return
-	}
-
-	templates.Users(users, &appQuery).Render(r.Context(), w)
-}
-
-func (c *usersController) User(w http.ResponseWriter, r *http.Request) {
-	userID, err := olhttp.URLParamUUID(r, "id")
-	if err != nil {
-		writeBadRequest(w, r, err)
-		return
-	}
-
-	c.sendUserEditForm(w, r, userID)
-}
-
-func (c *usersController) sendUserEditForm(w http.ResponseWriter, r *http.Request, userID uuid.UUID) {
-	currentUser := auth.RequireUser(r.Context())
-
-	user, err := c.service.GetUserDetails(r.Context(), app.GetUserQuery{
-		ID:     userID,
-		UserID: app.Value(currentUser.ID),
-	})
-	if err != nil {
-		olhttp.Write500(w, r, err)
-		return
-	}
-
-	templates.User(user).Render(r.Context(), w)
 }
 
 type updateUserRequest struct {
@@ -132,5 +83,5 @@ func (c *usersController) UserUpdate(w http.ResponseWriter, r *http.Request) {
 
 	flash.Add(r, flash.Text(l.T("admin.users.userWasUpdated")))
 
-	c.sendUserEditForm(w, r, userID)
+	http.Redirect(w, r, fmt.Sprintf("/admin#/users/%s", userID), http.StatusSeeOther)
 }

@@ -1,2 +1,2 @@
-@import './style/common.scss';
-@import './style/forms.scss';
+@import '../features/admin/styles/common.scss';
+@import '../features/admin/styles/forms.scss';
