@@ -7,6 +7,7 @@ export const TagsCategory = Schema.Literals([
   'fandom',
   'rel',
   'reltype',
+  'genre',
   'unknown',
 ])
 

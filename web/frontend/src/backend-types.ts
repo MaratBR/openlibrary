@@ -602,7 +602,7 @@ export interface ReviewUserDto {
 }
 
 /** Generated from `internal/app/tag_category.go`. */
-export type TagsCategory = 'other' | 'warning' | 'fandom' | 'rel' | 'reltype' | 'unknown';
+export type TagsCategory = 'other' | 'warning' | 'fandom' | 'rel' | 'reltype' | 'genre' | 'unknown';
 
 /** Generated from `web/public/routes_moderation_api.go`. */
 export interface UserLoginHistoryResponse {
