@@ -1,5 +1,10 @@
 # Adult content advisory
 
+Reviewed against the working tree on 2026-10-04. This document records current
+behavior and recommendations; proposed policies below are not implemented or
+approved requirements. The review is based on source inspection, not a running
+deployment or production data.
+
 ## Goal
 
 Give readers control over content they do not want to encounter while keeping
@@ -65,6 +70,21 @@ copy describes it as content for adults and mature teenagers, whereas `NC-17`
 is explicitly adults-only. Therefore `R` and `NC-17` should not automatically
 be treated as the same user preference boundary.
 
+### Book-editor Adult switch
+
+The book editor also exposes an independently editable Adult switch alongside
+the age rating. It submits `isAdult`, but
+[`bookDirectUpdate`](web/public/routes_bm_api.go) does not forward that field to
+`UpdateBookCommand`. The service persists the age rating and derives `adult`
+again when returning the book.
+
+[`BookEdit.tsx`](web/frontend/src/islands/bookmanager/books/BookEdit.tsx) compares
+the returned `adult` with the submitted switch value and reports an unconfirmed
+save when they differ. The other submitted fields may already have been saved
+before this client-side error. Changing the rating across the R/NC-17 boundary
+without changing the switch can also trigger this mismatch. This is an existing
+UI/API contract problem, not a second stored book classification.
+
 ### Adult tags and warnings
 
 Every defined tag has independent `is_adult` and `is_spoiler` booleans. A book
@@ -73,7 +93,8 @@ shows an adult warning when either:
 - Its derived `IsAdult` value is true; or
 - At least one assigned tag has `is_adult = true`.
 
-The repository already seeds warning tags including:
+The repository defines warning-tag seeds in
+[`oldata/tags/warnings.hjson`](oldata/tags/warnings.hjson), including:
 
 - Major character death
 - Graphical depiction of violence
@@ -81,13 +102,17 @@ The repository already seeds warning tags including:
 - Self-harm
 - Underage
 
-These are currently not marked adult, which is appropriate: they describe
-content or possible triggers rather than necessarily imposing an age
-restriction. However, readers cannot yet save preferences that hide them.
+These seed definitions are not marked adult; deployed tags may have been
+changed by administrators. They describe content or possible triggers rather
+than necessarily imposing an age restriction. The seed comment for Underage
+explicitly leaves its classification uncertain, so its meaning needs review. However, readers cannot yet save preferences that hide them.
 
-The tag administration copy also notes a consistency problem: changing a tag
-to adult does not automatically update books that were indexed before that
-change.
+The tag administration copy claims existing books are not automatically marked
+adult in search when a tag changes. Treat that as UI copy, not evidence of an
+implemented search restriction: the current index stores the book rating and
+cached parent tag IDs, without a separate adult-tag classification. Direct-page
+warnings inspect loaded tag flags. A future indexed descriptor policy will need
+explicit invalidation when tags or their relationships change.
 
 ### Book-page warning
 
@@ -99,14 +124,23 @@ The overlay:
 - Says only "Potential adult content" and does not identify the reason.
 - Offers `Proceed` but no explicit `Go back` action.
 - Sets the browser cookie `view_adult=1` after proceeding.
-- Suppresses all future adult warnings on that device, not only for that book.
+- Suppresses subsequent book-page adult warnings in that browser for the site,
+  not only for that book.
 
 The cookie is not scoped to an account, content type, reason, or book. A single
-proceed action therefore permanently collapses all adult-content distinctions
-for that browser until the cookie is removed.
+proceed action therefore collapses all adult-content distinctions for that
+browser until the cookie expires or is removed. The shared
+[`setCookie`](web/frontend/src/common/cookies.ts) helper defaults to a 20-year
+expiry and path `/`; browser retention may be shorter.
 
 The account-level `ShowAdultContent` check in `web/public/adult_flag.go` is
 commented out, so the saved preference does not control this overlay.
+
+The overlay is a visual warning, not a server-side interstitial: the normal
+book page, including its cover and summary, is still rendered beneath it.
+[`routes_chapter.go`](web/public/routes_chapter.go) renders the chapter reader
+without calling the adult-warning check, so a direct chapter URL does not
+require dismissing this warning.
 
 ### Account preferences
 
@@ -116,7 +150,9 @@ The user table and application DTO already contain:
 - `censored_tags text[]`
 - `censored_tags_mode`, with `none`, `hide`, and `censor`
 
-The settings endpoint can load and save these values. The moderation settings
+The settings endpoint can load and save these values and validates the censor
+mode. `CensoredTags` is currently `[]string`; there is no implemented contract
+resolving those strings into canonical descriptor IDs. The moderation settings
 page also exposes the adult-content switch and censor mode.
 
 However:
@@ -149,14 +185,52 @@ points.
 | --- | --- | --- |
 | Book age rating | Implemented | Stored on every book using the six-value enum. |
 | Book `IsAdult` | Derived | True for R and NC-17; not an independent database flag. |
+| Book-editor Adult switch | Inconsistent | Submitted boolean is ignored; a derived-value mismatch raises a client error after saving. |
 | Adult tags | Implemented | Any tag can be marked adult. |
 | Warning/trigger tags | Partially implemented | Some warnings are seeded and displayed as tags. |
-| Direct-page warning | Implemented with limitations | One generic, device-wide dismissible overlay. |
+| Direct-page warning | Implemented with limitations | Generic browser-wide dismissible overlay; underlying content is rendered. |
+| Direct chapter warning | Not implemented | Chapter reader does not use the book-page adult-warning check. |
 | Show-adult account setting | Stored but unused | Does not affect discovery or direct pages. |
 | Censored-tag preferences | Skeleton only | Storage exists, selector is disabled, policy is unused. |
 | Manual search exclusion | Implemented | Callers can explicitly exclude tag IDs. |
 | Hide all 18+ content | Not implemented | No consistent account-aware filtering exists. |
 | Hide specific topics/triggers | Not implemented | Warning tags cannot be selected as preferences. |
+
+## Source map
+
+| Concern | Sources |
+| --- | --- |
+| Rating and derived adult status | [age_rating.go](internal/app/age_rating.go), [book_impl.go](internal/app/book_impl.go), [book.go](internal/app/book.go) |
+| Editor update contract | [BookEdit.tsx](web/frontend/src/islands/bookmanager/books/BookEdit.tsx), [routes_bm_api.go](web/public/routes_bm_api.go), [book_manager_impl.go](internal/app/book_manager_impl.go) |
+| Warning and bypass | [routes_book.go](web/public/routes_book.go), [adult_flag.go](web/public/adult_flag.go), [book.templ](web/public/templates/book.templ), [cookies.ts](web/frontend/src/common/cookies.ts) |
+| Stored preferences and settings UI | [query.user.sql](internal/store/query.user.sql), [user.go](internal/app/user.go), [settings.go](web/public/account/settings.go), [account_settings.templ](web/public/templates/account_settings.templ) |
+| Search and index | [search_impl.go](internal/app/search_impl.go), [book_search.go](internal/store/book_search.go), [search.go](internal/elasticstore/search.go), [book_search_reindex_impl.go](internal/app/book_search_reindex_impl.go) |
+| Random selection | [query.book.sql](internal/store/query.book.sql) (`GetRandomPublicBookIDs`) |
+
+`SiteConfig.AdultWebsite` also exists and defaults to false in
+[openlibrary.toml](openlibrary.toml), but has no policy consumer in the current
+Go code. It does not enable account filtering or a site-wide age gate.
+
+## Decisions needed before implementation
+
+- Define whether the adults-only preference excludes NC-17 alone or both R and
+  NC-17. Current behavior treats both as adult; changing that is a behavior
+  change, not just a rename.
+- Define handling of unrated books and descriptors that contradict a rating.
+- Agree on anonymous defaults, saved-item behavior, and the lifetime and scope
+  of a per-book exception, including chapter access.
+- Decide how existing `show_adult_content`, `censored_tags`, censor modes, and
+  `view_adult` cookies migrate. Do not silently discard saved preferences or
+  carry the global bypass into the new policy.
+- Define descriptor eligibility, synonym canonicalization, and behavior when a
+  selected tag is merged or deleted. Transport int64 IDs as decimal strings to
+  JavaScript clients to avoid precision loss.
+
+Record agreed observable requirements and the implementation plan in
+[`specs/adult-content-advisory/spec.md`](specs/adult-content-advisory/spec.md)
+(the accompanying plan and tasks remain provisional) following
+[spec-driven development](docs/development/spec-driven-development.md) before
+implementing substantial behavior changes.
 
 ## Recommended domain model
 
@@ -309,8 +383,9 @@ while the application policy remains the source of truth.
 
 ## Suggested implementation order
 
-1. Define the exact adults-only boundary and rename derived `IsAdult` usages to
-   `IsAdultsOnly`.
+1. Agree on the decisions above and resolve the ignored Adult switch contract.
+   Define the adults-only boundary before changing derived `IsAdult` semantics;
+   plan API compatibility and preference migration explicitly.
 2. Introduce a central content-visibility policy with focused unit tests.
 3. Enable a searchable warning-tag selector in account settings and store tag
    IDs rather than names.
@@ -328,16 +403,22 @@ while the application policy remains the source of truth.
 
 At minimum, cover:
 
-- Every age-rating boundary, especially R versus adults-only.
+- Editor saves across the R/NC-17 boundary and ignored-switch mismatches,
+  including whether other fields were persisted before the error.
+- Every age-rating boundary, especially R versus adults-only and unrated books.
 - A non-adult warning such as suicide matching an individual preference.
 - An adults-only descriptor raising the effective classification.
 - Multiple matching reasons on one book.
 - Search results and counts excluding hidden books consistently.
-- Direct links returning an interstitial rather than silently exposing content.
+- Direct book and chapter links returning an interstitial without embedding
+  blocked content, covers, or summaries in the response.
 - `View once` not changing global or persistent preferences.
 - Anonymous defaults and signed-in preference precedence.
 - Author and moderator access without weakening public discovery filtering.
-- Tag rename/synonym behavior when preferences use stable IDs.
+- Tag rename, merge, deletion, and synonym behavior when preferences use stable
+  IDs, including int64 ID round trips through the frontend.
+- Tag classification changes invalidating affected search documents and caches.
+- Migration of existing preference values and the long-lived global cookie.
 
 ## Conclusion
 
