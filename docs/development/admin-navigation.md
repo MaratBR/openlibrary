@@ -6,6 +6,11 @@ router and screens are under `web/frontend/src/features/admin`. The admin Alpine
 entry imports the shared island registry before starting Alpine and registers
 `admin/App`. Styles live in `web/frontend/src/features/admin/styles`.
 
+The shared dashboard shell places branding, section links, theme switching,
+site return, and logout in a persistent left sidebar. On small screens the
+navigation wraps above the content. Styling is shared with Book Manager in
+`web/frontend/src/components/dashboard-shell.scss`.
+
 Use React Router links for workspace navigation. Current routes are `#/`,
 `#/users`, `#/users/:id`, `#/books`, `#/tags`, `#/tags/:id`,
 `#/tags/:id/edit` and `#/debug`. Search, filters and pagination live in the hash

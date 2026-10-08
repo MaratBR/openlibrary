@@ -9,7 +9,9 @@ fixture browser checks from live server checks.
 
 Start the application using the README, sign in at `/login`, and open
 `/books-manager#/books`. Use the public login rather than the admin interface.
-The horizontal masthead provides Your books on every screen.
+The left sidebar provides Your books and Add book on every screen. On small
+screens it becomes compact navigation above the content. Book detail routes
+keep Your books selected.
 
 ## Books and chapters
 

@@ -15,35 +15,19 @@ function Layout() {
     window.scrollTo({ top: 0 })
   }, [location.pathname])
   return (
-    <div className="Admin">
-      <header className="Admin-masthead">
-        <Link to="/" className="Admin-brand">
-          <img src="/_/embed-assets/logo.svg" className="dark:hidden" alt="" />
-          <img src="/_/embed-assets/logo-dark.svg" className="hidden dark:block" alt="" />
-          <span>
-            <strong>{t('admin.ui.title')}</strong>
-            <small>{t('admin.ui.subtitle')}</small>
-          </span>
-        </Link>
-        <div className="Admin-actions">
-          <button
-            type="button"
-            className="Btn Btn--ghost Btn--icon"
-            aria-label={t('admin.ui.theme')}
-            onClick={() => window.OLTheme.toggle()}
-          >
-            <i className="fa-solid fa-circle-half-stroke" aria-hidden="true" />
-          </button>
-          <a className="Btn Btn--ghost" data-admin-external href="/">
-            {t('admin.goBackToSite')}
-          </a>
-          <a className="Btn Btn--outline" data-admin-external href="/logout">
-            {t('admin.sidebar.logout')}
-          </a>
-        </div>
-      </header>
-      <div className="Admin-frame">
-        <nav className="Admin-nav" aria-label={t('admin.ui.section')}>
+    <div className="Admin DashboardShell">
+      <aside className="DashboardShell-sidebar">
+        <header className="DashboardShell-brand">
+          <Link to="/" className="Admin-brand">
+            <img src="/_/embed-assets/logo.svg" className="dark:hidden" alt="" />
+            <img src="/_/embed-assets/logo-dark.svg" className="hidden dark:block" alt="" />
+            <span>
+              <strong>{t('admin.ui.title')}</strong>
+              <small>{t('admin.ui.subtitle')}</small>
+            </span>
+          </Link>
+        </header>
+        <nav className="DashboardShell-nav" aria-label={t('admin.ui.section')}>
           {[
             ['/', 'home', 'fa-house'],
             ['/users', 'users', 'fa-users'],
@@ -57,6 +41,29 @@ function Layout() {
             </NavLink>
           ))}
         </nav>
+        <div className="DashboardShell-utilities">
+          <div className="Admin-actions">
+            <button
+              type="button"
+              className="Btn Btn--ghost"
+              aria-label={t('admin.ui.theme')}
+              onClick={() => window.OLTheme.toggle()}
+            >
+              <i className="fa-solid fa-circle-half-stroke" aria-hidden="true" />
+              {t('admin.ui.theme')}
+            </button>
+            <a className="Btn Btn--ghost" data-admin-external href="/">
+              <i className="fa-solid fa-arrow-left" aria-hidden="true" />
+              {t('admin.goBackToSite')}
+            </a>
+            <a className="Btn Btn--outline" data-admin-external href="/logout">
+              <i className="fa-solid fa-arrow-right-from-bracket" aria-hidden="true" />
+              {t('admin.sidebar.logout')}
+            </a>
+          </div>
+        </div>
+      </aside>
+      <div className="Admin-frame DashboardShell-content">
         <main className="Admin-main" id="admin-main" aria-busy={loading}>
           {loading ? <Loading /> : <Outlet />}
         </main>

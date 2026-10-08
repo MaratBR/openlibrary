@@ -28,31 +28,53 @@ export default function BMLayout({ children }: { children: ReactNode }) {
       })
   }, [changingDestination])
   return (
-    <div className="BM">
-      <header className="BM-masthead">
-        <NavLink to="/books" aria-label={window._('bookManager.title')}>
-          <img className="h-12 dark:hidden" src="/_/embed-assets/logo.svg" alt="" />
-          <img className="h-12 hidden dark:block" src="/_/embed-assets/logo-dark.svg" alt="" />
-        </NavLink>
-        <nav className="flex flex-wrap gap-2" aria-label={window._('bookManager.title')}>
-          <a href="/" className="Btn Btn--ghost" data-manager-site-link>
-            {window._('bookManager.ui.mainSite')}
-          </a>
-          <NavLink to="/books" className="Btn Btn--ghost">
+    <div className="BM DashboardShell">
+      <aside className="DashboardShell-sidebar">
+        <header className="DashboardShell-brand">
+          <NavLink to="/books" className="DashboardShell-brandLink">
+            <img className="dark:hidden" src="/_/embed-assets/logo.svg" alt="" />
+            <img className="hidden dark:block" src="/_/embed-assets/logo-dark.svg" alt="" />
+            <span>
+              <strong>{window._('bookManager.title')}</strong>
+              <small>OpenLibrary</small>
+            </span>
+          </NavLink>
+        </header>
+        <nav className="DashboardShell-nav" aria-label={window._('bookManager.title')}>
+          <NavLink
+            to="/books"
+            className={({ isActive }) =>
+              isActive && location.pathname !== '/books/new' ? 'active' : ''
+            }
+            aria-current={location.pathname === '/books/new' ? false : undefined}
+          >
+            <i className="fa-solid fa-book" aria-hidden="true" />
             {window._('bookManager.books.title')}
           </NavLink>
+          <NavLink to="/books/new">
+            <i className="fa-solid fa-plus" aria-hidden="true" />
+            {window._('bookManager.books.addBook')}
+          </NavLink>
         </nav>
-      </header>
-      <main className="BM-main" aria-busy={busy}>
-        {changingDestination ? (
-          <ManagerSkeleton location={destination} />
-        ) : (
-          busy && <p role="status">{window._('bookManager.ui.loading')}</p>
-        )}
-        <div hidden={changingDestination} inert={changingDestination}>
-          {children}
+        <div className="DashboardShell-utilities">
+          <a href="/" className="Btn Btn--ghost" data-manager-site-link>
+            <i className="fa-solid fa-arrow-left" aria-hidden="true" />
+            {window._('bookManager.ui.mainSite')}
+          </a>
         </div>
-      </main>
+      </aside>
+      <div className="DashboardShell-content">
+        <main className="BM-main" aria-busy={busy}>
+          {changingDestination ? (
+            <ManagerSkeleton location={destination} />
+          ) : (
+            busy && <p role="status">{window._('bookManager.ui.loading')}</p>
+          )}
+          <div hidden={changingDestination} inert={changingDestination}>
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

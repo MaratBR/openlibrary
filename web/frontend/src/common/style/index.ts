@@ -9,3 +9,5 @@ import '@fontsource/opendyslexic/latin-400.css'
 import '@fontsource/opendyslexic/latin-700.css'
 
 import '../../islands/bookmanager/manager.scss'
+
+import '../../components/dashboard-shell.scss'
