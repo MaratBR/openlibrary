@@ -11,6 +11,7 @@ templ BookTOC(
     bookID int64,
     chapters []app.ChapterListDto,
     activeChapterID int64,
+    adminOverride ...bool,
 ) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
@@ -27,7 +28,7 @@ templ BookTOC(
                     for i, chapter := range chapters {
                         <li role="listitem" aria-label={ chapter.Name }>
                             <a
-                                href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID)) } 
+                                href={ templ.SafeURL(adminBookURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID), len(adminOverride) > 0 && adminOverride[0])) }
                                 if chapter.ID == activeChapterID {
                                     class="BookToc-item BookToc-item--readingNow"
                                 } else {

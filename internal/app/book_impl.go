@@ -3,7 +3,9 @@ package app
 import (
 	"context"
 	"fmt"
+
 	"go.uber.org/zap"
+	"uuid"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -73,7 +75,12 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 		UserID:            query.ActorUserID,
 		BookAuthorID:      uuidDbToDomain(book.AuthorUserID),
 	})
-	if !userPermissionState.CanView {
+	override, err := s.authorizeBookOverride(ctx, query.ActorUserID, query.AdminOverride)
+	if err != nil {
+		return BookDetailsDto{}, err
+	}
+	reasons := bookVisibilityReasons(book.IsPubliclyVisible, book.IsBanned, book.IsShadowBanned, book.IsTrashed, book.IsPermRemoved)
+	if !override && (!userPermissionState.CanView || book.IsBanned || book.IsShadowBanned || book.IsTrashed || book.IsPermRemoved) {
 		return BookDetailsDto{}, ErrTypeBookPrivated.New("book %d cannot be seen", book.ID)
 	}
 
@@ -85,7 +92,7 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 	}
 
 	var firstChapterID Nullable[int64]
-	firstChapterIDInt, err := s.queries.Book_GetFirstChapterID(ctx, book.ID)
+	firstChapterIDInt, err := s.queries.Book_GetFirstChapterID(ctx, store.Book_GetFirstChapterIDParams{BookID: book.ID, AdminOverride: override})
 	if err != nil {
 		if err != store.ErrNoRows {
 			s.log.Warnw("failed to execute Book_GetFirstChapterID", "err", err)
@@ -95,6 +102,8 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 	}
 
 	bookDto := BookDetailsDto{
+		AdminOverride: override,
+		IsBanned:      book.IsBanned, IsShadowBanned: book.IsShadowBanned, IsTrashed: book.IsTrashed, IsPermRemoved: book.IsPermRemoved,
 		ID:              book.ID,
 		Name:            book.Name,
 		Slug:            book.Slug,
@@ -122,7 +131,10 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 		FirstChapterID:      firstChapterID,
 	}
 
-	if userPermissionState.IsOwner {
+	if override {
+		bookDto.VisibilityReasons = reasons
+	}
+	if userPermissionState.IsOwner && !override {
 		if !book.IsPubliclyVisible {
 			bookDto.Notifications = append(bookDto.Notifications, GenericNotification{
 				ID:   "book:owner:not_publicly_visible",
@@ -158,6 +170,18 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 
 // GetBookChapters implements BookService.
 func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChaptersQuery) ([]ChapterListDto, error) {
+	if _, err := s.GetBookDetails(ctx, GetBookQuery{ID: query.ID, ActorUserID: query.ActorUserID, AdminOverride: query.AdminOverride}); err != nil {
+		return nil, err
+	}
+	if query.AdminOverride {
+		chapters, err := s.queries.GetAllBookChapters(ctx, query.ID)
+		if err != nil {
+			return nil, err
+		}
+		return MapSlice(chapters, func(chapter store.GetAllBookChaptersRow) ChapterListDto {
+			return ChapterListDto{ID: chapter.ID, Order: int(chapter.Order), Name: chapter.Name, Words: int(chapter.Words), CreatedAt: chapter.CreatedAt.Time, Summary: chapter.Summary}
+		}), nil
+	}
 	chapters, err := s.queries.Book_GetPubliclyVisibleChapters(ctx, query.ID)
 	if err != nil {
 		return nil, err
@@ -179,14 +203,26 @@ func (s *bookService) GetBookChapters(ctx context.Context, query GetBookChapters
 func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQuery) (result GetBookChapterResult, err error) {
 	ctx, span := startSpan(ctx, "BookService.GetBookChapter")
 	defer func() { endSpan(span, err) }()
+	book, err := s.GetBookDetails(ctx, GetBookQuery{ID: query.BookID, ActorUserID: query.ActorUserID, AdminOverride: query.AdminOverride})
+	if err != nil {
+		return GetBookChapterResult{}, err
+	}
 	chapter, err := s.queries.GetBookChapterWithDetails(ctx, store.GetBookChapterWithDetailsParams{
-		ID:     query.ChapterID,
-		BookID: query.BookID,
+		AdminOverride: book.AdminOverride,
+		ID:            query.ChapterID,
+		BookID:        query.BookID,
 	})
 	if err != nil {
 		return GetBookChapterResult{}, err
 	}
 
+	if !chapter.IsPubliclyVisible && !book.AdminOverride {
+		return GetBookChapterResult{}, ErrTypeBookPrivated.New("chapter cannot be seen")
+	}
+	reasons := append([]string{}, book.VisibilityReasons...)
+	if !chapter.IsPubliclyVisible {
+		reasons = append(reasons, "hiddenChapter")
+	}
 	var (
 		prev Nullable[ChapterNextPrevDto]
 		next Nullable[ChapterNextPrevDto]
@@ -209,6 +245,7 @@ func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQu
 	}
 
 	return GetBookChapterResult{
+		VisibilityReasons: reasons,
 		Chapter: ChapterDto{
 			ID:            chapter.ID,
 			Name:          chapter.Name,
@@ -291,4 +328,35 @@ func (s *bookService) GetBooksById(ctx context.Context, ids []int64) ([]BookList
 
 	return books, nil
 
+}
+
+// authorizeBookOverride checks the current persisted role, independently of HTTP flags.
+func (s *bookService) authorizeBookOverride(ctx context.Context, actor Nullable[uuid.UUID], requested bool) (bool, error) {
+	if !requested {
+		return false, nil
+	}
+	if !actor.Valid {
+		return false, ErrTypeBookPrivated.New("administrator privileges required")
+	}
+	user, err := s.queries.User_Get(ctx, uuidDomainToDb(actor.Value))
+	if err != nil {
+		return false, err
+	}
+	if !UserRole(user.Role).IsAdmin() {
+		return false, ErrTypeBookPrivated.New("administrator privileges required")
+	}
+	return true, nil
+}
+
+func bookVisibilityReasons(public, banned, shadowBanned, trashed, removed bool) []string {
+	reasons := []string{}
+	for _, flag := range []struct {
+		value  bool
+		reason string
+	}{{!public, "private"}, {banned, "banned"}, {shadowBanned, "shadowBanned"}, {trashed, "deleted"}, {removed, "removed"}} {
+		if flag.value {
+			reasons = append(reasons, flag.reason)
+		}
+	}
+	return reasons
 }

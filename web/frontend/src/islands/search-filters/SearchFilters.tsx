@@ -31,6 +31,7 @@ export default function SearchFilters({ data }: ReactIslandProps) {
     const queryParams = getQueryParams(filters)
 
     const url = new URL(window.location.href)
+    if (url.searchParams.get('admin.link') === '1') queryParams.set('admin.link', '1')
 
     if (parsedData?.searchInputId) {
       const input = document.getElementById(parsedData.searchInputId)

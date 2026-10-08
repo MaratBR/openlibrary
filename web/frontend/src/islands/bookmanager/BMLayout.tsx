@@ -1,3 +1,4 @@
+import { DashboardNavItem } from '@/components/dashboard-nav-item'
 import { ReactNode, useLayoutEffect } from 'react'
 import { NavLink, useLocation, useNavigation, useRevalidator } from 'react-router'
 import { ManagerSkeleton } from './loading'
@@ -41,16 +42,10 @@ export default function BMLayout({ children }: { children: ReactNode }) {
           </NavLink>
         </header>
         <nav className="DashboardShell-nav" aria-label={window._('bookManager.title')}>
-          <NavLink
-            to="/books"
-            className={({ isActive }) =>
-              isActive && location.pathname !== '/books/new' ? 'active' : ''
-            }
-            aria-current={location.pathname === '/books/new' ? false : undefined}
-          >
+          <DashboardNavItem dashboard="bookmanager" to="/books" exclude="/books/new">
             <i className="fa-solid fa-book" aria-hidden="true" />
             {window._('bookManager.books.title')}
-          </NavLink>
+          </DashboardNavItem>
           <NavLink to="/books/new">
             <i className="fa-solid fa-plus" aria-hidden="true" />
             {window._('bookManager.books.addBook')}

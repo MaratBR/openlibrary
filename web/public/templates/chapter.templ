@@ -37,6 +37,7 @@ templ Chapter(
     }}
 
     @htmlLayout(htmlLayoutProps{Title: chapter.Name, CSS: chapterFontStylesheets(chapter.Fonts)}) {
+        @AdminBookVisibilityWarning(book.VisibilityReasons)
         @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapter.ID))
 
         @webcomponents.SiteHeaderRoot() {
@@ -50,7 +51,7 @@ templ Chapter(
                             { chapter.Name }
                         </span>
                     }
-                // <a class="Link text-sm" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
+                // <a class="Link text-sm" href={ templ.SafeURL(adminBookURL(fmt.Sprintf("/book/%d", book.ID), book.AdminOverride)) }>
                 //     { book.Name }
                 // </a>
             </div>
@@ -84,7 +85,7 @@ templ Chapter(
                     <nav class="BookReader-chapterNavigation" aria-label={ l.T("reader.chapterNavigation") }>
                         if chapter.PrevChapter.Valid {
                             <a class="BookReader-chapterLink BookReaderChapterLink--previous"
-                                href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.PrevChapter.Value.ID)) }>
+                                href={ templ.SafeURL(adminBookURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.PrevChapter.Value.ID), book.AdminOverride)) }>
                                 <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                                 <span><small>{ l.T("reader.previous") }</small>{ chapter.PrevChapter.Value.Name }</span>
                             </a>
@@ -94,7 +95,7 @@ templ Chapter(
 
                         if chapter.NextChapter.Valid {
                             <a class="BookReader-chapterLink BookReaderChapterLink--next"
-                                href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.NextChapter.Value.ID)) }>
+                                href={ templ.SafeURL(adminBookURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.NextChapter.Value.ID), book.AdminOverride)) }>
                                 <span><small>{ l.T("reader.next") }</small>{ chapter.NextChapter.Value.Name }</span>
                                 <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </a>
@@ -221,6 +222,7 @@ templ ChapterComments(
     @standardPageLayout(standardPageLayoutProps{
         DisableFooter: true,
     }) {
+        @AdminBookVisibilityWarning(book.VisibilityReasons)
         @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapter.ID))
         <main class="OlContainer py-8">
           <section class="OlComments" aria-labelledby="chapter-comments-title">
@@ -229,9 +231,9 @@ templ ChapterComments(
                 <p class="OlComments-eyebrow">{ l.T("comments.chapterDiscussion") }</p>
                 <h1 class="OlComments-title" id="chapter-comments-title">{ l.T("comments.title") }</h1>
                 <p class="OlComments-context">
-                  <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>{ book.Name }</a>
+                  <a class="Link" href={ templ.SafeURL(adminBookURL(fmt.Sprintf("/book/%d", book.ID), book.AdminOverride)) }>{ book.Name }</a>
                   <span aria-hidden="true"> · </span>
-                  <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.ID)) }>{ chapter.Name }</a>
+                  <a class="Link" href={ templ.SafeURL(adminBookURL(fmt.Sprintf("/book/%d/chapters/%d", book.ID, chapter.ID), book.AdminOverride)) }>{ chapter.Name }</a>
                 </p>
               </div>
             </header>

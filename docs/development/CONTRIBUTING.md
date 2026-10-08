@@ -46,3 +46,6 @@ git diff --check
 If Go cannot write its default cache, set `GOCACHE` and `GOTMPDIR` to writable
 temporary paths for the command. Preserve unrelated changes and report baseline
 failures rather than fixing them incidentally.
+
+Diagnostic endpoints, server freshness checks, and Playwright verification are
+documented separately in [Debugging and visual checks](debugging.md).

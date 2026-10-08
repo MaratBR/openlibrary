@@ -157,9 +157,9 @@ templ TagsAutocomplete(props TagsAutocompleteProps) {
         x-data="TagsAutocomplete">
         <div class="dropdown__chips">
             for _, tag := range props.Tags {
-                <span class="chip chip--secondary">
+                <span class="Chip Chip--secondary">
                     { tag.Name }
-                    <button aria-label={ l.T("search.removeTag") } class="chip__close"><i class="fa-solid fa-xmark !text-[20px]"></i></button>
+                    <button aria-label={ l.T("search.removeTag") } class="Chip__close"><i class="fa-solid fa-xmark !text-[20px]"></i></button>
                 </span>
             }
         </div>

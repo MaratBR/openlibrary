@@ -52,8 +52,15 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := auth.GetNullableUserID(r.Context())
-	book, err := b.bookService.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
+	book, err := b.bookService.GetBookDetails(r.Context(), app.GetBookQuery{
+		ID:            bookID,
+		ActorUserID:   userID,
+		AdminOverride: adminBookOverride(r),
+	})
 	if err != nil {
+		if errorx.IsOfType(err, app.ErrTypeBookPrivated) && offerAdminBookOverride(w, r) {
+			return
+		}
 		if errorx.IsOfType(err, app.ErrTypeBookNotFound) || errorx.IsOfType(err, app.ErrTypeBookPrivated) {
 			// send 404 page
 			olhttp.WriteTemplate(w, r.Context(), templates.BookNotFoundPage())
@@ -139,7 +146,9 @@ func (b *bookController) bookTOC(w http.ResponseWriter, r *http.Request) {
 	}
 
 	chapters, err := b.bookService.GetBookChapters(r.Context(), app.GetBookChaptersQuery{
-		ID: bookID,
+		ID:            bookID,
+		ActorUserID:   auth.GetNullableUserID(r.Context()),
+		AdminOverride: adminBookOverride(r),
 	})
 	if err != nil {
 		writeApplicationError(w, r, err)
@@ -160,7 +169,7 @@ func (b *bookController) bookTOC(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	templates.BookTOC(r.Context(), bookID, chapters, activeChapterID).Render(r.Context(), w)
+	templates.BookTOC(r.Context(), bookID, chapters, activeChapterID, adminBookOverride(r)).Render(r.Context(), w)
 }
 
 func (b *bookController) bookPreview(w http.ResponseWriter, r *http.Request) {

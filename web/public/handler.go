@@ -26,6 +26,7 @@ type handler struct {
 var FXModule = fx.Module("public_ui_handler",
 	fx.Provide(
 		newHomeController,
+		newDebugController,
 		newAuthController,
 		newBookController,
 		newChaptersController,
@@ -61,6 +62,7 @@ func newHandler(
 	userService app.UserService,
 
 	homeController *homeController,
+	debugController *debugController,
 	authController *authController,
 	bookController *bookController,
 	bookManagerController *bookManagerController,
@@ -107,6 +109,7 @@ func newHandler(
 	}, log))
 
 	homeController.Register(h.r)
+	debugController.Register(h.r)
 	authController.Register(h.r)
 	bookController.Register(h.r)
 	bookManagerController.Register(h.r)
@@ -123,12 +126,6 @@ func newHandler(
 	h.r.Route("/account", func(r chi.Router) {
 		r.Use(requiresAuthorizationMiddleware)
 		settingsController.Register(r)
-	})
-
-	h.r.Route("/debug", func(r chi.Router) {
-		r.Handle("/500", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			olhttp.Write500(w, r, errors.New("test error"))
-		}))
 	})
 
 	h.r.Route("/_api", func(r chi.Router) {

@@ -1,5 +1,6 @@
-import { JSX, ReactNode } from 'react'
-import { NavLink, To } from 'react-router'
+import { DashboardNavItem } from '@/components/dashboard-nav-item'
+import { ReactNode } from 'react'
+import { NavLink } from 'react-router'
 
 const navigation = [
   { to: '/overview', icon: 'fa-solid fa-gauge-high', label: 'moderationPortal.overview' },
@@ -17,44 +18,46 @@ const navigation = [
   { to: '/audit-log', icon: 'fa-solid fa-clipboard-list', label: 'moderationPortal.auditLog' },
 ] as const
 
-export default function ModerationLayout({ children }: { children: ReactNode }) {
+export default function ModerationLayout({
+  children,
+  isAdmin,
+}: {
+  children: ReactNode
+  isAdmin: boolean
+}) {
   return (
-    <div className="DashboardLayout">
-      <aside className="DashboardLayout-sidebar">
-        <Logo />
-        <ul className="dashboard-sidebar-list">
+    <div className="DashboardShell">
+      <aside className="DashboardShell-sidebar">
+        <header className="DashboardShell-brand">
+          <NavLink className="DashboardShell-brandLink" to="/overview">
+            <img className="dark:hidden" src="/_/embed-assets/logo.svg" alt="" />
+            <img className="hidden dark:block" src="/_/embed-assets/logo-dark.svg" alt="" />
+            <strong>{window._('moderationPortal.title')}</strong>
+          </NavLink>
+        </header>
+        <nav className="DashboardShell-nav" aria-label={window._('moderationPortal.title')}>
           {navigation.map((item) => (
-            <SidebarItem
-              key={item.to}
-              icon={<i className={item.icon} />}
-              label={window._(item.label)}
-              to={item.to}
-            />
+            <DashboardNavItem dashboard="moderation" key={item.to} to={item.to}>
+              <i className={item.icon} aria-hidden="true" />
+              {window._(item.label)}
+            </DashboardNavItem>
           ))}
-        </ul>
+        </nav>
+        <div className="DashboardShell-utilities flex flex-col gap-2">
+          {isAdmin && (
+            <a className="Btn Btn--outline" href="/admin">
+              {window._('moderationPortal.adminDashboard')}
+            </a>
+          )}
+          <a className="Btn Btn--ghost" href="/">
+            {window._('moderationPortal.backToSite')}
+          </a>
+          <button className="Btn Btn--ghost" onClick={() => window.OLTheme.toggle()}>
+            {window._('moderationPortal.theme')}
+          </button>
+        </div>
       </aside>
-
-      <div className="DashboardLayout-body">{children}</div>
+      <main className="DashboardShell-content p-4 md:p-8">{children}</main>
     </div>
-  )
-}
-
-function Logo() {
-  return (
-    <div className="flex justify-center my-4">
-      <img className="h-20 dark:hidden" src="/_/embed-assets/logo.svg" alt="" />
-      <img className="h-20 hidden dark:block" src="/_/embed-assets/logo-dark.svg" alt="" />
-    </div>
-  )
-}
-
-function SidebarItem({ icon, label, to }: { icon?: JSX.Element; label: string; to: To }) {
-  return (
-    <li className="DashboardSidebarItem">
-      <NavLink to={to} className="DashboardSidebarItem-container">
-        <div className="DashboardSidebarItem-icon">{icon}</div>
-        <div className="DashboardSidebarItem-label">{label}</div>
-      </NavLink>
-    </li>
   )
 }

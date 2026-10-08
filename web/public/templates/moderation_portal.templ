@@ -1,12 +1,15 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/auth"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ ModerationPortal() {
 	{{
 		l := i18n.GetLocalizer(ctx)
+        user, ok := auth.GetUser(ctx)
+        isAdmin := ok && user.Role.IsAdmin()
 	}}
 	@bmLayout(l.T("moderationPortal.title")) {
 		@i18nExtractKeysByPrefix(l, "moderationPortal")
@@ -14,7 +17,8 @@ templ ModerationPortal() {
 			Name: "moderation/Portal",
 			Data: struct {
 				Roles []app.UserRole `json:"roles"`
-			}{Roles: app.AllRoles},
+                IsAdmin bool `json:"isAdmin"`
+			}{Roles: app.AllRoles, IsAdmin: isAdmin},
 		})
 	}
 }

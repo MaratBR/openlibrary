@@ -107,3 +107,10 @@ The application layer owns disposition transitions, required fields, action/targ
 - Policy reason is required; internal note is optional and length-limited. Destructive actions require confirmation and all submissions expose pending/error states.
 - After success, route data revalidates, the header status changes, and ticket activity shows actor, disposition, action, reason, note, notification request, and time.
 - The backend rejects unknown dispositions/actions, incompatible targets, missing action payloads, and attempts to decide an already resolved report. Focused service tests cover these rules and verify that failed enforcement does not resolve a report.
+
+## Dashboard and admin navigation
+
+The moderation portal now uses the shared DashboardShell frame. Current admins
+receive an Admin dashboard link in the sidebar utilities. See
+[Admin book navigation](admin-books.md) for book detail routes and public
+visibility overrides.

@@ -4,7 +4,9 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp"
+import "context"
 import "uuid"
+import "github.com/MaratBR/openlibrary/internal/auth"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 
@@ -71,6 +73,9 @@ templ SearchResultFragment(
         }
 
         <form>
+            if showAdminSearchLinks(ctx) {
+                <input type="hidden" name="admin.link" value="1" />
+            }
             <input id="search-input" name="q" class="input input--search" value={ explainedQuery.Query } />
         </form>
 
@@ -121,7 +126,17 @@ templ SearchResultFragment(
                         }
                     }}
 
-                    @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.Author.Name, book.Author.ID, tagsList)
+                    @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.Author.Name, book.Author.ID, tagsList) {
+                        if showAdminSearchLinks(ctx) {
+                            <div class="BookSearchCard-actions">
+                                <a class="Chip Chip--primary BookSearchCard-adminAction" href={ templ.URL(fmt.Sprintf("/admin#/books/%d", book.ID)) }>
+                                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                    <span>{ l.T("admin.books.openAdmin") }</span>
+                                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        }
+                    }
                 }
             </ul>
             <div class="pt-4">
@@ -159,7 +174,6 @@ templ bookSearchCard(id int64, name, slug, summary string, cover app.BookCover, 
                 }
             }
         </div>
-
         { children... }
     </li>
 }
@@ -208,4 +222,11 @@ templ SimpleSearch() {
             </footer>
         </main>
     }
+}
+
+func showAdminSearchLinks(ctx context.Context) bool {
+ user, ok := auth.GetUser(ctx)
+ if !ok || !user.Role.IsAdmin() { return false }
+ r := olhttp.GetRequest(ctx)
+ return r != nil && r.URL.Query().Get("admin.link") == "1"
 }

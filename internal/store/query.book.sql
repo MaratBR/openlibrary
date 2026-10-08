@@ -64,7 +64,7 @@ left join lateral (
     from book_chapters
     where book_id = bc.book_id
       and "order" < bc."order"
-      and is_publicly_visible = true
+      and (is_publicly_visible = true or sqlc.arg('admin_override')::bool)
     order by "order" desc
     limit 1
 ) prev_chapter on true
@@ -73,7 +73,7 @@ left join lateral (
     from book_chapters
     where book_id = bc.book_id
       and "order" > bc."order"
-      and is_publicly_visible = true
+      and (is_publicly_visible = true or sqlc.arg('admin_override')::bool)
     order by "order" asc
     limit 1
 ) next_chapter on true
@@ -116,5 +116,6 @@ where id = any(sqlc.arg(ids)::int8[]);
 select id
 from book_chapters
 where book_id = $1
+  and (is_publicly_visible or sqlc.arg('admin_override')::bool)
 order by "order"
 limit 1;

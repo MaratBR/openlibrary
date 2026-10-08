@@ -1,1 +1,10 @@
 @import './mod-book.scss';
+
+// DashboardShell owns spacing in the portal, including on narrow screens.
+.DashboardShell .DashboardContent {
+  padding-inline: 0;
+  &-stickyHeader {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+}

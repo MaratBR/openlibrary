@@ -217,12 +217,18 @@ const book_GetFirstChapterID = `-- name: Book_GetFirstChapterID :one
 select id
 from book_chapters
 where book_id = $1
+  and (is_publicly_visible or $2::bool)
 order by "order"
 limit 1
 `
 
-func (q *Queries) Book_GetFirstChapterID(ctx context.Context, bookID int64) (int64, error) {
-	row := q.db.QueryRow(ctx, book_GetFirstChapterID, bookID)
+type Book_GetFirstChapterIDParams struct {
+	BookID        int64
+	AdminOverride bool
+}
+
+func (q *Queries) Book_GetFirstChapterID(ctx context.Context, arg Book_GetFirstChapterIDParams) (int64, error) {
+	row := q.db.QueryRow(ctx, book_GetFirstChapterID, arg.BookID, arg.AdminOverride)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -406,7 +412,7 @@ left join lateral (
     from book_chapters
     where book_id = bc.book_id
       and "order" < bc."order"
-      and is_publicly_visible = true
+      and (is_publicly_visible = true or $3::bool)
     order by "order" desc
     limit 1
 ) prev_chapter on true
@@ -415,7 +421,7 @@ left join lateral (
     from book_chapters
     where book_id = bc.book_id
       and "order" > bc."order"
-      and is_publicly_visible = true
+      and (is_publicly_visible = true or $3::bool)
     order by "order" asc
     limit 1
 ) next_chapter on true
@@ -424,8 +430,9 @@ where bc.id = $1
 `
 
 type GetBookChapterWithDetailsParams struct {
-	ID     int64
-	BookID int64
+	ID            int64
+	BookID        int64
+	AdminOverride bool
 }
 
 type GetBookChapterWithDetailsRow struct {
@@ -448,7 +455,7 @@ type GetBookChapterWithDetailsRow struct {
 }
 
 func (q *Queries) GetBookChapterWithDetails(ctx context.Context, arg GetBookChapterWithDetailsParams) (GetBookChapterWithDetailsRow, error) {
-	row := q.db.QueryRow(ctx, getBookChapterWithDetails, arg.ID, arg.BookID)
+	row := q.db.QueryRow(ctx, getBookChapterWithDetails, arg.ID, arg.BookID, arg.AdminOverride)
 	var i GetBookChapterWithDetailsRow
 	err := row.Scan(
 		&i.ID,

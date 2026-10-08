@@ -95,6 +95,31 @@
     }
   }
 
+  &-navGroup {
+    min-width: 0;
+  }
+
+  &-submenu {
+    list-style: none;
+    margin: 4px 0 0 21px;
+    padding: 0 0 0 9px;
+    border-left: 1px solid var(--border);
+    li + li {
+      margin-top: 4px;
+    }
+    a {
+      min-height: 36px;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
   &-sidebar a:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 3px;

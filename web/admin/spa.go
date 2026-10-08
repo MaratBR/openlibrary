@@ -16,17 +16,21 @@ import (
 )
 
 // All SPA endpoints are mounted inside the same authorization group as the UI.
-func setupSPA(r chi.Router, users *usersController, tags *tagsController, debug *debugController) {
+func setupSPA(r chi.Router, users *usersController, tags *tagsController, debug *debugController, books ...*booksController) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		olhttp.WriteTemplate(w, r.Context(), templates.AdminSPA())
 	})
-	for _, path := range []string{"/users", "/books", "/tags", "/debug", "/users/{id}", "/tags/tag-details/{id}", "/tags/tag-details/{id}/edit"} {
+	for _, path := range []string{"/users", "/books", "/tags", "/debug", "/users/{id}", "/books/{id}", "/tags/tag-details/{id}", "/tags/tag-details/{id}/edit"} {
 		r.Get(path, redirectAdminPage)
 		if !strings.Contains(path, "{id}") {
 			r.Get(path+"/", redirectAdminPage)
 		}
 	}
 	r.Route("/api", func(r chi.Router) {
+		if len(books) > 0 {
+			r.Get("/books", books[0].listJSON)
+			r.Get("/books/{id}", books[0].bookJSON)
+		}
 		r.Get("/users", users.listJSON)
 		r.Get("/users/{id}", users.userJSON)
 		r.Post("/users/{id}", users.updateJSON)

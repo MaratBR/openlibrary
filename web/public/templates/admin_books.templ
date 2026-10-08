@@ -1,0 +1,48 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
+func adminBookURL(path string, override bool) string {
+ if override { return path + "?admin.override=1" }
+ return path
+}
+
+templ AdminBookVisibilityWarning(reasons []string) {
+ if len(reasons) > 0 {
+  {{ l := i18n.GetLocalizer(ctx) }}
+  <div role="alert" class="OlContainer p-4 my-4 border rounded-lg bg-secondary">
+   <strong>{ l.T("admin.books.overrideWarning") }</strong>
+   <ul>
+    for _, reason := range reasons {
+     <li>{ l.T("admin.books.reason." + reason) }</li>
+    }
+   </ul>
+  </div>
+ }
+}
+
+
+templ AdminBookOverridePrompt(overrideURL string) {
+ {{ l := i18n.GetLocalizer(ctx) }}
+ @standardPageLayout(standardPageLayoutProps{
+  htmlLayoutProps: htmlLayoutProps{Title: l.T("admin.books.unavailableTitle")},
+ }) {
+  <main class="OlContainer px-4 py-12">
+   <section class="Card Card--elevated max-w-xl mx-auto p-6 md:p-8" aria-labelledby="admin-book-override-title">
+    <span class="Chip Chip--primary mb-4">
+     <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+     { l.T("admin.ui.title") }
+    </span>
+    <h1 id="admin-book-override-title" class="text-2xl font-semibold mb-3">{ l.T("admin.books.unavailableTitle") }</h1>
+    <p class="text-secondary-foreground">{ l.T("admin.books.overridePrompt") }</p>
+    <div class="flex flex-wrap gap-3 mt-6">
+     <a class="Btn Btn--primary" href={ templ.URL(overrideURL) }>
+      <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+      { l.T("admin.books.overrideView") }
+     </a>
+     <a class="Btn Btn--outline" href="/search?admin.link=1">{ l.T("admin.books.regularSearch") }</a>
+    </div>
+   </section>
+  </main>
+ }
+}

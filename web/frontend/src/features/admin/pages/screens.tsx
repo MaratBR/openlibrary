@@ -1,15 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link, LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { loadDebug, save } from '@/features/admin/api'
-import {
-  Card,
-  Dialog,
-  Field,
-  Notice,
-  PageHeader,
-  errorMessage,
-  t,
-} from '@/features/admin/components/ui'
+import { Card, Dialog, Notice, PageHeader, errorMessage, t } from '@/features/admin/components/ui'
 
 const sections = [
   {
@@ -59,51 +51,6 @@ export function Home() {
           </Link>
         ))}
       </div>
-    </>
-  )
-}
-export function Books() {
-  const [id, setID] = useState('')
-  const [error, setError] = useState(false)
-  return (
-    <>
-      <PageHeader title={t('admin.books.title')} description={t('admin.ui.booksDescription')} />
-      <Card title={t('admin.ui.bookLookup')} className="Admin-lookupCard">
-        <form
-          onSubmit={(event) => {
-            event.preventDefault()
-            if (!/^[1-9]\d*$/.test(id) || BigInt(id) > 9223372036854775807n) {
-              setError(true)
-              return
-            }
-            window.location.assign(`/book/${id}`)
-          }}
-        >
-          <Field id="book-id" label={t('admin.ui.bookID')} help={t('admin.ui.bookIDHelp')}>
-            <input
-              className="input"
-              id="book-id"
-              inputMode="numeric"
-              required
-              value={id}
-              aria-invalid={error}
-              aria-describedby={error ? 'book-id-error book-id-help' : 'book-id-help'}
-              onChange={(event) => {
-                setID(event.target.value)
-                setError(false)
-              }}
-            />
-          </Field>
-          {error && (
-            <p id="book-id-error" role="alert" className="Admin-notice Admin-notice--error">
-              {t('admin.ui.bookIDInvalid')}
-            </p>
-          )}
-          <button type="submit" className="Btn Btn--primary">
-            {t('common.open')}
-          </button>
-        </form>
-      </Card>
     </>
   )
 }

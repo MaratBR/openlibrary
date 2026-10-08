@@ -87,3 +87,44 @@ export function validUserID(id: string) {
     throw new AdminAPIError(400)
   return id
 }
+
+const bookEntrySchema = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  author: Schema.String,
+  createdAt: Schema.String,
+  words: Schema.Number,
+  chapters: Schema.Number,
+  visibilityReasons: Schema.Array(Schema.String),
+})
+const booksSchema = Schema.Union([
+  Schema.Struct({ redirect: Schema.String }),
+  Schema.Struct({
+    books: Schema.Array(bookEntrySchema),
+    page: Schema.Number,
+    totalPages: Schema.Number,
+    total: Schema.Number,
+  }),
+])
+const bookSchema = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  slug: Schema.String,
+  summary: Schema.String,
+  ageRating: Schema.String,
+  words: Schema.Number,
+  chapters: Schema.Number,
+  createdAt: Schema.String,
+  author: Schema.Struct({ id: Schema.String, name: Schema.String }),
+  cover: Schema.Struct({ url: Schema.String }),
+  visibilityReasons: Schema.Array(Schema.String),
+  isBanned: Schema.Boolean,
+  isShadowBanned: Schema.Boolean,
+  isTrashed: Schema.Boolean,
+  isPermRemoved: Schema.Boolean,
+  isPubliclyAvailable: Schema.Boolean,
+})
+export const loadBooks = (search: string, signal?: AbortSignal) =>
+  read(`/books${search}`, booksSchema, signal)
+export const loadBook = (id: string, signal?: AbortSignal) =>
+  read(`/books/${validTagID(id)}`, bookSchema, signal)

@@ -1,3 +1,4 @@
+import { dashboardItem } from '@/components/dashboard-nav-item'
 import { createHashRouter, Navigate, Outlet, redirect } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import { ReactIslandProps } from '@/islands/common/react-island'
@@ -30,12 +31,12 @@ const routes = [
   ['audit-log', 'moderationPortal.auditLog'],
 ] as const
 
-function createModerationRouter(roles: string[]) {
+function createModerationRouter(roles: string[], isAdmin: boolean) {
   return createHashRouter([
     {
       path: '/',
       element: (
-        <ModerationLayout>
+        <ModerationLayout isAdmin={isAdmin}>
           <Outlet />
         </ModerationLayout>
       ),
@@ -85,6 +86,9 @@ function createModerationRouter(roles: string[]) {
           element: <UserModerationPage />,
           errorElement: <UserModerationErrorPage />,
           loader: userModerationRouteLoader,
+          handle: dashboardItem<Awaited<ReturnType<typeof userModerationRouteLoader>>>(
+            (data) => data.user.name,
+          ),
         },
         {
           path: '/reports',
@@ -101,24 +105,36 @@ function createModerationRouter(roles: string[]) {
           element: <ReportPage />,
           errorElement: <ReportErrorPage />,
           loader: reportRouteLoader,
+          handle: dashboardItem<Awaited<ReturnType<typeof reportRouteLoader>>>(
+            (data) => `#${data.number} · ${data.reason}`,
+          ),
         },
         {
           path: '/users/:userId/activity',
           element: <UserModerationPage />,
           errorElement: <UserModerationErrorPage />,
           loader: userModerationRouteLoader,
+          handle: dashboardItem<Awaited<ReturnType<typeof userModerationRouteLoader>>>(
+            (data) => data.user.name,
+          ),
         },
         {
           path: '/users/:userId/actions',
           element: <UserModerationPage />,
           errorElement: <UserModerationErrorPage />,
           loader: userModerationRouteLoader,
+          handle: dashboardItem<Awaited<ReturnType<typeof userModerationRouteLoader>>>(
+            (data) => data.user.name,
+          ),
         },
         ...['history', 'reports', 'books', 'comments'].map((resource) => ({
           path: `/users/:userId/${resource}`,
           element: <UserModerationPage />,
           errorElement: <UserModerationErrorPage />,
           loader: userModerationRouteLoader,
+          handle: dashboardItem<Awaited<ReturnType<typeof userModerationRouteLoader>>>(
+            (data) => data.user.name,
+          ),
         })),
         {
           path: '/users/:userId/login-history',
@@ -131,12 +147,18 @@ function createModerationRouter(roles: string[]) {
           element: <BookModerationPage />,
           errorElement: <BookModerationErrorPage />,
           loader: bookModerationRouteLoader,
+          handle: dashboardItem<Awaited<ReturnType<typeof bookModerationRouteLoader>>>(
+            (data) => data.book.name,
+          ),
         },
         ...['actions', 'chapters', 'activity'].map((resource) => ({
           path: `/books/:bookId/${resource}`,
           element: <BookModerationPage />,
           errorElement: <BookModerationErrorPage />,
           loader: bookModerationRouteLoader,
+          handle: dashboardItem<Awaited<ReturnType<typeof bookModerationRouteLoader>>>(
+            (data) => data.book.name,
+          ),
         })),
         // TODO: Replace this placeholder when comment moderation is implemented.
         {
@@ -152,10 +174,11 @@ function createModerationRouter(roles: string[]) {
   ])
 }
 
-type ModerationPortalData = { roles: string[] }
+type ModerationPortalData = { roles: string[]; isAdmin: boolean }
 
 export default function Portal({ data }: ReactIslandProps) {
   const roles = (data as ModerationPortalData | undefined)?.roles ?? []
-  const router = useMemo(() => createModerationRouter(roles), [roles])
+  const isAdmin = (data as ModerationPortalData | undefined)?.isAdmin ?? false
+  const router = useMemo(() => createModerationRouter(roles, isAdmin), [roles, isAdmin])
   return <RouterProvider router={router} />
 }

@@ -3,6 +3,7 @@ package olhttp
 import "context"
 import "net/url"
 import "fmt"
+import "github.com/MaratBR/openlibrary/internal/i18n"
 
 func getPageURL(ctx context.Context, page uint32) templ.SafeURL {
     r := GetRequest(ctx)
@@ -36,73 +37,44 @@ templ PaginationImpl(
     opts PaginationImplProps,
 ) {
     {{
-        var remaining int = int(opts.Size) - 1
-        left := remaining / 2
-        if left > int(opts.Page) - 1  {
-            left = int(opts.Page) - 1
-        }
-        remaining -= left
-        right := remaining
-        if int(opts.Page) + right > int(opts.TotalPages) {
-            right = int(opts.TotalPages) - int(opts.Page)
-        }
-        remaining -= right
-        if remaining > 0 && left < int(opts.Page) - 1 {
-            left += min(remaining, int(opts.Page) - 1 - left)
-        }
-
-
+        l := i18n.GetLocalizer(ctx)
+        total := max(opts.TotalPages, 1)
+        page := min(max(opts.Page, 1), total)
+        pages := paginationPages(page, total, opts.Size)
     }}
-
-    <nav role="listbox" class="Pagination">
-        if opts.Page != 1 {
-            <a 
-                href={ getPageURL(ctx, 1) } class="Pagination-item" 
-                if opts.UseAlpineJsAjax {
-                    x-target.push="PaginationAjaxSlot"
-                }
-            >
-                { fmt.Sprintf("%d", 1) }
-            </a>
+    <nav class="Pagination" aria-label={ l.T("common.pagination") }>
+        if page > 1 {
+            @paginationLink(page - 1, l.T("common.previousPage"), opts.UseAlpineJsAjax, "fa-chevron-left")
+        } else {
+            <span class="Pagination-item Pagination-item--disabled" aria-disabled="true" aria-label={ l.T("common.previousPage") }><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></span>
         }
-        for i := int(opts.Page) - left + 1; i < int(opts.Page); i++ {
-            {{
-                href := getPageURL(ctx, uint32(i))
-            }}
-            <a 
-                href={ href } class="Pagination-item" 
-                if opts.UseAlpineJsAjax {
-                    x-target.push="PaginationAjaxSlot"
-                }
-            >
-                { fmt.Sprintf("%d", i) }
-            </a>
+        for _, p := range pages {
+            if p == 0 {
+                <span class="Pagination-ellipsis" aria-hidden="true">…</span>
+            } else if p == page {
+                <span class="Pagination-item Pagination-item--active" aria-current="page" aria-label={ fmt.Sprintf("%s %d", l.T("common.page"), p) }>{ fmt.Sprintf("%d", p) }</span>
+            } else {
+                @paginationLink(p, fmt.Sprintf("%s %d", l.T("common.page"), p), opts.UseAlpineJsAjax, "")
+            }
         }
-        <a href="#" class="Pagination-item Pagination-item--active">
-            { fmt.Sprintf("%d", opts.Page) }
-        </a>
-        for i := int(opts.Page) + 1; i <= int(opts.Page) + right - 1; i++ {
-            {{
-                href := getPageURL(ctx, uint32(i))
-            }}
-            <a 
-                href={ href } class="Pagination-item" 
-                if opts.UseAlpineJsAjax {
-                    x-target.push="PaginationAjaxSlot"
-                }
-            >
-                { fmt.Sprintf("%d", i) }
-            </a>
-        }
-        if opts.Page < opts.TotalPages {
-            <a 
-                href={ getPageURL(ctx, opts.TotalPages) } class="Pagination-item" 
-                if opts.UseAlpineJsAjax {
-                    x-target.push="PaginationAjaxSlot"
-                }
-            >
-                { fmt.Sprintf("%d", opts.TotalPages) }
-            </a>
+        if page < total {
+            @paginationLink(page + 1, l.T("common.nextPage"), opts.UseAlpineJsAjax, "fa-chevron-right")
+        } else {
+            <span class="Pagination-item Pagination-item--disabled" aria-disabled="true" aria-label={ l.T("common.nextPage") }><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
         }
     </nav>
+}
+
+templ paginationLink(page uint32, label string, ajax bool, icon string) {
+    <a href={ getPageURL(ctx, page) } class="Pagination-item" aria-label={ label }
+        if ajax {
+            x-target.push="PaginationAjaxSlot"
+        }
+    >
+        if icon != "" {
+            <i class={ "fa-solid", icon } aria-hidden="true"></i>
+        } else {
+            { fmt.Sprintf("%d", page) }
+        }
+    </a>
 }

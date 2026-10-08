@@ -69,6 +69,7 @@ func mainServer(
 
 		fx.Provide(
 			newHTTPServer,
+			func() *webinfra.ServerRuntime { return &webinfra.ServerRuntime{} },
 			createRootLogger,
 			func(log *zap.Logger) *zap.SugaredLogger {
 				return log.Sugar()
@@ -187,7 +188,7 @@ func postInit(params postInitParams) {
 
 }
 
-func newHTTPServer(lc fx.Lifecycle, handler http.Handler, cfg *koanf.Koanf, log *zap.SugaredLogger) *http.Server {
+func newHTTPServer(lc fx.Lifecycle, handler http.Handler, cfg *koanf.Koanf, log *zap.SugaredLogger, runtime *webinfra.ServerRuntime) *http.Server {
 	addr := fmt.Sprintf("%s:%d", cfg.String("server.host"), cfg.Int("server.port"))
 
 	srv := &http.Server{
@@ -204,6 +205,7 @@ func newHTTPServer(lc fx.Lifecycle, handler http.Handler, cfg *koanf.Koanf, log 
 			if err != nil {
 				return err
 			}
+			runtime.StartedAt = time.Now().UTC()
 			log.Infow("starting server", "addr", addr, "url", fmt.Sprintf("http://%s", addr))
 			go srv.Serve(ln)
 			return nil

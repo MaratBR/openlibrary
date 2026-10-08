@@ -1,9 +1,12 @@
+import { dashboardItem } from '@/components/dashboard-nav-item'
+import { DashboardNavItem } from '@/components/dashboard-nav-item'
 import { useLayoutEffect } from 'react'
-import { createHashRouter, Link, NavLink, Outlet, useLocation, useNavigation } from 'react-router'
+import { createHashRouter, Link, Outlet, useLocation, useNavigation } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import { Users, usersLoader, UserEdit, userLoader } from '@/features/admin/pages/users'
 import { Tags, tagsLoader, TagDetails, tagLoader, TagEdit } from '@/features/admin/pages/tags'
-import { Home, Books, Debug, debugLoader } from '@/features/admin/pages/screens'
+import { Home, Debug, debugLoader } from '@/features/admin/pages/screens'
+import { Books, BookDetails, booksLoader, bookLoader } from '@/features/admin/pages/books'
 import { Card, Loading, PageHeader, RouteError, t } from '@/features/admin/components/ui'
 
 function Layout() {
@@ -35,10 +38,10 @@ function Layout() {
             ['/tags', 'tags', 'fa-tags'],
             ['/debug', 'debugActions', 'fa-wrench'],
           ].map(([path, key, icon]) => (
-            <NavLink end={path === '/'} key={path} to={path}>
+            <DashboardNavItem dashboard="admin" end={path === '/'} key={path} to={path}>
               <i className={`fa-solid ${icon}`} aria-hidden="true" />
               {t(`admin.sidebar.${key}`)}
-            </NavLink>
+            </DashboardNavItem>
           ))}
         </nav>
         <div className="DashboardShell-utilities">
@@ -98,15 +101,25 @@ const router = createHashRouter([
         path: 'users/:id',
         element: <UserEdit />,
         loader: userLoader,
+        handle: dashboardItem<Awaited<ReturnType<typeof userLoader>>>((data) => data.name),
         errorElement: <RouteError />,
         hydrateFallbackElement: <Loading />,
       },
-      { path: 'books', element: <Books /> },
+      { path: 'books', element: <Books />, loader: booksLoader, errorElement: <RouteError /> },
+      {
+        path: 'books/:id',
+        element: <BookDetails />,
+        loader: bookLoader,
+        handle: dashboardItem<Awaited<ReturnType<typeof bookLoader>>>((data) => data.name),
+        errorElement: <RouteError />,
+        hydrateFallbackElement: <Loading />,
+      },
       { path: 'tags', element: <Tags />, loader: tagsLoader, errorElement: <RouteError /> },
       {
         path: 'tags/:id',
         element: <TagDetails />,
         loader: tagLoader,
+        handle: dashboardItem<Awaited<ReturnType<typeof tagLoader>>>((data) => data.name),
         errorElement: <RouteError />,
         hydrateFallbackElement: <Loading />,
       },
@@ -114,6 +127,7 @@ const router = createHashRouter([
         path: 'tags/:id/edit',
         element: <TagEdit />,
         loader: tagLoader,
+        handle: dashboardItem<Awaited<ReturnType<typeof tagLoader>>>((data) => data.name),
         errorElement: <RouteError />,
         hydrateFallbackElement: <Loading />,
       },

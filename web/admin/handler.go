@@ -20,6 +20,7 @@ var FXModule = fx.Module("http_admin", fx.Provide(
 	newDebugController,
 	newLoginController,
 	newUsersController,
+	newBooksController,
 	webinfra.AsMountableHandler(newHandler),
 ))
 
@@ -34,6 +35,7 @@ func newHandler(
 	tagsController *tagsController,
 	usersController *usersController,
 	debugController *debugController,
+	booksController *booksController,
 
 	flashMiddleware flash.Middleware,
 	log *zap.SugaredLogger,
@@ -57,7 +59,7 @@ func newHandler(
 		// authorization required
 		r.Group(func(r chi.Router) {
 			r.Use(requireAdmin)
-			setupSPA(r, usersController, tagsController, debugController)
+			setupSPA(r, usersController, tagsController, debugController, booksController)
 
 			// Preserve old form submissions while all GET screens use the SPA.
 			r.With(httpin.NewInput(updateUserRequest{})).Post("/users/{id}", usersController.UserUpdate)

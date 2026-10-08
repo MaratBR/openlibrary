@@ -161,10 +161,83 @@ func (bookFixtureSessions) GetBySID(context.Context, string) (*app.SessionInfo, 
 	return &app.SessionInfo{}, nil
 }
 
-type bookFixtureUsers struct{ app.UserService }
+type bookFixtureUsers struct {
+	app.UserService
+	role app.UserRole
+}
 
-func (bookFixtureUsers) GetUserSelfData(context.Context, uuid.UUID) (*app.SelfUserDto, error) {
-	user := &app.SelfUserDto{Name: "An author"}
+func (s bookFixtureUsers) GetUserSelfData(context.Context, uuid.UUID) (*app.SelfUserDto, error) {
+	user := &app.SelfUserDto{Name: "An author", Role: s.role}
 	user.Avatar.MD = "/_/embed-assets/logo.svg"
 	return user, nil
+}
+
+func TestAdminOverrideWarningAndNavigation(t *testing.T) {
+	provider := i18n.NewLocaleProvider(language.English, false, map[language.Tag][]string{language.English: {"../../../translations/en.toml"}}, zap.NewNop().Sugar())
+	ctx := localizedContext(provider)
+	for _, reasons := range [][]string{nil, {"banned", "deleted", "hiddenChapter"}} {
+		var out bytes.Buffer
+		if err := AdminBookVisibilityWarning(reasons).Render(ctx, &out); err != nil {
+			t.Fatal(err)
+		}
+		if len(reasons) == 0 && out.Len() != 0 {
+			t.Fatal("ordinary page gained an override warning")
+		}
+		if len(reasons) > 0 {
+			for _, text := range []string{"Administrator override:", "The book is banned.", "The book is in the trash.", "This chapter is not publicly visible."} {
+				if !strings.Contains(out.String(), text) {
+					t.Fatalf("missing localized reason %q in %s", text, out.String())
+				}
+			}
+		}
+	}
+	var out bytes.Buffer
+	if err := BookTOC(ctx, 1, []app.ChapterListDto{{ID: 2, Name: "Hidden chapter"}}, 0, true).Render(ctx, &out); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "/book/1/chapters/2?admin.override=1") {
+		t.Fatal("TOC lost override")
+	}
+	if adminBookURL("/book/1", false) != "/book/1" {
+		t.Fatal("ordinary URL changed")
+	}
+}
+
+func TestSearchAdminLinksRequireFlagAndAdmin(t *testing.T) {
+	provider := i18n.NewLocaleProvider(language.English, false, map[language.Tag][]string{language.English: {"../../../translations/en.toml"}}, zap.NewNop().Sugar())
+	for _, tc := range []struct {
+		role                app.UserRole
+		query               string
+		authenticated, want bool
+	}{
+		{app.RoleAdmin, "?admin.link=1", true, true},
+		{app.RoleAdmin, "", true, false},
+		{app.RoleUser, "?admin.link=1", true, false},
+		{app.RoleModerator, "?admin.link=1", true, false},
+		{app.RoleAdmin, "?admin.link=0", true, false},
+		{app.RoleAdmin, "?admin.link=1", false, false},
+	} {
+		router := chi.NewRouter()
+		router.Use(olhttp.ReqCtxMiddleware, provider.Middleware)
+		router.Use(session.Middleware(bookFixtureStore{}, zap.NewNop().Sugar()), auth.NewAuthorizationMiddleware(bookFixtureSessions{}, bookFixtureUsers{role: tc.role}, auth.MiddlewareOptions{}, zap.NewNop().Sugar()))
+		router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			result := &app.BookSearchResult{Books: []app.BookSearchItem{{ID: 1, Name: "Book"}}}
+			if err := SearchResultFragment(result, app.DetailedBookSearchQuery{}, false).Render(r.Context(), w); err != nil {
+				t.Fatal(err)
+			}
+		})
+		req := httptest.NewRequest("GET", "/"+tc.query, nil)
+		if tc.authenticated {
+			req.AddCookie(&http.Cookie{Name: session.CookieName, Value: "fixture"})
+		}
+		out := httptest.NewRecorder()
+		router.ServeHTTP(out, req)
+		has := strings.Contains(out.Body.String(), "/admin#/books/1")
+		if has != tc.want {
+			t.Fatalf("role=%s query=%s authenticated=%v: link=%v", tc.role, tc.query, tc.authenticated, has)
+		}
+		if tc.want && !strings.Contains(out.Body.String(), `name="admin.link" value="1"`) {
+			t.Fatal("search form lost flag")
+		}
+	}
 }

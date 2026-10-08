@@ -1,3 +1,4 @@
+import { dashboardItem } from '@/components/dashboard-nav-item'
 import { ReactIslandProps } from '../common/react-island'
 import { createHashRouter, Navigate, Outlet, NavLink, useParams } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
@@ -37,6 +38,9 @@ const router = createHashRouter([
         path: '/books/:bookId',
         element: <BookRoute />,
         loader: bookRouteLoader,
+        handle: dashboardItem<Awaited<ReturnType<typeof bookRouteLoader>>>(
+          (data) => data.bookResponse.data.name,
+        ),
         errorElement: <RouteError />,
         hydrateFallbackElement: <Loading />,
       },
@@ -44,6 +48,9 @@ const router = createHashRouter([
         path: '/books/:bookId/edit',
         element: <BookEdit />,
         loader: bookRouteLoader,
+        handle: dashboardItem<Awaited<ReturnType<typeof bookRouteLoader>>>(
+          (data) => data.bookResponse.data.name,
+        ),
         errorElement: <RouteError />,
         hydrateFallbackElement: <Loading />,
       },

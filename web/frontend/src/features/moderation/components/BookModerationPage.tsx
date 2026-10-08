@@ -101,7 +101,7 @@ function Header({ book }: { book: ModerationBook }) {
         </p>
         <div className="flex gap-2 mt-2">
           <span className="Chip">{book.ageRating}</span>
-          <span className={`chip ${book.isBanned ? 'Chip--destructive' : 'Chip--primary'}`}>
+          <span className={`Chip ${book.isBanned ? 'Chip--destructive' : 'Chip--primary'}`}>
             {book.isBanned
               ? window._('moderationPortal.book.banned')
               : window._('moderationPortal.book.active')}

@@ -44,7 +44,7 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := auth.GetNullableUserID(r.Context())
-	book, err := c.service.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID})
+	book, err := c.service.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: userID, AdminOverride: adminBookOverride(r)})
 
 	if err != nil {
 		writeApplicationError(w, r, err)
@@ -52,8 +52,10 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	chapterResult, err := c.service.GetBookChapter(r.Context(), app.GetBookChapterQuery{
-		BookID:    bookID,
-		ChapterID: chapterID,
+		BookID:        bookID,
+		ChapterID:     chapterID,
+		ActorUserID:   userID,
+		AdminOverride: adminBookOverride(r),
 	})
 
 	if err != nil {
@@ -61,6 +63,7 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	book.VisibilityReasons = chapterResult.VisibilityReasons
 	options := c.getChapterProgressTrackerOptions(r, &chapterResult.Chapter)
 	preferences := templates.GetReaderPreferencesFromCookies(r)
 	if userID.Valid {
@@ -146,15 +149,16 @@ func (c *chaptersController) chapterComments(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	chapterResult, err := c.service.GetBookChapter(r.Context(), app.GetBookChapterQuery{BookID: bookID, ChapterID: chapterID})
+	chapterResult, err := c.service.GetBookChapter(r.Context(), app.GetBookChapterQuery{BookID: bookID, ChapterID: chapterID, ActorUserID: auth.GetNullableUserID(r.Context()), AdminOverride: adminBookOverride(r)})
 	if err != nil {
 		writeApplicationError(w, r, err)
 		return
 	}
-	book, err := c.service.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: auth.GetNullableUserID(r.Context())})
+	book, err := c.service.GetBookDetails(r.Context(), app.GetBookQuery{ID: bookID, ActorUserID: auth.GetNullableUserID(r.Context()), AdminOverride: adminBookOverride(r)})
 	if err != nil {
 		writeApplicationError(w, r, err)
 		return
 	}
+	book.VisibilityReasons = chapterResult.VisibilityReasons
 	olhttp.WriteTemplate(w, r.Context(), templates.ChapterComments(chapterResult.Chapter, book))
 }

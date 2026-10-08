@@ -14,6 +14,12 @@ var (
 )
 
 type BookDetailsDto struct {
+	AdminOverride       bool                  `json:"-"`
+	VisibilityReasons   []string              `json:"visibilityReasons"`
+	IsBanned            bool                  `json:"isBanned"`
+	IsShadowBanned      bool                  `json:"isShadowBanned"`
+	IsTrashed           bool                  `json:"isTrashed"`
+	IsPermRemoved       bool                  `json:"isPermRemoved"`
 	ID                  int64                 `json:"id,string"`
 	Name                string                `json:"name"`
 	AgeRating           AgeRating             `json:"ageRating"`
@@ -69,12 +75,15 @@ func (d BookDetailsDto) GetAdultWarning() (warnData BookAdultWarning) {
 }
 
 type GetBookQuery struct {
-	ID          int64
-	ActorUserID Nullable[uuid.UUID]
+	AdminOverride bool
+	ID            int64
+	ActorUserID   Nullable[uuid.UUID]
 }
 
 type GetBookChaptersQuery struct {
-	ID int64
+	ID            int64
+	ActorUserID   Nullable[uuid.UUID]
+	AdminOverride bool
 }
 
 type ChapterListDto struct {
@@ -169,13 +178,15 @@ type BookCollectionDto struct {
 }
 
 type GetBookChapterQuery struct {
-	BookID      int64
-	ChapterID   int64
-	ActorUserID Nullable[uuid.UUID]
+	AdminOverride bool
+	BookID        int64
+	ChapterID     int64
+	ActorUserID   Nullable[uuid.UUID]
 }
 
 type GetBookChapterResult struct {
-	Chapter ChapterDto
+	VisibilityReasons []string
+	Chapter           ChapterDto
 }
 
 type BookService interface {
