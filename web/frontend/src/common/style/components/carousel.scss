@@ -1,15 +1,21 @@
 .Carousel {
-    @apply relative;
+    @apply relative isolate;
+
+    > ul,
+    > ol {
+        // Keep card overlays below the carousel curtains and navigation.
+        @apply isolate;
+    }
 
     &--onBackground &-curtain {
         @apply from-background;   
     }
     
     &-curtain {
-        @apply transition-opacity absolute top-0 bottom-0 pointer-events-none from-surface to-transparent w-24;
+        @apply transition-opacity absolute top-0 bottom-0 z-1 pointer-events-none from-surface to-transparent w-24;
 
         &--left {
-            @apply bg-gradient-to-r left-0 z-1;
+            @apply bg-gradient-to-r left-0;
         }
 
         &--right {
@@ -18,10 +24,10 @@
     }
 
     &-button {
-        @apply transition-opacity absolute top-1/2 -translate-y-1/2 size-12 flex items-center justify-center bg-surface shadow-xl rounded-full hover:bg-secondary;
+        @apply transition-opacity absolute top-1/2 -translate-y-1/2 z-2 size-12 flex items-center justify-center bg-surface shadow-xl rounded-full hover:bg-secondary;
 
         &--left {
-            @apply left-0 z-2;
+            @apply left-0;
         }
 
         &--right {
