@@ -43,7 +43,7 @@ templ Doc(
         }
         >
     <head>
-        if theme == "" {
+        if theme == "" || theme == "system" {
             <script>window.matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.classList.toggle('dark', true)</script>
         }
         <meta charset="UTF-8" />
