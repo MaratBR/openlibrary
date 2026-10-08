@@ -7,7 +7,7 @@ import { Books, booksRouteLoader } from './books'
 import { Book, bookRouteLoader } from './books/Book'
 import BookEdit from './books/BookEdit'
 import { usePageTitle } from './ui'
-import { ManagerSkeleton } from './loading'
+import { DashboardLoader } from '@/components/dashboard-loader'
 import NewBookForm from './new-book/NewBookForm'
 
 const router = createHashRouter([
@@ -73,7 +73,7 @@ function BookRoute() {
 }
 
 function Loading() {
-  return <ManagerSkeleton />
+  return <DashboardLoader label={window._('bookManager.ui.loading')} />
 }
 function RouteError() {
   usePageTitle(window._('bookManager.ui.unavailable'))

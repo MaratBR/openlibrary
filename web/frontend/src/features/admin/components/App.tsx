@@ -1,7 +1,14 @@
 import { dashboardItem } from '@/components/dashboard-nav-item'
 import { DashboardNavItem } from '@/components/dashboard-nav-item'
 import { useLayoutEffect } from 'react'
-import { createHashRouter, Link, Outlet, useLocation, useNavigation } from 'react-router'
+import {
+  createHashRouter,
+  Link,
+  Outlet,
+  useLocation,
+  useNavigation,
+  useRevalidator,
+} from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import { Users, usersLoader, UserEdit, userLoader } from '@/features/admin/pages/users'
 import { Tags, tagsLoader, TagDetails, tagLoader, TagEdit } from '@/features/admin/pages/tags'
@@ -12,13 +19,15 @@ import { Card, Loading, PageHeader, RouteError, t } from '@/features/admin/compo
 function Layout() {
   const navigation = useNavigation()
   const location = useLocation()
-  const loading = navigation.state === 'loading'
+  const revalidator = useRevalidator()
+  const loading = navigation.state !== 'idle' || revalidator.state === 'loading'
   useLayoutEffect(() => {
     document.querySelector<HTMLElement>('.Admin-main h1')?.focus({ preventScroll: true })
     window.scrollTo({ top: 0 })
   }, [location.pathname])
   return (
     <div className="Admin DashboardShell">
+      {loading && <Loading />}
       <aside className="DashboardShell-sidebar">
         <header className="DashboardShell-brand">
           <Link to="/" className="Admin-brand">
@@ -68,7 +77,7 @@ function Layout() {
       </aside>
       <div className="Admin-frame DashboardShell-content">
         <main className="Admin-main" id="admin-main" aria-busy={loading}>
-          {loading ? <Loading /> : <Outlet />}
+          <Outlet />
         </main>
         <footer className="Admin-footer">
           OpenLibrary <span>·</span> {t('admin.ui.title')}
@@ -94,6 +103,7 @@ const router = createHashRouter([
   {
     path: '/',
     element: <Layout />,
+    hydrateFallbackElement: <Loading />,
     children: [
       { index: true, element: <Home /> },
       { path: 'users', element: <Users />, loader: usersLoader, errorElement: <RouteError /> },

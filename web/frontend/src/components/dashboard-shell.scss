@@ -292,3 +292,37 @@
     }
   }
 }
+
+.DashboardShell-loader {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 3px;
+  z-index: 10000;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--primary) 20%, transparent);
+  pointer-events: none;
+
+  span {
+    display: block;
+    width: 35%;
+    height: 100%;
+    background: var(--primary);
+    animation: dashboard-loading 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes dashboard-loading {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(286%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .DashboardShell-loader span {
+    width: 100%;
+    animation: none;
+  }
+}

@@ -410,25 +410,6 @@
     display: flex;
     gap: 10px;
   }
-  &-loading {
-    min-height: 320px;
-    p {
-      color: var(--secondary-foreground);
-      margin-bottom: 24px;
-    }
-  }
-  &-skeleton {
-    display: grid;
-    gap: 20px;
-    div {
-      height: 28px;
-      border-radius: 6px;
-      background: var(--secondary);
-    }
-    div:first-child {
-      width: 60%;
-    }
-  }
 }
 .Admin-notice {
   margin: 16px 0;

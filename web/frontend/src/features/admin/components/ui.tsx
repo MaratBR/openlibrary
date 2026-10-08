@@ -1,3 +1,4 @@
+import { DashboardLoader } from '@/components/dashboard-loader'
 import { FormEvent, ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useBlocker, useRevalidator, useRouteError, useSearchParams } from 'react-router'
@@ -130,17 +131,9 @@ export function RouteError() {
   )
 }
 export function Loading() {
-  return (
-    <div className="Admin-loading" role="status">
-      <p>{t('admin.ui.loading')}</p>
-      <div className="admin-card Admin-skeleton" aria-hidden="true">
-        <div />
-        <div />
-        <div />
-      </div>
-    </div>
-  )
+  return <DashboardLoader label={t('admin.ui.loading')} />
 }
+
 export function Pager({ page, total }: { page: number; total: number }) {
   const [params] = useSearchParams()
   if (total <= 1) return null
