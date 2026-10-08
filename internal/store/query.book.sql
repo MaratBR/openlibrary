@@ -26,6 +26,7 @@ where b.author_user_id = $1 and chapters > 0
   and b.is_publicly_visible
   and not b.is_banned
   and not b.is_trashed
+  and not (b.tag_ids && sqlc.arg(hidden_tag_ids)::int8[])
 order by b.is_pinned desc, b.created_at asc
 limit $2 offset $3;
 
@@ -33,7 +34,8 @@ limit $2 offset $3;
 select b.*, u.name as author_name
 from books b
 join users u on u.id = b.author_user_id
-where b.id = ANY(sqlc.arg('ids')::int8[]);
+where b.id = ANY(sqlc.arg('ids')::int8[])
+  and not (b.tag_ids && sqlc.arg(hidden_tag_ids)::int8[]);
 
 -- name: GetBookCollectionData :many
 select collections.id, collections.name, collections.books_count as size, collection_books."order" as position, collections.created_at, users.name as user_name, collections.user_id
@@ -91,6 +93,7 @@ order by rating desc limit $2;
 select id
 from books
 where is_publicly_visible and age_rating not in ('R', 'NC-17') and not is_banned and chapters > 0
+  and not (tag_ids && sqlc.arg(hidden_tag_ids)::int8[])
 order by random()
 limit $1;
 

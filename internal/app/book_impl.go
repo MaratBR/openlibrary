@@ -12,17 +12,18 @@ import (
 )
 
 type bookService struct {
-	queries            *store.Queries
-	tagsService        TagsService
-	uploadService      *UploadService
-	readingListService ReadingListService
-	reviewService      ReviewsService
-	log                *zap.SugaredLogger
+	adultContentService AdultContentService
+	queries             *store.Queries
+	tagsService         TagsService
+	uploadService       *UploadService
+	readingListService  ReadingListService
+	reviewService       ReviewsService
+	log                 *zap.SugaredLogger
 }
 
 // GetRandomBookID implements BookService.
 func (s *bookService) GetRandomBookID(ctx context.Context) (Nullable[int64], error) {
-	ids, err := s.queries.GetRandomPublicBookIDs(ctx, 1)
+	ids, err := s.queries.GetRandomPublicBookIDs(ctx, store.GetRandomPublicBookIDsParams{Limit: 1, HiddenTagIds: HiddenTagIDs(ctx)})
 	if err != nil {
 		return Nullable[int64]{}, apperror.WrapUnexpectedDBError(err)
 	}
@@ -39,14 +40,16 @@ func NewBookService(
 	readingListService ReadingListService,
 	reviewService ReviewsService,
 	log *zap.SugaredLogger,
+	adultContentService AdultContentService,
 ) BookService {
 	return &bookService{
-		queries:            store.New(db),
-		tagsService:        tagsService,
-		uploadService:      uploadService,
-		readingListService: readingListService,
-		reviewService:      reviewService,
-		log:                log,
+		adultContentService: adultContentService,
+		queries:             store.New(db),
+		tagsService:         tagsService,
+		uploadService:       uploadService,
+		readingListService:  readingListService,
+		reviewService:       reviewService,
+		log:                 log,
 	}
 }
 
@@ -84,6 +87,7 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 		return BookDetailsDto{}, ErrTypeBookPrivated.New("book %d cannot be seen", book.ID)
 	}
 
+	ApplyBookTagPreferences(ctx, book.ID, book.TagIds)
 	ageRating := ageRatingFromDbValue(book.AgeRating)
 	authorID := uuidDbToDomain(book.AuthorUserID)
 	tags, err := s.tagsService.GetTagsByIds(ctx, book.TagIds)
@@ -108,7 +112,7 @@ func (s *bookService) GetBookDetails(ctx context.Context, query GetBookQuery) (r
 		Name:            book.Name,
 		Slug:            book.Slug,
 		AgeRating:       ageRating,
-		IsAdult:         ageRating.IsAdult(),
+		IsAdult:         s.adultContentService.IsAdult(ageRating, tags),
 		Tags:            tags,
 		Summary:         book.Summary,
 		Words:           int(book.Words),
@@ -266,6 +270,7 @@ func (s *bookService) GetBookChapter(ctx context.Context, query GetBookChapterQu
 // GetPinnedBooks implements BookService.
 func (s *bookService) GetPinnedBooks(ctx context.Context, input GetPinnedUserBooksQuery) (GetPinnedUserBooksResult, error) {
 	rows, err := s.queries.Book_GetByUser(ctx, store.Book_GetByUserParams{
+		HiddenTagIds: HiddenTagIDs(ctx),
 		AuthorUserID: uuidDomainToDb(input.UserID),
 		Offset:       int32(input.Offset),
 		Limit:        int32(input.Limit + 1),
@@ -277,6 +282,7 @@ func (s *bookService) GetPinnedBooks(ctx context.Context, input GetPinnedUserBoo
 	hasMore := len(rows) == input.Limit+1
 	books := make([]BookListDto, 0, min(len(rows), input.Limit))
 	for i := 0; i < min(len(rows), input.Limit); i++ {
+		ApplyBookTagPreferences(ctx, rows[i].ID, rows[i].TagIds)
 		books = append(books, BookListDto{
 			ID:        rows[i].ID,
 			Name:      rows[i].Name,
@@ -299,13 +305,14 @@ func (s *bookService) GetPinnedBooks(ctx context.Context, input GetPinnedUserBoo
 }
 
 func (s *bookService) GetBooksById(ctx context.Context, ids []int64) ([]BookListDto, error) {
-	rows, err := s.queries.Book_GetByIds(ctx, ids)
+	rows, err := s.queries.Book_GetByIds(ctx, store.Book_GetByIdsParams{Ids: ids, HiddenTagIds: HiddenTagIDs(ctx)})
 	if err != nil {
 		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 
 	books := make([]BookListDto, 0, len(rows))
 	for i := range rows {
+		ApplyBookTagPreferences(ctx, rows[i].ID, rows[i].TagIds)
 		books = append(books, BookListDto{
 			ID:   rows[i].ID,
 			Slug: rows[i].Slug,

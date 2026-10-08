@@ -11,6 +11,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
+	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/MaratBR/openlibrary/web/public/account"
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/MaratBR/openlibrary/web/webinfra"
@@ -58,6 +59,7 @@ var FXModule = fx.Module("public_ui_handler",
 // i should really do something with number of params in this function...
 
 func newHandler(
+	db store.DBTX,
 	sessionService app.SessionService,
 	userService app.UserService,
 
@@ -107,6 +109,8 @@ func newHandler(
 			olhttp.Write500(w, r, err)
 		},
 	}, log))
+
+	h.r.Use(contentPreferencesMiddleware(userService, db))
 
 	homeController.Register(h.r)
 	debugController.Register(h.r)

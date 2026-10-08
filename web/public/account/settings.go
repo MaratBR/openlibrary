@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
@@ -16,15 +17,17 @@ const defaultSettingsType = "about"
 
 type SettingsController struct {
 	userService app.UserService
+	tagsService app.TagsService
 }
 
-func NewSettingsController(userService app.UserService) *SettingsController {
-	return &SettingsController{userService: userService}
+func NewSettingsController(userService app.UserService, tagsService app.TagsService) *SettingsController {
+	return &SettingsController{userService: userService, tagsService: tagsService}
 }
 
 func (c *SettingsController) Register(r chi.Router) {
 	r.Get("/settings", c.redirectToDefault)
 	r.Get("/settings/", c.redirectToDefault)
+	r.Get("/settings/moderation/tags", c.tags)
 	r.Get("/settings/{settingsType}", c.page)
 	r.Patch("/settings/{settingsType}", c.update)
 }
@@ -61,7 +64,25 @@ func (c *SettingsController) page(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := templates.AccountSettings(settingsType, settings).Render(r.Context(), w); err != nil {
+	labels := map[string]string{}
+	if moderation, ok := settings.(*app.UserModerationSettings); ok {
+		// Keep unknown legacy entries removable even if a tag was deleted.
+		ids := []int64{}
+		for _, value := range moderation.CensoredTags {
+			if id, err := strconv.ParseInt(value, 10, 64); err == nil {
+				ids = append(ids, id)
+			}
+		}
+		tags, err := c.tagsService.GetTagsByIds(r.Context(), ids)
+		if err != nil {
+			olhttp.Write500(w, r, err)
+			return
+		}
+		for _, tag := range tags {
+			labels[strconv.FormatInt(tag.ID, 10)] = tag.Name
+		}
+	}
+	if err := templates.AccountSettings(settingsType, settings, labels).Render(r.Context(), w); err != nil {
 		olhttp.Write500(w, r, err)
 	}
 }
@@ -112,7 +133,11 @@ func (c *SettingsController) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		if errors.Is(err, app.ErrInvalidCensoredTags) {
+			writeError(w, http.StatusBadRequest, err)
+		} else {
+			writeError(w, http.StatusInternalServerError, err)
+		}
 		return
 	}
 
@@ -131,4 +156,13 @@ func isValidCensorMode(mode app.CensorMode) bool {
 func writeError(w http.ResponseWriter, status int, err error) {
 	w.WriteHeader(status)
 	olhttp.NewAPIError(err).Write(w)
+}
+
+func (c *SettingsController) tags(w http.ResponseWriter, r *http.Request) {
+	tags, err := c.tagsService.SearchTags(r.Context(), r.URL.Query().Get("q"))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	olhttp.NewAPIResponse(tags).Write(w)
 }

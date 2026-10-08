@@ -1,10 +1,28 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/i18n"
+import "context"
+import "net/url"
+import "github.com/MaratBR/openlibrary/internal/auth"
+import "github.com/MaratBR/openlibrary/internal/olhttp"
 
 func adminBookURL(path string, override bool) string {
  if override { return path + "?admin.override=1" }
  return path
+}
+
+func publicBookURL(ctx context.Context, path string, override bool) string {
+ target, err := url.Parse(path)
+ if err != nil { return path }
+ query := target.Query()
+ if override { query.Set("admin.override", "1") }
+ user, ok := auth.GetUser(ctx)
+ if ok && user.Role.IsAdmin() {
+  r := olhttp.GetRequest(ctx)
+  if r != nil && r.URL.Query().Get("admin.link") == "1" { query.Set("admin.link", "1") }
+ }
+ target.RawQuery = query.Encode()
+ return target.String()
 }
 
 templ AdminBookVisibilityWarning(reasons []string) {

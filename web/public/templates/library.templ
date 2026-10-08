@@ -77,6 +77,8 @@ templ librarySection(label string, books []app.BookLibraryDto) {
 }
 
 templ libraryBookCard(bookID int64, name string, cover app.BookCover) {
+
+    @censoredContent(bookID) {
     <a 
         href={ templ.SafeURL(fmt.Sprintf("/book/%d?ol.from=library", bookID)) } 
         class="ProfileBookCardSm" 
@@ -86,6 +88,8 @@ templ libraryBookCard(bookID int64, name string, cover app.BookCover) {
             { name }
         </div>
     </a>
+
+    }
 }
 
 
@@ -249,9 +253,11 @@ templ libraryCollectionCard(collection app.CollectionDto, books []app.Collection
             <ul class="flex gap-1">
                 for _, book := range books {
                     <li>
+                        @censoredContent(book.ID) {
                         <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
                             <img src={ book.Cover.URL } class="rounded-r-md" style="height: 90px;" />
                         </a>
+                        }
                     </li>
                 }
             </ul>

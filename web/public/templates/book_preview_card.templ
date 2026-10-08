@@ -4,6 +4,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ BookPreviewPartial(book app.BookDetailsDto) {
+    @censoredContent(book.ID) {
     <article class="BookCardPreview">
         <header class="BookCardPreview-header">
             <div class="BookCardPreview-cover" aria-hidden="true">
@@ -34,4 +35,5 @@ templ BookPreviewPartial(book app.BookDetailsDto) {
             </footer>
         }
     </article>
+    }
 }

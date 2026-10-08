@@ -126,6 +126,9 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (s
 		s.log.Warnw("search sort is not implemented; using relevance order", "sort", req.Sort)
 	}
 
+	// Merge reader exclusions before pagination/counts. Explicit includes reveal
+	// that banned family in blurred form; manual exclusions still take precedence.
+	excluded := append(append([]int64{}, req.ExcludeTags...), HiddenSearchTagIDs(ctx, req.IncludeTags)...)
 	// convert to elastic request
 	esReq := elasticstore.SearchRequest{
 		Query:        req.Query,
@@ -133,7 +136,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (s
 		IncludeUsers: MapSlice(req.IncludeUsers, func(id uuid.UUID) string { return id.String() }),
 		ExcludeUsers: MapSlice(req.ExcludeUsers, func(id uuid.UUID) string { return id.String() }),
 		IncludeTags:  req.IncludeTags,
-		ExcludeTags:  req.ExcludeTags,
+		ExcludeTags:  excluded,
 		Words: elasticstore.Range{
 			Min: elasticstore.Int32{Int32: req.Words.Min.Int32, Valid: req.Words.Min.Valid},
 			Max: elasticstore.Int32{Int32: req.Words.Max.Int32, Valid: req.Words.Max.Valid},
@@ -222,6 +225,7 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (s
 	}
 
 	for i, book := range result.Hits {
+		ApplyBookTagPreferences(ctx, book.ID, book.Tags)
 		authorName, _ := authorNames[book.AuthorID]
 		bookData, _ := booksDbData[book.ID]
 
@@ -255,9 +259,10 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (s
 
 func (s *searchService) GetBookExtremes(ctx context.Context) (*BookExtremes, error) {
 	result, err := store.GetBooksFilterExtremes(ctx, s.db, &store.BookSearchFilter{
-		IncludeBanned: false,
-		IncludeHidden: false,
-		IncludeEmpty:  false,
+		IncludeBanned:     false,
+		IncludeHidden:     false,
+		IncludeEmpty:      false,
+		ExcludeParentTags: HiddenTagIDs(ctx),
 	})
 	if err != nil {
 		return nil, err

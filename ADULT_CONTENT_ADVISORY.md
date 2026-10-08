@@ -1,9 +1,10 @@
 # Adult content advisory
 
-Reviewed against the working tree on 2026-10-04. This document records current
-behavior and recommendations; proposed policies below are not implemented or
-approved requirements. The review is based on source inspection, not a running
-deployment or production data.
+Reviewed on 2026-10-04; classification/editor implementation updated 2026-10-08.
+NC-17 plus assigned adult tags is now the agreed default behind an injectable
+application service. Broader filtering and preference recommendations remain
+proposals. The review is based on source inspection and automated tests, not a
+running deployment or production data.
 
 ## Goal
 
@@ -26,7 +27,7 @@ filtering is not wired together into a working user-facing policy.
 Three overlapping concepts currently exist:
 
 - A book age rating (`?`, `G`, `PG`, `PG-13`, `R`, or `NC-17`).
-- A derived book `IsAdult` value, which is true for both `R` and `NC-17`.
+- A derived book `IsAdult` value from the classification service (NC-17 or adult tags).
 - An independent `is_adult` flag on any defined tag.
 
 This is confusing because an age classification, a content topic, and an
@@ -58,40 +59,26 @@ The user's first version of preferences can then remain small:
 - `R`
 - `NC-17`
 
-`AgeRating.IsAdult()` returns true for both `R` and `NC-17`.
+`AdultContentService.IsAdult(rating, tags)` owns the classification policy.
+Its default implementation returns true for NC-17 or any assigned tag marked
+adult. R and unrated books are not adult without an adult tag. Fx injects the
+service into public and manager book services; a replacement provider can
+customize the rule later. There is no independent adult boolean stored on books.
 
-The database stores only `books.age_rating`; there is no independent adult
-boolean on books. `BookDetailsDto.IsAdult` is derived from the age rating in the
-application service. Exposing both `AgeRating` and `IsAdult` makes the model
-appear to have two independent classifications even though it does not.
+### Book-editor classification contract
 
-There is also a semantic mismatch in treating `R` as 18+. Existing translation
-copy describes it as content for adults and mature teenagers, whereas `NC-17`
-is explicitly adults-only. Therefore `R` and `NC-17` should not automatically
-be treated as the same user preference boundary.
-
-### Book-editor Adult switch
-
-The book editor also exposes an independently editable Adult switch alongside
-the age rating. It submits `isAdult`, but
-[`bookDirectUpdate`](web/public/routes_bm_api.go) does not forward that field to
-`UpdateBookCommand`. The service persists the age rating and derives `adult`
-again when returning the book.
-
-[`BookEdit.tsx`](web/frontend/src/islands/bookmanager/books/BookEdit.tsx) compares
-the returned `adult` with the submitted switch value and reports an unconfirmed
-save when they differ. The other submitted fields may already have been saved
-before this client-side error. Changing the rating across the R/NC-17 boundary
-without changing the switch can also trigger this mismatch. This is an existing
-UI/API contract problem, not a second stored book classification.
+The editor exposes age rating and derives adult status on the server. The
+independent Adult switch and its false save-error check have been removed.
+The update request no longer submits `isAdult`; legacy non-null submissions
+receive HTTP 400 before saving, instructing callers to omit it. The response
+retains the read-only `adult` property, including tag-driven classification.
 
 ### Adult tags and warnings
 
 Every defined tag has independent `is_adult` and `is_spoiler` booleans. A book
 shows an adult warning when either:
 
-- Its derived `IsAdult` value is true; or
-- At least one assigned tag has `is_adult = true`.
+- Its service-derived `IsAdult` value is true (NC-17 or an adult tag).
 
 The repository defines warning-tag seeds in
 [`oldata/tags/warnings.hjson`](oldata/tags/warnings.hjson), including:
@@ -105,7 +92,7 @@ The repository defines warning-tag seeds in
 These seed definitions are not marked adult; deployed tags may have been
 changed by administrators. They describe content or possible triggers rather
 than necessarily imposing an age restriction. The seed comment for Underage
-explicitly leaves its classification uncertain, so its meaning needs review. However, readers cannot yet save preferences that hide them.
+explicitly leaves its classification uncertain, so its meaning needs review. Readers can now select these or other existing tags in moderation settings.
 
 The tag administration copy claims existing books are not automatically marked
 adult in search when a tag changes. Treat that as UI copy, not evidence of an
@@ -117,7 +104,7 @@ explicit invalidation when tags or their relationships change.
 ### Book-page warning
 
 The only active adult-content handling is a generic overlay on a direct book
-page. It is shown for R/NC-17 books or books with an adult tag.
+page. It is shown for books classified adult by the service: NC-17 or adult-tagged.
 
 The overlay:
 
@@ -157,22 +144,24 @@ page also exposes the adult-content switch and censor mode.
 
 However:
 
-- The censored-tag selector is disabled with a TODO placeholder.
-- Saved censored tags are not applied to content retrieval.
+- The censored-tag selector now searches existing tags and stores decimal IDs.
+- Saved censored tags now drive public filtering and blur/reveal controls.
 - `show_adult_content` is not applied to search, lists, or the book warning.
-- There is no central content-visibility policy.
+- Request-scoped tag preferences centralize matching and administrator bypasses.
 
-Thus these are persisted settings rather than implemented filtering features.
+Tag filtering is implemented; the separate show-adult setting remains unused.
 
 ### Search and other discovery surfaces
 
-Search supports explicit include/exclude tag IDs from the search request, but
-does not incorporate the reader's account preferences. Neither the SQL search
+Search supports explicit include/exclude tag IDs and incorporates censored-tag
+preferences before pagination/counts. Explicitly including a banned tag reveals
+its family in blurred form, while other exclusions remain effective. Banned tags
+are omitted from the public selector except in authorized administrator mode. Neither the SQL search
 filter nor the OpenSearch request has an age-rating constraint derived from the
 user's settings.
 
-Consequently, adult or user-censored content can still appear in search and
-other lists. Opening a result only adds the generic warning overlay.
+Adult content can still appear unless censored-tag preferences independently
+exclude it. Direct-page adult warnings remain the existing generic overlay.
 
 Random-book selection is a notable exception: its SQL query always excludes
 both R and NC-17 books. It does this regardless of user preference and does not
@@ -184,23 +173,23 @@ points.
 | Feature | Status | Behavior |
 | --- | --- | --- |
 | Book age rating | Implemented | Stored on every book using the six-value enum. |
-| Book `IsAdult` | Derived | True for R and NC-17; not an independent database flag. |
-| Book-editor Adult switch | Inconsistent | Submitted boolean is ignored; a derived-value mismatch raises a client error after saving. |
+| Book `IsAdult` | Derived through service | NC-17 or an assigned adult tag; replaceable policy. |
+| Book-editor Adult switch | Removed | Age rating is authoritative; legacy non-null `isAdult` receives HTTP 400 before saving. |
 | Adult tags | Implemented | Any tag can be marked adult. |
 | Warning/trigger tags | Partially implemented | Some warnings are seeded and displayed as tags. |
 | Direct-page warning | Implemented with limitations | Generic browser-wide dismissible overlay; underlying content is rendered. |
 | Direct chapter warning | Not implemented | Chapter reader does not use the book-page adult-warning check. |
 | Show-adult account setting | Stored but unused | Does not affect discovery or direct pages. |
-| Censored-tag preferences | Skeleton only | Storage exists, selector is disabled, policy is unused. |
+| Censored-tag preferences | Implemented | Searchable selector; none/hide/blur behavior across public book surfaces, with authorized admin bypasses. |
 | Manual search exclusion | Implemented | Callers can explicitly exclude tag IDs. |
 | Hide all 18+ content | Not implemented | No consistent account-aware filtering exists. |
-| Hide specific topics/triggers | Not implemented | Warning tags cannot be selected as preferences. |
+| Hide specific topics/triggers | Implemented | Hide removes matching books from discovery; explicit banned-tag searches and direct pages remain blurred. |
 
 ## Source map
 
 | Concern | Sources |
 | --- | --- |
-| Rating and derived adult status | [age_rating.go](internal/app/age_rating.go), [book_impl.go](internal/app/book_impl.go), [book.go](internal/app/book.go) |
+| Rating and derived adult status | [adult_content.go](internal/app/adult_content.go), [age_rating.go](internal/app/age_rating.go), [book_impl.go](internal/app/book_impl.go), [book.go](internal/app/book.go) |
 | Editor update contract | [BookEdit.tsx](web/frontend/src/islands/bookmanager/books/BookEdit.tsx), [routes_bm_api.go](web/public/routes_bm_api.go), [book_manager_impl.go](internal/app/book_manager_impl.go) |
 | Warning and bypass | [routes_book.go](web/public/routes_book.go), [adult_flag.go](web/public/adult_flag.go), [book.templ](web/public/templates/book.templ), [cookies.ts](web/frontend/src/common/cookies.ts) |
 | Stored preferences and settings UI | [query.user.sql](internal/store/query.user.sql), [user.go](internal/app/user.go), [settings.go](web/public/account/settings.go), [account_settings.templ](web/public/templates/account_settings.templ) |
@@ -213,9 +202,8 @@ Go code. It does not enable account filtering or a site-wide age gate.
 
 ## Decisions needed before implementation
 
-- Define whether the adults-only preference excludes NC-17 alone or both R and
-  NC-17. Current behavior treats both as adult; changing that is a behavior
-  change, not just a rename.
+- Resolved: NC-17 plus assigned adult tags is the default classification,
+  abstracted behind `AdultContentService` for later customization.
 - Define handling of unrated books and descriptors that contradict a rating.
 - Agree on anonymous defaults, saved-item behavior, and the lifetime and scope
   of a per-book exception, including chapter access.
@@ -383,9 +371,8 @@ while the application policy remains the source of truth.
 
 ## Suggested implementation order
 
-1. Agree on the decisions above and resolve the ignored Adult switch contract.
-   Define the adults-only boundary before changing derived `IsAdult` semantics;
-   plan API compatibility and preference migration explicitly.
+1. Classification service and editor contract implemented. Agree on remaining
+   filtering, exception, and preference migration decisions.
 2. Introduce a central content-visibility policy with focused unit tests.
 3. Enable a searchable warning-tag selector in account settings and store tag
    IDs rather than names.
@@ -430,3 +417,15 @@ specific content and triggers, and derive adults-only status rather than asking
 authors or moderators to maintain multiple overlapping flags. A single
 `Hide adults-only` option plus selected hidden warnings satisfies the immediate
 requirements while leaving room for more nuanced blur/warn behavior later.
+
+## Censored-tag implementation update (2026-10-08)
+
+See [agreed behavior and verification](specs/adult-content-advisory/censored-tags.md).
+`none` leaves public content unchanged. `hide` excludes matches from search,
+random selection, home books, profiles, collections and library queries before
+pagination where applicable. `hide` and `censor` blur direct book/chapter content;
+`censor` also retains blurred discovery results. Revealing is scoped to the
+current document and book, including fragments, and does not change settings.
+Synonym families match together; legacy names resolve to stable string IDs on save.
+Admin and management routes bypass preferences. Public `admin.link=1` and
+`admin.override=1` bypass them only for authenticated admin/system users.

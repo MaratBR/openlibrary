@@ -21,13 +21,16 @@ from collection_books cb
 join books b on b.id = cb.book_id
 join users author on author.id = b.author_user_id
 where cb.collection_id = $3
+  and not (b.tag_ids && sqlc.arg(hidden_tag_ids)::int8[])
 order by cb."order"
 limit $1 offset $2;
 
 -- name: Collection_CountBooks :one
 select count(*)
-from collection_books
-where collection_id = $1;
+from collection_books cb
+join books b on b.id = cb.book_id
+where cb.collection_id = $1
+  and not (b.tag_ids && sqlc.arg(hidden_tag_ids)::int8[]);
 
 -- name: Collection_GetRecentByUser :many
 select *
@@ -57,8 +60,10 @@ delete from collection_books where book_id = $1 and collection_id = $2;
 
 -- name: Collection_GetMaxOrder :one
 select cast(coalesce(max("order"), -1) as int4)
-from collection_books
-where collection_id = $1;
+from collection_books cb
+join books b on b.id = cb.book_id
+where cb.collection_id = $1
+  and not (b.tag_ids && sqlc.arg(hidden_tag_ids)::int8[]);
 
 -- name: Collection_Get :one
 select c.*, u.name as user_name
@@ -79,8 +84,7 @@ set books_count = coalesce((select count(*) from collection_books where collecti
 where id = sqlc.arg('collection_id');
 
 -- name: Collection_DeleteAllBooks :exec
-delete from collection_books
-where collection_id = $1;
+delete from collection_books where collection_id = $1;
 
 -- name: Collection_Delete :exec
 delete from collections where id = $1;

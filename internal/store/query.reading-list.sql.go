@@ -76,21 +76,23 @@ func (q *Queries) GetLastChapterID(ctx context.Context, bookID int64) (int64, er
 
 const getUserLibrary = `-- name: GetUserLibrary :many
 select 
-    books.id, books.name, books.cover, books.age_rating, 
+    books.id, books.name, books.cover, books.age_rating, books.tag_ids,
     reading_list.last_updated_at,
     last_chapter."order" as chapter_order, last_chapter.name as chapter_name, last_chapter.id as chapter_id
 from reading_list
 join books on reading_list.book_id = books.id
 left join book_chapters last_chapter on last_chapter.id = reading_list.last_accessed_chapter_id
 where reading_list.user_id = $1 and reading_list.status = $2
+  and not (books.tag_ids && $4::int8[])
 order by reading_list.last_updated_at
 limit $3
 `
 
 type GetUserLibraryParams struct {
-	UserID pgtype.UUID
-	Status ReadingListStatus
-	Limit  int32
+	UserID       pgtype.UUID
+	Status       ReadingListStatus
+	Limit        int32
+	HiddenTagIds []int64
 }
 
 type GetUserLibraryRow struct {
@@ -98,6 +100,7 @@ type GetUserLibraryRow struct {
 	Name          string
 	Cover         string
 	AgeRating     AgeRating
+	TagIds        []int64
 	LastUpdatedAt pgtype.Timestamptz
 	ChapterOrder  pgtype.Int4
 	ChapterName   pgtype.Text
@@ -105,7 +108,12 @@ type GetUserLibraryRow struct {
 }
 
 func (q *Queries) GetUserLibrary(ctx context.Context, arg GetUserLibraryParams) ([]GetUserLibraryRow, error) {
-	rows, err := q.db.Query(ctx, getUserLibrary, arg.UserID, arg.Status, arg.Limit)
+	rows, err := q.db.Query(ctx, getUserLibrary,
+		arg.UserID,
+		arg.Status,
+		arg.Limit,
+		arg.HiddenTagIds,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +126,7 @@ func (q *Queries) GetUserLibrary(ctx context.Context, arg GetUserLibraryParams) 
 			&i.Name,
 			&i.Cover,
 			&i.AgeRating,
+			&i.TagIds,
 			&i.LastUpdatedAt,
 			&i.ChapterOrder,
 			&i.ChapterName,

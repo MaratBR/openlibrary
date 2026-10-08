@@ -22,14 +22,15 @@ func Run(config *koanf.Koanf, db dal.DB, log *zap.SugaredLogger) error {
 	uploadService := app.NewUploadServiceFromApplicationConfig(config)
 	userService := app.NewUserService(db)
 	bookManagerService := app.NewBookManagerService(app.BookManagerServiceDeps{
-		DB:                 db,
-		TagsService:        tagsService,
-		UsersService:       userService,
-		UploadService:      uploadService,
-		BookReindexService: app.NewDummyBookReindexService(),
-		MetricService:      analytics.NewDummyMetricService(),
-		Log:                log,
-		Markup:             content.NewDefaultEngine(),
+		AdultContentService: app.NewAdultContentService(),
+		DB:                  db,
+		TagsService:         tagsService,
+		UsersService:        userService,
+		UploadService:       uploadService,
+		BookReindexService:  app.NewDummyBookReindexService(),
+		MetricService:       analytics.NewDummyMetricService(),
+		Log:                 log,
+		Markup:              content.NewDefaultEngine(),
 	}, db)
 	reviewsService := app.NewReviewsService(db, userService, app.NewDummyBookBackgroundService())
 	signUpService := app.NewSignUpService(db, config, siteConfig, email.NewBlackhole())

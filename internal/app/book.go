@@ -54,24 +54,14 @@ type BookExternalLinkDto struct {
 
 type BookAdultWarning struct {
 	IsBookAdult bool
-	HasAdultTag bool
 }
 
 func (w BookAdultWarning) ShouldShowWarning() bool {
-	return w.IsBookAdult || w.HasAdultTag
+	return w.IsBookAdult
 }
 
-func (d BookDetailsDto) GetAdultWarning() (warnData BookAdultWarning) {
-	warnData.IsBookAdult = d.IsAdult
-
-	for _, t := range d.Tags {
-		if t.IsAdult {
-			warnData.HasAdultTag = true
-			break
-		}
-	}
-
-	return
+func (d BookDetailsDto) GetAdultWarning() BookAdultWarning {
+	return BookAdultWarning{IsBookAdult: d.IsAdult}
 }
 
 type GetBookQuery struct {

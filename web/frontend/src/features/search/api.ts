@@ -1,5 +1,5 @@
 import { HttpClient } from '@/features/http-client'
-import { Cache, Context, Effect, Layer, Schema } from 'effect'
+import { Context, Effect, Layer, Schema } from 'effect'
 
 export const TagsCategory = Schema.Literals([
   'other',
@@ -36,18 +36,30 @@ export class SearchApi extends Context.Service<
       const httpClient = yield* HttpClient
       const fetchTags = Effect.fn('SearchApi.fetchTags')(function* (query: string) {
         const response = yield* Effect.tryPromise(() =>
-          httpClient.get('/_api/tags', { searchParams: { q: query } }).json(),
+          httpClient
+            .get(
+              window.location.pathname.startsWith('/books-manager')
+                ? '/_api/books-manager/tags'
+                : '/_api/tags',
+              {
+                searchParams: {
+                  q: query,
+                  ...(new URLSearchParams(window.location.search).get('admin.link') === '1' ||
+                  window.location.pathname.startsWith('/admin')
+                    ? { 'admin.link': '1' }
+                    : {}),
+                  ...(new URLSearchParams(window.location.search).get('admin.override') === '1'
+                    ? { 'admin.override': '1' }
+                    : {}),
+                },
+              },
+            )
+            .json(),
         )
         return yield* Schema.decodeUnknownEffect(Schema.Array(DefinedTagDto))(response)
       })
-      const tagsCache = yield* Cache.make({
-        capacity: 100,
-        lookup: fetchTags,
-        timeToLive: '5 minutes',
-      })
-      const searchTags = Effect.fn('SearchApi.searchTags')((query: string) =>
-        Cache.get(tagsCache, query),
-      )
+      // Results depend on current account preferences and management mode.
+      const searchTags = fetchTags
 
       return SearchApi.of({ searchTags })
     }),

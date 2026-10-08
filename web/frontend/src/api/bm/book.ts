@@ -17,7 +17,6 @@ export type ApiPayloadBookDirectUpdate = {
   name: string
   ageRating: AgeRating
   summary: string
-  isAdult: boolean
   isPubliclyVisible: boolean
   tags: string[]
 }

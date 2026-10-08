@@ -73,7 +73,3 @@ func AsRating(v string) AgeRating {
 		return AgeRatingUnknown
 	}
 }
-
-func (r AgeRating) IsAdult() bool {
-	return r == AgeRatingNC17 || r == AgeRatingR
-}

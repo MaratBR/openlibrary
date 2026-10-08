@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit All"
+  short_description: "Commit pending changes in logical groups"
+  default_prompt: "Use $commit-all to commit pending changes in logical groups."

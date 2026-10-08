@@ -36,12 +36,13 @@ where c.book_id = $1 and "order" = (select max("order") from book_chapters where
 
 -- name: GetUserLibrary :many
 select 
-    books.id, books.name, books.cover, books.age_rating, 
+    books.id, books.name, books.cover, books.age_rating, books.tag_ids,
     reading_list.last_updated_at,
     last_chapter."order" as chapter_order, last_chapter.name as chapter_name, last_chapter.id as chapter_id
 from reading_list
 join books on reading_list.book_id = books.id
 left join book_chapters last_chapter on last_chapter.id = reading_list.last_accessed_chapter_id
 where reading_list.user_id = $1 and reading_list.status = $2
+  and not (books.tag_ids && sqlc.arg(hidden_tag_ids)::int8[])
 order by reading_list.last_updated_at
 limit $3;

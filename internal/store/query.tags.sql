@@ -74,3 +74,7 @@ where
 update defined_tags
 set name = $2, description = $3, is_adult = $4, is_spoiler = $5, tag_type = $6, synonym_of = $7
 where id = $1;
+
+-- name: GetCensoredTagFamilyIDs :many
+select id, coalesce(synonym_of, id)::int8 as canonical_id from defined_tags
+where coalesce(synonym_of, id) = ANY(sqlc.arg('ids')::int8[]);

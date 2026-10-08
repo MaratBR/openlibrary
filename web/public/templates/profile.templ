@@ -97,7 +97,10 @@ templ profileStat(value, label string) {
 }
 
 templ userProfilePinnedBookCard(bookID int64, name string, cover app.BookCover) {
+
     <li class="BookRecommendationItem">
+        @censoredContent(bookID) {
+
         <a
             href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) }
             data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
@@ -113,5 +116,6 @@ templ userProfilePinnedBookCard(bookID int64, name string, cover app.BookCover) 
                 <a class="Link" href={ templ.SafeURL(fmt.Sprintf("/book/%d", bookID)) }>{ name }</a>
             </div>
         </div>
+        }
     </li>
 }

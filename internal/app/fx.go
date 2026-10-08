@@ -19,6 +19,7 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 		NewAuthService,
 		NewSignUpService,
 		NewBookService,
+		NewAdultContentService,
 		NewBookFullReindexService,
 		fx.Annotate(
 			NewBookBackgroundService,

@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"math"
+	"strconv"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/app/dal"
@@ -107,7 +109,7 @@ func (u *userService) GetUserModerationSettings(ctx context.Context, userID uuid
 		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	return &UserModerationSettings{
-		CensoredTags:     user.CensoredTags,
+		CensoredTags:     append([]string{}, user.CensoredTags...),
 		CensoredTagsMode: CensorMode(user.CensoredTagsMode),
 		ShowAdultContent: user.ShowAdultContent,
 	}, nil
@@ -181,7 +183,21 @@ func (u *userService) UpdateUserCustomizationSettings(ctx context.Context, userI
 
 // UpdateUserModerationSettings implements UserService.
 func (u *userService) UpdateUserModerationSettings(ctx context.Context, userID uuid.UUID, settings UserModerationSettings) error {
-	err := u.queries.User_UpdateModerationSettings(ctx, store.User_UpdateModerationSettingsParams{
+
+	switch settings.CensoredTagsMode {
+	case "none", "hide", "censor":
+	default:
+		return fmt.Errorf("%w: invalid mode", ErrInvalidCensoredTags)
+	}
+	ids, err := ResolveCensoredTags(ctx, u.queries, settings.CensoredTags)
+	if err != nil {
+		return err
+	}
+	settings.CensoredTags = make([]string, len(ids))
+	for i, id := range ids {
+		settings.CensoredTags[i] = strconv.FormatInt(id, 10)
+	}
+	err = u.queries.User_UpdateModerationSettings(ctx, store.User_UpdateModerationSettingsParams{
 		CensoredTags:     settings.CensoredTags,
 		CensoredTagsMode: store.CensorMode(settings.CensoredTagsMode),
 		ShowAdultContent: settings.ShowAdultContent,

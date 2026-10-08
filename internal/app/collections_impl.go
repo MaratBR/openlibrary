@@ -250,6 +250,7 @@ func (c *collectionService) GetBookCollections(ctx context.Context, query GetBoo
 
 func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCollectionBooksQuery) (GetCollectionBooksResult, error) {
 	rows, err := c.queries.Collection_GetBooks(ctx, store.Collection_GetBooksParams{
+		HiddenTagIds: HiddenTagIDs(ctx),
 		Limit:        query.PageSize,
 		Offset:       (query.Page - 1) * query.PageSize,
 		CollectionID: query.CollectionID,
@@ -262,6 +263,7 @@ func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCol
 	tagsAgg := newTagsAggregator(c.tagsService)
 
 	for _, row := range rows {
+		ApplyBookTagPreferences(ctx, row.ID, row.TagIds)
 		tagsAgg.Add(row.ID, row.TagIds)
 
 		book := CollectionBook2Dto{
@@ -294,7 +296,7 @@ func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCol
 		books[i].Tags = tagsList
 	}
 
-	booksCount, err := c.queries.Collection_CountBooks(ctx, query.CollectionID)
+	booksCount, err := c.queries.Collection_CountBooks(ctx, store.Collection_CountBooksParams{CollectionID: query.CollectionID, HiddenTagIds: HiddenTagIDs(ctx)})
 	if err != nil {
 		return GetCollectionBooksResult{}, apperror.WrapUnexpectedDBError(err)
 	}
@@ -309,8 +311,9 @@ func (c *collectionService) GetCollectionBooks(ctx context.Context, query GetCol
 
 func (c *collectionService) getCollectionBooksList(ctx context.Context, collectionID int64, page, pageSize int32) ([]CollectionBookDto, error) {
 	rows, err := c.queries.Collection_GetBooks(ctx, store.Collection_GetBooksParams{
+		HiddenTagIds: HiddenTagIDs(ctx),
 		CollectionID: collectionID,
-		Limit:        page,
+		Limit:        pageSize,
 		Offset:       pageSize * (page - 1),
 	})
 	if err != nil {
@@ -318,6 +321,7 @@ func (c *collectionService) getCollectionBooksList(ctx context.Context, collecti
 	}
 
 	books := MapSlice(rows, func(row store.Collection_GetBooksRow) CollectionBookDto {
+		ApplyBookTagPreferences(ctx, row.ID, row.TagIds)
 		return CollectionBookDto{
 			ID:    row.ID,
 			Name:  row.Name,

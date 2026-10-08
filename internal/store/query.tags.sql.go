@@ -22,6 +22,36 @@ func (q *Queries) DefinedTagsAreInitialized(ctx context.Context) (bool, error) {
 	return initialized, err
 }
 
+const getCensoredTagFamilyIDs = `-- name: GetCensoredTagFamilyIDs :many
+select id, coalesce(synonym_of, id)::int8 as canonical_id from defined_tags
+where coalesce(synonym_of, id) = ANY($1::int8[])
+`
+
+type GetCensoredTagFamilyIDsRow struct {
+	ID          int64
+	CanonicalID int64
+}
+
+func (q *Queries) GetCensoredTagFamilyIDs(ctx context.Context, ids []int64) ([]GetCensoredTagFamilyIDsRow, error) {
+	rows, err := q.db.Query(ctx, getCensoredTagFamilyIDs, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCensoredTagFamilyIDsRow
+	for rows.Next() {
+		var i GetCensoredTagFamilyIDsRow
+		if err := rows.Scan(&i.ID, &i.CanonicalID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTag = `-- name: GetTag :one
 select t.id, t.name, t.description, t.is_spoiler, t.is_adult, t.created_at, t.tag_type, t.synonym_of, t.is_default, t.lowercased_name, syn.name as synonym_name
 from defined_tags t

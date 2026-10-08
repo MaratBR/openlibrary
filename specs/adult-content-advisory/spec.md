@@ -1,7 +1,24 @@
 # Feature: Consistent adult-content and warning preferences
 
-Status: draft for agreement, 2026-10-04. No implementation is included.
-Behavior choices in the open questions must be resolved before coding.
+Status: classification service and editor contract agreed on 2026-10-08.
+Censored-tag behavior is implemented according to [the newer agreed slice](censored-tags.md),
+including direct-page blurring and explicit-tag search exceptions. The broader
+adult-setting/interstitial rollout below remains draft.
+
+## Agreed implementation slice
+
+- Adult classification is owned by an injectable `AdultContentService` in the
+  application layer, allowing later replacement without changing callers.
+- The default policy classifies NC-17 or any assigned adult tag as adult.
+  R and unrated books are not adult unless an adult tag is assigned.
+- Public and manager details use the same service for their derived `adult`
+  field. Direct-page warnings consume that result without repeating tag rules.
+- The editor offers age rating only. It does not submit a writable adult field
+  or report an adult-switch mismatch after a successful save.
+- Legacy non-null `isAdult` submissions receive HTTP 400 before saving anything,
+  with an instruction to omit the field. Omitted/null values are accepted.
+- Discovery filtering, random selection, preference migration, and interstitials
+  remain subsequent work; this slice does not change those mechanisms.
 
 ## Problem and outcome
 
@@ -28,7 +45,7 @@ Preferences never grant access to banned, private, or otherwise unavailable work
 
 ## Proposed behavior
 
-These defaults are proposals, pending the decisions below:
+The classification boundary is agreed above; the remaining defaults are proposals:
 
 - Adults-only means NC-17 or an assigned descriptor requiring adults-only.
   R means mature; non-adult warnings do not raise the audience classification.
@@ -94,8 +111,8 @@ These defaults are proposals, pending the decisions below:
 
 ## Open questions requiring agreement
 
-1. Adopt NC-17 alone as the rating boundary, or retain both R and NC-17? How
-   should unrated books behave? The audit currently finds both treated as adult.
+1. Resolved: NC-17 plus assigned adult tags, behind an injectable service.
+   Unrated books are not adult unless an adult tag is assigned.
 2. Adopt descriptor-driven classification escalation? Narrow existing `is_adult`
    flags in place or migrate them to a warning-only `requires_adults_only` field?
    How should adult genre/topic tags and synonyms migrate?
@@ -116,4 +133,5 @@ Use focused policy tests for AC-3, AC-6, AC-8, and AC-11; settings/editor API
 regressions for AC-1 and AC-2; SQL/OpenSearch integration checks for AC-4 and
 AC-10; HTTP response inspection for AC-5 and AC-7; migration fixtures for AC-9;
 and browser checks for AC-2, AC-6, and AC-12. Record results and unavailable
-checks during implementation. No implementation criteria are complete yet.
+checks during implementation. The classification service and editor contract are implemented; broader criteria
+remain pending. See verification.md for checks and limitations.

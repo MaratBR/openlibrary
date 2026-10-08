@@ -88,6 +88,7 @@ templ Home_MostViewedBooks(
                         viewCount, _ := views[book.ID] 
                     }}
                     <li class="BookRecommendationItem">
+                        @censoredContent(book.ID) {
                         <a href={ fmt.Sprintf("/book/%s-%d", book.Slug, book.ID) }>
                             // data-views={strconv.FormatInt(viewCount, 10)} 
                             // data-book-card-preview={strconv.FormatInt(book.ID, 10)}
@@ -108,6 +109,7 @@ templ Home_MostViewedBooks(
                                 { formatNumber(viewCount) }
                             </div>
                         </div>
+                        }
                     </li>
                 }
                 // @webcomponents.Island2(webcomponents.Island2Props{

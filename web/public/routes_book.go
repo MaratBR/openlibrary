@@ -181,8 +181,9 @@ func (b *bookController) bookPreview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	book, err := b.bookService.GetBookDetails(r.Context(), app.GetBookQuery{
-		ID:          bookID,
-		ActorUserID: auth.GetNullableUserID(r.Context()),
+		ID:            bookID,
+		ActorUserID:   auth.GetNullableUserID(r.Context()),
+		AdminOverride: adminBookOverride(r),
 	})
 	if err != nil {
 		writeApplicationError(w, r, err)
@@ -203,6 +204,13 @@ func (b *bookController) bookReview(w http.ResponseWriter, r *http.Request) {
 	session, ok := auth.GetSession(r.Context())
 	if !ok {
 		writeUnauthorizedError(w)
+		return
+	}
+
+	if _, err := b.bookService.GetBookDetails(r.Context(), app.GetBookQuery{
+		ID: bookID, ActorUserID: auth.GetNullableUserID(r.Context()), AdminOverride: adminBookOverride(r),
+	}); err != nil {
+		writeApplicationError(w, r, err)
 		return
 	}
 

@@ -27,15 +27,16 @@ import (
 type BookManagerServiceDeps struct {
 	fx.In
 
-	DB                 DB
-	TagsService        TagsService
-	UsersService       UserService
-	UploadService      *UploadService
-	BookReindexService BookReindexService
-	MetricService      analytics.MetricService
-	Log                *zap.SugaredLogger
-	Markup             *content.MarkupEngine
-	FontPolicy         bookfont.Policy
+	DB                  DB
+	AdultContentService AdultContentService
+	TagsService         TagsService
+	UsersService        UserService
+	UploadService       *UploadService
+	BookReindexService  BookReindexService
+	MetricService       analytics.MetricService
+	Log                 *zap.SugaredLogger
+	Markup              *content.MarkupEngine
+	FontPolicy          bookfont.Policy
 }
 
 type bookManagerService struct {
@@ -122,7 +123,7 @@ func (s *bookManagerService) GetBook(ctx context.Context, query ManagerGetBookQu
 		ID:              book.ID,
 		Name:            book.Name,
 		AgeRating:       ageRating,
-		IsAdult:         ageRating.IsAdult(),
+		IsAdult:         s.deps.AdultContentService.IsAdult(ageRating, tags),
 		Tags:            tags,
 		Words:           int(book.Words),
 		WordsPerChapter: getWordsPerChapter(int(book.Words), int(book.Chapters)),

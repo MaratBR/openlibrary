@@ -29,7 +29,6 @@ export default function BookEdit() {
 function BookEditForm({ book }: { book: ManagerBookDetailsDto }) {
   const [name, setName] = useState(book.name)
   const [ageRating, setAgeRating] = useState(book.ageRating)
-  const [isAdult, setIsAdult] = useState(book.adult)
   const [isPubliclyVisible, setIsPubliclyVisible] = useState(book.isPubliclyVisible)
   const [tags, setTags] = useState(book.tags)
   const [, setSummary] = useState(book.summary)
@@ -48,7 +47,6 @@ function BookEditForm({ book }: { book: ManagerBookDetailsDto }) {
     JSON.stringify({
       name,
       ageRating,
-      isAdult,
       isPubliclyVisible,
       tags: tags.map((t) => t.id),
       summary: summaryEditor.getHTML(),
@@ -58,24 +56,17 @@ function BookEditForm({ book }: { book: ManagerBookDetailsDto }) {
   const navigate = useNavigate()
   const revalidator = useRevalidator()
   usePageTitle(`${book.name} · ${window._('bookManager.ui.details')}`)
-  const [unconfirmed, setUnconfirmed] = useState(false)
   const saveMutation = useMutation({
     mutationFn: async () => {
-      setUnconfirmed(false)
       const submitted = snapshot()
       const response = await BMBookAPI.getInstance().updateBook(book.id, {
         name: name.trim(),
         summary: summaryEditor.getHTML(),
-        isAdult,
         ageRating,
         isPubliclyVisible,
         tags: tags.map((x) => x.id),
       })
       response.throwIfError()
-      if (response.data.adult !== isAdult) {
-        setUnconfirmed(true)
-        throw new Error('Book response did not confirm the requested adult setting')
-      }
       return submitted
     },
     onSuccess: async (submitted) => {
@@ -144,13 +135,6 @@ function BookEditForm({ book }: { book: ManagerBookDetailsDto }) {
               <FormControl label={window._('bookManager.edit.ageRating')}>
                 <AgeRatingInput value={ageRating} onChange={setAgeRating} name="rating" />
               </FormControl>
-              <FormControl label={window._('common.adult')}>
-                <Switch
-                  value={isAdult}
-                  onChange={setIsAdult}
-                  slotProps={{ input: { 'aria-label': window._('common.adult') } }}
-                />
-              </FormControl>
               <FormControl
                 label={window._('bookManager.edit.isPubliclyVisible')}
                 description={window._('bookManager.edit.isPubliclyVisible_description')}
@@ -166,14 +150,7 @@ function BookEditForm({ book }: { book: ManagerBookDetailsDto }) {
             </aside>
           </div>
         </fieldset>
-        {saveMutation.isError &&
-          (unconfirmed ? (
-            <p role="alert" className="text-destructive my-3">
-              {window._('bookManager.ui.unconfirmedAdult')}
-            </p>
-          ) : (
-            <RequestError />
-          ))}
+        {saveMutation.isError && <RequestError />}
         <footer className="BM-actionBar">
           <p role="status">
             {window._(

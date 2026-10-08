@@ -32,12 +32,19 @@ func (q *Queries) Collection_AddBookToCollection(ctx context.Context, arg Collec
 
 const collection_CountBooks = `-- name: Collection_CountBooks :one
 select count(*)
-from collection_books
-where collection_id = $1
+from collection_books cb
+join books b on b.id = cb.book_id
+where cb.collection_id = $1
+  and not (b.tag_ids && $2::int8[])
 `
 
-func (q *Queries) Collection_CountBooks(ctx context.Context, collectionID int64) (int64, error) {
-	row := q.db.QueryRow(ctx, collection_CountBooks, collectionID)
+type Collection_CountBooksParams struct {
+	CollectionID int64
+	HiddenTagIds []int64
+}
+
+func (q *Queries) Collection_CountBooks(ctx context.Context, arg Collection_CountBooksParams) (int64, error) {
+	row := q.db.QueryRow(ctx, collection_CountBooks, arg.CollectionID, arg.HiddenTagIds)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -66,8 +73,7 @@ func (q *Queries) Collection_Delete(ctx context.Context, id int64) error {
 }
 
 const collection_DeleteAllBooks = `-- name: Collection_DeleteAllBooks :exec
-delete from collection_books
-where collection_id = $1
+delete from collection_books where collection_id = $1
 `
 
 func (q *Queries) Collection_DeleteAllBooks(ctx context.Context, collectionID int64) error {
@@ -133,6 +139,7 @@ from collection_books cb
 join books b on b.id = cb.book_id
 join users author on author.id = b.author_user_id
 where cb.collection_id = $3
+  and not (b.tag_ids && $4::int8[])
 order by cb."order"
 limit $1 offset $2
 `
@@ -141,6 +148,7 @@ type Collection_GetBooksParams struct {
 	Limit        int32
 	Offset       int32
 	CollectionID int64
+	HiddenTagIds []int64
 }
 
 type Collection_GetBooksRow struct {
@@ -171,7 +179,12 @@ type Collection_GetBooksRow struct {
 }
 
 func (q *Queries) Collection_GetBooks(ctx context.Context, arg Collection_GetBooksParams) ([]Collection_GetBooksRow, error) {
-	rows, err := q.db.Query(ctx, collection_GetBooks, arg.Limit, arg.Offset, arg.CollectionID)
+	rows, err := q.db.Query(ctx, collection_GetBooks,
+		arg.Limit,
+		arg.Offset,
+		arg.CollectionID,
+		arg.HiddenTagIds,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -334,12 +347,19 @@ func (q *Queries) Collection_GetByUser(ctx context.Context, arg Collection_GetBy
 
 const collection_GetMaxOrder = `-- name: Collection_GetMaxOrder :one
 select cast(coalesce(max("order"), -1) as int4)
-from collection_books
-where collection_id = $1
+from collection_books cb
+join books b on b.id = cb.book_id
+where cb.collection_id = $1
+  and not (b.tag_ids && $2::int8[])
 `
 
-func (q *Queries) Collection_GetMaxOrder(ctx context.Context, collectionID int64) (int32, error) {
-	row := q.db.QueryRow(ctx, collection_GetMaxOrder, collectionID)
+type Collection_GetMaxOrderParams struct {
+	CollectionID int64
+	HiddenTagIds []int64
+}
+
+func (q *Queries) Collection_GetMaxOrder(ctx context.Context, arg Collection_GetMaxOrderParams) (int32, error) {
+	row := q.db.QueryRow(ctx, collection_GetMaxOrder, arg.CollectionID, arg.HiddenTagIds)
 	var column_1 int32
 	err := row.Scan(&column_1)
 	return column_1, err

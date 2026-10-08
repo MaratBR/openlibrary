@@ -1,11 +1,16 @@
 # Tasks: Adult-content and warning preferences
 
-All implementation tasks are pending agreement on the draft spec.
+Classification boundary and service abstraction agreed on 2026-10-08.
+Broader filtering requirements remain provisional.
+
+- [x] Record NC-17 plus adult tags behind a replaceable application service.
+- [x] Implement and verify the classification service and custom-provider behavior.
+- [x] Remove the independent editor switch and verify legacy rejection before saving.
 
 - [ ] Resolve open questions and finalize observable requirements (AC-1–12).
 - [ ] Inventory public surfaces, APIs, caches, and availability checks (AC-4–8, AC-11).
 - [ ] Implement central classification/preferences policy and boundary tests (AC-3, AC-8, AC-11).
-- [ ] Fix editor classification controls and legacy API contract (AC-1).
+- [x] Fix editor classification controls and legacy API contract (AC-1; browser verification pending).
 - [ ] Implement canonical descriptor storage/transport and migration fixtures (AC-2, AC-9–10).
 - [ ] Implement settings selector, validation, translations, and save/error states (AC-2, AC-12).
 - [ ] Add SQL/OpenSearch constraints, count parity, index backfill, and invalidation (AC-4, AC-10).

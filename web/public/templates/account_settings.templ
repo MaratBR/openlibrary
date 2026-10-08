@@ -3,11 +3,14 @@ package templates
 import "fmt"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 
-templ AccountSettings(settingsType string, settings any) {
+templ AccountSettings(settingsType string, settings any, tagLabels ...map[string]string) {
 	{{
 		l := i18n.GetLocalizer(ctx)
 		settingsJSON, _ := templ.JSONString(settings)
-		dataExpression := fmt.Sprintf("accountSettings(%s, %q)", settingsJSON, "/account/settings/"+settingsType)
+		labels := map[string]string{}
+		if len(tagLabels) > 0 { labels = tagLabels[0] }
+		labelsJSON, _ := templ.JSONString(labels)
+		dataExpression := fmt.Sprintf("accountSettings(%s, %q, %s)", settingsJSON, "/account/settings/"+settingsType, labelsJSON)
 	}}
 	@standardPageLayout(standardPageLayoutProps{
 		htmlLayoutProps: htmlLayoutProps{
@@ -52,9 +55,45 @@ templ AccountSettings(settingsType string, settings any) {
 			</div>
 		</main>
 		<script>
-			function accountSettings(initialSettings, endpoint) {
+			function accountSettings(initialSettings, endpoint, initialTagLabels) {
 				return {
 					settings: initialSettings,
+                    tagLabels: initialTagLabels,
+                    tagQuery: '',
+                    tagResults: [],
+                    tagSearchState: 'idle',
+                    tagSearchVersion: 0,
+
+                    async searchTags() {
+                        const version = ++this.tagSearchVersion
+                        if (!this.tagQuery.trim()) { this.tagResults = []; this.tagSearchState = 'idle'; return }
+                        this.tagSearchState = 'loading'
+                        try {
+                            const response = await fetch('/account/settings/moderation/tags?q=' + encodeURIComponent(this.tagQuery))
+                            if (!response.ok) throw new Error('Tag search failed')
+                            const tags = await response.json()
+                            if (version !== this.tagSearchVersion) return
+                            this.tagResults = tags.filter(tag => !this.settings.censoredTags.includes(tag.id))
+                            this.tagSearchState = 'ready'
+                        } catch (error) {
+                            if (version !== this.tagSearchVersion) return
+                            this.tagResults = []
+                            this.tagSearchState = 'error'
+                        }
+                    },
+                    addTag(tag) {
+                        if (this.settings.censoredTags.length >= 100) return
+                        this.tagLabels[tag.id] = tag.name
+                        this.settings.censoredTags = [...this.settings.censoredTags, tag.id]
+                        this.tagQuery = ''
+                        this.tagResults = []
+                        ++this.tagSearchVersion
+                        this.requestSave()
+                    },
+                    removeTag(id) {
+                        this.settings.censoredTags = this.settings.censoredTags.filter(value => value !== id)
+                        this.requestSave()
+                    },
 					saveState: 'idle',
 					dirty: false,
 					inFlight: false,
@@ -179,7 +218,29 @@ templ moderationSettingsFields(l *i18n.Localizer) {
 			</select>
 		}
 		@settingsField(l.T("accountSettings.moderation.censoredTags"), l.T("accountSettings.moderation.censoredTagsDescription")) {
-			<input class="input" disabled placeholder={ l.T("accountSettings.moderation.censoredTagsTodo") }/>
+			<div class="space-y-3">
+                <ul class="flex flex-wrap gap-2" aria-label={ l.T("accountSettings.moderation.censoredTags") }>
+                    <template x-for="id in settings.censoredTags" :key="id">
+                        <li class="Chip flex items-center gap-2">
+                            <span x-text="tagLabels[id] || id"></span>
+                            <button type="button" class="Btn Btn--ghost Btn--sm" @click="removeTag(id)"
+                                :aria-label={ fmt.Sprintf("%q + ' ' + (tagLabels[id] || id)", l.T("accountSettings.moderation.removeTag")) }>×</button>
+                        </li>
+                    </template>
+                </ul>
+                <label class="block" for="censored-tag-query">{ l.T("accountSettings.moderation.searchTags") }</label>
+                <input id="censored-tag-query" class="input w-full" type="search" autocomplete="off"
+                    x-model="tagQuery" @input.debounce.250ms="searchTags()"
+                    :disabled="settings.censoredTags.length >= 100"/>
+                <p role="status" x-show="tagSearchState === 'loading'">{ l.T("accountSettings.moderation.searchingTags") }</p>
+                <p role="alert" x-show="tagSearchState === 'error'">{ l.T("accountSettings.moderation.tagSearchError") }</p>
+                <p role="status" x-show="tagSearchState === 'ready' && tagResults.length === 0">{ l.T("accountSettings.moderation.noTags") }</p>
+                <ul class="space-y-1">
+                    <template x-for="tag in tagResults" :key="tag.id">
+                        <li><button type="button" class="Btn Btn--outline w-full text-left" @click="addTag(tag)" x-text="tag.name"></button></li>
+                    </template>
+                </ul>
+            </div>
 		}
 	</div>
 }

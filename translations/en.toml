@@ -540,7 +540,12 @@ censorModeHide = "Hide matching content"
 censorModeCensor = "Blur matching content"
 censoredTags = "Censored tags"
 censoredTagsDescription = "Choose tags whose content should be filtered."
-censoredTagsTodo = "TODO: tag selection will be added later"
+searchTags = "Search tags to add"
+removeTag = "Remove"
+searchingTags = "Searching tags…"
+tagSearchError = "Could not load tags. Try searching again."
+noTags = "No matching tags."
+
 
 [accountSettings.customization]
 title = "Customization"
@@ -1214,3 +1219,7 @@ shadowBanned = "The book is shadow banned."
 deleted = "The book is in the trash."
 removed = "The book was permanently removed."
 hiddenChapter = "This chapter is not publicly visible."
+
+[contentPreferences]
+reveal = "Reveal"
+revealDescription = "Content blurred by your tag preferences. Reveal this book."

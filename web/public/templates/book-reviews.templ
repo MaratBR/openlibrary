@@ -77,6 +77,7 @@ templ BookMyReview(
     bookID int64,
     ratingAndReview app.RatingAndReview,
 ) {
+    @censoredContent(bookID) {
     {{
         _, authorized := auth.GetSession(ctx)
         l := i18n.GetLocalizer(ctx)
@@ -214,6 +215,7 @@ templ BookMyReview(
             </div>
         } 
     </section>
+    }
 }
 
 templ collapsibleRawHtml(id, html string) {

@@ -52,13 +52,14 @@ templ BookPage(
             Title: book.Name,
         },
     }) {
+    @censoredContent(book.ID) {
         @AdminBookVisibilityWarning(book.VisibilityReasons)
         if showAdultWarning {
             @bookAdultWarning()
         }
 
         if replaceURLWithSlug {
-            @replaceURLWith(adminBookURL(fmt.Sprintf("/book/%s-%d", book.Slug, book.ID), book.AdminOverride))
+            @replaceURLWith(publicBookURL(ctx, fmt.Sprintf("/book/%s-%d", book.Slug, book.ID), book.AdminOverride))
         }
 
         if !book.IsPubliclyAvailable && isAuthenticated && user.ID == book.Author.ID {
@@ -168,7 +169,7 @@ templ BookPage(
                             x-merge="replace"
                             x-cloak
                             x-show="tab==='toc'"
-                            x-init={ fmt.Sprintf(`let load=()=>$ajax('%s');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, adminBookURL(fmt.Sprintf("/book/%d/__fragment/toc", book.ID), book.AdminOverride)) }>
+                            x-init={ fmt.Sprintf(`let load=()=>$ajax('%s');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, publicBookURL(ctx, fmt.Sprintf("/book/%d/__fragment/toc", book.ID), book.AdminOverride)) }>
                             <div class="h-[600px] mt-4">
                                 <span class="Loader mt-4"></span>
                             </div>
@@ -177,6 +178,7 @@ templ BookPage(
                 </main>
             </div>
         </div>
+    }
     }
 }
 

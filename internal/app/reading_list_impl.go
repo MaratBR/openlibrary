@@ -19,14 +19,16 @@ type readingListService struct {
 func (s *readingListService) GetReadingListBooks(ctx context.Context, query GetReadingListItemsQuery) ([]BookLibraryDto, error) {
 	queries := store.New(s.db)
 	rows, err := queries.GetUserLibrary(ctx, store.GetUserLibraryParams{
-		UserID: uuidDomainToDb(query.UserID),
-		Status: store.ReadingListStatus(query.Status),
-		Limit:  int32(query.Limit),
+		HiddenTagIds: HiddenTagIDs(ctx),
+		UserID:       uuidDomainToDb(query.UserID),
+		Status:       store.ReadingListStatus(query.Status),
+		Limit:        int32(query.Limit),
 	})
 	if err != nil {
 		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	return MapSlice(rows, func(r store.GetUserLibraryRow) BookLibraryDto {
+		ApplyBookTagPreferences(ctx, r.ID, r.TagIds)
 		var lastChapter Nullable[BookReadingListItemLastChapterDto]
 		if r.ChapterID.Valid {
 			lastChapter = Value(BookReadingListItemLastChapterDto{

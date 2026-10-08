@@ -1,6 +1,19 @@
 # Plan: Adult-content and warning preferences
 
-Status: provisional; finalize against agreed spec before implementation.
+Status: classification/editor slice finalized on 2026-10-08; remaining plan provisional.
+
+## Current slice
+
+1. Add `AdultContentService.IsAdult(rating, tags)` and register its default
+   implementation with Fx. Hardcode NC-17 plus assigned adult tags inside it.
+2. Inject the service into public and manager book details. Make warnings use
+   the derived field; remove `AgeRating.IsAdult` to prevent parallel policy rules.
+3. Remove the independent editor switch and request field. Reject legacy
+   non-null `isAdult` before saving, preserving the read-only `adult` response.
+4. Test all rating/tag combinations, custom-service consumption, and legacy
+   rejection before persistence. Run focused Go tests and the frontend build.
+
+## Subsequent rollout
 
 1. Resolve the spec's open questions and inventory every existing public book
    retrieval path, cache, and equivalent API. Read scoped AGENTS.md files before

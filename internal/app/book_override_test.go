@@ -120,7 +120,7 @@ func TestBookRestrictionsAndOverride(t *testing.T) {
 		{IsPubliclyVisible: true, IsPermRemoved: true},
 	} {
 		db := &overrideReadDB{book: book, role: store.UserRoleAdmin}
-		service := &bookService{queries: store.New(db), tagsService: overrideTags{}, log: zap.NewNop().Sugar()}
+		service := &bookService{queries: store.New(db), tagsService: overrideTags{}, adultContentService: NewAdultContentService(), log: zap.NewNop().Sugar()}
 		actor := Value(uuid.NewV4())
 		if _, err := service.GetBookDetails(context.Background(), GetBookQuery{ID: 1, ActorUserID: actor}); err == nil {
 			t.Fatalf("restricted book allowed without override: %+v", book)
@@ -135,7 +135,7 @@ func TestBookRestrictionsAndOverride(t *testing.T) {
 		}
 	}
 	db := &overrideReadDB{book: store.Book_GetRow{IsPubliclyVisible: true}, role: store.UserRoleAdmin}
-	service := &bookService{queries: store.New(db), tagsService: overrideTags{}, log: zap.NewNop().Sugar()}
+	service := &bookService{queries: store.New(db), tagsService: overrideTags{}, adultContentService: NewAdultContentService(), log: zap.NewNop().Sugar()}
 	dto, err := service.GetBookDetails(context.Background(), GetBookQuery{ID: 1, ActorUserID: Value(uuid.NewV4()), AdminOverride: true})
 	if err != nil || len(dto.VisibilityReasons) > 0 {
 		t.Fatalf("public book changed: %+v %v", dto, err)
@@ -143,7 +143,7 @@ func TestBookRestrictionsAndOverride(t *testing.T) {
 }
 func TestHiddenChapterRequiresOverride(t *testing.T) {
 	db := &overrideReadDB{book: store.Book_GetRow{IsPubliclyVisible: true}, role: store.UserRoleAdmin, hiddenChapter: true}
-	service := &bookService{queries: store.New(db), tagsService: overrideTags{}, log: zap.NewNop().Sugar()}
+	service := &bookService{queries: store.New(db), tagsService: overrideTags{}, adultContentService: NewAdultContentService(), log: zap.NewNop().Sugar()}
 	actor := Value(uuid.NewV4())
 	query := GetBookChapterQuery{BookID: 1, ChapterID: 2, ActorUserID: actor}
 	if _, err := service.GetBookChapter(context.Background(), query); err == nil {

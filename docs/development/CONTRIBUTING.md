@@ -4,11 +4,16 @@ OpenLibrary separates HTTP delivery, application rules, persistence, and
 frontend behavior. The scoped `AGENTS.md` files provide the authoritative,
 directory-specific guidance for changes in each area.
 
+The application uses Go 1.24, Chi, Fx, PostgreSQL with pgx and SQLC,
+server-rendered templ pages, and a TypeScript frontend with Alpine.js, React,
+SCSS, UnoCSS, Vite, and pnpm.
+
 ## Change placement
 
 | Change | Home |
 | --- | --- |
 | Routes, request parsing, authentication context, rendered/API responses | `web/public` |
+| Admin controllers and templates | `web/admin` |
 | Validation, policies, state transitions, and service interfaces | `internal/app` |
 | SQL queries, migrations, and generated database access | `internal/store` |
 | Server startup, root middleware, and runtime configuration | `cmd/server` |
@@ -22,6 +27,16 @@ own domain rules and use SQLC-generated `store.Queries` for persistence.
 For a new feature or substantial behavior change, start with the
 [spec-driven development workflow](spec-driven-development.md). Small fixes
 can go straight to implementation when the expected behavior is already clear.
+
+## Local development
+
+See [README.md](../../README.md) for prerequisites and libvips setup. Typical
+local startup uses `docker compose up -d`, `make migrate_db`, `make ui_watch`,
+and `make main_watch`.
+
+Default server configuration and Vite proxy settings are in
+[`openlibrary.toml`](../../openlibrary.toml). Keep secrets and machine-specific
+values in ignored `openlibrary.private.toml`.
 
 ## Generated sources
 
@@ -44,8 +59,9 @@ git diff --check
 ```
 
 If Go cannot write its default cache, set `GOCACHE` and `GOTMPDIR` to writable
-temporary paths for the command. Preserve unrelated changes and report baseline
-failures rather than fixing them incidentally.
+temporary paths for the command rather than escalating permissions. Preserve
+unrelated changes and report baseline failures rather than fixing them
+incidentally.
 
 Diagnostic endpoints, server freshness checks, and Playwright verification are
 documented separately in [Debugging and visual checks](debugging.md).

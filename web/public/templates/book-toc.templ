@@ -13,6 +13,8 @@ templ BookTOC(
     activeChapterID int64,
     adminOverride ...bool,
 ) {
+
+    @censoredContent(bookID) {
     {{ l := i18n.GetLocalizer(ctx) }}
 
     <div role="tabpanel" aria-labelledby="book-tab-toc" tabindex="0" class="BookPage-panel" id="slot-book-toc" x-cloak x-show="tab==='toc'">
@@ -28,7 +30,7 @@ templ BookTOC(
                     for i, chapter := range chapters {
                         <li role="listitem" aria-label={ chapter.Name }>
                             <a
-                                href={ templ.SafeURL(adminBookURL(fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID), len(adminOverride) > 0 && adminOverride[0])) }
+                                href={ templ.SafeURL(publicBookURL(ctx, fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID), len(adminOverride) > 0 && adminOverride[0])) }
                                 if chapter.ID == activeChapterID {
                                     class="BookToc-item BookToc-item--readingNow"
                                 } else {
@@ -68,4 +70,6 @@ templ BookTOC(
         }
         
     </div>
+
+    }
 }

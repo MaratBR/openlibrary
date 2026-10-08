@@ -1,0 +1,30 @@
+package templates
+
+import "fmt"
+import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
+// Reveal lasts for this document only, shared by fragments for the same book.
+templ censoredContent(bookID int64) {
+    if app.IsBookCensored(ctx, bookID) {
+        {{ l := i18n.GetLocalizer(ctx) }}
+        <div class="relative overflow-hidden rounded-lg" data-censored-book={ fmt.Sprintf("%d", bookID) }
+            x-data={ fmt.Sprintf(`{id:'%d',revealed:(window.__revealedCensoredBooks||[]).includes('%d'),reveal(){this.revealed=true;window.__revealedCensoredBooks=[...(window.__revealedCensoredBooks||[]),this.id];window.dispatchEvent(new CustomEvent('content:reveal',{detail:this.id}))}}`, bookID, bookID) }
+            @content:reveal.window="if($event.detail===id)revealed=true">
+            <div class="absolute inset-0 z-10 flex items-center justify-center p-2" x-show="!revealed">
+                <button type="button" class="Btn Btn--sm Btn--outline bg-surface shadow-lg rounded-full whitespace-nowrap" @click="reveal()"
+                    aria-label={ l.T("contentPreferences.revealDescription") }>
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                    { l.T("contentPreferences.reveal") }
+                </button>
+            </div>
+            <div inert aria-hidden="true" :inert="!revealed" :aria-hidden="!revealed"
+                style="filter:blur(12px);pointer-events:none;user-select:none"
+                :style="revealed?'':'filter:blur(12px);pointer-events:none;user-select:none'">
+                { children... }
+            </div>
+        </div>
+    } else {
+        { children... }
+    }
+}

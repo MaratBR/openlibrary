@@ -81,7 +81,13 @@ select b.id, b.name, b.slug, b.summary, b.author_user_id, b.created_at, b.age_ra
 from books b
 join users u on u.id = b.author_user_id
 where b.id = ANY($1::int8[])
+  and not (b.tag_ids && $2::int8[])
 `
+
+type Book_GetByIdsParams struct {
+	Ids          []int64
+	HiddenTagIds []int64
+}
 
 type Book_GetByIdsRow struct {
 	ID                 int64
@@ -109,8 +115,8 @@ type Book_GetByIdsRow struct {
 	AuthorName         string
 }
 
-func (q *Queries) Book_GetByIds(ctx context.Context, ids []int64) ([]Book_GetByIdsRow, error) {
-	rows, err := q.db.Query(ctx, book_GetByIds, ids)
+func (q *Queries) Book_GetByIds(ctx context.Context, arg Book_GetByIdsParams) ([]Book_GetByIdsRow, error) {
+	rows, err := q.db.Query(ctx, book_GetByIds, arg.Ids, arg.HiddenTagIds)
 	if err != nil {
 		return nil, err
 	}
@@ -160,6 +166,7 @@ where b.author_user_id = $1 and chapters > 0
   and b.is_publicly_visible
   and not b.is_banned
   and not b.is_trashed
+  and not (b.tag_ids && $4::int8[])
 order by b.is_pinned desc, b.created_at asc
 limit $2 offset $3
 `
@@ -168,10 +175,16 @@ type Book_GetByUserParams struct {
 	AuthorUserID pgtype.UUID
 	Limit        int32
 	Offset       int32
+	HiddenTagIds []int64
 }
 
 func (q *Queries) Book_GetByUser(ctx context.Context, arg Book_GetByUserParams) ([]Book, error) {
-	rows, err := q.db.Query(ctx, book_GetByUser, arg.AuthorUserID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, book_GetByUser,
+		arg.AuthorUserID,
+		arg.Limit,
+		arg.Offset,
+		arg.HiddenTagIds,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -623,12 +636,18 @@ const getRandomPublicBookIDs = `-- name: GetRandomPublicBookIDs :many
 select id
 from books
 where is_publicly_visible and age_rating not in ('R', 'NC-17') and not is_banned and chapters > 0
+  and not (tag_ids && $2::int8[])
 order by random()
 limit $1
 `
 
-func (q *Queries) GetRandomPublicBookIDs(ctx context.Context, limit int32) ([]int64, error) {
-	rows, err := q.db.Query(ctx, getRandomPublicBookIDs, limit)
+type GetRandomPublicBookIDsParams struct {
+	Limit        int32
+	HiddenTagIds []int64
+}
+
+func (q *Queries) GetRandomPublicBookIDs(ctx context.Context, arg GetRandomPublicBookIDsParams) ([]int64, error) {
+	rows, err := q.db.Query(ctx, getRandomPublicBookIDs, arg.Limit, arg.HiddenTagIds)
 	if err != nil {
 		return nil, err
 	}

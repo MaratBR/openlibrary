@@ -137,7 +137,7 @@ type apiPayloadBookDirectUpdate struct {
 		Name              string            `json:"name"`
 		AgeRating         app.AgeRating     `json:"ageRating"`
 		Summary           string            `json:"summary"`
-		IsAdult           bool              `json:"isAdult"`
+		IsAdult           *bool             `json:"isAdult"`
 		IsPubliclyVisible bool              `json:"isPubliclyVisible"`
 		Tags              []app.Int64String `json:"tags"`
 	} `in:"body=json"`
@@ -145,6 +145,12 @@ type apiPayloadBookDirectUpdate struct {
 
 func (c *apiControllerBM) bookDirectUpdate(w http.ResponseWriter, r *http.Request) {
 	input := r.Context().Value(httpin.Input).(*apiPayloadBookDirectUpdate)
+
+	// Adult status is derived by the application policy, never authored by clients.
+	if input.Body.IsAdult != nil {
+		apiWriteBadRequest(w, errors.New("isAdult is derived from ageRating and tags; omit isAdult"))
+		return
+	}
 
 	bookID, err := olhttp.URLParamInt64(r, "bookID")
 	if err != nil {
