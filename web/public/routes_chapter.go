@@ -17,12 +17,13 @@ type chaptersController struct {
 	service            app.BookService
 	readingListService app.ReadingListService
 	readerPreferences  app.ReaderPreferencesService
+	readerFonts        app.ReaderFontService
 	log                *zap.SugaredLogger
 	markup             *content.MarkupEngine
 }
 
-func newChaptersController(service app.BookService, readingListService app.ReadingListService, readerPreferences app.ReaderPreferencesService, log *zap.SugaredLogger, markup *content.MarkupEngine) *chaptersController {
-	return &chaptersController{service: service, readingListService: readingListService, readerPreferences: readerPreferences, log: log, markup: markup}
+func newChaptersController(service app.BookService, readingListService app.ReadingListService, readerPreferences app.ReaderPreferencesService, readerFonts app.ReaderFontService, log *zap.SugaredLogger, markup *content.MarkupEngine) *chaptersController {
+	return &chaptersController{service: service, readingListService: readingListService, readerPreferences: readerPreferences, readerFonts: readerFonts, log: log, markup: markup}
 }
 
 func (c *chaptersController) Register(r chi.Router) {
@@ -84,7 +85,7 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	olhttp.WriteTemplate(w, r.Context(), templates.Chapter(chapterResult.Chapter, book, options, preferences))
+	olhttp.WriteTemplate(w, r.Context(), templates.Chapter(chapterResult.Chapter, book, options, preferences, c.readerFonts.List()))
 }
 
 func (c *chaptersController) getChapterProgressTrackerOptions(r *http.Request, chapter *app.ChapterDto) templates.ChapterProgressTrackerOptions {

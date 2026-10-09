@@ -12,7 +12,7 @@ import (
 )
 
 const readerPreferences_Get = `-- name: ReaderPreferences_Get :one
-select user_id, font_size, font_family, page_color, theme, updated_at
+select user_id, content_width, font_size, font_family, page_color, theme, updated_at
 from user_reader_preferences
 where user_id = $1
 `
@@ -22,6 +22,7 @@ func (q *Queries) ReaderPreferences_Get(ctx context.Context, userID pgtype.UUID)
 	var i UserReaderPreference
 	err := row.Scan(
 		&i.UserID,
+		&i.ContentWidth,
 		&i.FontSize,
 		&i.FontFamily,
 		&i.PageColor,
@@ -32,22 +33,24 @@ func (q *Queries) ReaderPreferences_Get(ctx context.Context, userID pgtype.UUID)
 }
 
 const readerPreferences_Upsert = `-- name: ReaderPreferences_Upsert :exec
-insert into user_reader_preferences (user_id, font_size, font_family, page_color, theme)
-values ($1, $2, $3, $4, $5)
+insert into user_reader_preferences (user_id, font_size, font_family, page_color, theme, content_width)
+values ($1, $2, $3, $4, $5, $6)
 on conflict (user_id) do update set
     font_size = excluded.font_size,
     font_family = excluded.font_family,
     page_color = excluded.page_color,
     theme = excluded.theme,
+    content_width = excluded.content_width,
     updated_at = now()
 `
 
 type ReaderPreferences_UpsertParams struct {
-	UserID     pgtype.UUID
-	FontSize   int16
-	FontFamily string
-	PageColor  string
-	Theme      string
+	UserID       pgtype.UUID
+	FontSize     int16
+	FontFamily   string
+	PageColor    string
+	Theme        string
+	ContentWidth int16
 }
 
 func (q *Queries) ReaderPreferences_Upsert(ctx context.Context, arg ReaderPreferences_UpsertParams) error {
@@ -57,6 +60,7 @@ func (q *Queries) ReaderPreferences_Upsert(ctx context.Context, arg ReaderPrefer
 		arg.FontFamily,
 		arg.PageColor,
 		arg.Theme,
+		arg.ContentWidth,
 	)
 	return err
 }

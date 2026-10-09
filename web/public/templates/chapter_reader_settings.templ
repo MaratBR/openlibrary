@@ -4,7 +4,7 @@ import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "strconv"
 
-templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated bool) {
+templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated bool, fonts []app.ReaderFont) {
     {{ l := i18n.GetLocalizer(ctx) }}
     <div
         class="BookReader-settingsBackdrop"
@@ -56,10 +56,14 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
 
             <fieldset class="ReaderSetting">
                 <legend class="ReaderSetting-label">{ l.T("reader.font") }</legend>
-                <div class="ReaderSetting-choices ReaderSettingChoices--stacked">
-                    @readerSettingChoice("fontFamily", app.ReaderFontSerif, l.T("reader.fontSerif"), "font-family: Merriweather, serif")
-                    @readerSettingChoice("fontFamily", app.ReaderFontSans, l.T("reader.fontSans"), "font-family: 'Atkinson Hyperlegible', sans-serif")
-                    @readerSettingChoice("fontFamily", app.ReaderFontDyslexic, l.T("reader.fontDyslexic"), "font-family: OpenDyslexic, sans-serif")
+                <div class="ReaderSetting-choices ReaderSetting-choices--stacked">
+                    for _, font := range fonts {
+                        <label class="ReaderSetting-choice ReaderSetting-font" style={ "font-family: " + font.Family }>
+                            <input type="radio" name="fontFamily" x-model="fontFamily" value={ font.ID } data-font-stack={ font.Family } @change="$nextTick(() => applyPreferences())"/>
+                            <span class="ReaderSetting-fontSample" aria-hidden="true">Aa</span>
+                            <span>{ l.T(font.LabelKey) }</span>
+                        </label>
+                    }
                 </div>
             </fieldset>
 
@@ -71,21 +75,47 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
                 </div>
             </fieldset>
 
-            <label class="ReaderSetting block">
-                <span class="ReaderSetting-label">{ l.T("reader.theme") }</span>
-                <select class="Select" x-model="readerTheme" @change="$nextTick(() => applyPreferences())">
-                    <option value={ app.ReaderThemeSystem }>{ l.T("reader.themeWebsite") }</option>
-                    <option value={ app.ReaderThemeLight }>{ l.T("reader.themeLight") }</option>
-                    <option value={ app.ReaderThemeDark }>{ l.T("reader.themeDark") }</option>
-                </select>
-            </label>
+            <fieldset class="ReaderSetting">
+                <legend class="ReaderSetting-label">{ l.T("reader.contentWidth") }</legend>
+                <div class="ReaderSetting-width">
+                    <div class="flex items-center justify-between gap-3">
+                        <i class="fa-solid fa-arrows-left-right text-secondary-foreground" aria-hidden="true"></i>
+                        <output for="reader-content-width" x-text="contentWidth + 'ch'">{ strconv.Itoa(int(preferences.ContentWidth)) }ch</output>
+                    </div>
+                    <input id="reader-content-width" type="range" min="48" max="100" step="2" x-model.number="contentWidth" @input="$nextTick(() => applyPreferences())" aria-label={ l.T("reader.contentWidth") }/>
+                    <div class="flex justify-between text-xs text-secondary-foreground">
+                        <span>{ l.T("reader.widthNarrow") }</span>
+                        <span>{ l.T("reader.widthWide") }</span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="ReaderSetting">
+                <legend class="ReaderSetting-label">{ l.T("reader.theme") }</legend>
+                <div class="ReaderSetting-themes">
+                    @readerThemeChoice(app.ReaderThemeSystem, l.T("reader.themeWebsite"), "fa-desktop")
+                    @readerThemeChoice(app.ReaderThemeLight, l.T("reader.themeLight"), "fa-sun")
+                    @readerThemeChoice(app.ReaderThemeDark, l.T("reader.themeDark"), "fa-moon")
+                </div>
+            </fieldset>
         </div>
     </aside>
 }
 
 templ readerSettingChoice(model, value, label, style string) {
     <label class="ReaderSetting-choice" style={ style }>
-        <input type="radio" x-model={ model } value={ value } @change="$nextTick(() => applyPreferences())" />
+        <input type="radio" name={ model } x-model={ model } value={ value } @change="$nextTick(() => applyPreferences())" />
         <span>{ label }</span>
+    </label>
+}
+
+templ readerThemeChoice(value, label, icon string) {
+    <label class="ReaderSetting-theme">
+        <input type="radio" name="readerTheme" x-model="readerTheme" value={ value } @change="$nextTick(() => applyPreferences())"/>
+        <span class="ReaderSetting-themePreview" data-theme-preview={ value } aria-hidden="true">
+            <i class={ "fa-solid " + icon }></i>
+            <span class="ReaderSetting-previewLines"><span/><span/><span/></span>
+        </span>
+        <span class="ReaderSetting-themeLabel">{ label }</span>
     </label>
 }

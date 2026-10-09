@@ -11,10 +11,11 @@ import (
 
 type apiControllerReaderPreferences struct {
 	service app.ReaderPreferencesService
+	fonts   app.ReaderFontService
 }
 
-func newAPIReaderPreferencesController(service app.ReaderPreferencesService) *apiControllerReaderPreferences {
-	return &apiControllerReaderPreferences{service: service}
+func newAPIReaderPreferencesController(service app.ReaderPreferencesService, fonts app.ReaderFontService) *apiControllerReaderPreferences {
+	return &apiControllerReaderPreferences{service: service, fonts: fonts}
 }
 
 func (c *apiControllerReaderPreferences) Register(r chi.Router) {
@@ -35,7 +36,7 @@ func (c *apiControllerReaderPreferences) save(w http.ResponseWriter, r *http.Req
 		apiWriteBadRequest(w, err)
 		return
 	}
-	if err := preferences.Validate(); err != nil {
+	if err := preferences.ValidateWithFonts(c.fonts.List()); err != nil {
 		apiWriteUnprocessableEntity(w, err)
 		return
 	}

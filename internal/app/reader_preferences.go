@@ -21,22 +21,28 @@ const (
 )
 
 type ReaderPreferences struct {
-	FontSize   int16  `json:"fontSize"`
-	FontFamily string `json:"fontFamily"`
-	PageColor  string `json:"pageColor"`
-	Theme      string `json:"theme"`
+	ContentWidth int16  `json:"contentWidth"`
+	FontSize     int16  `json:"fontSize"`
+	FontFamily   string `json:"fontFamily"`
+	PageColor    string `json:"pageColor"`
+	Theme        string `json:"theme"`
 }
 
 func DefaultReaderPreferences() ReaderPreferences {
 	return ReaderPreferences{
-		FontSize:   18,
-		FontFamily: ReaderFontSerif,
-		PageColor:  ReaderPageBackground,
-		Theme:      ReaderThemeSystem,
+		ContentWidth: 72,
+		FontSize:     18,
+		FontFamily:   ReaderFontSerif,
+		PageColor:    ReaderPageBackground,
+		Theme:        ReaderThemeSystem,
 	}
 }
 
 func (p ReaderPreferences) Validate() error {
+	return p.ValidateWithFonts(NewReaderFontService().List())
+}
+
+func (p ReaderPreferences) ValidateWithFonts(fonts []ReaderFont) error {
 	validFontSize := false
 	for _, size := range []int16{12, 14, 16, 18, 20, 22, 26, 30, 36, 42, 48} {
 		if p.FontSize == size {
@@ -47,7 +53,17 @@ func (p ReaderPreferences) Validate() error {
 	if !validFontSize {
 		return errors.New("invalid font size")
 	}
-	if p.FontFamily != ReaderFontSerif && p.FontFamily != ReaderFontSans && p.FontFamily != ReaderFontDyslexic {
+	if p.ContentWidth != 0 && (p.ContentWidth < 48 || p.ContentWidth > 100 || p.ContentWidth%2 != 0) {
+		return errors.New("invalid content width")
+	}
+	validFont := false
+	for _, font := range fonts {
+		if font.ID == p.FontFamily {
+			validFont = true
+			break
+		}
+	}
+	if !validFont {
 		return errors.New("invalid font family")
 	}
 	if p.PageColor != ReaderPageBackground && p.PageColor != ReaderPageSurface {

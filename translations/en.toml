@@ -234,6 +234,9 @@ empty = "No comments yet. Start the discussion."
 signInToComment = "Sign in to comment"
 
 [reader]
+contentWidth = "Content width"
+widthNarrow = "Narrow"
+widthWide = "Wide"
 settings = "Reading settings"
 savedToAccount = "Saved to your account and this device"
 savedToDevice = "Saved on this device"

@@ -10,10 +10,11 @@ import (
 
 type readerPreferencesService struct {
 	queries *store.Queries
+	fonts   ReaderFontService
 }
 
-func NewReaderPreferencesService(db DB) ReaderPreferencesService {
-	return &readerPreferencesService{queries: store.New(db)}
+func NewReaderPreferencesService(db DB, fonts ReaderFontService) ReaderPreferencesService {
+	return &readerPreferencesService{queries: store.New(db), fonts: fonts}
 }
 
 func (s *readerPreferencesService) Get(ctx context.Context, userID uuid.UUID) (Nullable[ReaderPreferences], error) {
@@ -25,23 +26,28 @@ func (s *readerPreferencesService) Get(ctx context.Context, userID uuid.UUID) (N
 		return Null[ReaderPreferences](), apperror.WrapUnexpectedDBError(err)
 	}
 	return Value(ReaderPreferences{
-		FontSize:   row.FontSize,
-		FontFamily: row.FontFamily,
-		PageColor:  row.PageColor,
-		Theme:      row.Theme,
+		ContentWidth: row.ContentWidth,
+		FontSize:     row.FontSize,
+		FontFamily:   row.FontFamily,
+		PageColor:    row.PageColor,
+		Theme:        row.Theme,
 	}), nil
 }
 
 func (s *readerPreferencesService) Save(ctx context.Context, userID uuid.UUID, preferences ReaderPreferences) error {
-	if err := preferences.Validate(); err != nil {
+	if err := preferences.ValidateWithFonts(s.fonts.List()); err != nil {
 		return err
 	}
+	if preferences.ContentWidth == 0 {
+		preferences.ContentWidth = 72
+	}
 	if err := s.queries.ReaderPreferences_Upsert(ctx, store.ReaderPreferences_UpsertParams{
-		UserID:     uuidDomainToDb(userID),
-		FontSize:   preferences.FontSize,
-		FontFamily: preferences.FontFamily,
-		PageColor:  preferences.PageColor,
-		Theme:      preferences.Theme,
+		UserID:       uuidDomainToDb(userID),
+		ContentWidth: preferences.ContentWidth,
+		FontSize:     preferences.FontSize,
+		FontFamily:   preferences.FontFamily,
+		PageColor:    preferences.PageColor,
+		Theme:        preferences.Theme,
 	}); err != nil {
 		return apperror.WrapUnexpectedDBError(err)
 	}

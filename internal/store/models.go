@@ -626,10 +626,11 @@ type UserFollower struct {
 }
 
 type UserReaderPreference struct {
-	UserID     pgtype.UUID
-	FontSize   int16
-	FontFamily string
-	PageColor  string
-	Theme      string
-	UpdatedAt  pgtype.Timestamptz
+	UserID       pgtype.UUID
+	ContentWidth int16
+	FontSize     int16
+	FontFamily   string
+	PageColor    string
+	Theme        string
+	UpdatedAt    pgtype.Timestamptz
 }

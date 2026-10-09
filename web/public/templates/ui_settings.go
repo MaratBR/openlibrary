@@ -26,6 +26,11 @@ func GetReaderPreferencesFromCookies(r *http.Request) app.ReaderPreferences {
 	if cookie, err := r.Cookie("reader_page_color"); err == nil {
 		preferences.PageColor = cookie.Value
 	}
+	if cookie, err := r.Cookie("reader_content_width"); err == nil {
+		if value, parseErr := strconv.Atoi(cookie.Value); parseErr == nil && value >= 48 && value <= 100 && value%2 == 0 {
+			preferences.ContentWidth = int16(value)
+		}
+	}
 	if cookie, err := r.Cookie("reader_theme"); err == nil {
 		preferences.Theme = cookie.Value
 	}

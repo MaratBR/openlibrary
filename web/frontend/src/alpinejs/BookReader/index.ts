@@ -2,18 +2,17 @@ import Alpine from 'alpinejs'
 import { setCookie } from '@/common/cookies'
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 22, 26, 30, 36, 42, 48]
-const FONT_FAMILIES = ['serif', 'sans', 'dyslexic'] as const
 const PAGE_COLORS = ['background', 'surface'] as const
 const READER_THEMES = ['system', 'light', 'dark'] as const
 
-type ReaderFont = (typeof FONT_FAMILIES)[number]
 type PageColor = (typeof PAGE_COLORS)[number]
 type ReaderTheme = (typeof READER_THEMES)[number]
 
 Alpine.data('BookReader', () => ({
   settingsOpen: false,
   fontSize: 18,
-  fontFamily: 'serif' as ReaderFont,
+  fontFamily: 'serif',
+  contentWidth: 72,
   pageColor: 'background' as PageColor,
   readerTheme: 'system' as ReaderTheme,
   authenticated: false,
@@ -21,7 +20,9 @@ Alpine.data('BookReader', () => ({
 
   init() {
     this.fontSize = validNumber(this.$el.dataset.fontSize, FONT_SIZES, 18)
-    this.fontFamily = validValue(this.$el.dataset.fontFamily, FONT_FAMILIES, 'serif')
+    const fontIds = Array.from(this.$el.querySelectorAll<HTMLInputElement>('[data-font-stack]'), (input) => input.value)
+    this.fontFamily = validValue(this.$el.dataset.fontFamily, fontIds, fontIds[0] ?? 'serif')
+    this.contentWidth = validNumber(this.$el.dataset.contentWidth, Array.from({ length: 27 }, (_, i) => 48 + i * 2), 72)
     this.pageColor = validValue(this.$el.dataset.pageColor, PAGE_COLORS, 'background')
     this.readerTheme = validValue(this.$el.dataset.readerTheme, READER_THEMES, 'system')
     this.authenticated = this.$el.dataset.authenticated === 'true'
@@ -43,12 +44,18 @@ Alpine.data('BookReader', () => ({
     document.documentElement.style.setProperty('--book-font-size', `${this.fontSize}px`)
     this.$root.setAttribute('data-page-color', this.pageColor)
     this.$root.setAttribute('data-font-family', this.fontFamily)
+    this.$root.style.setProperty('--reader-content-width', `${this.contentWidth}ch`)
+    const selectedFont = Array.from(this.$root.querySelectorAll<HTMLInputElement>('[data-font-stack]')).find((input) => input.value === this.fontFamily)
+    if (selectedFont?.dataset.fontStack) {
+      this.$root.style.setProperty('--reader-font-family', selectedFont.dataset.fontStack)
+    }
     applyReaderTheme(this.readerTheme)
 
     setCookie('reader_font_size', String(this.fontSize))
     setCookie('reader_font_family', this.fontFamily)
     setCookie('reader_page_color', this.pageColor)
     setCookie('reader_theme', this.readerTheme)
+    setCookie('reader_content_width', String(this.contentWidth))
 
     if (persist && this.authenticated) {
       window.clearTimeout(this.saveTimer)
@@ -63,6 +70,7 @@ Alpine.data('BookReader', () => ({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           fontSize: this.fontSize,
+          contentWidth: this.contentWidth,
           fontFamily: this.fontFamily,
           pageColor: this.pageColor,
           theme: this.readerTheme,

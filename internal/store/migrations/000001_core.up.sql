@@ -261,6 +261,7 @@ create table site_config (
 
 create table user_reader_preferences (
     user_id uuid primary key references users(id) on delete cascade,
+    content_width smallint not null default 72 check (content_width between 48 and 100 and content_width % 2 = 0),
     font_size smallint not null default 18 check (font_size in (12, 14, 16, 18, 20, 22, 26, 30, 36, 42, 48)),
     font_family text not null default 'serif' check (font_family in ('serif', 'sans', 'dyslexic')),
     page_color text not null default 'background' check (page_color in ('background', 'surface')),

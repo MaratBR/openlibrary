@@ -6,20 +6,13 @@
     @apply bg-surface;
   }
 
-  &[data-font-family='sans'] {
-    --reader-font-family: 'Atkinson Hyperlegible', ui-sans-serif, sans-serif;
-  }
-
-  &[data-font-family='dyslexic'] {
-    --reader-font-family: OpenDyslexic, ui-sans-serif, sans-serif;
-  }
-
   &-readingArea {
     @apply relative mx-auto min-h-[calc(100vh-var(--header-height))] max-w-[96rem] px-4 pb-14 pt-14 sm:px-8 sm:pt-16;
   }
 
   &-chapter {
-    @apply mx-auto max-w-[72ch];
+    @apply mx-auto;
+    max-width: var(--reader-content-width, 72ch);
   }
 
   &-header {
@@ -39,7 +32,7 @@
     @apply fixed bottom-0 left-0 right-0 z-40 max-h-[88vh] overflow-y-auto rounded-t-xl border-t bg-surface shadow-md;
 
     @media (min-width: 768px) {
-      @apply left-auto top-0 max-h-none w-full max-w-[26rem] rounded-none border-l border-t-0;
+      @apply left-auto top-0 max-h-none w-full max-w-[28rem] rounded-none border-l border-t-0;
     }
   }
 
@@ -48,7 +41,7 @@
   }
 
   &-settingsContent {
-    @apply space-y-8 px-6 pb-10 pt-7;
+    @apply grid gap-6 px-6 pb-10 pt-6;
   }
 
   &-chapterNavigation {
@@ -82,7 +75,7 @@
 }
 
 .ReaderSetting {
-  @apply mb-3;
+  @apply min-w-0;
 
   &-label {
     @apply mb-3 block text-sm font-semibold text-foreground;
@@ -105,7 +98,11 @@
   }
 
   &-choice {
-    @apply flex cursor-pointer items-center gap-3 rounded-lg border bg-background px-4 py-3 transition-colors hover:bg-foreground/5;
+    @apply flex min-w-0 cursor-pointer items-center gap-3 rounded-lg border bg-background px-3 py-3 transition-colors hover:bg-foreground/5;
+
+    &:has(input:focus-visible) {
+      @apply ring-2 ring-primary ring-offset-2;
+    }
 
     &:has(input:checked) {
       @apply border-primary bg-accent text-accent-foreground;
@@ -151,4 +148,73 @@
   p:empty::before {
     content: "\00a0";
   }
+}
+
+.ReaderSetting-font {
+  @apply py-2;
+  input { @apply shrink-0; }
+}
+
+.ReaderSetting-fontSample {
+  @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-foreground/5 text-xl;
+}
+
+.ReaderSetting-width {
+  @apply rounded-lg border bg-background px-4 py-3;
+  output { @apply text-sm font-semibold tabular-nums; }
+  input[type='range'] {
+    @apply my-3 block w-full cursor-pointer accent-primary;
+    &:focus-visible { @apply outline-2 outline-primary outline-offset-4; }
+  }
+}
+
+.ReaderSetting-themes {
+  @apply grid grid-cols-3 gap-2;
+}
+
+.ReaderSetting-theme {
+  @apply relative flex min-w-0 cursor-pointer flex-col gap-2 rounded-lg border bg-background p-2 transition-colors hover:bg-foreground/5;
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  &:has(input:checked) { @apply border-primary bg-accent text-accent-foreground; }
+  &:has(input:focus-visible) { @apply ring-2 ring-primary ring-offset-2; }
+}
+
+.ReaderSetting-themeLabel {
+  @apply text-center text-xs font-medium;
+}
+
+.ReaderSetting-themePreview {
+  @apply flex h-16 flex-col justify-center gap-2 rounded-md border p-3;
+  @apply bg-surface text-foreground;
+  i { @apply text-xs; }
+  &[data-theme-preview='light'] {
+    @apply bg-background text-foreground;
+  }
+  &[data-theme-preview='dark'] {
+    @apply bg-background text-foreground;
+  }
+  &[data-theme-preview='system'] {
+    @apply bg-secondary text-secondary-foreground;
+  }
+}
+
+.ReaderSetting-previewLines {
+  @apply flex flex-col gap-1;
+  span {
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    opacity: .3;
+    &:last-child { width: 65%; }
+  }
+}
+
+.BookReader #BlockEditorWrap {
+  max-width: var(--reader-content-width, 72ch);
+  width: 100%;
 }
