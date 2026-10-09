@@ -30,7 +30,7 @@ func TestEditorReadingSettings(t *testing.T) {
 		require.NoError(t, ChapterContentIframe(preferences, app.NewReaderFontService().List()).Render(r.Context(), &out))
 	})
 	router.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", "/", nil))
-	for _, expected := range []string{`data-content-width="84"`, `x-model.number="contentWidth"`, `data-font-stack="Merriweather, serif"`, `data-theme-preview="dark"`, `data-theme-preview="oled"`, `OLED dark`, `data-font-size="22"`, `data-font-family="sans"`, `data-page-color="surface"`, `data-reader-theme="dark"`, `data-authenticated="true"`, `id="BlockEditorWrap"`, `id="ChapterContent"`, `x-model="fontFamily"`, `x-model="pageColor"`, `x-model="readerTheme"`, `x-bind="increaseFont"`, `x-bind="decreaseFont"`, `x-bind="closeButton"`} {
+	for _, expected := range []string{`data-content-width="84"`, `x-model.number="contentWidth"`, `data-font-stack="Libron, Merriweather, serif"`, `data-theme-preview="dark"`, `data-theme-preview="oled"`, `OLED dark`, `data-font-size="22"`, `data-font-family="sans"`, `data-page-color="surface"`, `data-reader-theme="dark"`, `data-authenticated="true"`, `id="BlockEditorWrap"`, `id="ChapterContent"`, `x-model="fontFamily"`, `x-model="pageColor"`, `x-model="readerTheme"`, `x-bind="increaseFont"`, `x-bind="decreaseFont"`, `x-bind="closeButton"`} {
 		require.Contains(t, out.String(), expected)
 	}
 	if path := os.Getenv("EDITOR_READING_FIXTURE"); path != "" {

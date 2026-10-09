@@ -1,3 +1,36 @@
+/* Libron v0.30: Latin-script coverage; missing glyphs use the next font in the stack. */
+@font-face {
+  font-family: 'Libron';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/_/embed-assets/fonts/Libron-Regular.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Libron';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/_/embed-assets/fonts/Libron-Italic.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Libron';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/_/embed-assets/fonts/Libron-Bold.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Libron';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/_/embed-assets/fonts/Libron-BoldItalic.woff2) format('woff2');
+}
+
 /* cyrillic-ext */
 @font-face {
   font-family: 'Literata';

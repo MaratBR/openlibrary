@@ -17,7 +17,7 @@ func NewReaderFontService() ReaderFontService { return readerFontService{} }
 
 func (readerFontService) List() []ReaderFont {
 	return []ReaderFont{
-		{ID: ReaderFontSerif, LabelKey: "reader.fontSerif", Family: "Merriweather, serif"},
+		{ID: ReaderFontSerif, LabelKey: "reader.fontSerif", Family: "Libron, Merriweather, serif"},
 		{ID: ReaderFontSans, LabelKey: "reader.fontSans", Family: "'Atkinson Hyperlegible', sans-serif"},
 		{ID: ReaderFontDyslexic, LabelKey: "reader.fontDyslexic", Family: "OpenDyslexic, sans-serif"},
 	}
