@@ -7,25 +7,28 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/MaratBR/openlibrary/internal/app/siteconfig"
+
+	"uuid"
+
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/app/email"
 	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/knadh/koanf/v2"
-	"uuid"
 )
 
 type signUpService struct {
 	db                     DB
 	cfg                    *koanf.Koanf
-	siteConfig             *SiteConfig
+	siteConfig             siteconfig.Store
 	emailService           email.Service
 	emailCodeValidDuration time.Duration
 	emailCodeResendAfter   time.Duration
 }
 
-func NewSignUpService(db DB, cfg *koanf.Koanf, siteConfig *SiteConfig, emailService email.Service) SignUpService {
+func NewSignUpService(db DB, cfg *koanf.Koanf, siteConfig siteconfig.Store, emailService email.Service) SignUpService {
 	return &signUpService{
 		db:                     db,
 		cfg:                    cfg,
@@ -53,7 +56,7 @@ func (s *signUpService) SignUp(ctx context.Context, input SignUpCommand) (SignUp
 	}
 	if !input.BypassPasswordRequirement {
 		passwordRequirements := s.siteConfig.Get().PasswordRequirements
-		if err := ValidatePassword(input.Password, passwordRequirements); err != nil {
+		if err := siteconfig.ValidatePassword(input.Password, passwordRequirements); err != nil {
 			return SignUpResult{}, SignUpInvalidInput.Wrap(err, "invalid password")
 		}
 	}

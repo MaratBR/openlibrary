@@ -3,6 +3,8 @@ package populate
 import (
 	"fmt"
 
+	"github.com/MaratBR/openlibrary/internal/app/siteconfig"
+
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/content"
@@ -14,7 +16,7 @@ import (
 )
 
 func Run(config *koanf.Koanf, db dal.DB, log *zap.SugaredLogger) error {
-	siteConfig := app.NewSiteConfig(db, config)
+	siteConfig := siteconfig.NewStore(db, config)
 	sessionService := app.NewSessionService(db, app.NewIPLocationService())
 	authService := app.NewAuthService(db, sessionService)
 

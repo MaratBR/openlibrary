@@ -2,10 +2,14 @@ package public
 
 import (
 	"errors"
-	"go.uber.org/zap"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/MaratBR/openlibrary/internal/app/siteconfig"
+	"go.uber.org/zap"
+
+	"uuid"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
@@ -15,7 +19,6 @@ import (
 	"github.com/MaratBR/openlibrary/web/public/templates"
 	"github.com/go-chi/chi/v5"
 	"github.com/knadh/koanf/v2"
-	"uuid"
 )
 
 type authController struct {
@@ -23,12 +26,12 @@ type authController struct {
 	userService   app.UserService
 	signUpService app.SignUpService
 	csrfHandler   *csrf.Handler
-	siteConfig    *app.SiteConfig
+	siteConfig    siteconfig.Store
 	cfg           *koanf.Koanf
 	log           *zap.SugaredLogger
 }
 
-func newAuthController(authService app.AuthService, signUpService app.SignUpService, userService app.UserService, csrfHandler *csrf.Handler, siteConfig *app.SiteConfig, cfg *koanf.Koanf, log *zap.SugaredLogger) *authController {
+func newAuthController(authService app.AuthService, signUpService app.SignUpService, userService app.UserService, csrfHandler *csrf.Handler, siteConfig siteconfig.Store, cfg *koanf.Koanf, log *zap.SugaredLogger) *authController {
 	return &authController{authService: authService, csrfHandler: csrfHandler, siteConfig: siteConfig, userService: userService, cfg: cfg, signUpService: signUpService, log: log}
 }
 

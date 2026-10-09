@@ -4,8 +4,9 @@ import "github.com/MaratBR/openlibrary/internal/csrf"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "time"
+import "github.com/MaratBR/openlibrary/internal/app/siteconfig"
 
-templ SignUp(siteConfig *app.SiteConfig, requireEmail bool) {
+templ SignUp(siteConfig siteconfig.Store, requireEmail bool) {
     {{
         l := i18n.GetLocalizer(ctx)
     }}
@@ -22,7 +23,7 @@ templ SignUp(siteConfig *app.SiteConfig, requireEmail bool) {
                     @csrf.CSRFInputTempl(ctx)
                     {{
                         var islandData struct {
-                            PasswordRequirements app.PasswordRequirements
+                            PasswordRequirements siteconfig.PasswordRequirements
                             PrefilledEmail string
                             PrefilledUsername string
                         }

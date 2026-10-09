@@ -4,6 +4,7 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/bookfont"
 	"github.com/MaratBR/openlibrary/internal/app/content"
+	"github.com/MaratBR/openlibrary/internal/app/siteconfig"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"go.uber.org/fx"
 )
@@ -12,6 +13,7 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 	analytics.FXModule,
 	bookfont.FXModule,
 	content.FXModule,
+	siteconfig.FXModule,
 
 	fx.Provide(
 		NewUserService,
@@ -31,7 +33,6 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 		NewReviewsService,
 		NewSearchService,
 		NewCommentsService,
-		NewSiteConfig,
 		NewUploadServiceFromApplicationConfig,
 		NewReadingListService,
 		NewReaderPreferencesService,
