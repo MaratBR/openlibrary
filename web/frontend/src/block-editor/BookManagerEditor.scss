@@ -2,6 +2,14 @@
   min-height: 100vh;
 }
 
+.BeReader {
+  min-height: 100vh;
+
+  &-settingsButton {
+    @apply fixed top-2 right-2 z-20 text-secondary-foreground;
+  }
+}
+
 html:has(.BeLayout),
 body:has(.BeLayout) {
   @apply h-full overflow-hidden;

@@ -117,15 +117,30 @@ templ Chapter(
     }
 }
 
-templ ChapterContentIframe() {
+templ ChapterContentIframe(preferences app.ReaderPreferences) {
+    {{ l := i18n.GetLocalizer(ctx) }}
     @htmlLayout(htmlLayoutProps{
         CSS: []string{
             "/_/assets/block-editor.css",
         },
     }) {
-        <div id="BlockEditorWrap">
-            <div id="BlockEditorWrapHeader"></div>
-            @ChapterContent("")
+        <div
+            x-data="BookReader"
+            class="BookReader BeReader"
+            data-font-size={ strconv.Itoa(int(preferences.FontSize)) }
+            data-font-family={ preferences.FontFamily }
+            data-page-color={ preferences.PageColor }
+            data-reader-theme={ preferences.Theme }
+            data-authenticated="true"
+            @keydown.escape.window="settingsOpen = false">
+            <button x-bind="toggleButton" class="BeReader-settingsButton Btn Btn--icon Btn--ghost" aria-label={ l.T("reader.settings") } title={ l.T("reader.settings") }>
+                <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+            </button>
+            <div id="BlockEditorWrap">
+                <div id="BlockEditorWrapHeader"></div>
+                @ChapterContent("")
+            </div>
+            @ChapterReaderSettings(preferences, true)
         </div>
     }
 }

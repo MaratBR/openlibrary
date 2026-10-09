@@ -18,10 +18,11 @@ import (
 type bookManagerController struct {
 	service           app.BookManagerService
 	collectionService app.CollectionService
+	readerPreferences app.ReaderPreferencesService
 }
 
-func newBookManagerController(service app.BookManagerService, collectionService app.CollectionService) *bookManagerController {
-	return &bookManagerController{service: service, collectionService: collectionService}
+func newBookManagerController(service app.BookManagerService, collectionService app.CollectionService, readerPreferences app.ReaderPreferencesService) *bookManagerController {
+	return &bookManagerController{service: service, collectionService: collectionService, readerPreferences: readerPreferences}
 }
 
 func (c *bookManagerController) Register(r chi.Router) {
@@ -159,7 +160,17 @@ func (c *bookManagerController) chapter(w http.ResponseWriter, r *http.Request) 
 }
 
 func (c *bookManagerController) chapterLayoutIframe(w http.ResponseWriter, r *http.Request) {
-	olhttp.WriteTemplate(w, r.Context(), templates.ChapterContentIframe())
+	preferences := templates.GetReaderPreferencesFromCookies(r)
+	session := auth.RequireSession(r.Context())
+	stored, err := c.readerPreferences.Get(r.Context(), session.UserID)
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+	if stored.Valid {
+		preferences = stored.Value
+	}
+	olhttp.WriteTemplate(w, r.Context(), templates.ChapterContentIframe(preferences))
 }
 
 func (c *bookManagerController) sendChapterEditorPage(bookID, chapterID, draftID int64, w http.ResponseWriter, r *http.Request) {
