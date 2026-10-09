@@ -1,6 +1,6 @@
 import { Content, Editor } from '@tiptap/core'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
-import { Color, FontFamily, TextStyle } from '@tiptap/extension-text-style'
+import { Color, FontFamily, FontSize, TextStyle } from '@tiptap/extension-text-style'
 import Typography from '@tiptap/extension-typography'
 import TextAlign from '@tiptap/extension-text-align'
 import Image from '@tiptap/extension-image'
@@ -18,10 +18,11 @@ import { WidgetsService } from '../widgets'
 
 export type EditorToolbarState = {
   bold: boolean
+  underline: boolean
   italic: boolean
   strikethrough: boolean
   color: string | null
-  textType: 'h1' | 'h2' | 'h3' | 'ol' | 'ul' | 'text'
+  textType: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'ol' | 'ul' | 'text'
   font: string | null
   fontSize: string | null
   textAlign: 'left' | 'right' | 'center' | 'justify' | null
@@ -29,6 +30,7 @@ export type EditorToolbarState = {
 
 const DEFAULT_STATE: EditorToolbarState = {
   bold: false,
+  underline: false,
   italic: false,
   strikethrough: false,
   color: null,
@@ -62,12 +64,16 @@ export class ChapterContentEditor extends Editor {
         StarterKit.configure({
           horizontalRule: false,
           heading: false,
+          underline: false,
+          bulletList: false,
+          orderedList: false,
           code: { HTMLAttributes: { class: 'inline', spellcheck: 'false' } },
           dropcursor: { width: 2, class: 'ProseMirror-dropcursor border' },
         }),
         TextStyle,
         Color,
         FontFamily,
+        FontSize,
         Typography,
         HorizontalRule,
         Heading,
@@ -142,23 +148,18 @@ export class ChapterContentEditor extends Editor {
 
     let textType: EditorToolbarState['textType'] = 'text'
 
-    if (typeof headerLevel === 'number') {
-      switch (headerLevel) {
-        case 1:
-          textType = 'h1'
-          break
-        case 2:
-          textType = 'h2'
-          break
-        case 3:
-          textType = 'h3'
-          break
-      }
+    if (this.isActive('bulletList')) {
+      textType = 'ul'
+    } else if (this.isActive('orderedList')) {
+      textType = 'ol'
+    } else if (typeof headerLevel === 'number' && headerLevel >= 1 && headerLevel <= 6) {
+      textType = `h${headerLevel}` as EditorToolbarState['textType']
     }
 
     return {
       bold: this.isActive('bold'),
       italic: this.isActive('italic'),
+      underline: this.isActive('underline'),
       strikethrough: this.isActive('strike'),
       color: textStyle.color || null,
       textType,

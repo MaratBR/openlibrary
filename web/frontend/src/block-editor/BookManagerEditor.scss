@@ -15,7 +15,7 @@ ol-island:has(> .BeLayout) {
   @apply flex flex-col h-screen w-full;
 
   &-header {
-    @apply h-16;
+    @apply h-16 shrink-0;
   }
 
   &-body {
@@ -47,7 +47,10 @@ ol-island:has(> .BeLayout) {
   }
 
   &-center {
-    @apply relative min-w-0;
+    @apply relative min-w-0 min-h-0 flex flex-col;
+  }
+  &-content {
+    @apply relative flex-1 min-h-0;
   }
 }
 

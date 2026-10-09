@@ -4,7 +4,6 @@ import { Effect } from 'effect'
 import './style.scss'
 import { ChapterContentEditor, ChapterContentEditorOptions } from './editor'
 import { EditorContent } from '@tiptap/react'
-import { EditorBubbleMenu } from './EditorBubbleMenu'
 import EditorFloatingMenu from './EditorFloatingMenu'
 import { mountWysiwygEditorAtom, wysiwygEditorAtom } from './state'
 
@@ -22,7 +21,6 @@ export function WYSIWYGEditor({ editorOptions }: { editorOptions: ChapterContent
   return (
     <>
       <EditorContent editor={editor} />
-      <EditorBubbleMenu editor={editor} appendTo={editorOptions.contentWrapperElement} />
       <EditorFloatingMenu editor={editor} />
     </>
   )

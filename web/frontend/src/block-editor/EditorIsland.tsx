@@ -5,6 +5,7 @@ import { jotaiStore } from '@/react'
 import './BookManagerEditor.scss'
 import { draftAtom, initializeDraftAtom } from './state'
 import { EditorIframe } from './EditorIframe'
+import { EditorToolbar } from './wysiwyg/EditorToolbar'
 import { SaveButton } from './SaveButton'
 import { CenterHeader } from './CenterHeader'
 import { WidgetsMenu, WidgetsService } from './widgets'
@@ -70,7 +71,10 @@ function EditorIsland({ draft }: { draft: DraftDto }) {
             </div>
           </div>
           <div className="BeLayout-center">
-            <EditorIframe initialContent={draft.content} />
+            <EditorToolbar />
+            <div className="BeLayout-content">
+              <EditorIframe initialContent={draft.content} />
+            </div>
           </div>
           <div
             className="BeLayout-sidebarClip BeLayoutSidebarClip--right"

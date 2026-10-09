@@ -9,7 +9,9 @@ export function WidgetsMenu({ service }: { service: WidgetsService }) {
   const editor = useAtomValue(wysiwygEditorAtom)
 
   useEffect(() => {
-    service.getWidgets().then(setWidgets)
+    service
+      .getWidgets()
+      .then((widgets) => setWidgets(widgets.filter((widget) => !widget.availableInToolbar)))
   }, [service])
 
   return (

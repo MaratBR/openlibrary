@@ -1,0 +1,48 @@
+.BeToolbar {
+  @apply flex shrink-0 items-stretch gap-4 px-4 py-2 bg-surface border-b overflow-x-auto;
+  min-height: 82px;
+
+  &-group {
+    @apply flex flex-col gap-1 shrink-0;
+    &:not(:last-child) {
+      @apply border-r pr-4;
+    }
+  }
+
+  &-controls {
+    @apply flex items-center gap-1;
+  }
+  &-caption {
+    @apply text-xs text-secondary-foreground text-center;
+  }
+  &-divider {
+    @apply border-l h-6 mx-1;
+  }
+
+  .Select {
+    @apply bg-surface text-foreground border rounded-md h-9 px-2 text-sm;
+    &:focus-visible {
+      @apply outline-2 outline-primary;
+    }
+  }
+
+  &-font {
+    width: 170px;
+  }
+  &-size {
+    width: 125px;
+  }
+  &-style {
+    width: 145px;
+  }
+
+  &-button {
+    @apply flex items-center justify-center h-9 w-9 rounded-md text-secondary-foreground hover:bg-foreground/5;
+    &[aria-pressed='true'] {
+      @apply bg-primary/10 text-primary;
+    }
+    &:focus-visible {
+      @apply outline-2 outline-primary;
+    }
+  }
+}
