@@ -1,50 +1,126 @@
+.Modal-content.MoreFonts {
+  @apply flex flex-col p-0 overflow-hidden;
+  width: min(40rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+}
+
+.MoreFonts {
+  &-header {
+    @apply p-6 border-b shrink-0;
+  }
+
+  &-search {
+    @apply relative block mt-5;
+
+    > i {
+      @apply absolute left-3 top-1/2 -translate-y-1/2 text-secondary-foreground pointer-events-none;
+    }
+
+    > input {
+      @apply pl-10;
+    }
+  }
+
+  &-preview {
+    @apply flex items-end gap-3 mt-4;
+  }
+
+  &-label {
+    @apply block mb-2 text-xs font-medium text-secondary-foreground;
+  }
+
+  &-previewToggles {
+    @apply flex gap-1 p-1 bg-secondary rounded-lg;
+  }
+
+  &-iconButton {
+    @apply flex items-center justify-center rounded-lg text-secondary-foreground hover:bg-foreground/5 hover:text-foreground shrink-0;
+    width: 2.25rem;
+    height: 2.25rem;
+
+    &[aria-pressed='true'] {
+      @apply bg-surface text-primary;
+      box-shadow: var(--shadow-xs);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  }
+
+  &-listHeading {
+    @apply flex items-center justify-between px-6 py-3 text-xs font-medium text-secondary-foreground bg-secondary border-b shrink-0;
+  }
+
+  &-list {
+    height: min(26rem, 50dvh);
+    @apply overflow-auto min-h-0;
+    scrollbar-gutter: stable;
+  }
+
+  &-empty {
+    @apply p-8 text-center text-secondary-foreground;
+  }
+
+  @media (max-width: 480px) {
+    &-header {
+      @apply p-4;
+    }
+  }
+}
+
 .BeFontPickerItem {
-    @apply v-middle grid;
-    height: var(--item-height);
-    grid-template-columns: var(--item-height) 1fr var(--item-height);
+  @apply grid items-center mx-3 px-3 border-b;
+  height: var(--item-height);
+  grid-template-columns: 3rem minmax(0, 1fr) 2.75rem;
+  gap: 1rem;
+  border-color: var(--border);
 
-    & .apply-font {
-        font-family: var(--font-family);
+  .apply-font {
+    font-family: var(--font-family);
+    font-weight: var(--preview-weight);
+    font-style: var(--preview-style);
+  }
+
+  &-main {
+    @apply flex flex-col justify-center min-w-0 gap-1;
+  }
+
+  &-aa {
+    @apply flex items-center justify-center text-2xl bg-secondary rounded-lg;
+    height: 3rem;
+  }
+
+  &-name {
+    @apply block text-2xl truncate;
+    line-height: 1.4;
+  }
+
+  &-nameNormal {
+    @apply block text-xs text-secondary-foreground truncate;
+  }
+
+  &:hover {
+    @apply bg-foreground/5 rounded-lg;
+  }
+
+  &-starButton {
+    @apply flex items-center justify-center rounded-lg text-lg text-secondary-foreground hover:bg-foreground/5;
+    width: 2.75rem;
+    height: 2.75rem;
+
+    &[aria-pressed='true'] {
+      @apply text-primary;
     }
 
-    
-    &-main {
-        @apply flex flex-col justify-center;
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }
-    
-    &-aa {
-        @apply v-middle text-center text-3xl;
-        line-height: var(--item-height);
-        width: var(--item-height);
-    }
+  }
 
-    &-name, &-nameNormal {
-        @apply block;
-    }
-
-    &-name {
-        @apply text-2xl;
-    }
-
-    &-nameNormal {
-        @apply text-secondary-foreground;
-    }
-
-    @apply cursor-pointer;
-
-    &:hover:not(&:has(&-starButton:hover)) {
-        @apply ring ring-inset ring-offset-3;
-    }
-
-    &-star {
-        @apply relative;
-    }
-
-    &-starButton {
-        @apply absolute inset-2 rounded-lg flex items-center justify-center text-2xl hover:bg-highlight;
-
-        &[aria-selected=true] {
-            @apply text-yellow-600;
-        }
-    }
+  @media (max-width: 480px) {
+    @apply mx-1 px-2 gap-3;
+  }
 }

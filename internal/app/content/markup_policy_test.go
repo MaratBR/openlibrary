@@ -171,3 +171,45 @@ func assertSanitizedMarkup(t *testing.T, engine *MarkupEngine, input, want strin
 		t.Errorf("Clean(%q) = %q, want %q", input, got.Sanitized, want)
 	}
 }
+
+func TestDefaultMarkupEnginePreservesEditorFontsOnSaveAndDisplay(t *testing.T) {
+	t.Parallel()
+
+	engine := NewDefaultEngine()
+	input := `<p><span style="font-family: &quot;Playfair Display&quot;; font-size: 24px">custom</span><span style="font-family: Poppins; font-size: 16px">second</span></p>`
+	for round := 0; round < 2; round++ {
+		got, err := engine.Clean(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := []string{"Playfair Display", "Poppins"}; !slices.Equal(got.Fonts, want) {
+			t.Fatalf("Clean().Fonts = %#v, want %#v", got.Fonts, want)
+		}
+		for _, size := range []string{"24px", "16px"} {
+			if !strings.Contains(got.Sanitized, "font-size: "+size) {
+				t.Errorf("Clean().Sanitized = %q, missing font size %s", got.Sanitized, size)
+			}
+		}
+		displayed, err := engine.Expand(got.Sanitized)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if displayed != got.Sanitized {
+			t.Errorf("Expand() = %q, want %q", displayed, got.Sanitized)
+		}
+		input = got.Sanitized
+	}
+}
+
+func TestDefaultMarkupEnginePreservesEveryEditorFontSize(t *testing.T) {
+	t.Parallel()
+
+	engine := NewDefaultEngine()
+	for _, size := range DefaultAllowedFontSizes() {
+		t.Run(size, func(t *testing.T) {
+			input := fmt.Sprintf(`<span style="font-size: %s">text</span>`, size)
+			assertSanitizedMarkup(t, engine, input, input)
+		})
+	}
+	assertSanitizedMarkup(t, engine, `<span style="font-size: expression(alert(1))">text</span>`, `<span>text</span>`)
+}

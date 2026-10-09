@@ -1,16 +1,25 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
+import "github.com/MaratBR/openlibrary/internal/app/content"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ ChapterEditor(draft app.DraftDto) {
     {{
         l := i18n.GetLocalizer(ctx)
+        initialFonts, err := content.CollectFontFamilies(draft.Content)
+        if err != nil {
+            return err
+        }
         jsonData, err := templ.JSONString(struct {
             Draft app.DraftDto `json:"draft"`
+            InitialFonts []string `json:"initialFonts"`
+            AllowedFontSizes []string `json:"allowedFontSizes"`
         }{
             Draft: draft,
+            InitialFonts: initialFonts,
+            AllowedFontSizes: content.DefaultAllowedFontSizes(),
         })
         if err != nil {
             return err

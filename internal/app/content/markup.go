@@ -100,7 +100,7 @@ func (e *MarkupEngine) Clean(value string) (processed ProcessedContentData, err 
 		return ProcessedContentData{}, err
 	}
 	processed.Words = CountWordsHtml(processed.Sanitized)
-	processed.Fonts, err = collectFontFamilies(processed.Sanitized)
+	processed.Fonts, err = CollectFontFamilies(processed.Sanitized)
 	if err != nil {
 		return ProcessedContentData{}, err
 	}
@@ -108,7 +108,8 @@ func (e *MarkupEngine) Clean(value string) (processed ProcessedContentData, err 
 	return processed, nil
 }
 
-func collectFontFamilies(content string) ([]string, error) {
+// CollectFontFamilies returns the distinct font families used in HTML content.
+func CollectFontFamilies(content string) ([]string, error) {
 	doc, err := html.Parse(strings.NewReader(content))
 	if err != nil {
 		return nil, err

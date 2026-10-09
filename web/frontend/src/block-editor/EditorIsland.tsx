@@ -11,19 +11,30 @@ import { CenterHeader } from './CenterHeader'
 import { WidgetsMenu, WidgetsService } from './widgets'
 import { MoreFonts } from './MoreFonts'
 import { DraftDto } from '@/backend-types'
-import { useInitializeEditorFonts } from './fonts/state'
 
 export default function EditorIslandComponent({ data }: ReactIslandProps) {
-  const { draft } = useMemo(() => data as { draft: DraftDto }, [data])
+  const { draft, allowedFontSizes, initialFonts } = useMemo(
+    () => data as { draft: DraftDto; allowedFontSizes: string[]; initialFonts: string[] },
+    [data],
+  )
   useMemo(() => {
     jotaiStore.set(initializeDraftAtom, draft)
   }, [draft])
 
-  return <EditorIsland draft={draft} />
+  return (
+    <EditorIsland draft={draft} allowedFontSizes={allowedFontSizes} initialFonts={initialFonts} />
+  )
 }
 
-function EditorIsland({ draft }: { draft: DraftDto }) {
-  useInitializeEditorFonts()
+function EditorIsland({
+  draft,
+  allowedFontSizes,
+  initialFonts,
+}: {
+  draft: DraftDto
+  allowedFontSizes: string[]
+  initialFonts: string[]
+}) {
   const [leftOpen, setLeftOpen] = useState(true)
   const [rightOpen, setRightOpen] = useState(true)
 
@@ -71,9 +82,9 @@ function EditorIsland({ draft }: { draft: DraftDto }) {
             </div>
           </div>
           <div className="BeLayout-center">
-            <EditorToolbar />
+            <EditorToolbar allowedFontSizes={allowedFontSizes} />
             <div className="BeLayout-content">
-              <EditorIframe initialContent={draft.content} />
+              <EditorIframe initialContent={draft.content} chapterFonts={initialFonts} />
             </div>
           </div>
           <div

@@ -10,7 +10,6 @@ import './MoreFonts.scss'
 import { ChapterContentEditor } from '../wysiwyg/editor'
 import { useFavoriteFontState, useFonts } from '../fonts/state'
 import { atom, useAtom, useAtomValue } from 'jotai'
-import EditorToggleButton from '../wysiwyg/EditorBubbleMenu/EditorToggleButton'
 
 const fontsLoader = appRuntime.runSync(FontsLoader)
 
@@ -70,20 +69,56 @@ export function MoreFonts() {
       open={opened}
       slotProps={{
         content: {
-          className: 'p-0 rounded-none',
+          className: 'MoreFonts',
+          role: 'dialog',
+          'aria-modal': true,
+          'aria-labelledby': 'more-fonts-title',
         },
       }}
     >
-      <div className="bg-surface border-b">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="text-3xl pl-8 pt-8 pb-4 outline-none"
-          placeholder="Search fonts"
-        />
-
+      <div className="MoreFonts-header">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="more-fonts-title" className="text-xl font-semibold">
+              {window._('editor.fonts.title')}
+            </h2>
+            <p className="mt-1 text-sm text-secondary-foreground">
+              {window._('editor.fonts.description')}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="MoreFonts-iconButton"
+            onClick={close}
+            aria-label={window._('editor.fonts.close')}
+          >
+            <i className="fa-solid fa-xmark" aria-hidden="true" />
+          </button>
+        </div>
+        <label className="MoreFonts-search">
+          <i className="fa-solid fa-magnifying-glass" aria-hidden="true" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="input"
+            aria-label={window._('editor.fonts.search')}
+            placeholder={window._('editor.fonts.search')}
+          />
+        </label>
         <Toggles />
       </div>
+      <div className="MoreFonts-listHeading">
+        <span>{window._('editor.fonts.available')}</span>
+        <span>{filteredFonts.length}</span>
+      </div>
+      {filteredFonts.length === 0 && (
+        <div className="MoreFonts-empty" role="status">
+          <i className="fa-solid fa-magnifying-glass text-2xl" aria-hidden="true" />
+          <p className="mt-3 font-medium">{window._('editor.fonts.noResults')}</p>
+          <p className="mt-1 text-sm">{window._('editor.fonts.tryAnotherSearch')}</p>
+        </div>
+      )}
       <FontsList fonts={filteredFonts} />
     </Modal>
   )
@@ -95,19 +130,35 @@ function Toggles() {
   const [testPhrase, setTestPhrase] = useAtom(testPhraseAtom)
 
   return (
-    <div className="BeToggleGroup pl-8 pb-1 gap-1">
-      <EditorToggleButton active={bold} onClick={() => setBold(!bold)}>
-        <i className="fa-solid fa-bold" />
-      </EditorToggleButton>
-      <EditorToggleButton active={italic} onClick={() => setItalic(!italic)}>
-        <i className="fa-solid fa-italic" />
-      </EditorToggleButton>
-      <div>
+    <div className="MoreFonts-preview">
+      <label className="min-w-0 flex-1">
+        <span className="MoreFonts-label">{window._('editor.fonts.preview')}</span>
         <input
+          className="input"
           placeholder={window._('editor.fonts.testPhrase')}
           value={testPhrase}
           onChange={(e) => setTestPhrase(e.target.value)}
         />
+      </label>
+      <div className="MoreFonts-previewToggles">
+        <button
+          type="button"
+          className="MoreFonts-iconButton"
+          aria-pressed={bold}
+          aria-label={window._('editor.bold')}
+          onClick={() => setBold(!bold)}
+        >
+          <i className="fa-solid fa-bold" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="MoreFonts-iconButton"
+          aria-pressed={italic}
+          aria-label={window._('editor.italic')}
+          onClick={() => setItalic(!italic)}
+        >
+          <i className="fa-solid fa-italic" aria-hidden="true" />
+        </button>
       </div>
     </div>
   )
@@ -127,9 +178,10 @@ function FontsList({ fonts }: { fonts: ReadonlyArray<Readonly<Font>> }) {
   return (
     <div
       ref={parentRef}
-      style={
-        { height: '500px', overflow: 'auto', '--item-height': `${HEIGHT}px` } as React.CSSProperties
-      }
+      className="MoreFonts-list"
+      role="list"
+      aria-label={window._('editor.fonts.available')}
+      style={{ '--item-height': `${HEIGHT}px` } as React.CSSProperties}
     >
       <div
         className="relative w-full"
@@ -167,7 +219,7 @@ function FontRow({ font }: { font: Readonly<Font> }) {
       void appRuntime.runPromise(fontsLoader.ensureFontLoaded(font.name)).catch(() => undefined)
     }, 600)
 
-    return () => clearInterval(t)
+    return () => clearTimeout(t)
   }, [font.name])
 
   const bold = useAtomValue(boldEnabledAtom)
@@ -182,8 +234,8 @@ function FontRow({ font }: { font: Readonly<Font> }) {
       style={
         {
           '--font-family': font.name,
-          fontWeight: bold ? 'bold' : 'normal',
-          fontStyle: italic ? 'italic' : 'normal',
+          '--preview-weight': bold ? 'bold' : 'normal',
+          '--preview-style': italic ? 'italic' : 'normal',
         } as React.CSSProperties
       }
     >
@@ -207,7 +259,10 @@ function FavoriteFontButton({ font }: { font: string }) {
   return (
     <button
       className="BeFontPickerItem-starButton"
-      aria-selected={selected}
+      type="button"
+      aria-pressed={selected}
+      aria-label={`${window._(selected ? 'editor.fonts.removeFavorite' : 'editor.fonts.addFavorite')}: ${font}`}
+      title={window._(selected ? 'editor.fonts.removeFavorite' : 'editor.fonts.addFavorite')}
       onClick={() => {
         select(!selected)
       }}

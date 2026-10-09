@@ -1233,3 +1233,16 @@ hiddenChapter = "This chapter is not publicly visible."
 [contentPreferences]
 reveal = "Reveal"
 revealDescription = "Content blurred by your tag preferences. Reveal this book."
+
+[editor.fonts]
+title = "More fonts"
+description = "Preview fonts and star your favorites for the editor."
+close = "Close font browser"
+search = "Search fonts"
+preview = "Preview text"
+testPhrase = "The quick brown fox jumps over the lazy dog"
+available = "Available fonts"
+noResults = "No fonts found"
+tryAnotherSearch = "Try a different font name."
+addFavorite = "Add to favorite fonts"
+removeFavorite = "Remove from favorite fonts"

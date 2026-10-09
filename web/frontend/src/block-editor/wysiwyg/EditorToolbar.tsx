@@ -11,18 +11,23 @@ import { FontsLoader } from '@/features/fonts-loader/loader'
 import './EditorToolbar.scss'
 
 const fontsLoader = appRuntime.runSync(FontsLoader)
-const sizes = ['8', '10', '12', '14', '16', '18', '20', '24', '28', '32', '36', '48', '72']
 
-export function EditorToolbar() {
+export function EditorToolbar({ allowedFontSizes }: { allowedFontSizes: string[] }) {
   const editor = useAtomValue(wysiwygEditorAtom)
   return (
     <div className="BeToolbar" role="toolbar" aria-label={window._('editor.formattingToolbar')}>
-      {editor && <ToolbarControls editor={editor} />}
+      {editor && <ToolbarControls editor={editor} allowedFontSizes={allowedFontSizes} />}
     </div>
   )
 }
 
-function ToolbarControls({ editor }: { editor: ChapterContentEditor }) {
+function ToolbarControls({
+  editor,
+  allowedFontSizes,
+}: {
+  editor: ChapterContentEditor
+  allowedFontSizes: string[]
+}) {
   const state = useEditorToolbarState(editor)
   const favorites = useFavoriteFonts()
   const moreFonts = useMoreFontsState((x) => x.open)
@@ -48,9 +53,7 @@ function ToolbarControls({ editor }: { editor: ChapterContentEditor }) {
       .catch(() => undefined)
   }, [fonts])
 
-  const fontSizes = [
-    ...new Set([...sizes.map((size) => `${size}px`), ...(state.fontSize ? [state.fontSize] : [])]),
-  ]
+  const fontSizes = allowedFontSizes
 
   function button(label: string, icon: string, active: boolean, action: () => void) {
     return (
