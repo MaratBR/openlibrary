@@ -905,7 +905,7 @@ searchNotImplemented = "Поиск in admin dashboard is not implemented yet. Pu
 [editor]
 placeholder = "Write the chapter here..."
 chapterName = "Глава name"
-chapterNameInvalid = "Глава name is required and cannot exceed 70 characters."
+chapterNameInvalid = "Глава name is required and cannot exceed {{.max}} characters."
 chapterContentEditor = "Глава content editor"
 p = "Абзац"
 h1 = "Заголовок 1"

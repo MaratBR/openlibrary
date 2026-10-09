@@ -905,7 +905,7 @@ searchNotImplemented = "Buscar in admin dashboard is not implemented yet. Put th
 [editor]
 placeholder = "Write the chapter here..."
 chapterName = "Capítulo name"
-chapterNameInvalid = "Capítulo name is required and cannot exceed 70 characters."
+chapterNameInvalid = "Capítulo name is required and cannot exceed {{.max}} characters."
 chapterContentEditor = "Capítulo content editor"
 p = "Párrafo"
 h1 = "Encabezado 1"

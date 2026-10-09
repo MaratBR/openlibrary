@@ -142,9 +142,22 @@ ol-island:has(> .BeLayout) {
   }
 }
 
+.be-chapter-name {
+  @apply pt-12 pb-7 mb-10 border-b;
+}
+
 .be-chapter-name-input {
-  @apply focus:bg-highlight focus:outline-none py-3
-        text-3xl font-title w-full block border-b border-b-3;
+  @apply text-4xl sm:text-5xl font-title font-bold text-foreground w-full block
+        bg-transparent border-0 p-0 rounded-none;
+  field-sizing: content;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+
+  &:focus-visible {
+    @apply outline-2 outline-primary/30 outline-offset-4;
+  }
 }
 
 .be-publish-popup {

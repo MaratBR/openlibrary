@@ -16,10 +16,12 @@ templ ChapterEditor(draft app.DraftDto) {
             Draft app.DraftDto `json:"draft"`
             InitialFonts []string `json:"initialFonts"`
             AllowedFontSizes []string `json:"allowedFontSizes"`
+            MaxChapterNameLength int `json:"maxChapterNameLength"`
         }{
             Draft: draft,
             InitialFonts: initialFonts,
             AllowedFontSizes: content.DefaultAllowedFontSizes(),
+            MaxChapterNameLength: app.MaxChapterNameLength,
         })
         if err != nil {
             return err

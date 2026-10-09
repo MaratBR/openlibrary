@@ -3,7 +3,7 @@ import { useAtomValue } from 'jotai'
 import { ReactIslandProps } from '@/islands/common/react-island'
 import { jotaiStore } from '@/react'
 import './BookManagerEditor.scss'
-import { draftAtom, initializeDraftAtom } from './state'
+import { draftAtom, initializeDraftAtom, maxChapterNameLengthAtom } from './state'
 import { EditorIframe } from './EditorIframe'
 import { EditorToolbar } from './wysiwyg/EditorToolbar'
 import { SaveButton } from './SaveButton'
@@ -13,13 +13,19 @@ import { MoreFonts } from './MoreFonts'
 import { DraftDto } from '@/backend-types'
 
 export default function EditorIslandComponent({ data }: ReactIslandProps) {
-  const { draft, allowedFontSizes, initialFonts } = useMemo(
-    () => data as { draft: DraftDto; allowedFontSizes: string[]; initialFonts: string[] },
+  const { draft, allowedFontSizes, initialFonts, maxChapterNameLength } = useMemo(
+    () => data as {
+      draft: DraftDto
+      allowedFontSizes: string[]
+      initialFonts: string[]
+      maxChapterNameLength: number
+    },
     [data],
   )
   useMemo(() => {
     jotaiStore.set(initializeDraftAtom, draft)
-  }, [draft])
+    jotaiStore.set(maxChapterNameLengthAtom, maxChapterNameLength)
+  }, [draft, maxChapterNameLength])
 
   return (
     <EditorIsland draft={draft} allowedFontSizes={allowedFontSizes} initialFonts={initialFonts} />

@@ -2,11 +2,12 @@ import { atom, useAtomValue } from 'jotai'
 import type { Getter, Setter } from 'jotai'
 import { Effect } from 'effect'
 import { BookManagerApi } from '@/features/book-manager/api'
-import { DraftDto } from './contracts'
+import { DraftDto } from '@/backend-types'
 import { wysiwygContentModifiedAtom, wysiwygEditorAtom } from './wysiwyg/state'
 
 export const draftAtom = atom<DraftDto | null>(null)
 export const chapterNameAtom = atom('')
+export const maxChapterNameLengthAtom = atom(0)
 export const savingAtom = atom(false)
 export const saveErrorAtom = atom<unknown | null>(null)
 
@@ -24,7 +25,7 @@ export const chapterNameWasChangedAtom = atom((get) => {
 
 export const chapterNameIsValidAtom = atom((get) => {
   const name = get(chapterNameAtom).trim()
-  return name.length > 0 && Array.from(name).length <= 70
+  return name.length > 0 && Array.from(name).length <= get(maxChapterNameLengthAtom)
 })
 
 export const draftHasPendingChangesAtom = atom((get) => {
