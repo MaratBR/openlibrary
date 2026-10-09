@@ -25,9 +25,11 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
         x-transition:leave-end="reader-settings-hidden"
         aria-labelledby="reader-settings-title">
         <header class="BookReader-settingsHeader">
-            <div>
-                <h2 id="reader-settings-title" class="font-title text-2xl font-semibold">{ l.T("reader.settings") }</h2>
-                <p class="mt-1 text-sm text-secondary-foreground">
+            <div class="BookReader-settingsHeading">
+                <span class="BookReader-settingsMark" aria-hidden="true"><i class="fa-solid fa-sliders"></i></span>
+                <h2 id="reader-settings-title">{ l.T("reader.settings") }</h2>
+                <p class="BookReader-settingsSaved">
+                    <span class="BookReader-settingsSavedDot" aria-hidden="true"></span>
                     if isAuthenticated {
                         { l.T("reader.savedToAccount") }
                     } else {
@@ -35,12 +37,35 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
                     }
                 </p>
             </div>
-            <button x-bind="closeButton" class="Btn Btn--icon Btn--ghost" aria-label={ l.T("common.close") }>
+            <button x-bind="closeButton" class="Btn Btn--icon Btn--ghost BookReader-settingsClose" aria-label={ l.T("common.close") }>
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
         </header>
 
         <div class="BookReader-settingsContent">
+            <fieldset class="ReaderSetting">
+                <legend class="ReaderSetting-label">{ l.T("reader.theme") }</legend>
+                <div class="ReaderSetting-themes">
+                    @readerThemeChoice(app.ReaderThemeSystem, l.T("reader.themeWebsite"), "fa-desktop")
+                    @readerThemeChoice(app.ReaderThemeLight, l.T("reader.themeLight"), "fa-sun")
+                    @readerThemeChoice(app.ReaderThemeDark, l.T("reader.themeDark"), "fa-moon")
+                    @readerThemeChoice(app.ReaderThemeOLED, l.T("reader.themeOLED"), "fa-circle")
+                </div>
+            </fieldset>
+
+            <fieldset class="ReaderSetting">
+                <legend class="ReaderSetting-label">{ l.T("reader.font") }</legend>
+                <div class="ReaderSetting-fonts">
+                    for _, font := range fonts {
+                        <label class="ReaderSetting-choice ReaderSetting-font" style={ "font-family: " + font.Family }>
+                            <input type="radio" name="fontFamily" x-model="fontFamily" value={ font.ID } data-font-stack={ font.Family } @change="$nextTick(() => applyPreferences())"/>
+                            <span class="ReaderSetting-fontSample" aria-hidden="true">Aa</span>
+                            <span class="ReaderSetting-fontLabel">{ l.T(font.LabelKey) }</span>
+                            <span class="ReaderSetting-selected" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+                        </label>
+                    }
+                </div>
+            </fieldset>
             <fieldset class="ReaderSetting">
                 <legend class="ReaderSetting-label">{ l.T("reader.fontSize") }</legend>
                 <div class="ReaderSetting-stepper">
@@ -54,30 +79,14 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
                 </div>
             </fieldset>
 
-            <fieldset class="ReaderSetting">
-                <legend class="ReaderSetting-label">{ l.T("reader.font") }</legend>
-                <div class="ReaderSetting-choices ReaderSetting-choices--stacked">
-                    for _, font := range fonts {
-                        <label class="ReaderSetting-choice ReaderSetting-font" style={ "font-family: " + font.Family }>
-                            <input type="radio" name="fontFamily" x-model="fontFamily" value={ font.ID } data-font-stack={ font.Family } @change="$nextTick(() => applyPreferences())"/>
-                            <span class="ReaderSetting-fontSample" aria-hidden="true">Aa</span>
-                            <span>{ l.T(font.LabelKey) }</span>
-                        </label>
-                    }
-                </div>
-            </fieldset>
 
-            <fieldset class="ReaderSetting">
-                <legend class="ReaderSetting-label">{ l.T("reader.pageColor") }</legend>
-                <div class="ReaderSetting-choices">
-                    @readerSettingChoice("pageColor", app.ReaderPageBackground, l.T("reader.background"), "")
-                    @readerSettingChoice("pageColor", app.ReaderPageSurface, l.T("reader.surface"), "")
-                </div>
-            </fieldset>
+
+
 
             <fieldset class="ReaderSetting">
                 <legend class="ReaderSetting-label">{ l.T("reader.contentWidth") }</legend>
                 <div class="ReaderSetting-width">
+                    <span class="ReaderSetting-widthPreview" aria-hidden="true"><span :style="{ width: contentWidth + '%' }"><span/><span/><span/><span/></span></span>
                     <div class="flex items-center justify-between gap-3">
                         <i class="fa-solid fa-arrows-left-right text-secondary-foreground" aria-hidden="true"></i>
                         <output for="reader-content-width" x-text="contentWidth + 'ch'">{ strconv.Itoa(int(preferences.ContentWidth)) }ch</output>
@@ -90,12 +99,12 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
                 </div>
             </fieldset>
 
+
             <fieldset class="ReaderSetting">
-                <legend class="ReaderSetting-label">{ l.T("reader.theme") }</legend>
-                <div class="ReaderSetting-themes">
-                    @readerThemeChoice(app.ReaderThemeSystem, l.T("reader.themeWebsite"), "fa-desktop")
-                    @readerThemeChoice(app.ReaderThemeLight, l.T("reader.themeLight"), "fa-sun")
-                    @readerThemeChoice(app.ReaderThemeDark, l.T("reader.themeDark"), "fa-moon")
+                <legend class="ReaderSetting-label">{ l.T("reader.pageColor") }</legend>
+                <div class="ReaderSetting-choices ReaderSetting-paper">
+                    @readerSettingChoice("pageColor", app.ReaderPageBackground, l.T("reader.background"), "")
+                    @readerSettingChoice("pageColor", app.ReaderPageSurface, l.T("reader.surface"), "")
                 </div>
             </fieldset>
         </div>
@@ -105,6 +114,7 @@ templ ChapterReaderSettings(preferences app.ReaderPreferences, isAuthenticated b
 templ readerSettingChoice(model, value, label, style string) {
     <label class="ReaderSetting-choice" style={ style }>
         <input type="radio" name={ model } x-model={ model } value={ value } @change="$nextTick(() => applyPreferences())" />
+        <span class="ReaderSetting-paperSwatch" data-paper={ value } aria-hidden="true"></span>
         <span>{ label }</span>
     </label>
 }
@@ -114,8 +124,9 @@ templ readerThemeChoice(value, label, icon string) {
         <input type="radio" name="readerTheme" x-model="readerTheme" value={ value } @change="$nextTick(() => applyPreferences())"/>
         <span class="ReaderSetting-themePreview" data-theme-preview={ value } aria-hidden="true">
             <i class={ "fa-solid " + icon }></i>
-            <span class="ReaderSetting-previewLines"><span/><span/><span/></span>
+            <span class="ReaderSetting-previewPage"><span class="ReaderSetting-previewType">Aa</span><span class="ReaderSetting-previewLines"><span/><span/><span/></span></span>
         </span>
         <span class="ReaderSetting-themeLabel">{ label }</span>
+        <span class="ReaderSetting-selected" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
     </label>
 }

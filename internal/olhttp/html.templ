@@ -12,6 +12,7 @@ type DocProps struct {
     BodyClasses string
     BodyAttributes templ.Attributes
     UseSurfaceColorForBody bool
+    ReaderTheme string
 }
 
 templ Doc(
@@ -31,11 +32,21 @@ templ Doc(
                 theme = themeCookie.Value
             }
         }
+        if props.ReaderTheme == "oled" || props.ReaderTheme == "dark" {
+            theme = "dark"
+        } else if props.ReaderTheme == "light" {
+            theme = "light"
+        }
+        if theme == "" { theme = "system" }
     }}
 
     <!doctype html>
     <html 
         lang={lang}
+        data-theme={ theme }
+        if props.ReaderTheme != "" {
+            data-reader-theme={ props.ReaderTheme }
+        }
         if theme == "dark" {
             class="theme-default dark"
         } else {

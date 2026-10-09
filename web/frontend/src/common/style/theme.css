@@ -54,7 +54,8 @@ html.dark {
 }
 
 .dark,
-.ReaderSetting-themePreview[data-theme-preview="dark"] {
+.ReaderSetting-themePreview[data-theme-preview="dark"],
+.ReaderSetting-themePreview[data-theme-preview="oled"] {
   --background: #151615;
   --foreground: #d9dad5;
   --surface: #1d1f1d;
@@ -85,4 +86,14 @@ html.dark {
   --chart-5: hsl(340 75 55);
   --highlight: #30322f;
   --focus-ring: 0 0 0 3px rgb(200 166 93 / 28%);
+}
+
+/* OLED only applies on reader pages and in its theme preview. */
+html[data-reader-theme="oled"],
+.BookReader[data-reader-theme="oled"],
+.ReaderSetting-themePreview[data-theme-preview="oled"] {
+  --background: #000;
+  --surface: #000;
+  color-scheme: dark;
+  color: var(--foreground);
 }

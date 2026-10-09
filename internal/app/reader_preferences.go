@@ -18,6 +18,7 @@ const (
 	ReaderThemeSystem = "system"
 	ReaderThemeLight  = "light"
 	ReaderThemeDark   = "dark"
+	ReaderThemeOLED   = "oled"
 )
 
 type ReaderPreferences struct {
@@ -69,7 +70,7 @@ func (p ReaderPreferences) ValidateWithFonts(fonts []ReaderFont) error {
 	if p.PageColor != ReaderPageBackground && p.PageColor != ReaderPageSurface {
 		return errors.New("invalid page color")
 	}
-	if p.Theme != ReaderThemeSystem && p.Theme != ReaderThemeLight && p.Theme != ReaderThemeDark {
+	if p.Theme != ReaderThemeSystem && p.Theme != ReaderThemeLight && p.Theme != ReaderThemeDark && p.Theme != ReaderThemeOLED {
 		return errors.New("invalid reader theme")
 	}
 	return nil

@@ -53,3 +53,18 @@ func TestReaderPreferencesUseSuppliedFontCatalog(t *testing.T) {
 		t.Fatal("accepted font outside supplied catalog")
 	}
 }
+
+func TestReaderThemeValidation(t *testing.T) {
+	for _, theme := range []string{ReaderThemeSystem, ReaderThemeLight, ReaderThemeDark, ReaderThemeOLED} {
+		p := DefaultReaderPreferences()
+		p.Theme = theme
+		if err := p.Validate(); err != nil {
+			t.Errorf("theme %s: %v", theme, err)
+		}
+	}
+	p := DefaultReaderPreferences()
+	p.Theme = "unknown"
+	if p.Validate() == nil {
+		t.Fatal("accepted unknown theme")
+	}
+}

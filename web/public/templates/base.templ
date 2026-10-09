@@ -63,6 +63,7 @@ type htmlLayoutProps struct {
     Title string
     CSS []string
     UseSurfaceColorForBody bool
+    ReaderTheme string
 }
 
 // htmlLayout is a basic layout of an HTML page with nothing in besides basic JS, CSS, common translations and UI settings
@@ -81,6 +82,7 @@ templ htmlLayout(params htmlLayoutProps) {
 
     @olhttp.Doc(olhttp.DocProps{
         Title: params.Title,
+        ReaderTheme: params.ReaderTheme,
         Scripts: []string{ "/_/assets/common.js", "/_/assets/public.api.js", "/_/assets/alpinejs.js" },
         CSS: css,
         InstantClick: false,

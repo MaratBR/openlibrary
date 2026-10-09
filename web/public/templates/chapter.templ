@@ -37,7 +37,7 @@ templ Chapter(
         _, isAuthenticated := auth.GetSession(ctx)
     }}
 
-    @htmlLayout(htmlLayoutProps{Title: chapter.Name, CSS: chapterFontStylesheets(chapter.Fonts)}) {
+    @htmlLayout(htmlLayoutProps{Title: chapter.Name, CSS: chapterFontStylesheets(chapter.Fonts), ReaderTheme: preferences.Theme}) {
     @censoredContent(book.ID) {
         @AdminBookVisibilityWarning(book.VisibilityReasons)
         @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapter.ID))
@@ -122,6 +122,7 @@ templ Chapter(
 templ ChapterContentIframe(preferences app.ReaderPreferences, fonts []app.ReaderFont) {
     {{ l := i18n.GetLocalizer(ctx) }}
     @htmlLayout(htmlLayoutProps{
+        ReaderTheme: preferences.Theme,
         CSS: []string{
             "/_/assets/block-editor.css",
         },

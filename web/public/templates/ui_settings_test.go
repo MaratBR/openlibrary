@@ -24,3 +24,11 @@ func TestReaderWidthCookies(t *testing.T) {
 		})
 	}
 }
+
+func TestOLEDReaderThemeCookie(t *testing.T) {
+	r := httptest.NewRequest("GET", "/", nil)
+	r.AddCookie(&http.Cookie{Name: "reader_theme", Value: "oled"})
+	if got := GetReaderPreferencesFromCookies(r); got.Theme != "oled" {
+		t.Fatalf("OLED preference lost: %+v", got)
+	}
+}

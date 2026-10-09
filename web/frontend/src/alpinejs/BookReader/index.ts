@@ -3,7 +3,7 @@ import { setCookie } from '@/common/cookies'
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 22, 26, 30, 36, 42, 48]
 const PAGE_COLORS = ['background', 'surface'] as const
-const READER_THEMES = ['system', 'light', 'dark'] as const
+const READER_THEMES = ['system', 'light', 'dark', 'oled'] as const
 
 type PageColor = (typeof PAGE_COLORS)[number]
 type ReaderTheme = (typeof READER_THEMES)[number]
@@ -27,7 +27,6 @@ Alpine.data('BookReader', () => ({
     this.readerTheme = validValue(this.$el.dataset.readerTheme, READER_THEMES, 'system')
     this.authenticated = this.$el.dataset.authenticated === 'true'
     this.applyPreferences(false)
-    window.OLTheme.theme.subscribe(() => applyReaderTheme(this.readerTheme))
   },
 
   changeFontSize(increase: boolean) {
@@ -42,6 +41,8 @@ Alpine.data('BookReader', () => ({
 
   applyPreferences(persist = true) {
     document.documentElement.style.setProperty('--book-font-size', `${this.fontSize}px`)
+    this.$root.setAttribute('data-reader-theme', this.readerTheme)
+    this.$root.classList.toggle('dark', this.readerTheme === 'oled')
     this.$root.setAttribute('data-page-color', this.pageColor)
     this.$root.setAttribute('data-font-family', this.fontFamily)
     this.$root.style.setProperty('--reader-content-width', `${this.contentWidth}ch`)
@@ -49,7 +50,7 @@ Alpine.data('BookReader', () => ({
     if (selectedFont?.dataset.fontStack) {
       this.$root.style.setProperty('--reader-font-family', selectedFont.dataset.fontStack)
     }
-    applyReaderTheme(this.readerTheme)
+    window.OLTheme.applyPageTheme(this.readerTheme)
 
     setCookie('reader_font_size', String(this.fontSize))
     setCookie('reader_font_family', this.fontFamily)
@@ -138,13 +139,6 @@ function validValue<T extends string>(
   fallback: T,
 ): T {
   return values.includes(value as T) ? (value as T) : fallback
-}
-
-function applyReaderTheme(theme: ReaderTheme): void {
-  let dark = false
-  if (theme === 'dark') dark = true
-  else if (theme === 'system') dark = window.OLTheme.isDarkThemeActive.get()
-  document.documentElement.classList.toggle('dark', dark)
 }
 
 export type CurrentPosition = {

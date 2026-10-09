@@ -43,6 +43,18 @@ namespace OLTheme {
     },
   )
 
+  // Reader choices affect the current page without changing the website preference.
+  export function applyPageTheme(readerTheme?: string): void {
+    const dark = readerTheme === 'dark' || readerTheme === 'oled'
+      || (readerTheme !== 'light' && isDarkThemeActive.get())
+    const html = document.documentElement
+    html.classList.toggle('dark', dark)
+    html.dataset.theme = readerTheme === 'oled' || readerTheme === 'dark'
+      ? 'dark' : readerTheme === 'light' ? 'light' : theme.get()
+    if (readerTheme) html.dataset.readerTheme = readerTheme
+    else delete html.dataset.readerTheme
+  }
+
   document.dispatchEvent(new CustomEvent('OLTheme:ready'))
 
   const THEME_COOKIE = '_theme'
@@ -74,17 +86,10 @@ declare global {
 window.OLTheme = OLTheme
 
 executeAfterDOMIsReady(() => {
-  const HTML = document.getElementsByTagName('html')[0]
-
-  const isDarkCb = (isDark: boolean) => {
-    HTML.classList.toggle('dark', isDark)
+  const applyTheme = () => {
+    OLTheme.applyPageTheme(document.querySelector<HTMLElement>('.BookReader')?.dataset.readerTheme)
   }
-  OLTheme.isDarkThemeActive.subscribe(isDarkCb)
-  isDarkCb(OLTheme.isDarkThemeActive.get())
-
-  const themeCb = (theme: Theme) => {
-    HTML.setAttribute('data-theme', theme)
-  }
-  OLTheme.theme.subscribe(themeCb)
-  themeCb(OLTheme.theme.get())
+  OLTheme.isDarkThemeActive.subscribe(applyTheme)
+  OLTheme.theme.subscribe(applyTheme)
+  applyTheme()
 })
