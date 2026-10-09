@@ -20,7 +20,7 @@ before changing files in a scoped area; it adds to this guide.
 
 ## Communication — all sessions
 
-- Keep chatter minimal; avoid long explanations.
+- Keep chatter minimal or nonexistent, speak as little as possible; no long explanations.
 - For each step, give only a 1–2 sentence explanation outside the code when
   necessary.
 - Present code in small, skinny blocks; avoid giant walls of code.
