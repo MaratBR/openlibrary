@@ -1,6 +1,7 @@
 package siteconfig
 
 var settingsDefinitions = []SettingsDefinition{
+	Definition[SiteSetup]{Name: "SiteSetup", Field: func(c *ConfigData) *SiteSetup { return &c.SiteSetup }},
 	Definition[FontConfiguration]{
 		Name:  "FontConfiguration",
 		Field: func(c *ConfigData) *FontConfiguration { return &c.FontConfiguration },

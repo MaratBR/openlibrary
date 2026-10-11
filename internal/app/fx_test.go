@@ -40,6 +40,7 @@ func TestApplicationFeatureWiring(t *testing.T) {
 			app.BookManagerService,
 			app.SearchService,
 			app.SignUpService,
+			app.SetupService,
 		) {
 		}),
 	)

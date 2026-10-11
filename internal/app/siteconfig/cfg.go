@@ -1,10 +1,16 @@
 package siteconfig
 
 type ConfigData struct {
+	SiteSetup            SiteSetup
 	FontConfiguration    FontConfiguration
 	CaptchaSettings      CaptchaSettings
 	PasswordRequirements PasswordRequirements
 	ContentRestrictions  ContentRestrictions
+}
+
+type SiteSetup struct {
+	IsSetup  bool
+	SiteName string
 }
 
 type PasswordRequirements struct {

@@ -1,0 +1,73 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/app/siteconfig"
+import "github.com/MaratBR/openlibrary/internal/csrf"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "strconv"
+
+type InitialSetupData struct {
+	AdminUserExist       bool
+	SiteName             string
+	AdminUsername        string
+	PasswordRequirements siteconfig.PasswordRequirements
+	ErrorKey             string
+}
+
+templ InitialSetup(data InitialSetupData) {
+	{{ l := i18n.GetLocalizer(ctx) }}
+	@htmlLayout(htmlLayoutProps{Title: l.T("setup.title")}) {
+		<div class="min-h-screen flex items-center justify-center bg-background px-4 py-10 sm:py-16">
+			<main class="w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-surface shadow-xl">
+				<div class="px-6 py-8 sm:px-10 sm:py-10">
+					<h1 class="mb-3 text-3xl font-semibold tracking-tight">{ l.T("setup.title") }</h1>
+					<p class="mb-8 text-sm leading-relaxed text-secondary-foreground">{ l.T("setup.description") }</p>
+					if data.ErrorKey != "" {
+						<div role="alert" class="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm leading-relaxed">{ l.T(data.ErrorKey) }</div>
+					}
+					<form method="post" action="/setup" class="flex flex-col gap-6">
+						@csrf.CSRFInputTempl(ctx)
+						<div>
+							<label class="label mb-2" for="siteName">{ l.T("setup.siteName") }</label>
+							<input class="input w-full" id="siteName" name="siteName" type="text" required value={ data.SiteName } autocomplete="organization"/>
+						</div>
+						if data.AdminUserExist {
+							<p class="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm leading-relaxed">{ l.T("setup.adminExists") }</p>
+						} else {
+							<fieldset class="flex min-w-0 flex-col gap-5 border-t border-border pt-6">
+								<legend class="mb-3 pr-3 text-sm font-semibold">{ l.T("setup.adminTitle") }</legend>
+								<div>
+									<label class="label mb-2" for="adminUsername">{ l.T("setup.adminUsername") }</label>
+									<input class="input w-full" id="adminUsername" name="adminUsername" type="text" required minlength="2" maxlength="15" pattern="[0-9a-zA-Z_\-]+" autocomplete="username" value={ data.AdminUsername } aria-describedby="usernameHint"/>
+									<p id="usernameHint" class="mt-2 text-xs leading-relaxed text-secondary-foreground">{ l.T("setup.usernameHint") }</p>
+								</div>
+								<div>
+									<label class="label mb-2" for="adminPassword">{ l.T("setup.adminPassword") }</label>
+									<input class="input w-full" id="adminPassword" name="adminPassword" type="password" required autocomplete="new-password" aria-describedby="passwordHints"/>
+									<div id="passwordHints" class="mt-2 space-y-1 text-xs leading-relaxed text-secondary-foreground">
+										if data.PasswordRequirements.MinLength > 0 {
+											<p>{ l.T("setup.minLength") } { strconv.Itoa(data.PasswordRequirements.MinLength) }</p>
+										}
+										if data.PasswordRequirements.Digits {
+											<p>{ l.T("setup.requireDigits") }</p>
+										}
+										if data.PasswordRequirements.DifferentCases {
+											<p>{ l.T("setup.requireCases") }</p>
+										}
+										if data.PasswordRequirements.SymbolsEnabled && data.PasswordRequirements.Symbols != "" {
+											<p>{ l.T("setup.requireSymbols") } { data.PasswordRequirements.Symbols }</p>
+										}
+									</div>
+								</div>
+								<div>
+									<label class="label mb-2" for="confirmPassword">{ l.T("setup.confirmPassword") }</label>
+									<input class="input w-full" id="confirmPassword" name="confirmPassword" type="password" required autocomplete="new-password"/>
+								</div>
+							</fieldset>
+						}
+						<button class="Btn Btn--lg Btn--primary mt-2 w-full" type="submit">{ l.T("setup.complete") }</button>
+					</form>
+				</div>
+			</main>
+		</div>
+	}
+}

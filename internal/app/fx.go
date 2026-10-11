@@ -24,6 +24,7 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 	userdata.FXModule,
 
 	fx.Provide(
+		NewSetupService,
 		NewUserService,
 		NewAuthService,
 		NewSignUpService,

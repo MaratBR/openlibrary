@@ -621,6 +621,17 @@ func (q *Queries) User_GetNames(ctx context.Context, ids []pgtype.UUID) ([]User_
 	return items, nil
 }
 
+const user_GetSetupState = `-- name: User_GetSetupState :one
+select exists(select 1 from users where role = 'admin') as has_admin
+`
+
+func (q *Queries) User_GetSetupState(ctx context.Context) (bool, error) {
+	row := q.db.QueryRow(ctx, user_GetSetupState)
+	var has_admin bool
+	err := row.Scan(&has_admin)
+	return has_admin, err
+}
+
 const user_Insert = `-- name: User_Insert :exec
 insert into users
 (id, name, password_hash, joined_at, email, email_verified)

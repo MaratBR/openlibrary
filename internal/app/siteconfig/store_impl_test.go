@@ -137,4 +137,24 @@ func TestEmptyDatabaseUsesDefaults(t *testing.T) {
 	if s.Get().FontConfiguration.MaxPerChapter != 10 || db.writes != 0 {
 		t.Fatal("empty database did not use defaults")
 	}
+	if s.Get().SiteSetup.IsSetup {
+		t.Fatal("empty database must require setup")
+	}
+}
+
+func TestSiteSetupPersistence(t *testing.T) {
+	db := &configDB{readErr: pgx.ErrNoRows}
+	s := NewStore(db, nil)
+	s.Get().SiteSetup = SiteSetup{IsSetup: true, SiteName: "Library"}
+	if err := s.Save(context.Background(), false); err != nil {
+		t.Fatal(err)
+	}
+	db.raw, db.readErr = db.saved, nil
+	reloaded := NewStore(db, nil)
+	if err := reloaded.Load(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if reloaded.Get().SiteSetup != s.Get().SiteSetup {
+		t.Fatalf("setup state did not survive reload: %+v", reloaded.Get().SiteSetup)
+	}
 }

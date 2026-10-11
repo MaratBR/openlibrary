@@ -4,6 +4,9 @@ from users
 where id = $1
 limit 1;
 
+-- name: User_GetSetupState :one
+select exists(select 1 from users where role = 'admin') as has_admin;
+
 -- name: User_GetDetails :one
 select 
     users.*, 

@@ -3,9 +3,10 @@ package public
 import (
 	_ "embed"
 	"errors"
-	"go.uber.org/zap"
 	"net/http"
 	"net/url"
+
+	"go.uber.org/zap"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/auth"
@@ -26,6 +27,8 @@ type handler struct {
 
 var FXModule = fx.Module("public_ui_handler",
 	fx.Provide(
+		newSetupMiddleware,
+
 		newHomeController,
 		newDebugController,
 		newAuthController,
@@ -92,6 +95,8 @@ func newHandler(
 	apiControllerI18N *apiControllerI18N,
 	apiControllerGoogleFonts *apiControllerGoogleFonts,
 
+	setupMiddleware *setupMiddleware,
+
 	flashMiddleware flash.Middleware,
 	log *zap.SugaredLogger,
 ) webinfra.MountableHandler {
@@ -103,6 +108,8 @@ func newHandler(
 
 	h.r.NotFound(notFoundHandler)
 	h.r.MethodNotAllowed(methodNotAllowed)
+
+	h.r.Use(setupMiddleware.Middleware)
 
 	h.r.Use(auth.NewAuthorizationMiddleware(sessionService, userService, auth.MiddlewareOptions{
 		OnFail: func(w http.ResponseWriter, r *http.Request, err error) {
