@@ -31,7 +31,7 @@ export function Tags() {
   return (
     <>
       <PageHeader title={t('admin.sidebar.tags')} description={t('admin.ui.tagsDescription')} />
-      <Card className="admin-card--table">
+      <Card className="Card--nopad">
         <form
           className="Admin-toolbar"
           key={params.toString()}

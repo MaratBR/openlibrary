@@ -37,7 +37,7 @@ export function ModerationLog({
   showTarget?: boolean
 }) {
   return (
-    <section className="Card Card--nopad overflow-hidden">
+    <section className="Card Card--dashboard Card--nopad overflow-hidden">
       {entries.length ? (
         entries.map((entry, index) => (
           <ModerationLogEntry

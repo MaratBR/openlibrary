@@ -31,7 +31,7 @@ export function ModerationActionSelector({
   className?: string
 }) {
   return (
-    <section className={clsx('Card', className)}>
+    <section className={clsx('Card Card--dashboard', className)}>
       <FormControl label={label} htmlFor={id}>
         <Select value={value} onValueChange={onValueChange}>
           <SelectTrigger id={id} className="w-full">
@@ -162,7 +162,7 @@ export function ModerationActionCard({
   className?: string
 }) {
   return (
-    <section className={clsx('Card', className)}>
+    <section className={clsx('Card Card--dashboard', className)}>
       <h2 className="text-xl font-semibold">{title}</h2>
       <p className="text-secondary-foreground mt-1 mb-5">{description}</p>
       {children}

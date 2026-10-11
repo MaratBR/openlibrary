@@ -249,7 +249,7 @@ export function ModerationUsersErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.Header title={window._('moderationPortal.users')} />
       <div className="p-8">
-        <div className="Card">
+        <div className="Card Card--dashboard">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

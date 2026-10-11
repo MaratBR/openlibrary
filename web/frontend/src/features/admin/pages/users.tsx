@@ -28,7 +28,7 @@ export function Users() {
   return (
     <>
       <PageHeader title={t('admin.users.title')} description={t('admin.ui.usersDescription')} />
-      <Card className="admin-card--table">
+      <Card className="Card--nopad">
         <form
           key={params.toString()}
           className="Admin-toolbar"

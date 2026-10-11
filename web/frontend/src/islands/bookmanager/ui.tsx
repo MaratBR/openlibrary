@@ -18,9 +18,10 @@ export function BookNavigation({
   active: 'general' | 'details' | 'chapters'
 }) {
   return (
-    <nav className="BM-tabs" aria-label={window._('bookManager.ui.bookNavigation')}>
+    <nav className="Tabs Tabs--navigation" aria-label={window._('bookManager.ui.bookNavigation')}>
       {(['general', 'details', 'chapters'] as const).map((tab) => (
         <NavLink
+          className="Tab"
           key={tab}
           to={tab === 'details' ? `/books/${id}/edit` : `/books/${id}?t=${tab}`}
           aria-current={active === tab ? 'page' : false}
@@ -93,7 +94,7 @@ export function ManagerDialog({
   return createPortal(
     <dialog
       ref={ref}
-      className={`BM-dialog ${panel ? 'BM-dialog--panel' : ''}`}
+      className={`Dialog ${panel ? 'Dialog--panel' : ''}`}
       aria-label={title}
       onCancel={(e) => {
         e.preventDefault()

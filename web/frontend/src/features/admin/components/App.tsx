@@ -57,18 +57,18 @@ function Layout() {
           <div className="Admin-actions">
             <button
               type="button"
-              className="Btn Btn--ghost"
+              className="Btn Btn--rail Btn--ghost"
               aria-label={t('admin.ui.theme')}
               onClick={() => window.OLTheme.toggle()}
             >
               <i className="fa-solid fa-circle-half-stroke" aria-hidden="true" />
               {t('admin.ui.theme')}
             </button>
-            <a className="Btn Btn--ghost" data-admin-external href="/">
+            <a className="Btn Btn--rail Btn--ghost" data-admin-external href="/">
               <i className="fa-solid fa-arrow-left" aria-hidden="true" />
               {t('admin.goBackToSite')}
             </a>
-            <a className="Btn Btn--outline" data-admin-external href="/logout">
+            <a className="Btn Btn--rail Btn--outline" data-admin-external href="/logout">
               <i className="fa-solid fa-arrow-right-from-bracket" aria-hidden="true" />
               {t('admin.sidebar.logout')}
             </a>

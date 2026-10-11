@@ -36,7 +36,7 @@ export function Home() {
       <div className="Admin-homeGrid">
         {sections.map((section) => (
           <Link
-            className="admin-card admin-card--interactive Admin-sectionCard"
+            className="Card Card--dashboard Card--responsive Card--interactive Admin-sectionCard"
             key={section.path}
             to={section.path}
           >
@@ -114,9 +114,9 @@ export function Debug() {
             if (!pending) setConfirm(false)
           }}
         >
-          <p>{t('admin.ui.confirmDescription')}</p>
+          <p className="Dialog-description">{t('admin.ui.confirmDescription')}</p>
           {!!error && <Notice error>{errorMessage(error)}</Notice>}
-          <div className="Admin-actions">
+          <div className="Admin-actions Dialog-actions">
             <button
               className="Btn Btn--outline"
               disabled={pending}

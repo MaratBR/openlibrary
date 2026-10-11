@@ -41,6 +41,11 @@ This guide applies to `web/frontend`. Follow the repository guide as well.
   Nest sub-component selectors under their root with `&-` (for example,
   `.BM { &-bookCard { ... } }`), including responsive styles and variants.
 
+- Reuse `.PageHeader`, `.Card`, `.Tabs`/`.Tab`, `.Dialog` (native dialog), and
+  `.Notice` across dashboards. Express visual differences with component modifiers
+  such as `--dashboard`, `--record`, `--navigation`, `--panel`, and `--success`,
+  rather than feature-specific copies or ancestor-dependent overrides.
+
 ## Verification
 
 - Run `pnpm run build` after TypeScript, React, Alpine, API, or style changes.

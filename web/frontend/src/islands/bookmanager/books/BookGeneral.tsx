@@ -4,7 +4,7 @@ import { Counts, CoverImage } from '../ui'
 
 export function BookGeneral({ book }: { book: ManagerBookDetailsDto }) {
   return (
-    <div className="Card space-y-6">
+    <div className="Card Card--dashboard space-y-6">
       <div className="flex gap-6 flex-wrap items-center">
         <CoverImage cover={book.cover} />
         <div className="space-y-3 min-w-0">

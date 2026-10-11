@@ -23,13 +23,13 @@
   @apply mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between;
   &-body {
     @apply min-w-0;
-    .BM & {
-      min-width: 0;
-    }
   }
   &-title {
+    &:focus {
+      outline: none;
+    }
     @apply break-words font-title text-4xl font-semibold leading-tight;
-    .DashboardShell & {
+    .PageHeader--dashboard & {
       font-family: var(--font-text);
       font-size: 2rem;
       font-weight: 600;
@@ -40,12 +40,15 @@
         font-size: 1.6rem;
       }
     }
-    .BM & {
-      overflow-wrap: anywhere;
-    }
   }
   &-description {
     @apply mt-2 max-w-3xl text-secondary-foreground;
+    .PageHeader--dashboard & {
+      margin-top: 10px;
+      max-width: 70ch;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
   }
   &-meta {
     @apply mt-3 flex flex-wrap items-center gap-2;
@@ -53,7 +56,7 @@
   &-actions {
     @apply flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto;
   }
-  .DashboardShell & {
+  &--dashboard {
     align-items: center;
     gap: 20px;
     margin-bottom: 28px;
@@ -64,8 +67,20 @@
       padding-bottom: 20px;
     }
   }
-  .BM & {
+  &--wrap {
+    flex-direction: row;
     flex-wrap: wrap;
+    .PageHeader-body {
+      flex: 1 1 280px;
+    }
+  }
+  &--record {
+    display: block;
+    margin-bottom: 0;
+    .PageHeader-title {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
   }
 }
 

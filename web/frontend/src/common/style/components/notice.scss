@@ -1,0 +1,23 @@
+.Notice {
+  margin: 16px 0;
+  padding: 12px 16px;
+  background: var(--secondary);
+  border-radius: var(--radius);
+  color: var(--primary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  &--error {
+    color: var(--destructive);
+    background: var(--destructive-soft);
+  }
+  &--success {
+    color: var(--success);
+    background: var(--success-soft);
+  }
+  &--spacious {
+    margin: 0 0 24px;
+    padding: 14px 16px;
+    font-size: 0.875rem;
+  }
+}

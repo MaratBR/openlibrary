@@ -131,7 +131,7 @@ export default function ModerationBooks() {
             ))}
           </div>
         ) : (
-          <div className="Card py-16 text-center text-secondary-foreground">
+          <div className="Card Card--dashboard py-16 text-center text-secondary-foreground">
             {window._('moderationPortal.booksPage.empty')}
           </div>
         )}
@@ -210,7 +210,7 @@ export function ModerationBooksErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.Header title={window._('moderationPortal.books')} />
       <div className="p-8">
-        <div className="Card">
+        <div className="Card Card--dashboard">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

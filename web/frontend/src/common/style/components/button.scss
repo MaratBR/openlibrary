@@ -117,7 +117,7 @@
       @apply mr-1;
     }
   }
-  .DashboardShell-utilities & {
+  &--rail {
     justify-content: flex-start;
     gap: 10px;
     min-height: 40px;
@@ -133,7 +133,7 @@
       background: color-mix(in srgb, var(--dashboard-rail-ink) 10%, transparent);
     }
   }
-  .BM-cardFooter > & {
+  &--compact {
     min-height: 36px;
     padding: 8px 10px;
     font-size: 0.75rem;
@@ -142,9 +142,7 @@
   .Admin-pager & {
     @media (max-width: 600px) {
       padding-inline: 12px;
-
     }
-
   }
 }
 

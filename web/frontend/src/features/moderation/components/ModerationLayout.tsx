@@ -48,16 +48,16 @@ export default function ModerationLayout({
         </nav>
         <div className="DashboardShell-utilities flex flex-col gap-2">
           {isAdmin && (
-            <a className="Btn Btn--outline" href="/admin">
+            <a className="Btn Btn--rail Btn--outline" href="/admin">
               <i className="fa-solid fa-gauge-high" aria-hidden="true" />
               {window._('moderationPortal.adminDashboard')}
             </a>
           )}
-          <a className="Btn Btn--ghost" href="/">
+          <a className="Btn Btn--rail Btn--ghost" href="/">
             <i className="fa-solid fa-arrow-left" aria-hidden="true" />
             {window._('moderationPortal.backToSite')}
           </a>
-          <button className="Btn Btn--ghost" onClick={() => window.OLTheme.toggle()}>
+          <button className="Btn Btn--rail Btn--ghost" onClick={() => window.OLTheme.toggle()}>
             <i className="fa-solid fa-circle-half-stroke" aria-hidden="true" />
             {window._('moderationPortal.theme')}
           </button>

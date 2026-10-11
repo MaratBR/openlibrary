@@ -33,7 +33,7 @@ export function Books() {
           </a>
         }
       />
-      <Card className="admin-card--table">
+      <Card className="Card--nopad">
         <form
           key={params.toString()}
           className="Admin-toolbar"

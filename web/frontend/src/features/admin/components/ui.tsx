@@ -18,10 +18,12 @@ export function PageHeader({
     document.title = `${title} · ${t('admin.ui.title')}`
   }, [title])
   return (
-    <header className="Admin-pageHeader">
-      <div>
-        <h1 tabIndex={-1}>{title}</h1>
-        {description && <p>{description}</p>}
+    <header className="PageHeader PageHeader--dashboard PageHeader--wrap">
+      <div className="PageHeader-body">
+        <h1 className="PageHeader-title" tabIndex={-1}>
+          {title}
+        </h1>
+        {description && <p className="PageHeader-description">{description}</p>}
       </div>
       {actions && <div className="Admin-actions">{actions}</div>}
     </header>
@@ -39,9 +41,9 @@ export function Card({
   className?: string
 }) {
   return (
-    <section className={`admin-card ${className}`}>
+    <section className={`Card Card--dashboard Card--responsive ${className}`}>
       {title && (
-        <header className="admin-card-header">
+        <header className="Card-header">
           <h2>{title}</h2>
           {description && <p>{description}</p>}
         </header>
@@ -75,10 +77,7 @@ export function Field({
 }
 export function Notice({ children, error = false }: { children: ReactNode; error?: boolean }) {
   return (
-    <p
-      className={`Admin-notice ${error ? 'Admin-notice--error' : ''}`}
-      role={error ? 'alert' : 'status'}
-    >
+    <p className={`Notice ${error ? 'Notice--error' : ''}`} role={error ? 'alert' : 'status'}>
       {children}
     </p>
   )
@@ -205,14 +204,14 @@ export function Dialog({
   return createPortal(
     <dialog
       ref={ref}
-      className="Admin-dialog"
+      className="Dialog Dialog--wide"
       aria-label={title}
       onCancel={(e) => {
         e.preventDefault()
         onClose()
       }}
     >
-      <header>
+      <header className="Dialog-header">
         <h2>{title}</h2>
         <button
           type="button"
@@ -272,8 +271,10 @@ export function useDirtyForm(dirty: boolean, pending: boolean) {
   }
   return blocker.state === 'blocked' || external ? (
     <Dialog title={t('admin.ui.unsaved')} onClose={stay}>
-      <p>{t(pending ? 'admin.ui.saving' : 'admin.ui.discardDescription')}</p>
-      <div className="Admin-actions">
+      <p className="Dialog-description">
+        {t(pending ? 'admin.ui.saving' : 'admin.ui.discardDescription')}
+      </p>
+      <div className="Admin-actions Dialog-actions">
         <button className="Btn Btn--primary" type="button" onClick={stay}>
           {t('admin.ui.stay')}
         </button>

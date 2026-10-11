@@ -82,7 +82,7 @@ export default function ReportPage() {
 
 function ReportSummary({ report }: { report: ModerationReportDetail }) {
   return (
-    <section className="Card Card--elevated">
+    <section className="Card Card--dashboard Card--elevated">
       <dl className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <Detail label={window._('moderationPortal.report.reason')} value={report.reason} />
         <Detail
@@ -120,7 +120,7 @@ function ReportedContent({
 }) {
   const book = report.bookContext
   return (
-    <section className="Card Card--elevated">
+    <section className="Card Card--dashboard Card--elevated">
       <h2 className="text-lg font-semibold mb-4">
         {window._('moderationPortal.report.reportedContent')}
         <span className="ml-3 text-sm font-normal text-secondary-foreground">
@@ -292,7 +292,7 @@ function BookContext({ report }: { report: ModerationReportDetail }) {
         </button>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
-        <section className="Card">
+        <section className="Card Card--dashboard">
           <h2 className="text-lg font-semibold mb-4">
             {window._('moderationPortal.report.contentContext')}
           </h2>
@@ -315,7 +315,7 @@ function BookContext({ report }: { report: ModerationReportDetail }) {
             <dd>{dateTimeFormatter.format(new Date(book.lastUpdated))}</dd>
           </dl>
         </section>
-        <section className="Card">
+        <section className="Card Card--dashboard">
           <h2 className="text-lg font-semibold mb-4">
             {window._('moderationPortal.report.history')}
           </h2>
@@ -392,7 +392,7 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
     }
   }
   return (
-    <aside className="Card xl:sticky xl:top-22">
+    <aside className="Card Card--dashboard xl:sticky xl:top-22">
       <h2 className="text-xl font-semibold mb-4">{window._('moderationPortal.report.decision')}</h2>
       {resolved ? (
         <p className="rounded-lg bg-secondary p-4 text-secondary-foreground">
@@ -529,7 +529,7 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
 
 function Activity({ report }: { report: ModerationReportDetail }) {
   return (
-    <section className="Card">
+    <section className="Card Card--dashboard">
       <h2 className="text-lg font-semibold mb-4">{window._('moderationPortal.report.activity')}</h2>
       <Timeline.Root>
         {report.activities.map((activity) => (
@@ -615,7 +615,7 @@ export function ReportErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.Header title={window._('moderationPortal.report.title')} />
       <div className="p-8">
-        <div className="Card">
+        <div className="Card Card--dashboard">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

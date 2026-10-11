@@ -28,12 +28,12 @@ export function BookChapters({ book }: { book: ManagerBookDetailsDto }) {
       )}
       <section className="space-y-4 mt-4">
         {!book.chapters.length && (
-          <p className="Card">{window._('bookManager.ui.emptyChapters')}</p>
+          <p className="Card Card--dashboard">{window._('bookManager.ui.emptyChapters')}</p>
         )}
         {book.chapters.map((chapter) => (
           <article
             key={chapter.id}
-            className="Card flex flex-wrap justify-between gap-4"
+            className="Card Card--dashboard flex flex-wrap justify-between gap-4"
             data-testid="BookChapters_Chapter"
           >
             <div className="min-w-0">
@@ -124,7 +124,7 @@ function AddChapterForm({
         placement="bottom-start"
         anchorEl={anchor}
       >
-        <div className="Card shadow-2xl" style={{ width: 'min(420px, calc(100vw - 32px))' }}>
+        <div className="Card Card--dashboard shadow-2xl" style={{ width: 'min(420px, calc(100vw - 32px))' }}>
           <form
             className="space-y-3"
             onSubmit={(e) => {

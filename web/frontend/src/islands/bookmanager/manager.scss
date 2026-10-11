@@ -1,15 +1,7 @@
 .BM {
   min-height: 100vh;
   overflow-wrap: anywhere;
-  &-masthead {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem max(16px, calc((100vw - 1200px) / 2));
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
+
   &-main {
     max-width: 1440px;
     margin: 0 auto;
@@ -140,12 +132,6 @@
   }
   &-actions summary {
     list-style: none;
-    .BM-cardFooter & {
-      min-height: 36px;
-      padding: 8px 10px;
-      font-size: 0.75rem;
-      box-shadow: none;
-    }
   }
   &-actions > div {
     position: absolute;
@@ -157,33 +143,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
-  &-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    border-bottom: 1px solid var(--border);
-    margin: 0 0 24px;
-    gap: 28px;
-    font-size: 0.875rem;
-  }
-  &-notice {
-    margin: 0 0 24px;
-    padding: 14px 16px;
-    border-radius: var(--radius);
-    background: var(--success-soft);
-    color: var(--success);
-    font-size: 0.875rem;
-    line-height: 1.6;
-    overflow-wrap: anywhere;
-  }
-  &-tabs a {
-    padding: 12px 0;
-    border-bottom: 3px solid transparent;
-  }
-  &-tabs a[aria-current='page'] {
-    border-color: var(--primary);
-    color: var(--primary);
-    font-weight: 600;
-  }
+
   &-workspace {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 300px;
@@ -211,32 +171,5 @@
     z-index: 2;
     box-shadow: none;
     border-radius: 12px;
-  }
-  &-dialog {
-    overflow-wrap: anywhere;
-    position: fixed;
-    margin: auto;
-    width: min(520px, calc(100% - 32px));
-    max-height: calc(100dvh - 32px);
-    padding: 24px;
-    border: 1px solid var(--border);
-    border-radius: calc(var(--radius) + 4px);
-    background: var(--surface);
-    color: var(--foreground);
-    overflow-y: auto;
-    @media (max-width: 600px) {
-      padding: 16px;
-    }
-  }
-  &-dialog::backdrop {
-    background: color-mix(in srgb, var(--foreground), transparent 65%);
-  }
-  &-dialog--panel {
-    margin: 0 0 0 auto;
-    width: min(600px, 100%);
-    max-width: 100%;
-    height: 100dvh;
-    max-height: 100dvh;
-    border-radius: 0;
   }
 }

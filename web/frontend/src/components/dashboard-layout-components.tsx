@@ -11,21 +11,19 @@ function DashboardContent_Root({ children }: { children: ReactNode }) {
 
 function DashboardContent_Card({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={clsx('Card', className)} data-testid="DashboardContent_Card" {...props}>
+    <div
+      className={clsx('Card Card--dashboard', className)}
+      data-testid="DashboardContent_Card"
+      {...props}
+    >
       {children}
     </div>
   )
 }
 
-function DashboardContent_Header({
-  title,
-  children,
-}: {
-  title: ReactNode
-  children?: ReactNode
-}) {
+function DashboardContent_Header({ title, children }: { title: ReactNode; children?: ReactNode }) {
   return (
-    <header className="PageHeader" data-testid="DashboardContent_Header">
+    <header className="PageHeader PageHeader--dashboard" data-testid="DashboardContent_Header">
       <div className="PageHeader-body">
         <h1 className="PageHeader-title">{title}</h1>
       </div>

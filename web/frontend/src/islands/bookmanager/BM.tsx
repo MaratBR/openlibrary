@@ -78,7 +78,7 @@ function Loading() {
 function RouteError() {
   usePageTitle(window._('bookManager.ui.unavailable'))
   return (
-    <section className="Card my-6 space-y-4">
+    <section className="Card Card--dashboard my-6 space-y-4">
       <h1>{window._('bookManager.ui.unavailable')}</h1>
       <p role="alert">{window._('bookManager.ui.loadError')}</p>
       <div className="flex flex-wrap gap-3">

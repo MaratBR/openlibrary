@@ -32,7 +32,7 @@ export default function BMLayout({ children }: { children: ReactNode }) {
           </NavLink>
         </nav>
         <div className="DashboardShell-utilities">
-          <a href="/" className="Btn Btn--ghost" data-manager-site-link>
+          <a href="/" className="Btn Btn--rail Btn--ghost" data-manager-site-link>
             <i className="fa-solid fa-arrow-left" aria-hidden="true" />
             {window._('bookManager.ui.mainSite')}
           </a>

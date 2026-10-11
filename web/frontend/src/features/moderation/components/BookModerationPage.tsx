@@ -93,9 +93,9 @@ export default function BookModerationPage() {
 
 function Header({ book }: { book: ModerationBook }) {
   return (
-    <header className="Moderation-recordHeader flex flex-col lg:flex-row lg:items-center gap-5">
+    <header className="PageHeader PageHeader--dashboard PageHeader--record flex flex-col lg:flex-row lg:items-center gap-5">
       <div className="min-w-0 flex-1">
-        <h1 className="text-3xl font-semibold truncate">{book.name}</h1>
+        <h1 className="PageHeader-title">{book.name}</h1>
         <p className="text-sm text-secondary-foreground">
           {window._('moderationPortal.book.bookId')}: {book.id}
         </p>
@@ -131,7 +131,7 @@ function Metric({ label, value }: { label: string; value: ReactNode }) {
 function Overview({ book }: { book: ModerationBook }) {
   return (
     <div className="grid gap-5">
-      <section className="Card">
+      <section className="Card Card--dashboard">
         <h2 className="text-xl font-semibold mb-4">
           {window._('moderationPortal.book.generalInfo')}
         </h2>
@@ -163,7 +163,7 @@ function Overview({ book }: { book: ModerationBook }) {
           <SanitizeHTML value={book.summary} />
         </div>
       </section>
-      <section className="Card">
+      <section className="Card Card--dashboard">
         <h2 className="text-xl font-semibold mb-4">
           {window._('moderationPortal.book.currentState')}
         </h2>
@@ -334,7 +334,7 @@ function Chapters({ chapters }: { chapters: ModerationBookChapter[] }) {
   const pages = Math.ceil(filtered.length / 100)
   const shown = filtered.slice((page - 1) * 100, page * 100)
   return (
-    <section className="Card Card--nopad overflow-hidden">
+    <section className="Card Card--dashboard Card--nopad overflow-hidden">
       <div className="p-5 border-b border-border">
         <input
           className="input w-full"
@@ -416,7 +416,7 @@ function Activity({ bookId, log }: { bookId: string; log?: BookModerationLog }) 
 export function BookModerationErrorPage() {
   return (
     <DashboardContent.Root>
-      <div className="Card">
+      <div className="Card Card--dashboard">
         <ErrorDisplay error={useRouteError()} />
       </div>
     </DashboardContent.Root>

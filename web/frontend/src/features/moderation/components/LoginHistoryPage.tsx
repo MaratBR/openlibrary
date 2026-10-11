@@ -73,7 +73,7 @@ export default function LoginHistoryPage() {
         <p className="text-secondary-foreground mb-6">
           {window._('moderationPortal.loginHistoryPage.description')}
         </p>
-        <section className="Card Card--elevated mb-5">
+        <section className="Card Card--dashboard Card--elevated mb-5">
           <Form method="get" className="grid gap-4">
             <input
               type="hidden"
@@ -138,13 +138,13 @@ export default function LoginHistoryPage() {
           </span>
         </div>
         {history.entries.length ? (
-          <section className="Card Card--nopad overflow-hidden">
+          <section className="Card Card--dashboard Card--nopad overflow-hidden">
             {history.entries.map((entry) => (
               <LoginRow key={entry.id} entry={entry} />
             ))}
           </section>
         ) : (
-          <section className="Card py-16 text-center text-secondary-foreground">
+          <section className="Card Card--dashboard py-16 text-center text-secondary-foreground">
             {window._('moderationPortal.user.noLoginHistory')}
           </section>
         )}
@@ -203,7 +203,7 @@ export function LoginHistoryErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.Header title={window._('moderationPortal.loginHistory')} />
       <div className="p-8">
-        <div className="Card">
+        <div className="Card Card--dashboard">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

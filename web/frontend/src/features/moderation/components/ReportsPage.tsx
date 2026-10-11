@@ -216,7 +216,7 @@ export function ReportsErrorPage() {
     <DashboardContent.Root>
       <DashboardContent.Header title={window._('moderationPortal.reports')} />
       <div className="p-8">
-        <div className="Card">
+        <div className="Card Card--dashboard">
           <ErrorDisplay error={useRouteError()} />
         </div>
       </div>

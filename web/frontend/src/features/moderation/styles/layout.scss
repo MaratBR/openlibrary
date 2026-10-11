@@ -1,31 +1,10 @@
 .Moderation {
   overflow-wrap: anywhere;
-  &-recordHeader h1 {
-    font-family: var(--font-text);
-    font-size: 2rem;
-    font-weight: 600;
-    letter-spacing: -0.03em;
-    line-height: 1.25;
-    text-wrap: balance;
-    @media (max-width: 760px) {
-      font-size: 1.6rem;
-    }
-  }
+
   & > main {
     padding: 40px clamp(24px, 4vw, 64px) 48px;
     @media (max-width: 760px) {
       padding: 28px 20px 32px;
-    }
-  }
-  &-recordHeader {
-    padding: 0 0 24px;
-    border: 0;
-    border-bottom: 1px solid var(--border);
-    border-radius: 0;
-    background: transparent;
-    h1 {
-      white-space: normal;
-      overflow-wrap: anywhere;
     }
   }
 }

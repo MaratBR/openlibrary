@@ -31,7 +31,7 @@ export function Books() {
       <p className="text-secondary-foreground mb-6">
         {window._('bookManager.ui.libraryDescription')}
       </p>
-      <p role="status" className={notice ? 'BM-notice' : undefined}>
+      <p role="status" className={notice ? 'Notice Notice--success Notice--spacious' : undefined}>
         {notice}
       </p>
       {booksResponse.data.books.length ? (
@@ -41,7 +41,7 @@ export function Books() {
           ))}
         </div>
       ) : (
-        <div className="Card space-y-4">
+        <div className="Card Card--dashboard space-y-4">
           <p>{window._('bookManager.ui.emptyLibrary')}</p>
           <NavLink className="Btn Btn--primary" to="/books/new">
             {window._('bookManager.books.addBook')}
@@ -131,10 +131,10 @@ function BookCard({
         </p>
       </div>
       <footer className="BM-cardFooter">
-        <NavLink className="Btn Btn--sm Btn--outline" to={`/books/${book.id}/edit`}>
+        <NavLink className="Btn Btn--compact Btn--sm Btn--outline" to={`/books/${book.id}/edit`}>
           {window._('bookManager.ui.editDetails')}
         </NavLink>
-        <NavLink className="Btn Btn--sm Btn--outline" to={`/books/${book.id}?t=chapters`}>
+        <NavLink className="Btn Btn--compact Btn--sm Btn--outline" to={`/books/${book.id}?t=chapters`}>
           {window._('bookManager.edit.chapters')}
         </NavLink>
         <details
@@ -147,7 +147,7 @@ function BookCard({
           }}
         >
           <summary
-            className="Btn Btn--icon Btn--ghost"
+            className="Btn Btn--compact Btn--icon Btn--ghost"
             aria-label={window._('bookManager.ui.actions', { name: book.name })}
           >
             <i className="fa-solid fa-ellipsis" aria-hidden="true" />
@@ -186,14 +186,14 @@ function BookCard({
           {mutation.isError && <RequestError />}
           <div className="flex gap-2">
             <button
-              className="Btn Btn--outline"
+              className="Btn Btn--compact Btn--outline"
               disabled={mutation.isPending}
               onClick={() => setConfirm(false)}
             >
               {window._('common.cancel')}
             </button>
             <button
-              className="Btn Btn--destructive"
+              className="Btn Btn--compact Btn--destructive"
               disabled={mutation.isPending}
               onClick={() => mutation.mutate()}
             >

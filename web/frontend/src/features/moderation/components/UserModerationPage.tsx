@@ -156,7 +156,7 @@ export function UserModerationErrorPage() {
   return (
     <DashboardContent.Root>
       <DashboardContent.Header title={window._('moderationPortal.user.title')} />
-      <div className="Card">
+      <div className="Card Card--dashboard">
         <ErrorDisplay error={error} />
       </div>
     </DashboardContent.Root>
@@ -185,12 +185,12 @@ function UserTab({
 
 function UserHeader({ user }: { user: ModerationUser }) {
   return (
-    <header className="Moderation-recordHeader">
+    <header className="PageHeader PageHeader--dashboard PageHeader--record">
       <div className="flex flex-col xl:flex-row xl:items-center gap-6">
         <div className="flex items-center gap-4 min-w-0 xl:min-w-96">
           <img className="avatar flex-none" src={user.avatar} alt="" />
           <div className="min-w-0">
-            <h1 className="text-3xl font-semibold truncate">{user.name}</h1>
+            <h1 className="PageHeader-title">{user.name}</h1>
             <p className="text-sm text-secondary-foreground break-all">
               {window._('moderationPortal.user.userId')}: {user.id}
             </p>
@@ -255,7 +255,7 @@ function Overview({
   const accountAge = formatAccountAge(user.joinedAt)
   return (
     <div className="grid gap-5">
-      <section className="Card">
+      <section className="Card Card--dashboard">
         <h2 className="text-xl font-semibold mb-4">{window._('moderationPortal.user.account')}</h2>
         <dl className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <Signal
@@ -284,7 +284,7 @@ function Overview({
           />
         </dl>
       </section>
-      <section className="Card">
+      <section className="Card Card--dashboard">
         <h2 className="text-xl font-semibold mb-4">
           {window._('moderationPortal.user.accountSignals')}
         </h2>
@@ -375,7 +375,7 @@ function PreviewCard({
   children: ReactNode
 }) {
   return (
-    <section className="Card">
+    <section className="Card Card--dashboard">
       <div className="flex justify-between items-center gap-4">
         <h2 className="text-xl font-semibold">{title}</h2>
         <NavLink className="Link text-sm" to={to}>
@@ -611,7 +611,7 @@ function PagedList<T>({
   render: (entry: T) => ReactNode
 }) {
   return (
-    <section className="Card Card--nopad overflow-hidden">
+    <section className="Card Card--dashboard Card--nopad overflow-hidden">
       <div className="p-6 border-b border-border">
         <h2 className="text-xl font-semibold">{title}</h2>
       </div>

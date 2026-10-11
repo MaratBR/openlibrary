@@ -102,7 +102,7 @@ function BookEditForm({ book }: { book: ManagerBookDetailsDto }) {
       >
         <fieldset disabled={saveMutation.isPending}>
           <div className="BM-workspace">
-            <div className="Card space-y-4">
+            <div className="Card Card--dashboard space-y-4">
               <h2 className="text-xl">{window._('bookManager.ui.theBook')}</h2>
               <FormControl
                 htmlFor="name-input"
@@ -126,7 +126,7 @@ function BookEditForm({ book }: { book: ManagerBookDetailsDto }) {
                 <RichTextInput editor={summaryEditor} />
               </FormControl>
             </div>
-            <aside className="Card space-y-4">
+            <aside className="Card Card--dashboard space-y-4">
               <CoverImage cover={book.cover} />
               <p className="text-sm text-secondary-foreground">
                 <Counts chapters={book.chapters.length} words={book.words} />
