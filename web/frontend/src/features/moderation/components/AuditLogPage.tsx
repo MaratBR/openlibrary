@@ -22,7 +22,7 @@ export default function AuditLogPage() {
     navigate({ search: value === 'all' ? '' : `?targetType=${value}` })
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.auditLog')} />
+      <DashboardContent.Header title={window._('moderationPortal.auditLog')} />
       <div className="grid gap-5 max-w-360 mx-auto">
         <section className="Card">
           <FormControl label={window._('moderationPortal.audit.targetType')}>

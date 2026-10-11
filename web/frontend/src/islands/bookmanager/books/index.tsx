@@ -23,11 +23,11 @@ export function Books() {
   usePageTitle(window._('bookManager.books.title'))
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('bookManager.books.title')}>
+      <DashboardContent.Header title={window._('bookManager.books.title')}>
         <NavLink to="/books/new" className="Btn Btn--lg Btn--primary">
           + {window._('bookManager.books.addBook')}
         </NavLink>
-      </DashboardContent.StickyHeader>
+      </DashboardContent.Header>
       <p className="text-secondary-foreground mb-6">
         {window._('bookManager.ui.libraryDescription')}
       </p>

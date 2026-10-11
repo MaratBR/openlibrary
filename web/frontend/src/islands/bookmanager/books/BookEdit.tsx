@@ -87,11 +87,11 @@ function BookEditForm({ book }: { book: ManagerBookDetailsDto }) {
     <DashboardContent.Root>
       <BackToBooks />
       <p className="text-secondary-foreground">{book.name}</p>
-      <DashboardContent.StickyHeader title={window._('bookManager.ui.bookDetails')}>
+      <DashboardContent.Header title={window._('bookManager.ui.bookDetails')}>
         <a className="Link" href={`/book/${book.id}`} target="_blank" rel="noreferrer">
           {window._('bookManager.ui.publicPage')} ↗
         </a>
-      </DashboardContent.StickyHeader>
+      </DashboardContent.Header>
       <BookNavigation id={book.id} active="details" />
       <form
         onFocusCapture={(e) => keepFormFocusVisible(e.target as HTMLElement)}

@@ -29,7 +29,7 @@ export default function NewBookForm() {
   return (
     <DashboardContent.Root>
       <BackToBooks />
-      <DashboardContent.StickyHeader title={window._('bookManager.newBook.title')} />
+      <DashboardContent.Header title={window._('bookManager.newBook.title')} />
       <div className="Card max-w-200 mx-auto">
         <p role="status" className="text-secondary-foreground mb-4">
           {window._('bookManager.ui.step', { count: String(stage + 1) })}

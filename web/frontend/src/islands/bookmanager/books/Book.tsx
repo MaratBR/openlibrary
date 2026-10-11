@@ -24,11 +24,11 @@ export function Book() {
   return (
     <DashboardContent.Root>
       <BackToBooks />
-      <DashboardContent.StickyHeader title={book.name}>
+      <DashboardContent.Header title={book.name}>
         <NavLink className="Btn Btn--primary" to={`/books/${book.id}/edit`}>
           {window._('bookManager.ui.editDetails')}
         </NavLink>
-      </DashboardContent.StickyHeader>
+      </DashboardContent.Header>
       <BookNavigation id={book.id} active={tab} />
       {tab === 'general' ? <BookGeneral book={book} /> : <BookChapters book={book} />}
     </DashboardContent.Root>

@@ -155,7 +155,7 @@ export function UserModerationErrorPage() {
   const error = useRouteError()
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.user.title')} />
+      <DashboardContent.Header title={window._('moderationPortal.user.title')} />
       <div className="Card">
         <ErrorDisplay error={error} />
       </div>

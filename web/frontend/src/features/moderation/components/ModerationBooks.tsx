@@ -55,7 +55,7 @@ export default function ModerationBooks() {
   }
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.books')} />
+      <DashboardContent.Header title={window._('moderationPortal.books')} />
       <div className="w-full max-w-360 mx-auto px-4 md:px-8 py-7">
         <p className="text-secondary-foreground mb-6">
           {window._('moderationPortal.booksPage.description')}
@@ -208,7 +208,7 @@ function Metric({ label, value }: { label: string; value: string | number }) {
 export function ModerationBooksErrorPage() {
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.books')} />
+      <DashboardContent.Header title={window._('moderationPortal.books')} />
       <div className="p-8">
         <div className="Card">
           <ErrorDisplay error={useRouteError()} />

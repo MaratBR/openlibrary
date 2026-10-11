@@ -17,7 +17,7 @@ function DashboardContent_Card({ children, className, ...props }: HTMLAttributes
   )
 }
 
-function DashboardContent_StickyHeader({
+function DashboardContent_Header({
   title,
   children,
 }: {
@@ -25,19 +25,17 @@ function DashboardContent_StickyHeader({
   children?: ReactNode
 }) {
   return (
-    <div className="DashboardContent-stickyHeader" data-testid="DashboardContent_StickyHeader">
-      <header className="PageHeader">
-        <div className="PageHeader-body">
-          <h1 className="PageHeader-title">{title}</h1>
-        </div>
-        {children && <div className="PageHeader-actions">{children}</div>}
-      </header>
-    </div>
+    <header className="PageHeader" data-testid="DashboardContent_Header">
+      <div className="PageHeader-body">
+        <h1 className="PageHeader-title">{title}</h1>
+      </div>
+      {children && <div className="PageHeader-actions">{children}</div>}
+    </header>
   )
 }
 
 export const DashboardContent = {
   Root: DashboardContent_Root,
   Card: DashboardContent_Card,
-  StickyHeader: DashboardContent_StickyHeader,
+  Header: DashboardContent_Header,
 }

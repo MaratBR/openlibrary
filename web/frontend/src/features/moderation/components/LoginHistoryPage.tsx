@@ -68,7 +68,7 @@ export default function LoginHistoryPage() {
   const paginationFilters = filters
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.loginHistory')} />
+      <DashboardContent.Header title={window._('moderationPortal.loginHistory')} />
       <div className="w-full max-w-360 mx-auto px-4 md:px-8 py-7">
         <p className="text-secondary-foreground mb-6">
           {window._('moderationPortal.loginHistoryPage.description')}
@@ -201,7 +201,7 @@ function LoginRow({ entry }: { entry: LoginHistoryEntry }) {
 export function LoginHistoryErrorPage() {
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.loginHistory')} />
+      <DashboardContent.Header title={window._('moderationPortal.loginHistory')} />
       <div className="p-8">
         <div className="Card">
           <ErrorDisplay error={useRouteError()} />

@@ -37,7 +37,7 @@ export default function ModerationUsers({ roles }: { roles: string[] }) {
 
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.users')} />
+      <DashboardContent.Header title={window._('moderationPortal.users')} />
       <div className="w-full max-w-360 mx-auto px-4 md:px-8 py-7">
         <header className="mb-6">
           <p className="text-secondary-foreground max-w-180">
@@ -250,7 +250,7 @@ function roleLabel(role: string) {
 export function ModerationUsersErrorPage() {
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.users')} />
+      <DashboardContent.Header title={window._('moderationPortal.users')} />
       <div className="p-8">
         <div className="Card">
           <ErrorDisplay error={useRouteError()} />

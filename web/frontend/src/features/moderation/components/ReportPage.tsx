@@ -45,7 +45,7 @@ export default function ReportPage() {
 
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader
+      <DashboardContent.Header
         title={
           <div>
             <div className="text-sm font-normal text-secondary-foreground mb-1">
@@ -63,7 +63,7 @@ export default function ReportPage() {
           <i className="fa-solid fa-circle text-secondary-foreground text-xs mr-2" />
           {capitalize(report.status)}
         </span>
-      </DashboardContent.StickyHeader>
+      </DashboardContent.Header>
 
       <div className="w-full max-w-360 mx-auto px-4 md:px-8 py-5">
         <div className="grid xl:grid-cols-[minmax(0,1fr)_22rem] gap-4 items-start">
@@ -613,7 +613,7 @@ function capitalize(value: string) {
 export function ReportErrorPage() {
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.report.title')} />
+      <DashboardContent.Header title={window._('moderationPortal.report.title')} />
       <div className="p-8">
         <div className="Card">
           <ErrorDisplay error={useRouteError()} />

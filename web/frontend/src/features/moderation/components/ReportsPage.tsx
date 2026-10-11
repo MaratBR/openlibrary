@@ -35,7 +35,7 @@ export default function ReportsPage({ view }: { view: 'overview' | 'search' }) {
 
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.reports')} />
+      <DashboardContent.Header title={window._('moderationPortal.reports')} />
       <div className="w-full max-w-360 mx-auto px-4 md:px-8 py-7">
         <nav aria-label={window._('moderationPortal.reportsPage.navigation')}>
           <ul className="Tabs Tabs--primary mb-6">
@@ -214,7 +214,7 @@ function targetIcon(targetType: string) {
 export function ReportsErrorPage() {
   return (
     <DashboardContent.Root>
-      <DashboardContent.StickyHeader title={window._('moderationPortal.reports')} />
+      <DashboardContent.Header title={window._('moderationPortal.reports')} />
       <div className="p-8">
         <div className="Card">
           <ErrorDisplay error={useRouteError()} />
