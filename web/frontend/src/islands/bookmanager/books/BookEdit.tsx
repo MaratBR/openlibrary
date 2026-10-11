@@ -123,7 +123,7 @@ function BookEditForm({ book }: { book: ManagerBookDetailsDto }) {
                 <TagsInput tags={tags} onInput={setTags} id="tags-input" />
               </FormControl>
               <FormControl label={window._('bookManager.edit.summary')}>
-                <RichTextInput editor={summaryEditor} className="OlSimpleEditor--long" />
+                <RichTextInput editor={summaryEditor} />
               </FormControl>
             </div>
             <aside className="Card space-y-4">

@@ -23,10 +23,9 @@ utility classes. Use an explicit shared variant for a functional difference:
 | `.input--search` | Prominent search entry, with larger padding and pill frame |
 | `.input--code` | Verification code entry, with large monospaced text and character spacing |
 | `.input--joined-start`, `.input--joined-end` | Adjacent fields such as numeric range endpoints; logical inner corners are square |
-| `.OlSimpleEditor--long` | Longer summaries; 200px minimum content height |
-| `.OlSimpleEditor--review` | Review composition; 300px minimum content height |
 | `.input-transparent` | Inline title editing, where the surrounding heading supplies typography and the frame stays transparent |
 
+Rich-text editors have a 300px minimum content height by default.
 Textareas may set a local minimum content height. Rich-text toolbars wrap at narrow
 widths; the editor content receives the shared outer focus ring.
 

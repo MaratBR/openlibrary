@@ -39,7 +39,7 @@ export default function ReviewEditor({ rootElement }: ReactIslandProps) {
     <div>
       <RatingInput scale={0.5} value={rating} onInput={setRating} />
 
-      {editor && <RichTextInput editor={editor} className="OlSimpleEditor--review mt-4" />}
+      {editor && <RichTextInput editor={editor} className="mt-4" />}
 
       <button
         className="Btn Btn--lg Btn--primary mt-3"

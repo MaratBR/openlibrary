@@ -42,7 +42,7 @@
 
   &[readonly],
   &:has([readonly]),
-  &:has([contenteditable='false']) {
+  &:has(.ProseMirror[contenteditable='false']) {
     background-color: var(--secondary);
   }
 

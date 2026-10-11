@@ -20,7 +20,7 @@
 
   &-content {
     @apply px-3;
-    min-height: 4.75rem;
+    min-height: 18.75rem;
 
     .ProseMirror {
       min-height: inherit;
@@ -33,11 +33,4 @@
     }
   }
 
-  &--long &-content {
-    min-height: 12.5rem;
-  }
-
-  &--review &-content {
-    min-height: 18.75rem;
-  }
 }
