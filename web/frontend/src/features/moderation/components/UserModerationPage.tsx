@@ -185,7 +185,7 @@ function UserTab({
 
 function UserHeader({ user }: { user: ModerationUser }) {
   return (
-    <header className="Card Card--elevated">
+    <header className="Moderation-recordHeader">
       <div className="flex flex-col xl:flex-row xl:items-center gap-6">
         <div className="flex items-center gap-4 min-w-0 xl:min-w-96">
           <img className="avatar flex-none" src={user.avatar} alt="" />

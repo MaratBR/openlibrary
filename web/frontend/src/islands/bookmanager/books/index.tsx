@@ -31,7 +31,9 @@ export function Books() {
       <p className="text-secondary-foreground mb-6">
         {window._('bookManager.ui.libraryDescription')}
       </p>
-      <p role="status">{notice}</p>
+      <p role="status" className={notice ? 'BM-notice' : undefined}>
+        {notice}
+      </p>
       {booksResponse.data.books.length ? (
         <div className="BM-grid">
           {booksResponse.data.books.map((book) => (
@@ -106,36 +108,6 @@ function BookCard({
       <NavLink to={`/books/${book.id}`} className="BM-bookArt" aria-label={book.name}>
         <CoverImage cover={book.cover} />
       </NavLink>
-      <details
-        className="BM-actions"
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') {
-            e.currentTarget.open = false
-            e.currentTarget.querySelector('summary')?.focus()
-          }
-        }}
-      >
-        <summary
-          className="Btn Btn--icon Btn--outline"
-          aria-label={window._('bookManager.ui.actions', { name: book.name })}
-        >
-          ···
-        </summary>
-        <div>
-          <button
-            className="Btn Btn--ghost"
-            onClick={(e) => {
-              const menu = e.currentTarget.closest('details')
-              menu?.removeAttribute('open')
-              menu?.querySelector('summary')?.focus()
-              mutation.reset()
-              setConfirm(true)
-            }}
-          >
-            {action}
-          </button>
-        </div>
-      </details>
       <div className="BM-bookBody">
         <p className="text-sm text-secondary-foreground">
           {window._(
@@ -159,12 +131,42 @@ function BookCard({
         </p>
       </div>
       <footer className="BM-cardFooter">
-        <NavLink className="Link" to={`/books/${book.id}/edit`}>
+        <NavLink className="Btn Btn--sm Btn--outline" to={`/books/${book.id}/edit`}>
           {window._('bookManager.ui.editDetails')}
         </NavLink>
-        <NavLink className="Link" to={`/books/${book.id}?t=chapters`}>
+        <NavLink className="Btn Btn--sm Btn--outline" to={`/books/${book.id}?t=chapters`}>
           {window._('bookManager.edit.chapters')}
         </NavLink>
+        <details
+          className="BM-actions"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.currentTarget.open = false
+              e.currentTarget.querySelector('summary')?.focus()
+            }
+          }}
+        >
+          <summary
+            className="Btn Btn--icon Btn--ghost"
+            aria-label={window._('bookManager.ui.actions', { name: book.name })}
+          >
+            <i className="fa-solid fa-ellipsis" aria-hidden="true" />
+          </summary>
+          <div>
+            <button
+              className="Btn Btn--ghost"
+              onClick={(e) => {
+                const menu = e.currentTarget.closest('details')
+                menu?.removeAttribute('open')
+                menu?.querySelector('summary')?.focus()
+                mutation.reset()
+                setConfirm(true)
+              }}
+            >
+              {action}
+            </button>
+          </div>
+        </details>
       </footer>
       {confirm && (
         <ManagerDialog

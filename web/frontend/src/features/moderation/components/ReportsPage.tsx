@@ -117,12 +117,12 @@ function ReportsSearch({
         </span>
       </div>
       {reports.entries.length ? (
-        <div className="grid gap-3">
+        <div className="DashboardRecords">
           {reports.entries.map((report) => (
             <NavLink
               key={report.id}
               to={`/reports/${report.id}`}
-              className="Card Card--elevated group block p-4 md:p-5 hover:bg-foreground/5"
+              className="DashboardRecords-row group"
             >
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 grid place-items-center shrink-0">

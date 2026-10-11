@@ -26,13 +26,16 @@ export default function ModerationLayout({
   isAdmin: boolean
 }) {
   return (
-    <div className="DashboardShell">
+    <div className="Moderation DashboardShell">
       <aside className="DashboardShell-sidebar">
         <header className="DashboardShell-brand">
           <NavLink className="DashboardShell-brandLink" to="/overview">
             <img className="dark:hidden" src="/_/embed-assets/logo.svg" alt="" />
             <img className="hidden dark:block" src="/_/embed-assets/logo-dark.svg" alt="" />
-            <strong>{window._('moderationPortal.title')}</strong>
+            <span>
+              <strong>{window._('moderationPortal.title')}</strong>
+              <small>OpenLibrary</small>
+            </span>
           </NavLink>
         </header>
         <nav className="DashboardShell-nav" aria-label={window._('moderationPortal.title')}>
@@ -46,18 +49,21 @@ export default function ModerationLayout({
         <div className="DashboardShell-utilities flex flex-col gap-2">
           {isAdmin && (
             <a className="Btn Btn--outline" href="/admin">
+              <i className="fa-solid fa-gauge-high" aria-hidden="true" />
               {window._('moderationPortal.adminDashboard')}
             </a>
           )}
           <a className="Btn Btn--ghost" href="/">
+            <i className="fa-solid fa-arrow-left" aria-hidden="true" />
             {window._('moderationPortal.backToSite')}
           </a>
           <button className="Btn Btn--ghost" onClick={() => window.OLTheme.toggle()}>
+            <i className="fa-solid fa-circle-half-stroke" aria-hidden="true" />
             {window._('moderationPortal.theme')}
           </button>
         </div>
       </aside>
-      <main className="DashboardShell-content p-4 md:p-8">{children}</main>
+      <main className="DashboardShell-content">{children}</main>
     </div>
   )
 }

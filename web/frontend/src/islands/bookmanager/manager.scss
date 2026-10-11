@@ -116,6 +116,16 @@
   border-bottom: 1px solid var(--border);
   margin: 0 0 24px;
 }
+.BM-notice {
+  margin: 0 0 24px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
 .BM-tabs a {
   padding: 12px 0;
   border-bottom: 3px solid transparent;

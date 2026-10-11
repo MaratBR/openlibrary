@@ -1,0 +1,401 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-11T16:13:52.231072+00:00",
+  "title": "Design System: OpenLibrary dashboards",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary",
+        "tonalRamp": [
+          "oklch(15% 0.0551 168.96)",
+          "oklch(26% 0.0551 168.96)",
+          "oklch(38% 0.0551 168.96)",
+          "oklch(49% 0.0551 168.96)",
+          "oklch(61% 0.0551 168.96)",
+          "oklch(72% 0.0551 168.96)",
+          "oklch(84% 0.0551 168.96)",
+          "oklch(95% 0.0551 168.96)"
+        ]
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Primary Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0395 164.58)",
+          "oklch(26% 0.0395 164.58)",
+          "oklch(38% 0.0395 164.58)",
+          "oklch(49% 0.0395 164.58)",
+          "oklch(61% 0.0395 164.58)",
+          "oklch(72% 0.0395 164.58)",
+          "oklch(84% 0.0395 164.58)",
+          "oklch(95% 0.0395 164.58)"
+        ]
+      },
+      "primary-foreground": {
+        "role": "primary",
+        "displayName": "Primary Foreground",
+        "tonalRamp": [
+          "oklch(15% 0.0069 88.64)",
+          "oklch(26% 0.0069 88.64)",
+          "oklch(38% 0.0069 88.64)",
+          "oklch(49% 0.0069 88.64)",
+          "oklch(61% 0.0069 88.64)",
+          "oklch(72% 0.0069 88.64)",
+          "oklch(84% 0.0069 88.64)",
+          "oklch(95% 0.0069 88.64)"
+        ]
+      },
+      "primary-foreground-dark": {
+        "role": "primary",
+        "displayName": "Primary Foreground Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0183 165.26)",
+          "oklch(26% 0.0183 165.26)",
+          "oklch(38% 0.0183 165.26)",
+          "oklch(49% 0.0183 165.26)",
+          "oklch(61% 0.0183 165.26)",
+          "oklch(72% 0.0183 165.26)",
+          "oklch(84% 0.0183 165.26)",
+          "oklch(95% 0.0183 165.26)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0069 88.64)",
+          "oklch(26% 0.0069 88.64)",
+          "oklch(38% 0.0069 88.64)",
+          "oklch(49% 0.0069 88.64)",
+          "oklch(61% 0.0069 88.64)",
+          "oklch(72% 0.0069 88.64)",
+          "oklch(84% 0.0069 88.64)",
+          "oklch(95% 0.0069 88.64)"
+        ]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Surface Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0048 145.42)",
+          "oklch(26% 0.0048 145.42)",
+          "oklch(38% 0.0048 145.42)",
+          "oklch(49% 0.0048 145.42)",
+          "oklch(61% 0.0048 145.42)",
+          "oklch(72% 0.0048 145.42)",
+          "oklch(84% 0.0048 145.42)",
+          "oklch(95% 0.0048 145.42)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Foreground",
+        "tonalRamp": [
+          "oklch(15% 0.0120 150.29)",
+          "oklch(26% 0.0120 150.29)",
+          "oklch(38% 0.0120 150.29)",
+          "oklch(49% 0.0120 150.29)",
+          "oklch(61% 0.0120 150.29)",
+          "oklch(72% 0.0120 150.29)",
+          "oklch(84% 0.0120 150.29)",
+          "oklch(95% 0.0120 150.29)"
+        ]
+      },
+      "foreground-dark": {
+        "role": "neutral",
+        "displayName": "Foreground Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0068 115.72)",
+          "oklch(26% 0.0068 115.72)",
+          "oklch(38% 0.0068 115.72)",
+          "oklch(49% 0.0068 115.72)",
+          "oklch(61% 0.0068 115.72)",
+          "oklch(72% 0.0068 115.72)",
+          "oklch(84% 0.0068 115.72)",
+          "oklch(95% 0.0068 115.72)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0111 89.72)",
+          "oklch(26% 0.0111 89.72)",
+          "oklch(38% 0.0111 89.72)",
+          "oklch(49% 0.0111 89.72)",
+          "oklch(61% 0.0111 89.72)",
+          "oklch(72% 0.0111 89.72)",
+          "oklch(84% 0.0111 89.72)",
+          "oklch(95% 0.0111 89.72)"
+        ]
+      },
+      "secondary-dark": {
+        "role": "neutral",
+        "displayName": "Secondary Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0061 134.93)",
+          "oklch(26% 0.0061 134.93)",
+          "oklch(38% 0.0061 134.93)",
+          "oklch(49% 0.0061 134.93)",
+          "oklch(61% 0.0061 134.93)",
+          "oklch(72% 0.0061 134.93)",
+          "oklch(84% 0.0061 134.93)",
+          "oklch(95% 0.0061 134.93)"
+        ]
+      },
+      "secondary-foreground": {
+        "role": "neutral",
+        "displayName": "Secondary Foreground",
+        "tonalRamp": [
+          "oklch(15% 0.0094 121.76)",
+          "oklch(26% 0.0094 121.76)",
+          "oklch(38% 0.0094 121.76)",
+          "oklch(49% 0.0094 121.76)",
+          "oklch(61% 0.0094 121.76)",
+          "oklch(72% 0.0094 121.76)",
+          "oklch(84% 0.0094 121.76)",
+          "oklch(95% 0.0094 121.76)"
+        ]
+      },
+      "secondary-foreground-dark": {
+        "role": "neutral",
+        "displayName": "Secondary Foreground Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0088 121.68)",
+          "oklch(26% 0.0088 121.68)",
+          "oklch(38% 0.0088 121.68)",
+          "oklch(49% 0.0088 121.68)",
+          "oklch(61% 0.0088 121.68)",
+          "oklch(72% 0.0088 121.68)",
+          "oklch(84% 0.0088 121.68)",
+          "oklch(95% 0.0088 121.68)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Accent",
+        "tonalRamp": [
+          "oklch(15% 0.0108 158.84)",
+          "oklch(26% 0.0108 158.84)",
+          "oklch(38% 0.0108 158.84)",
+          "oklch(49% 0.0108 158.84)",
+          "oklch(61% 0.0108 158.84)",
+          "oklch(72% 0.0108 158.84)",
+          "oklch(84% 0.0108 158.84)",
+          "oklch(95% 0.0108 158.84)"
+        ]
+      },
+      "accent-dark": {
+        "role": "primary",
+        "displayName": "Accent Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0170 159.03)",
+          "oklch(26% 0.0170 159.03)",
+          "oklch(38% 0.0170 159.03)",
+          "oklch(49% 0.0170 159.03)",
+          "oklch(61% 0.0170 159.03)",
+          "oklch(72% 0.0170 159.03)",
+          "oklch(84% 0.0170 159.03)",
+          "oklch(95% 0.0170 159.03)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "tonalRamp": [
+          "oklch(15% 0.0188 86.15)",
+          "oklch(26% 0.0188 86.15)",
+          "oklch(38% 0.0188 86.15)",
+          "oklch(49% 0.0188 86.15)",
+          "oklch(61% 0.0188 86.15)",
+          "oklch(72% 0.0188 86.15)",
+          "oklch(84% 0.0188 86.15)",
+          "oklch(95% 0.0188 86.15)"
+        ]
+      },
+      "border-dark": {
+        "role": "neutral",
+        "displayName": "Border Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0079 137.80)",
+          "oklch(26% 0.0079 137.80)",
+          "oklch(38% 0.0079 137.80)",
+          "oklch(49% 0.0079 137.80)",
+          "oklch(61% 0.0079 137.80)",
+          "oklch(72% 0.0079 137.80)",
+          "oklch(84% 0.0079 137.80)",
+          "oklch(95% 0.0079 137.80)"
+        ]
+      },
+      "border-strong": {
+        "role": "neutral",
+        "displayName": "Border Strong",
+        "tonalRamp": [
+          "oklch(15% 0.0225 83.26)",
+          "oklch(26% 0.0225 83.26)",
+          "oklch(38% 0.0225 83.26)",
+          "oklch(49% 0.0225 83.26)",
+          "oklch(61% 0.0225 83.26)",
+          "oklch(72% 0.0225 83.26)",
+          "oklch(84% 0.0225 83.26)",
+          "oklch(95% 0.0225 83.26)"
+        ]
+      },
+      "border-strong-dark": {
+        "role": "neutral",
+        "displayName": "Border Strong Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0109 134.95)",
+          "oklch(26% 0.0109 134.95)",
+          "oklch(38% 0.0109 134.95)",
+          "oklch(49% 0.0109 134.95)",
+          "oklch(61% 0.0109 134.95)",
+          "oklch(72% 0.0109 134.95)",
+          "oklch(84% 0.0109 134.95)",
+          "oklch(95% 0.0109 134.95)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Dashboard heading",
+        "purpose": "Dashboard page titles; mobile reduces to 1.6rem."
+      },
+      "title": {
+        "displayName": "Book title",
+        "purpose": "Book record identity; mobile reduces to 1rem."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dashboard-container",
+        "value": "none",
+        "purpose": "Dashboard containers, rows, and action bars stay flat."
+      },
+      {
+        "name": "shared-control-rest",
+        "value": "var(--shadow-xs)",
+        "purpose": "Incumbent shared controls, not a dashboard override."
+      },
+      {
+        "name": "shared-control-hover",
+        "value": "var(--shadow-sm)",
+        "purpose": "Incumbent button hover."
+      },
+      {
+        "name": "shared-overlay",
+        "value": "var(--shadow-md)",
+        "purpose": "Existing dropdown overlays."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "140ms ease",
+        "purpose": "Background and color feedback without navigation geometry shifts."
+      },
+      {
+        "name": "loader",
+        "value": "1.2s ease-in-out infinite",
+        "purpose": "Existing dashboard loading bar; reduced motion removes animation."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile-max",
+        "value": "760px"
+      },
+      {
+        "name": "compact-desktop-max",
+        "value": "1100px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Existing shared primary action.",
+      "html": "<button class=\"ds-primary\">Save changes</button>",
+      "css": ".ds-primary{font-family:var(--font-text);font-size:.875rem;font-weight:500;border-radius:var(--radius);transition:background var(--transition-fast),color var(--transition-fast),box-shadow var(--transition-fast);height:calc(var(--spacing, .25rem)*10);padding:0 calc(var(--spacing, .25rem)*4);border:1px solid var(--primary);background:var(--primary);color:var(--primary-foreground);box-shadow:var(--shadow-xs)}.ds-primary:hover{background:color-mix(in srgb,var(--primary),black 12%);border-color:color-mix(in srgb,var(--primary),black 12%);box-shadow:var(--shadow-sm)}.ds-primary:active{background:color-mix(in srgb,var(--primary),black 20%);transform:translateY(1px)}.ds-primary:focus-visible{outline:0;box-shadow:var(--focus-ring)}"
+    },
+    {
+      "name": "Outline button",
+      "kind": "button",
+      "refersTo": "",
+      "description": "Existing shared secondary action.",
+      "html": "<button class=\"ds-outline\">Cancel</button>",
+      "css": ".ds-outline{font-family:var(--font-text);font-size:.875rem;font-weight:500;border-radius:var(--radius);transition:background var(--transition-fast),color var(--transition-fast),box-shadow var(--transition-fast);height:calc(var(--spacing, .25rem)*10);padding:0 calc(var(--spacing, .25rem)*4);border:1px solid var(--border-strong);background:var(--surface);color:var(--foreground);box-shadow:var(--shadow-xs)}.ds-outline:hover{background:var(--secondary);color:var(--surface-foreground);box-shadow:var(--shadow-sm)}.ds-outline:active{background:var(--highlight);transform:translateY(1px)}.ds-outline:focus-visible{outline:0;box-shadow:var(--focus-ring)}"
+    },
+    {
+      "name": "Existing field",
+      "kind": "input",
+      "refersTo": "",
+      "description": "Incumbent shared field, included as a dependency outside the redesign.",
+      "html": "<input class=\"ds-field\" aria-label=\"Search records\" placeholder=\"Search records\">",
+      "css": ".ds-field{font-family:var(--font-text);line-height:1.5;min-height:2.75rem;padding:0 .75rem;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);color:var(--foreground);box-shadow:var(--shadow-xs);transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}.ds-field:hover{border-color:color-mix(in srgb,var(--border-strong),var(--foreground) 24%)}.ds-field:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-color:var(--primary);box-shadow:0 0 0 5px color-mix(in srgb,var(--primary),transparent 90%)}"
+    },
+    {
+      "name": "Rail navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Persistent dashboard navigation with inverse current state.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#books\" aria-current=\"page\">Books</a><a href=\"#chapters\">Chapters</a></nav>",
+      "css": ".ds-nav{padding:16px;background:var(--dashboard-rail,color-mix(in srgb,var(--primary) 92%,var(--foreground)));display:flex;flex-direction:column;gap:4px}.ds-nav a{display:flex;align-items:center;min-height:44px;padding:11px 12px;border-radius:6px;font-family:var(--font-text);font-size:.83rem;font-weight:500;line-height:1.5;text-decoration:none;color:var(--dashboard-rail-muted,var(--primary-foreground));transition:background var(--transition-fast),color var(--transition-fast)}.ds-nav a:hover{background:color-mix(in srgb,var(--dashboard-rail-ink,var(--primary-foreground)) 10%,transparent);color:var(--dashboard-rail-ink,var(--primary-foreground))}.ds-nav a[aria-current=page]{background:var(--dashboard-rail-ink,var(--primary-foreground));color:var(--dashboard-rail,color-mix(in srgb,var(--primary) 92%,var(--foreground)));font-weight:600}.ds-nav a:focus-visible{outline:2px solid var(--dashboard-rail-ink,var(--primary-foreground));outline-offset:3px}"
+    },
+    {
+      "name": "Primary chip",
+      "kind": "chip",
+      "refersTo": "",
+      "description": "Shared quiet state label.",
+      "html": "<span class=\"ds-chip\">Published</span>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:.25rem;padding:0 .5rem;font-family:var(--font-text);font-size:.875rem;font-weight:500;line-height:1.5rem;border:1px solid transparent;border-radius:calc(var(--radius) - 2px);background:var(--accent);color:var(--primary)}"
+    },
+    {
+      "name": "Flat container",
+      "kind": "card",
+      "refersTo": "container",
+      "description": "Dashboard section without added elevation.",
+      "html": "<section class=\"ds-container\"><h2>Record details</h2><p>Library management information.</p></section>",
+      "css": ".ds-container{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--foreground);box-shadow:none;font-family:var(--font-text)}.ds-container h2{margin:0 0 12px;font-size:1.05rem;font-weight:600;letter-spacing:-.02em}.ds-container p{margin:0;line-height:1.55}"
+    },
+    {
+      "name": "Linked record",
+      "kind": "custom",
+      "refersTo": "record",
+      "description": "A ruled row for scanning and opening a record.",
+      "html": "<a class=\"ds-record\" href=\"#record\"><h3>Record title</h3><span>Supporting record information</span></a>",
+      "css": ".ds-record{display:block;padding:20px 12px;border-bottom:1px solid var(--border);background:transparent;color:var(--foreground);text-decoration:none;font-family:var(--font-text);font-variant-numeric:tabular-nums;transition:background var(--transition-fast)}.ds-record h3{margin:0 0 8px;font-size:.95rem;font-weight:600;letter-spacing:-.02em}.ds-record:hover{background:var(--surface)}.ds-record:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Publishing production desk",
+    "overview": "A publishing production desk: calm, compact work surfaces with persistent navigation and clearly divided records. Forest navigation, warm neutral surfaces, and restrained green states support sustained scanning in light and dark themes.\n\nThis system applies only to administration, book management, and moderation. The public library and reading interface keep their incumbent visual system. Shared theme tokens and existing input controls are dependencies, not redesigned assets.",
+    "keyCharacteristics": [
+      "Persistent navigation with stable state geometry.",
+      "Flat, ruled records and cover-led book rows.",
+      "Sans-serif dashboard hierarchy in both themes.",
+      "Existing controls, copy, and workflows preserved."
+    ],
+    "rules": [
+      {
+        "name": "The Semantic Theme Rule",
+        "body": "Use the existing semantic CSS variables; the dashboard must adapt to the current theme without replacing global tokens.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do use shared semantic theme variables so both themes stay coherent.",
+      "Do distinguish record groups with rules and spacing.",
+      "Do keep keyboard focus visible and allow long record names to wrap.",
+      "Do retain existing input controls and public-site styling."
+    ],
+    "donts": [
+      "Don't apply dashboard heading or layout overrides outside the dashboard shell.",
+      "Don't turn working records into oversized floating tiles.",
+      "Don't move navigation geometry when a link becomes active."
+    ]
+  }
+}

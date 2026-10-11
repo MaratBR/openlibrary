@@ -93,7 +93,7 @@ export default function BookModerationPage() {
 
 function Header({ book }: { book: ModerationBook }) {
   return (
-    <header className="Card Card--elevated flex flex-col lg:flex-row lg:items-center gap-5">
+    <header className="Moderation-recordHeader flex flex-col lg:flex-row lg:items-center gap-5">
       <div className="min-w-0 flex-1">
         <h1 className="text-3xl font-semibold truncate">{book.name}</h1>
         <p className="text-sm text-secondary-foreground">

@@ -48,7 +48,7 @@ export default function ModerationUsers({ roles }: { roles: string[] }) {
         <DashboardContent.Card className="Card--elevated p-4 md:p-5 mb-6">
           <Form
             method="get"
-            className="grid grid-cols-1 md:grid-cols-[minmax(18rem,1fr)_12rem_12rem_auto] gap-3 items-end"
+            className="grid grid-cols-1 xl:grid-cols-[minmax(18rem,1fr)_12rem_12rem_auto] gap-3 items-end"
           >
             <label className="block">
               <span className="block text-sm font-medium mb-1.5">
@@ -99,7 +99,7 @@ export default function ModerationUsers({ roles }: { roles: string[] }) {
         </div>
 
         {users.entries.length ? (
-          <div className="grid gap-3">
+          <div className="DashboardRecords">
             {users.entries.map((user) => (
               <UserRow key={user.id} user={user} />
             ))}
@@ -176,10 +176,7 @@ function FilterSelect({
 
 function UserRow({ user }: { user: ModerationUserListEntry }) {
   return (
-    <Link
-      to={`/users/${user.id}`}
-      className="Card Card--elevated group block p-4 md:p-5 transition-colors hover:bg-foreground/5"
-    >
+    <Link to={`/users/${user.id}`} className="DashboardRecords-row group">
       <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-7">
         <div className="flex items-center gap-4 min-w-0 lg:w-72">
           <img

@@ -125,7 +125,7 @@ export default function ModerationBooks() {
           </span>
         </div>
         {books.entries.length ? (
-          <div className="grid gap-3">
+          <div className="DashboardRecords">
             {books.entries.map((book) => (
               <BookRow key={book.id} book={book} />
             ))}
@@ -160,11 +160,11 @@ function BookRow({ book }: { book: ModerationBookListEntry }) {
     book.isPermanentlyRemoved && window._('moderationPortal.booksPage.deleted'),
   ].filter(Boolean)
   return (
-    <Link to={`/books/${book.id}`} className="Card Card--elevated block hover:bg-foreground/5">
+    <Link to={`/books/${book.id}`} className="DashboardRecords-row">
       <div className="flex flex-col md:flex-row md:items-center gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap gap-2 items-center">
-            <h3 className="font-semibold text-lg truncate">{book.name}</h3>
+            <h3 className="font-semibold text-lg min-w-0 truncate">{book.name}</h3>
             {states.length ? (
               states.map((state) => (
                 <span key={state as string} className="Chip Chip--destructive">
