@@ -25,6 +25,7 @@ import (
 	"github.com/knadh/koanf/v2"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 )
 
@@ -83,8 +84,9 @@ func mainServer(
 			go postInit(params)
 		}, func(*http.Server) {}),
 
-		// TODO make it toggleable?
-		fx.NopLogger,
+		fx.WithLogger(func() fxevent.Logger {
+			return &fxevent.ZapLogger{Logger: zap.L()}
+		}),
 	).Run()
 }
 
