@@ -6,13 +6,6 @@ html {
 
 body {
   color: var(--foreground);
-  background:
-    radial-gradient(
-      circle at 80% 0%,
-      color-mix(in srgb, var(--brass) 4%, transparent),
-      transparent 30rem
-    ),
-    var(--background);
   font-family: var(--font-text);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
