@@ -38,66 +38,52 @@
     box-shadow var(--transition-fast),
     transform var(--transition-fast);
   --btn-height: calc(var(--spacing) * 10);
-
   &:hover {
     border-color: color-mix(in srgb, var(--border-strong), var(--foreground) 22%);
     box-shadow: var(--shadow-sm);
   }
-
   &:focus-visible {
     outline: 0;
     box-shadow: var(--focus-ring);
   }
-
   &:active {
     transform: translateY(1px);
   }
-
   &--primary {
     @include btnVariantSolid();
     @include btnColorPrimary();
   }
-
   &--outline {
     background-color: var(--surface);
-
     &:hover {
       color: var(--surface-foreground);
       background-color: var(--secondary);
     }
-
     &:active {
       background-color: var(--highlight);
     }
   }
-
   &--ghost {
     @apply border-none;
     background-color: transparent;
     box-shadow: none;
-
     &:hover {
       background-color: var(--highlight);
     }
-
     &:active {
       background-color: var(--secondary);
     }
   }
-
   &--secondary {
     background-color: var(--secondary);
     border-color: var(--border);
-
     &:hover {
       background-color: var(--highlight);
     }
-
     &:active {
       background-color: color-mix(in srgb, var(--secondary), var(--foreground) 10%);
     }
   }
-
   &--destructive {
     @apply text-destructive;
     background-color: var(--destructive-soft);
@@ -111,30 +97,54 @@
       background-color: color-mix(in srgb, var(--destructive), black 16%);
     }
   }
-
   &--icon {
     width: var(--btn-height);
     padding: 0;
   }
-
   // SIZES
   &--sm {
     @apply text-sm;
   }
-
   &--lg {
     --btn-height: calc(var(--spacing) * 11);
     @apply text-base;
   }
-
   &--sq {
     @apply rounded-sm;
   }
-
   &-icon {
     &--left {
       @apply mr-1;
     }
+  }
+  .DashboardShell-utilities & {
+    justify-content: flex-start;
+    gap: 10px;
+    min-height: 40px;
+    font-size: 0.75rem;
+    white-space: normal;
+    text-align: left;
+    color: var(--dashboard-rail-muted);
+    background: transparent;
+    border-color: color-mix(in srgb, var(--dashboard-rail-ink) 24%, transparent);
+    box-shadow: none;
+    &:hover {
+      color: var(--dashboard-rail-ink);
+      background: color-mix(in srgb, var(--dashboard-rail-ink) 10%, transparent);
+    }
+  }
+  .BM-cardFooter > & {
+    min-height: 36px;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    box-shadow: none;
+  }
+  .Admin-pager & {
+    @media (max-width: 600px) {
+      padding-inline: 12px;
+
+    }
+
   }
 }
 

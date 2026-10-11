@@ -1,4 +1,6 @@
-// Shared production workspace. Input styles and public theme tokens stay unchanged.
+@import './dashboard-records.scss';
+
+// Shared dashboard frame; component styles belong to their owners.
 .DashboardShell {
   --dashboard-rail: color-mix(in srgb, var(--primary) 92%, var(--foreground));
   --dashboard-rail-ink: var(--primary-foreground);
@@ -10,12 +12,10 @@
   background: var(--dashboard-canvas);
   color: var(--foreground);
   scrollbar-color: var(--border-strong) var(--dashboard-canvas);
-
   ::selection {
     background: var(--accent);
     color: var(--accent-foreground);
   }
-
   &-sidebar {
     position: sticky;
     top: 0;
@@ -30,14 +30,11 @@
     scrollbar-width: thin;
     scrollbar-color: var(--dashboard-rail-muted) var(--dashboard-rail);
   }
-
   &-brand {
     padding: 0 12px 28px;
     border-bottom: 1px solid color-mix(in srgb, var(--dashboard-rail-ink) 18%, transparent);
   }
-
-  &-brandLink,
-  .Admin-brand {
+  &-brandLink {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -62,7 +59,6 @@
       line-height: 1.5;
     }
   }
-
   &-nav {
     display: flex;
     flex-direction: column;
@@ -98,11 +94,9 @@
       }
     }
   }
-
   &-navGroup {
     min-width: 0;
   }
-
   &-submenu {
     list-style: none;
     margin: 6px 0 8px 21px;
@@ -124,338 +118,36 @@
       }
     }
   }
-
   &-sidebar :is(a, button):focus-visible {
     outline: 2px solid var(--dashboard-rail-ink);
     outline-offset: 3px;
   }
-
   &-utilities {
     margin-top: auto;
     padding-top: 16px;
     border-top: 1px solid color-mix(in srgb, var(--dashboard-rail-ink) 18%, transparent);
-    .Admin-actions {
-      align-items: stretch;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .Btn {
-      justify-content: flex-start;
-      gap: 10px;
-      min-height: 40px;
-      font-size: 0.75rem;
-      white-space: normal;
-      text-align: left;
-      color: var(--dashboard-rail-muted);
-      background: transparent;
-      border-color: color-mix(in srgb, var(--dashboard-rail-ink) 24%, transparent);
-      box-shadow: none;
-      &:hover {
-        color: var(--dashboard-rail-ink);
-        background: color-mix(in srgb, var(--dashboard-rail-ink) 10%, transparent);
-      }
-    }
   }
-
   &-content {
     min-width: 0;
     width: 100%;
     background: var(--dashboard-canvas);
   }
-
-  .Admin-pageHeader,
-  .PageHeader {
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 28px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--border);
-  }
-  .Admin-pageHeader h1,
-  .PageHeader-title,
-  .Moderation-recordHeader h1 {
-    font-family: var(--font-text);
-    font-size: 2rem;
-    font-weight: 600;
-    letter-spacing: -0.03em;
-    line-height: 1.25;
-    text-wrap: balance;
-  }
-  .Admin-pageHeader p {
-    font-size: 0.875rem;
-    max-width: 70ch;
-  }
-
-  .admin-card,
-  .Card {
-    min-width: 0;
-    border-radius: 12px;
-    box-shadow: none;
-  }
-  .Card .Card {
-    border-radius: 0;
-    border: 0;
-    border-top: 1px solid var(--border);
-    background: transparent;
-  }
-  .table {
-    font-variant-numeric: tabular-nums;
-    th {
-      background: var(--secondary);
-      font-size: 0.7rem;
-      letter-spacing: 0.06em;
-      padding-block: 12px;
-    }
-    td {
-      padding-block: 18px;
-    }
-  }
-
-  .Admin-homeGrid {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-  .Admin-sectionCard {
-    display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) auto;
-    column-gap: 20px;
-    row-gap: 6px;
-    align-items: center;
-    padding: 26px 12px;
-    border: 0;
-    border-bottom: 1px solid var(--border);
-    border-radius: 0;
-    background: transparent;
-    transition: background var(--transition-fast);
-    h2 {
-      grid-column: 2;
-      font-family: var(--font-text);
-      font-size: 1.05rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      margin: 0;
-    }
-    p {
-      grid-column: 2;
-      font-size: 0.83rem;
-      line-height: 1.6;
-      max-width: 70ch;
-      margin: 0;
-    }
-    &:hover {
-      background: var(--surface);
-      box-shadow: none;
-    }
-    &:focus-visible {
-      outline: 2px solid var(--primary);
-      outline-offset: -2px;
-    }
-  }
-  .Admin-sectionIcon {
-    grid-column: 1;
-    grid-row: 1 / 3;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    color: var(--primary);
-    background: var(--accent);
-  }
-  .Admin-sectionLink {
-    grid-column: 3;
-    grid-row: 1 / 3;
-    gap: 24px;
-    font-size: 0.75rem;
-    margin: 0;
-  }
-
-  .BM-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-    border-top: 1px solid var(--border);
-  }
-  .BM-bookCard {
-    display: grid;
-    grid-template-columns: 112px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 24px;
-    padding: 24px 0;
-    border: 0;
-    border-bottom: 1px solid var(--border);
-    border-radius: 0;
-    background: transparent;
-    transition: background var(--transition-fast);
-    &:hover {
-      background: var(--surface);
-    }
-  }
-  .BM-bookArt {
-    min-height: 0;
-    padding: 12px;
-    background: var(--secondary);
-    border-radius: 6px;
-  }
-  .BM-cover {
-    width: 76px;
-    border-radius: 3px;
-  }
-  .BM-bookBody {
-    padding: 0;
-  }
-  .BM-bookTitle {
-    font-family: var(--font-text);
-    font-size: 1.15rem;
-    font-weight: 600;
-    line-height: 1.4;
-    letter-spacing: -0.02em;
-    margin-block: 8px;
-  }
-  .BM-cardFooter {
-    flex-direction: row;
-    align-items: center;
-    gap: 6px;
-    padding: 0;
-    border: 0;
-    font-size: 0.8rem;
-    > .Btn,
-    .BM-actions summary {
-      min-height: 36px;
-      padding: 8px 10px;
-      font-size: 0.75rem;
-      box-shadow: none;
-    }
-  }
-  .BM-actions {
-    position: relative;
-    top: auto;
-    right: auto;
-  }
-  .BM-tabs {
-    gap: 28px;
-    font-size: 0.875rem;
-  }
-  .BM-actionBar {
-    box-shadow: none;
-    border-radius: 12px;
-  }
-
-  .Admin-frame {
-    max-width: none;
-    margin: 0;
-    padding: 0 clamp(24px, 4vw, 64px);
-  }
-  .Admin-main,
-  .Admin-footer {
-    width: 100%;
-    max-width: 1344px;
-    margin-inline: auto;
-  }
-  .Admin-main {
-    min-height: calc(100dvh - 65px);
-    padding-top: 40px;
-  }
-  .BM-main {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 40px clamp(24px, 4vw, 64px) 48px;
-  }
-  &.Moderation > main {
-    padding: 40px clamp(24px, 4vw, 64px) 48px;
-    > .DashboardContent {
-      max-width: 1440px;
-      margin-inline: auto;
-      padding-inline: 0;
-    }
-  }
-  &.Moderation {
-    overflow-wrap: anywhere;
-    .DashboardContent > .max-w-360 {
-      padding-inline: 0;
-      padding-top: 0;
-    }
-    .Tabs {
-      margin-bottom: 24px;
-    }
-    .Moderation-recordHeader {
-      padding: 0 0 24px;
-      border: 0;
-      border-bottom: 1px solid var(--border);
-      border-radius: 0;
-      background: transparent;
-      h1 {
-        white-space: normal;
-        overflow-wrap: anywhere;
-      }
-    }
-  }
-  :is(.Card, .admin-card) :is(h2, h3),
-  .DashboardRecords :is(h2, h3) {
-    font-family: var(--font-text);
-    letter-spacing: -0.02em;
-  }
-  .DashboardRecords {
-    display: grid;
-    gap: 0;
-    min-width: 0;
-    border-top: 1px solid var(--border);
-    font-variant-numeric: tabular-nums;
-    &-row {
-      display: block;
-      min-width: 0;
-      padding: 20px 12px;
-      border-bottom: 1px solid var(--border);
-      transition: background var(--transition-fast);
-      &:hover {
-        background: var(--surface);
-      }
-      &:focus-visible {
-        outline: 2px solid var(--primary);
-        outline-offset: -2px;
-      }
-      h3 {
-        font-size: 0.95rem;
-      }
-    }
-  }
-  .Link {
-    text-underline-offset: 0.2em;
-  }
 }
-
 .dark .DashboardShell {
   --dashboard-rail: color-mix(in srgb, var(--surface) 85%, var(--primary));
   --dashboard-rail-ink: var(--foreground);
 }
-
-// The rail's inverse surface needs the existing light logo in either theme.
 .DashboardShell-brand img.dark\:hidden {
   display: none;
 }
 .DashboardShell-brand img.dark\:block {
   display: block;
 }
-
 @media (max-width: 1100px) and (min-width: 761px) {
   .DashboardShell {
     grid-template-columns: 216px minmax(0, 1fr);
-    .BM-workspace,
-    .Admin-workspace {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .BM-bookCard {
-      grid-template-columns: 100px minmax(0, 1fr);
-      gap: 16px;
-    }
-    .BM-bookArt {
-      grid-row: 1 / 3;
-    }
-    .BM-cardFooter {
-      grid-column: 2;
-      flex-direction: row;
-    }
   }
 }
-
 @media (max-width: 760px) {
   .DashboardShell {
     grid-template-columns: minmax(0, 1fr);
@@ -481,81 +173,9 @@
     &-utilities {
       margin: 0;
       padding-top: 12px;
-      .Admin-actions {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-    }
-    .Admin-frame {
-      padding-inline: 20px;
-    }
-    .Admin-main {
-      min-height: 60vh;
-      padding-top: 28px;
-    }
-    .BM-main {
-      padding: 28px 20px 32px;
-    }
-    &.Moderation > main {
-      padding: 28px 20px 32px;
-    }
-    .Admin-pageHeader,
-    .PageHeader {
-      align-items: flex-start;
-      padding-bottom: 20px;
-    }
-    .Admin-pageHeader h1,
-    .PageHeader-title,
-    .Moderation-recordHeader h1 {
-      font-size: 1.6rem;
-    }
-    .DashboardRecords-row {
-      padding-inline: 0;
-    }
-    .Admin-sectionCard {
-      grid-template-columns: 36px minmax(0, 1fr);
-      gap: 8px 16px;
-      padding: 22px 0;
-    }
-    .Admin-sectionIcon {
-      width: 36px;
-      height: 36px;
-    }
-    .Admin-sectionLink {
-      grid-column: 2;
-      grid-row: 3;
-      width: auto;
-      justify-content: flex-start;
-    }
-    .BM-bookCard {
-      grid-template-columns: 88px minmax(0, 1fr);
-      gap: 8px 16px;
-      padding-block: 20px;
-    }
-    .BM-bookArt {
-      grid-row: 1 / 3;
-      padding: 8px;
-    }
-    .BM-cover {
-      width: 64px;
-    }
-    .BM-bookBody {
-      padding-right: 0;
-    }
-    .BM-bookTitle {
-      font-size: 1rem;
-    }
-    .BM-cardFooter {
-      grid-column: 2;
-      flex-direction: row;
-      gap: 6px;
-      padding: 0;
-      font-size: 0.75rem;
     }
   }
 }
-
 .DashboardShell-loader {
   position: fixed;
   inset: 0 0 auto;
@@ -564,7 +184,6 @@
   overflow: hidden;
   background: color-mix(in srgb, var(--primary) 20%, transparent);
   pointer-events: none;
-
   span {
     display: block;
     width: 35%;
@@ -573,7 +192,6 @@
     animation: dashboard-loading 1.2s ease-in-out infinite;
   }
 }
-
 @keyframes dashboard-loading {
   from {
     transform: translateX(-100%);
@@ -582,7 +200,6 @@
     transform: translateX(286%);
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .DashboardShell-loader span {
     width: 100%;

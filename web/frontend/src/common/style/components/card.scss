@@ -6,18 +6,37 @@
     border-color var(--transition-normal),
     box-shadow var(--transition-normal),
     transform var(--transition-normal);
-
   &--elevated {
     box-shadow: var(--shadow-sm);
   }
-
   &--interactive:hover {
     border-color: var(--border-strong);
     box-shadow: var(--shadow-sm);
     transform: translateY(-1px);
   }
-
   &--nopad {
     @apply p-0;
+  }
+  .DashboardShell & {
+    min-width: 0;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+  & .Card {
+    .DashboardShell & {
+      border-radius: 0;
+      border: 0;
+      border-top: 1px solid var(--border);
+      background: transparent;
+    }
+  }
+  & :is(h2, h3) {
+    .DashboardShell & {
+      font-family: var(--font-text);
+      letter-spacing: -0.02em;
+    }
+  }
+  .BM & {
+    min-width: 0;
   }
 }

@@ -7,7 +7,6 @@
   background: var(--surface);
   color: var(--foreground);
   box-shadow: var(--shadow-xs);
-
   &-header {
     margin-bottom: 24px;
     h2 {
@@ -36,6 +35,17 @@
       outline-offset: 4px;
     }
   }
+  .DashboardShell & {
+    min-width: 0;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+  & :is(h2, h3) {
+    .DashboardShell & {
+      font-family: var(--font-text);
+      letter-spacing: -0.02em;
+    }
+  }
 }
 .Admin {
   min-height: 100vh;
@@ -49,6 +59,9 @@
     padding: 16px max(16px, calc((100% - 1200px) / 2));
     background: var(--surface);
     border-bottom: 1px solid var(--border);
+    @media (max-width: 600px) {
+      gap: 12px;
+    }
   }
   &-brand {
     display: inline-flex;
@@ -72,9 +85,12 @@
     }
   }
   &-frame {
-    max-width: 1280px;
-    padding: 0 40px;
-    margin: auto;
+    max-width: none;
+    margin: 0;
+    padding: 0 clamp(24px, 4vw, 64px);
+    @media (max-width: 760px) {
+      padding-inline: 20px;
+    }
   }
   &-nav {
     display: flex;
@@ -108,18 +124,36 @@
       width: 16px;
       text-align: center;
     }
+    @media (max-width: 600px) {
+      gap: 6px;
+      padding: 16px 0;
+      a {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+      }
+    }
   }
   &-main {
     padding: 32px 0 48px;
-    min-height: 65vh;
+    width: 100%;
+    max-width: 1344px;
+    margin-inline: auto;
+    min-height: calc(100dvh - 65px);
+    padding-top: 40px;
+    @media (max-width: 760px) {
+      min-height: 60vh;
+      padding-top: 28px;
+    }
   }
   &-pageHeader {
     display: flex;
-    align-items: start;
     justify-content: space-between;
     flex-wrap: wrap;
+    align-items: center;
     gap: 20px;
     margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
     > div:first-child {
       min-width: 0;
       flex: 1 1 280px;
@@ -139,12 +173,29 @@
       max-width: 65ch;
       line-height: 1.6;
     }
+    @media (max-width: 760px) {
+      align-items: flex-start;
+      padding-bottom: 20px;
+    }
   }
   &-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 10px;
+    .DashboardShell-utilities & {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 4px;
+      @media (max-width: 760px) {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+    }
+    .Admin-dialog & {
+      margin-top: 20px;
+    }
   }
   &-back {
     display: inline-block;
@@ -153,36 +204,69 @@
     font-size: 0.9rem;
   }
   &-homeGrid {
-    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-  }
-  &-sectionCard {
     display: flex;
     flex-direction: column;
-    align-items: start;
-    padding: 28px;
+    gap: 0;
+  }
+  &-sectionCard {
+    flex-direction: column;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    column-gap: 20px;
+    row-gap: 6px;
+    align-items: center;
+    padding: 26px 12px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    transition: background var(--transition-fast);
     h2 {
-      font-family: var(--font-title);
-      font-size: 1.7rem;
+      grid-column: 2;
+      font-family: var(--font-text);
+      font-size: 1.05rem;
       font-weight: 600;
-      margin: 20px 0 8px;
+      letter-spacing: -0.02em;
+      margin: 0;
     }
     p {
       color: var(--secondary-foreground);
-      line-height: 1.65;
       margin-bottom: 24px;
-      max-width: 48ch;
+      grid-column: 2;
+      font-size: 0.83rem;
+      line-height: 1.6;
+      max-width: 70ch;
+      margin: 0;
+    }
+    &:hover {
+      background: var(--surface);
+      box-shadow: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+    }
+    @media (max-width: 760px) {
+      grid-template-columns: 36px minmax(0, 1fr);
+      gap: 8px 16px;
+      padding: 22px 0;
     }
   }
   &-sectionIcon {
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
     color: var(--primary);
-    background: var(--secondary);
+    background: var(--accent);
+    @media (max-width: 760px) {
+      width: 36px;
+      height: 36px;
+    }
   }
   &-sectionLink {
     color: var(--primary);
@@ -191,6 +275,17 @@
     display: flex;
     width: 100%;
     justify-content: space-between;
+    grid-column: 3;
+    grid-row: 1 / 3;
+    gap: 24px;
+    font-size: 0.75rem;
+    margin: 0;
+    @media (max-width: 760px) {
+      grid-column: 2;
+      grid-row: 3;
+      width: auto;
+      justify-content: flex-start;
+    }
   }
   &-toolbar {
     display: flex;
@@ -199,6 +294,10 @@
     gap: 16px;
     padding: 24px;
     border-bottom: 1px solid var(--border);
+    @media (max-width: 600px) {
+      padding: 20px;
+      gap: 12px;
+    }
   }
   &-toolbar &-field {
     margin: 0;
@@ -221,6 +320,9 @@
     padding: 16px 24px;
     font-size: 0.8rem;
     color: var(--secondary-foreground);
+    @media (max-width: 600px) {
+      padding-inline: 20px;
+    }
   }
   &-tableScroll {
     overflow-x: auto;
@@ -243,14 +345,6 @@
     th:first-child {
       width: 30%;
     }
-  }
-  .table th {
-    background: var(--secondary);
-    letter-spacing: 0.08em;
-  }
-  .table td {
-    vertical-align: middle;
-    font-size: 0.9rem;
   }
   &-userIdentity {
     display: flex;
@@ -327,6 +421,12 @@
     grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
     gap: 24px;
     align-items: start;
+    @media (max-width: 900px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    @media (max-width: 1100px) and (min-width: 761px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
   &-stack {
     display: grid;
@@ -398,6 +498,9 @@
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) + 4px);
     background: var(--surface);
+    @media (max-width: 600px) {
+      padding: 16px;
+    }
   }
   &-lookupCard {
     max-width: 640px;
@@ -409,152 +512,131 @@
     font-size: 0.8rem;
     display: flex;
     gap: 10px;
+    width: 100%;
+    max-width: 1344px;
+    margin-inline: auto;
   }
-}
-.Admin-notice {
-  margin: 16px 0;
-  padding: 12px 16px;
-  background: var(--secondary);
-  border-radius: var(--radius);
-  color: var(--primary);
-  font-size: 0.9rem;
-  line-height: 1.6;
-}
-.Admin-notice--error {
-  color: var(--destructive);
-  background: var(--destructive-soft);
-}
-.Admin-dialog {
-  position: fixed;
-  margin: auto;
-  width: min(560px, calc(100% - 32px));
-  max-height: calc(100dvh - 32px);
-  overflow-y: auto;
-  padding: 24px;
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) + 4px);
-  background: var(--surface);
-  color: var(--foreground);
-  overflow-wrap: anywhere;
-  > header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
+  &-notice {
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: var(--secondary);
+    border-radius: var(--radius);
+    color: var(--primary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  &-notice--error {
+    color: var(--destructive);
+    background: var(--destructive-soft);
+  }
+  &-dialog {
+    position: fixed;
+    margin: auto;
+    width: min(560px, calc(100% - 32px));
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 4px);
+    background: var(--surface);
+    color: var(--foreground);
+    overflow-wrap: anywhere;
+    > header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+    }
+    > p {
+      margin-bottom: 24px;
+      color: var(--secondary-foreground);
+    }
+    &::backdrop {
+      background: color-mix(in srgb, var(--foreground), transparent 60%);
+    }
+    @media (max-width: 600px) {
+      padding: 20px;
     }
   }
-  > p {
-    margin-bottom: 24px;
-    color: var(--secondary-foreground);
-  }
-  .Admin-actions {
+  &-pickerSearch {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    align-items: end;
+    gap: 12px;
+    .Admin-field {
+      flex: 1;
+      margin: 0;
+    }
+    @media (max-width: 600px) {
+      flex-wrap: wrap;
+    }
+  }
+  &-pickerList {
     margin-top: 20px;
+    max-height: 360px;
+    overflow-y: auto;
+    li + li {
+      border-top: 1px solid var(--border);
+    }
+    button {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+      padding: 14px 12px;
+      text-align: left;
+      border-radius: var(--radius);
+    }
+    button:hover {
+      background: var(--secondary);
+    }
+    button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+    }
   }
-  &::backdrop {
-    background: color-mix(in srgb, var(--foreground), transparent 60%);
+  &-masthead > .Admin-actions {
+    @media (max-width: 600px) {
+      width: 100%;
+      justify-content: end;
+      gap: 6px;
+    }
   }
-}
-.Admin-pickerSearch {
-  display: flex;
-  align-items: end;
-  gap: 12px;
-  .Admin-field {
-    flex: 1;
-    margin: 0;
+  &-toolbar .Admin-field {
+    @media (max-width: 600px) {
+      flex-basis: 100%;
+    }
   }
-}
-.Admin-pickerList {
-  margin-top: 20px;
-  max-height: 360px;
-  overflow-y: auto;
-  li + li {
-    border-top: 1px solid var(--border);
+  &-saveBar > .Admin-actions {
+    @media (max-width: 600px) {
+      margin-left: auto;
+    }
   }
-  button {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    width: 100%;
-    padding: 14px 12px;
-    text-align: left;
-    border-radius: var(--radius);
+  &-pageHeader h1 {
+    font-family: var(--font-text);
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.25;
+    text-wrap: balance;
+    @media (max-width: 760px) {
+      font-size: 1.6rem;
+    }
   }
-  button:hover {
-    background: var(--secondary);
-  }
-  button:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: -2px;
-  }
-}
-@media (max-width: 900px) {
-  .Admin-workspace {
-    grid-template-columns: minmax(0, 1fr);
+  &-pageHeader p {
+    font-size: 0.875rem;
+    max-width: 70ch;
   }
 }
 @media (max-width: 600px) {
-  .Admin-frame {
-    padding-inline: 16px;
-  }
-  .Admin-masthead {
-    gap: 12px;
-  }
-  .Admin-masthead > .Admin-actions {
-    width: 100%;
-    justify-content: end;
-    gap: 6px;
-  }
-  .Admin-nav {
-    gap: 6px;
-    padding: 16px 0;
-    a {
-      padding: 8px 10px;
-      font-size: 0.8rem;
-    }
-  }
-  .Admin-main {
-    padding-top: 24px;
-  }
-  .Admin-homeGrid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-  }
   .admin-card {
     padding: 20px;
   }
   .admin-card--table {
     padding: 0;
-  }
-  .Admin-toolbar {
-    padding: 20px;
-    gap: 12px;
-  }
-  .Admin-toolbar .Admin-field {
-    flex-basis: 100%;
-  }
-  .Admin-resultCount {
-    padding-inline: 20px;
-  }
-  .Admin-saveBar {
-    padding: 16px;
-  }
-  .Admin-saveBar > .Admin-actions {
-    margin-left: auto;
-  }
-  .Admin-pager .Btn {
-    padding-inline: 12px;
-  }
-  .Admin-dialog {
-    padding: 20px;
-  }
-  .Admin-pickerSearch {
-    flex-wrap: wrap;
   }
 }

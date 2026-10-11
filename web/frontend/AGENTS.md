@@ -36,6 +36,11 @@ This guide applies to `web/frontend`. Follow the repository guide as well.
 - Use complete static Uno utility names; dynamically constructed classes may not
   be scanned. Add a justified safelist entry when necessary.
 
+- Define each component's styles in one owning stylesheet; only utility classes may
+  be defined in multiple places. Layout shells must not override other components.
+  Nest sub-component selectors under their root with `&-` (for example,
+  `.BM { &-bookCard { ... } }`), including responsive styles and variants.
+
 ## Verification
 
 - Run `pnpm run build` after TypeScript, React, Alpine, API, or style changes.

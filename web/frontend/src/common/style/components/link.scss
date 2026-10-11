@@ -1,16 +1,16 @@
 .Link {
   @apply text-primary underline-offset-4;
-
   &:hover {
     text-decoration: underline;
     text-decoration-thickness: 0.1em;
   }
-
   &:active {
     text-decoration-thickness: 0.19em;
   }
-
   &--primary {
     @apply text-blue-600 hover:text-blue-900;
+  }
+  .DashboardShell & {
+    text-underline-offset: 0.2em;
   }
 }

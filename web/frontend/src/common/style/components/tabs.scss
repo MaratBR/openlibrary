@@ -4,11 +4,9 @@
   gap: 1.75rem;
   border-color: var(--border);
   scrollbar-width: none;
-
   &::-webkit-scrollbar {
     display: none;
   }
-
   .Tab {
     @apply relative inline-flex flex-none items-center whitespace-nowrap cursor-pointer text-secondary-foreground;
     min-height: var(--tab-height);
@@ -23,7 +21,6 @@
     transition:
       color var(--transition-fast),
       opacity var(--transition-fast);
-
     &::after {
       position: absolute;
       right: 0;
@@ -39,38 +36,31 @@
         opacity var(--transition-fast),
         transform var(--transition-fast);
     }
-
     &:hover:not(&--active) {
       color: var(--surface-foreground);
     }
-
     &:focus-visible {
       outline: 0;
       border-radius: calc(var(--radius) - 4px);
       box-shadow: var(--focus-ring);
     }
-
     &--active,
     &[aria-selected='true'],
     &[aria-current='page'] {
       @apply font-semibold text-primary;
-
       &::after {
         opacity: 1;
         transform: scaleX(1);
       }
     }
-
     &[aria-disabled='true'] {
       cursor: not-allowed;
       opacity: 0.55;
     }
-
     & > a {
       @apply inline-flex h-full items-center text-inherit no-underline;
     }
   }
-
   &-count {
     @apply inline-grid place-items-center ml-2 text-secondary-foreground bg-secondary border;
     min-width: 1.35rem;
@@ -81,17 +71,17 @@
     font-size: 0.7rem;
     font-weight: 600;
   }
-
   .Tab--active &-count,
   .Tab[aria-selected='true'] &-count {
     color: var(--primary);
     background: var(--accent);
     border-color: transparent;
   }
-
   &--primary,
   &--primaryB {
-    // Both existing variants now share the editorial underline treatment.
+  }
+  .Moderation & {
+    margin-bottom: 24px;
   }
 }
 

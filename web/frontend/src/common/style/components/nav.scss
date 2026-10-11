@@ -242,7 +242,6 @@
 
 .DashboardContent {
   @apply relative px-16;
-
   &-stickyHeader {
     @apply sticky top-0 p-4 backdrop-blur-sm z-1 -mx-16 px-16;
     background-image: linear-gradient(
@@ -251,5 +250,26 @@
       transparent
     );
     mask: linear-gradient(black, black, transparent);
+    .DashboardShell & {
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+  }
+  .Moderation > main > & {
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: 0;
+  }
+  & > .max-w-360 {
+    .Moderation & {
+      padding-inline: 0;
+      padding-top: 0;
+    }
+  }
+  .BM & {
+    padding: 0;
+  }
+  .DashboardShell & {
+    padding-inline: 0;
   }
 }

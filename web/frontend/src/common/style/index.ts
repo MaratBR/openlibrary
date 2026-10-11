@@ -10,4 +10,6 @@ import '@fontsource/opendyslexic/latin-700.css'
 
 import '../../islands/bookmanager/manager.scss'
 
+import '../../features/moderation/styles/layout.scss'
+
 import '../../components/dashboard-shell.scss'

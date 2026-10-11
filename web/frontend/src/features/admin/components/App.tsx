@@ -30,7 +30,7 @@ function Layout() {
       {loading && <Loading />}
       <aside className="DashboardShell-sidebar">
         <header className="DashboardShell-brand">
-          <Link to="/" className="Admin-brand">
+          <Link to="/" className="DashboardShell-brandLink">
             <img src="/_/embed-assets/logo.svg" className="dark:hidden" alt="" />
             <img src="/_/embed-assets/logo-dark.svg" className="hidden dark:block" alt="" />
             <span>

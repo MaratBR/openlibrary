@@ -2,33 +2,52 @@
   width: 100%;
   table-layout: fixed;
   @apply bg-transparent;
-
   td,
   th {
     @apply text-start;
     padding: 1rem;
   }
-
   tr {
     border-bottom: 1px solid var(--border);
     transition: background var(--transition-fast);
   }
-
   tbody tr:hover {
     background: color-mix(in srgb, var(--secondary) 58%, transparent);
   }
-
   th {
     @apply font-semibold uppercase text-secondary-foreground;
     font-size: 0.72rem;
     letter-spacing: 0.13em;
   }
-
   td {
     @apply v-start;
   }
-
   tbody tr:last-child {
     border-bottom: 0;
+  }
+  .DashboardShell & {
+    font-variant-numeric: tabular-nums;
+    th {
+      background: var(--secondary);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      padding-block: 12px;
+    }
+    td {
+      padding-block: 18px;
+    }
+  }
+  .Admin & {
+    & th {
+      background: var(--secondary);
+      letter-spacing: 0.06em;
+
+    }
+    & td {
+      vertical-align: middle;
+      font-size: 0.9rem;
+
+    }
+
   }
 }
