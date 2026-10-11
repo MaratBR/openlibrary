@@ -1,15 +1,15 @@
-package app
+package upload
 
 import (
 	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/knadh/koanf/v2"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.uber.org/zap"
 )
 
 type UploadConfig struct {

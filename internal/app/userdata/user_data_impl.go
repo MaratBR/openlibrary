@@ -1,4 +1,4 @@
-package app
+package userdata
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	"errors"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
+	"github.com/MaratBR/openlibrary/internal/app/value"
 	"github.com/MaratBR/openlibrary/internal/store"
 )
 
@@ -18,26 +20,26 @@ type userDataService struct {
 	queries *store.Queries
 }
 
-func NewUserDataService(db DB) UserDataService {
+func NewUserDataService(db store.DBTX) UserDataService {
 	return &userDataService{queries: store.New(db)}
 }
 
-func (s *userDataService) Get(ctx context.Context, query GetUserDataQuery) (Nullable[json.RawMessage], error) {
+func (s *userDataService) Get(ctx context.Context, query GetUserDataQuery) (value.Nullable[json.RawMessage], error) {
 	if err := validateUserDataKey(query.Key, query.IgnoreWhitelist); err != nil {
-		return Null[json.RawMessage](), err
+		return value.Null[json.RawMessage](), err
 	}
 
 	data, err := s.queries.UserData_Get(ctx, store.UserData_GetParams{
-		UserID: uuidDomainToDb(query.UserID),
+		UserID: dal.UUIDToDB(query.UserID),
 		Key:    query.Key,
 	})
 	if err == store.ErrNoRows {
-		return Null[json.RawMessage](), nil
+		return value.Null[json.RawMessage](), nil
 	}
 	if err != nil {
-		return Null[json.RawMessage](), apperror.WrapUnexpectedDBError(err)
+		return value.Null[json.RawMessage](), apperror.WrapUnexpectedDBError(err)
 	}
-	return Value(json.RawMessage(data)), nil
+	return value.Value(json.RawMessage(data)), nil
 }
 
 func (s *userDataService) Set(ctx context.Context, query SetUserDataQuery) error {
@@ -52,7 +54,7 @@ func (s *userDataService) Set(ctx context.Context, query SetUserDataQuery) error
 	}
 
 	if err := s.queries.UserData_Set(ctx, store.UserData_SetParams{
-		UserID: uuidDomainToDb(query.UserID),
+		UserID: dal.UUIDToDB(query.UserID),
 		Key:    query.Key,
 		Data:   query.Data,
 	}); err != nil {

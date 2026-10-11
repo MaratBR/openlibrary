@@ -1,4 +1,4 @@
-package app
+package reader
 
 // ReaderFont describes a bundled font available to the reader.
 type ReaderFont struct {

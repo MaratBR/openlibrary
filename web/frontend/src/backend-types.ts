@@ -94,7 +94,7 @@ export interface CommentUserDto {
   avatar: string;
 }
 
-/** Generated from `internal/app/tags.go`. */
+/** Generated from `internal/app/tags/tags.go`. */
 export interface DefinedTagDto {
   id: string;
   name: string;
@@ -601,7 +601,7 @@ export interface ReviewUserDto {
   avatar: string;
 }
 
-/** Generated from `internal/app/tag_category.go`. */
+/** Generated from `internal/app/tags/tag_category.go`. */
 export type TagsCategory = 'other' | 'warning' | 'fandom' | 'rel' | 'reltype' | 'genre' | 'unknown';
 
 /** Generated from `web/public/routes_moderation_api.go`. */

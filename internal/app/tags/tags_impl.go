@@ -1,4 +1,4 @@
-package app
+package tags
 
 import (
 	"context"
@@ -7,6 +7,10 @@ import (
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
+	"github.com/MaratBR/openlibrary/internal/app/idgen"
+	"github.com/MaratBR/openlibrary/internal/app/value"
+	"github.com/MaratBR/openlibrary/internal/commonutil"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -27,13 +31,13 @@ func (t *tagsService) GetTag(ctx context.Context, id int64) (TagDetailsItemDto, 
 		return TagDetailsItemDto{}, apperror.WrapUnexpectedDBError(err)
 	}
 
-	var synonym Nullable[struct {
+	var synonym value.Nullable[struct {
 		ID   int64
 		Name string
 	}]
 
 	if tag.SynonymOf.Valid {
-		synonym = Value(struct {
+		synonym = value.Value(struct {
 			ID   int64
 			Name string
 		}{
@@ -51,7 +55,7 @@ func (t *tagsService) GetTag(ctx context.Context, id int64) (TagDetailsItemDto, 
 			IsSpoiler:   tag.IsSpoiler,
 			Category:    dbTagTypeToTagsCategory(tag.TagType),
 		},
-		CreatedAt: timeDbToDomain(tag.CreatedAt),
+		CreatedAt: dal.TimeFromDB(tag.CreatedAt),
 		IsDefault: tag.IsDefault,
 		SynonymOf: synonym,
 	}, nil
@@ -62,7 +66,7 @@ func (t *tagsService) GetTagsByIds(ctx context.Context, ids []int64) ([]DefinedT
 	if err != nil {
 		return nil, err
 	}
-	return MapSlice(tags, definedTagToTagDto), nil
+	return commonutil.MapSlice(tags, definedTagToTagDto), nil
 }
 
 func (t *tagsService) SearchTags(ctx context.Context, query string) ([]DefinedTagDto, error) {
@@ -83,7 +87,7 @@ func (t *tagsService) SearchTags(ctx context.Context, query string) ([]DefinedTa
 		return nil, err
 	}
 
-	return MapSlice(tags, definedTagToTagDto), nil
+	return commonutil.MapSlice(tags, definedTagToTagDto), nil
 }
 
 func (t *tagsService) FindParentTagIds(ctx context.Context, ids []int64) (r BookTags, err error) {
@@ -120,7 +124,7 @@ func (t *tagsService) CreateTags(ctx context.Context, cmd CreateTagsCommand) ([]
 	for i, tag := range cmd.Tags {
 		tagNames[i] = tag.Name
 		tags[i] = tagImportRow{
-			ID:          GenID(),
+			ID:          idgen.GenID(),
 			Name:        tag.Name,
 			IsAdult:     tag.IsAdult,
 			IsSpoiler:   tag.IsSpoiler,
@@ -137,7 +141,7 @@ func (t *tagsService) CreateTags(ctx context.Context, cmd CreateTagsCommand) ([]
 	}
 
 	tagsDto, err := t.queries.GetTagsByName(ctx, tagNames)
-	return MapSlice(tagsDto, definedTagToTagDto), err
+	return commonutil.MapSlice(tagsDto, definedTagToTagDto), err
 }
 
 // List implements TagsService.
@@ -166,14 +170,14 @@ func (t *tagsService) List(ctx context.Context, query ListTagsQuery) (ListTagsRe
 	count, err := store.CountTags(ctx, t.db, dbQuery)
 	totalPages := uint32(math.Ceil(float64(count) / float64(limit)))
 
-	tagDtos := MapSlice(tags, func(t store.TagRow) TagDetailsItemDto {
-		var synonym Nullable[struct {
+	tagDtos := commonutil.MapSlice(tags, func(t store.TagRow) TagDetailsItemDto {
+		var synonym value.Nullable[struct {
 			ID   int64
 			Name string
 		}]
 
 		if t.SynonymOf.Valid && t.SynonymOfName.Valid {
-			synonym = Value(struct {
+			synonym = value.Value(struct {
 				ID   int64
 				Name string
 			}{
@@ -220,7 +224,7 @@ func (t *tagsService) UpdateTag(ctx context.Context, command UpdateTagCommand) e
 		TagType:     tagsCategoryToDbTagType(command.Type),
 		IsAdult:     command.IsAdult,
 		IsSpoiler:   command.IsSpoiler,
-		SynonymOf:   int64NullableDomainToDb(command.SynonymOfTagID),
+		SynonymOf:   pgtype.Int8{Int64: command.SynonymOfTagID.Value, Valid: command.SynonymOfTagID.Valid},
 	})
 	if err != nil {
 		return apperror.WrapUnexpectedDBError(err)
@@ -241,44 +245,6 @@ func NewTagsService(db store.DBTX) TagsService {
 		db:      db,
 		queries: store.New(db),
 	}
-}
-
-type tagsAggregator struct {
-	service  TagsService
-	tags     map[int64]struct{}
-	bookTags map[int64][]int64
-}
-
-func newTagsAggregator(service TagsService) tagsAggregator {
-	return tagsAggregator{service: service, tags: make(map[int64]struct{}), bookTags: make(map[int64][]int64)}
-}
-
-func (agg *tagsAggregator) Add(bookID int64, tagIDs []int64) {
-	if len(tagIDs) == 0 {
-		return
-	}
-	agg.bookTags[bookID] = tagIDs
-	for _, id := range tagIDs {
-		agg.tags[id] = struct{}{}
-	}
-}
-
-func (agg *tagsAggregator) Fetch(ctx context.Context) (map[int64]DefinedTagDto, error) {
-	ids := mapKeys(agg.tags)
-	tags, err := agg.service.GetTagsByIds(ctx, ids)
-	if err != nil {
-		return nil, err
-	}
-	tagsMap := make(map[int64]DefinedTagDto, len(tags))
-	for _, t := range tags {
-		tagsMap[t.ID] = t
-	}
-	return tagsMap, nil
-}
-
-func (agg *tagsAggregator) BookTags(bookID int64) []int64 {
-	ids, _ := agg.bookTags[bookID]
-	return ids
 }
 
 func validateTagName(name string) error {

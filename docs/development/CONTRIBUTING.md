@@ -24,6 +24,9 @@ Controllers should stay thin: parse input, acquire request context, invoke an
 application service, and use the shared response helpers. Application services
 own domain rules and use SQLC-generated `store.Queries` for persistence.
 
+See [Application package boundaries](application-packages.md) for feature
+ownership, compatibility bridges, and the code intentionally retained in `app`.
+
 For a new feature or substantial behavior change, start with the
 [spec-driven development workflow](spec-driven-development.md). Small fixes
 can go straight to implementation when the expected behavior is already clear.

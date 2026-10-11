@@ -1,11 +1,10 @@
-package app
+package tags
 
 import (
 	"context"
 	"encoding/json"
 	"hash/fnv"
 	"io"
-
 	"os"
 	"path"
 	"time"

@@ -1,10 +1,11 @@
-package app
+package tags
 
 import (
 	"context"
 	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/value"
 	"uuid"
 )
 
@@ -25,7 +26,7 @@ type DefinedTagDto struct {
 type TagDetailsItemDto struct {
 	DefinedTagDto
 
-	SynonymOf Nullable[struct {
+	SynonymOf value.Nullable[struct {
 		ID   int64
 		Name string
 	}]
@@ -56,7 +57,7 @@ type ListTagsQuery struct {
 	PageSize       uint32
 	OnlyParentTags bool
 	OnlyAdultTags  bool
-	Category       Nullable[TagsCategory]
+	Category       value.Nullable[TagsCategory]
 }
 
 type ListTagsResult struct {
@@ -72,7 +73,7 @@ type UpdateTagCommand struct {
 	Description    string
 	IsAdult        bool
 	IsSpoiler      bool
-	SynonymOfTagID Nullable[int64]
+	SynonymOfTagID value.Nullable[int64]
 	Type           TagsCategory
 	UserID         uuid.UUID
 }

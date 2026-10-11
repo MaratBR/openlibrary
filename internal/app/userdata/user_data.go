@@ -1,10 +1,11 @@
-package app
+package userdata
 
 import (
 	"context"
 	"encoding/json"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/value"
 	"uuid"
 )
 
@@ -31,6 +32,6 @@ type SetUserDataQuery struct {
 }
 
 type UserDataService interface {
-	Get(ctx context.Context, query GetUserDataQuery) (Nullable[json.RawMessage], error)
+	Get(ctx context.Context, query GetUserDataQuery) (value.Nullable[json.RawMessage], error)
 	Set(ctx context.Context, query SetUserDataQuery) error
 }

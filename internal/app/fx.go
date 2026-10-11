@@ -4,7 +4,11 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/bookfont"
 	"github.com/MaratBR/openlibrary/internal/app/content"
+	"github.com/MaratBR/openlibrary/internal/app/reader"
 	"github.com/MaratBR/openlibrary/internal/app/siteconfig"
+	"github.com/MaratBR/openlibrary/internal/app/tags"
+	"github.com/MaratBR/openlibrary/internal/app/upload"
+	"github.com/MaratBR/openlibrary/internal/app/userdata"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"go.uber.org/fx"
 )
@@ -14,10 +18,13 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 	bookfont.FXModule,
 	content.FXModule,
 	siteconfig.FXModule,
+	tags.FXModule,
+	reader.FXModule,
+	upload.FXModule,
+	userdata.FXModule,
 
 	fx.Provide(
 		NewUserService,
-		NewUserDataService,
 		NewAuthService,
 		NewSignUpService,
 		NewBookService,
@@ -33,10 +40,7 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 		NewReviewsService,
 		NewSearchService,
 		NewCommentsService,
-		NewUploadServiceFromApplicationConfig,
 		NewReadingListService,
-		NewReaderPreferencesService,
-        NewReaderFontService,
 		NewCollectionsService,
 		NewIPLocationService,
 		NewSessionService,
@@ -53,7 +57,6 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 		NewReportService,
 		NewReportActionExecutor,
 		NewModerationReportService,
-		NewTagsService,
 
 		// alias for DB -> DBTX
 		func(db DB) store.DBTX {
@@ -62,8 +65,6 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 	),
 
 	cronRunnerModule,
-
-	fx.Invoke(startTagsPopulateService),
 
 	fx.Invoke(func(srv BookBackgroundService, draftPublishing *DraftPublishingService) {}),
 )

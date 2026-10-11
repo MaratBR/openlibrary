@@ -1,9 +1,10 @@
-package app
+package reader
 
 import (
 	"context"
 	"errors"
 
+	"github.com/MaratBR/openlibrary/internal/app/value"
 	"uuid"
 )
 
@@ -77,6 +78,6 @@ func (p ReaderPreferences) ValidateWithFonts(fonts []ReaderFont) error {
 }
 
 type ReaderPreferencesService interface {
-	Get(ctx context.Context, userID uuid.UUID) (Nullable[ReaderPreferences], error)
+	Get(ctx context.Context, userID uuid.UUID) (value.Nullable[ReaderPreferences], error)
 	Save(ctx context.Context, userID uuid.UUID, preferences ReaderPreferences) error
 }

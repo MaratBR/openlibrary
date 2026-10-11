@@ -1,9 +1,11 @@
-package app
+package reader
 
 import (
 	"context"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
+	"github.com/MaratBR/openlibrary/internal/app/dal"
+	"github.com/MaratBR/openlibrary/internal/app/value"
 	"github.com/MaratBR/openlibrary/internal/store"
 	"uuid"
 )
@@ -13,19 +15,19 @@ type readerPreferencesService struct {
 	fonts   ReaderFontService
 }
 
-func NewReaderPreferencesService(db DB, fonts ReaderFontService) ReaderPreferencesService {
+func NewReaderPreferencesService(db store.DBTX, fonts ReaderFontService) ReaderPreferencesService {
 	return &readerPreferencesService{queries: store.New(db), fonts: fonts}
 }
 
-func (s *readerPreferencesService) Get(ctx context.Context, userID uuid.UUID) (Nullable[ReaderPreferences], error) {
-	row, err := s.queries.ReaderPreferences_Get(ctx, uuidDomainToDb(userID))
+func (s *readerPreferencesService) Get(ctx context.Context, userID uuid.UUID) (value.Nullable[ReaderPreferences], error) {
+	row, err := s.queries.ReaderPreferences_Get(ctx, dal.UUIDToDB(userID))
 	if err == store.ErrNoRows {
-		return Null[ReaderPreferences](), nil
+		return value.Null[ReaderPreferences](), nil
 	}
 	if err != nil {
-		return Null[ReaderPreferences](), apperror.WrapUnexpectedDBError(err)
+		return value.Null[ReaderPreferences](), apperror.WrapUnexpectedDBError(err)
 	}
-	return Value(ReaderPreferences{
+	return value.Value(ReaderPreferences{
 		ContentWidth: row.ContentWidth,
 		FontSize:     row.FontSize,
 		FontFamily:   row.FontFamily,
@@ -42,7 +44,7 @@ func (s *readerPreferencesService) Save(ctx context.Context, userID uuid.UUID, p
 		preferences.ContentWidth = 72
 	}
 	if err := s.queries.ReaderPreferences_Upsert(ctx, store.ReaderPreferences_UpsertParams{
-		UserID:       uuidDomainToDb(userID),
+		UserID:       dal.UUIDToDB(userID),
 		ContentWidth: preferences.ContentWidth,
 		FontSize:     preferences.FontSize,
 		FontFamily:   preferences.FontFamily,
