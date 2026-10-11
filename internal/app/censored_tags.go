@@ -63,7 +63,6 @@ func ApplyBookTagPreferences(ctx context.Context, bookID int64, tags []int64) {
 			return
 		}
 	}
-	return
 }
 
 func IsBookCensored(ctx context.Context, bookID int64) bool {

@@ -20,6 +20,7 @@ func bypassContentPreferences(r *http.Request) bool {
 	return ok && user.Role.IsAdmin() && (r.URL.Query().Get("admin.link") == "1" || r.URL.Query().Get("admin.override") == "1")
 }
 
+// TODO consider removing this in favor of on-demand fetching this thing when necessary
 func contentPreferencesMiddleware(users app.UserService, db store.DBTX) func(http.Handler) http.Handler {
 	queries := store.New(db)
 	return func(next http.Handler) http.Handler {
