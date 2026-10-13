@@ -1,0 +1,177 @@
+.BookCardPreview {
+  --uc-h2-font-size: 1.25rem;
+  white-space: normal;
+  padding: 20px;
+  min-height: 180px;
+
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &-cover {
+    @apply bg-secondary text-secondary-foreground;
+    flex: 0 0 64px;
+    height: 96px;
+    border-radius: 3px 8px 8px 3px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    place-items: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    svg {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  &-heading {
+    min-width: 0;
+  }
+  &-title {
+    @apply font-title text-xl font-semibold;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+  &-author {
+    @apply text-sm text-secondary-foreground;
+    margin-top: 8px;
+    overflow-wrap: anywhere;
+  }
+  &-summary {
+    @apply text-sm;
+    margin-top: 16px;
+    line-height: 1.6;
+    max-height: 8em;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    > :first-child {
+      margin-top: 0;
+    }
+    > :last-child {
+      margin-bottom: 0;
+    }
+    img,
+    video,
+    iframe {
+      display: none;
+    }
+  }
+  &-tags {
+    @apply border-t border-foreground/10;
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+}
+
+.BookPreviewWidget {
+  @apply my-6 border border-primary/20 rounded-xl bg-primary/5 text-foreground font-sans;
+  max-width: 440px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+
+  .BookCardPreview {
+    --uc-h2-font-size: 1rem;
+    padding: 14px 14px 10px;
+    min-height: 0;
+
+    &-header {
+      gap: 12px;
+    }
+
+    &-cover {
+      flex-basis: 48px;
+      height: 72px;
+    }
+
+    &-title {
+      font-size: 1rem;
+      margin-bottom: 0;
+      -webkit-line-clamp: 2;
+    }
+
+    &-author {
+      font-size: 0.75rem;
+      margin-top: 4px;
+    }
+
+    &-summary {
+      margin-top: 10px;
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      max-height: 3em;
+      -webkit-line-clamp: 2;
+    }
+
+    &-tags {
+      margin-top: 10px;
+      padding-top: 8px;
+
+      .Tags {
+        display: flex;
+        gap: 4px;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        li {
+          flex-shrink: 0;
+          margin: 0;
+        }
+        li:nth-child(n + 4) {
+          display: none;
+        }
+      }
+
+      .Tag {
+        @apply text-secondary-foreground no-underline;
+      }
+    }
+  }
+
+  &-actions {
+    @apply flex flex-wrap items-center justify-between gap-2 px-3.5 pb-2;
+    .Btn {
+      --btn-height: 32px;
+    }
+  }
+
+  & &-open {
+    @apply inline-flex items-center gap-2 text-primary text-sm font-medium no-underline;
+    &:hover {
+      @apply underline;
+    }
+  }
+
+  &-form {
+    @apply flex flex-col items-start gap-3 p-4;
+    label {
+      @apply block w-full text-sm;
+    }
+    input {
+      @apply block w-full mt-2;
+    }
+  }
+
+  > p,
+  > div > p {
+    @apply p-4 text-sm text-secondary-foreground;
+  }
+
+  &.ProseMirror-selectednode {
+    @apply outline-2 outline-primary;
+  }
+}

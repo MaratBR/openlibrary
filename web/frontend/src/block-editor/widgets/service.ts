@@ -12,4 +12,8 @@ export class WidgetsService {
   public async getWidgets(): Promise<Widget[]> {
     return getBaseWidgets()
   }
+
+  public async getInsertionWidgets(): Promise<Widget[]> {
+    return (await this.getWidgets()).filter((widget) => !widget.availableInToolbar)
+  }
 }

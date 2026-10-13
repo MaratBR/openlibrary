@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/MaratBR/openlibrary/internal/app"
+	"github.com/MaratBR/openlibrary/internal/app/content"
 	"github.com/MaratBR/openlibrary/internal/auth"
 	"github.com/MaratBR/openlibrary/internal/flash"
 	"github.com/MaratBR/openlibrary/internal/i18n"
@@ -20,10 +21,12 @@ type bookManagerController struct {
 	collectionService app.CollectionService
 	readerPreferences app.ReaderPreferencesService
 	readerFonts       app.ReaderFontService
+	books             app.BookService
+	markup            *content.MarkupEngine
 }
 
-func newBookManagerController(service app.BookManagerService, collectionService app.CollectionService, readerPreferences app.ReaderPreferencesService, readerFonts app.ReaderFontService) *bookManagerController {
-	return &bookManagerController{service: service, collectionService: collectionService, readerPreferences: readerPreferences, readerFonts: readerFonts}
+func newBookManagerController(service app.BookManagerService, collectionService app.CollectionService, readerPreferences app.ReaderPreferencesService, readerFonts app.ReaderFontService, books app.BookService, markup *content.MarkupEngine) *bookManagerController {
+	return &bookManagerController{service: service, collectionService: collectionService, readerPreferences: readerPreferences, readerFonts: readerFonts, books: books, markup: markup}
 }
 
 func (c *bookManagerController) Register(r chi.Router) {
@@ -200,5 +203,15 @@ func (c *bookManagerController) sendChapterEditorPage(bookID, chapterID, draftID
 		return
 	}
 
-	olhttp.WriteTemplate(w, r.Context(), templates.ChapterEditor(draft))
+	expanded, err := c.markup.Expand(draft.Content)
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+	_, bookPreviews, err := renderBookPreviewWidgets(r, expanded, c.books)
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+	olhttp.WriteTemplate(w, r.Context(), templates.ChapterEditor(draft, bookPreviews))
 }

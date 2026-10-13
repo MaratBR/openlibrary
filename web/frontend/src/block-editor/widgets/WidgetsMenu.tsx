@@ -10,8 +10,8 @@ export function WidgetsMenu({ service }: { service: WidgetsService }) {
 
   useEffect(() => {
     service
-      .getWidgets()
-      .then((widgets) => setWidgets(widgets.filter((widget) => !widget.availableInToolbar)))
+      .getInsertionWidgets()
+      .then(setWidgets)
   }, [service])
 
   return (

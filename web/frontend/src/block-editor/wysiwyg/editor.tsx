@@ -15,6 +15,7 @@ import { SlashCommandsProvider } from './slashCommands'
 import { SuggestionsDisplay } from './SuggestionsDisplay'
 import { createEvent } from '@/lib/event'
 import { WidgetsService } from '../widgets'
+import { BookPreview } from '../widgets/BookPreview'
 
 export type EditorToolbarState = {
   bold: boolean
@@ -45,6 +46,7 @@ export type ChapterContentEditorOptions = {
   contentElement: HTMLElement
   contentWrapperElement: HTMLElement
   iframe: HTMLIFrameElement
+  bookPreviews?: Record<string, string>
 }
 
 export class ChapterContentEditor extends Editor {
@@ -57,6 +59,7 @@ export class ChapterContentEditor extends Editor {
     contentElement,
     contentWrapperElement,
     initialContent,
+    bookPreviews,
   }: ChapterContentEditorOptions) {
     super({
       content: initialContent,
@@ -94,6 +97,7 @@ export class ChapterContentEditor extends Editor {
         }),
         BulletList,
         OrderedList,
+        BookPreview.configure({ previews: bookPreviews ?? {} }),
         SlashCommand.configure({
           suggestionClass: 'be-suggestion',
           commandsProvider: new SlashCommandsProvider(WidgetsService.instance()),

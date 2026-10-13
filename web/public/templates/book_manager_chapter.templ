@@ -5,7 +5,7 @@ import "github.com/MaratBR/openlibrary/internal/app/content"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
-templ ChapterEditor(draft app.DraftDto) {
+templ ChapterEditor(draft app.DraftDto, bookPreviews map[string]string) {
     {{
         l := i18n.GetLocalizer(ctx)
         initialFonts, err := content.CollectFontFamilies(draft.Content)
@@ -17,11 +17,13 @@ templ ChapterEditor(draft app.DraftDto) {
             InitialFonts []string `json:"initialFonts"`
             AllowedFontSizes []string `json:"allowedFontSizes"`
             MaxChapterNameLength int `json:"maxChapterNameLength"`
+            BookPreviews map[string]string `json:"bookPreviews"`
         }{
             Draft: draft,
             InitialFonts: initialFonts,
             AllowedFontSizes: content.DefaultAllowedFontSizes(),
             MaxChapterNameLength: app.MaxChapterNameLength,
+            BookPreviews: bookPreviews,
         })
         if err != nil {
             return err

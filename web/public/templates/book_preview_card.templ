@@ -2,6 +2,22 @@ package templates
 
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
+import "github.com/MaratBR/openlibrary/internal/i18n"
+import "fmt"
+
+templ BookPreviewUnavailable() {
+    <p role="status">{ i18n.GetLocalizer(ctx).T("editor.bookPreview.unavailable") }</p>
+}
+
+templ BookPreviewWidgetContent(previewHTML string, bookID int64) {
+    @templ.Raw(previewHTML)
+    <div class="BookPreviewWidget-actions">
+        <a class="BookPreviewWidget-open" href={ templ.URL(fmt.Sprintf("/book/%d", bookID)) }>
+            { i18n.GetLocalizer(ctx).T("editor.bookPreview.open") }
+            <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+        </a>
+    </div>
+}
 
 templ BookPreviewPartial(book app.BookDetailsDto) {
     @censoredContent(book.ID) {

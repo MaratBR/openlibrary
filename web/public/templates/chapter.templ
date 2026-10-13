@@ -38,6 +38,7 @@ templ Chapter(
     }}
 
     @htmlLayout(htmlLayoutProps{Title: chapter.Name, CSS: chapterFontStylesheets(chapter.Fonts), ReaderTheme: preferences.Theme}) {
+    @i18nExtractKeysByPrefix(l, "editor.bookPreview")
     @censoredContent(book.ID) {
         @AdminBookVisibilityWarning(book.VisibilityReasons)
         @olhttp.JSServerData("chapterId", fmt.Sprintf("%d", chapter.ID))

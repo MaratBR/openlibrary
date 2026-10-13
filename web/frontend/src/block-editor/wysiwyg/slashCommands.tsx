@@ -18,7 +18,7 @@ export class SlashCommandsProvider {
   }
 
   private async load() {
-    const widgets = await this._widgetService.getWidgets()
+    const widgets = await this._widgetService.getInsertionWidgets()
     this._commands = widgets.map(createSlashCommandFromWidget)
   }
 }

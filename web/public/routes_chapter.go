@@ -78,8 +78,12 @@ func (c *chaptersController) chapter(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// TEMPORARY MEASURE
 	chapterResult.Chapter.Content, err = c.markup.Expand(chapterResult.Chapter.Content)
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+	chapterResult.Chapter.Content, _, err = renderBookPreviewWidgets(r, chapterResult.Chapter.Content, c.service)
 	if err != nil {
 		writeApplicationError(w, r, err)
 		return

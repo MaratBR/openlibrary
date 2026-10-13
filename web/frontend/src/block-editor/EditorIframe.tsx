@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useRef, useState } from 'react'
+import { SyntheticEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { EditorElements } from './EditorElements'
 import { WYSIWYGEditor } from './wysiwyg'
 import { ChapterNameInput } from './ChapterNameInput'
@@ -16,15 +16,28 @@ const editorFonts = appRuntime.runSync(EditorFonts)
 export function EditorIframe({
   initialContent,
   chapterFonts,
+  bookPreviews,
 }: {
   initialContent: string
   chapterFonts: string[]
+  bookPreviews: Record<string, string>
 }) {
   const favoriteFonts = useFavoriteFonts()
   const loadVersion = useRef(0)
   const attachedIframe = useRef<HTMLIFrameElement | null>(null)
   const [loading, setLoading] = useState(true)
   const [elements, setElements] = useState<EditorElements | null>(null)
+  const editorOptions = useMemo(
+    () =>
+      elements && {
+        initialContent,
+        contentElement: elements.content,
+        contentWrapperElement: elements.contentWrapper,
+        iframe: elements.iframe,
+        bookPreviews,
+      },
+    [elements, initialContent, bookPreviews],
+  )
 
   useEffect(() => {
     return () => {
@@ -57,19 +70,9 @@ export function EditorIframe({
           <span className="Loader" />
         </div>
       )}
-      {!loading && elements && (
+      {!loading && elements && editorOptions && (
         <>
-          {createPortal(
-            <WYSIWYGEditor
-              editorOptions={{
-                initialContent,
-                contentElement: elements.content,
-                contentWrapperElement: elements.contentWrapper,
-                iframe: elements.iframe,
-              }}
-            />,
-            elements.content,
-          )}
+          {createPortal(<WYSIWYGEditor editorOptions={editorOptions} />, elements.content)}
           {createPortal(<ChapterNameInput />, elements.contentWrapperHeader)}
         </>
       )}

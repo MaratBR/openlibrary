@@ -1018,6 +1018,17 @@ publishAt = "Publish at"
 chapterScheduled = "Chapter publishing was scheduled"
 chapterRescheduled = "Chapter publishing was rescheduled"
 
+[editor.bookPreview]
+title = "Book preview"
+bookLink = "Book link or ID"
+insert = "Show preview"
+change = "Change book"
+open = "Open book"
+loading = "Loading book preview…"
+unavailable = "Book preview unavailable. The book may be private or removed."
+invalid = "Enter a valid book link from this library or a positive book ID."
+retry = "Retry"
+
 [mod]
 performAction = "Perform action"
 ban = "Ban"

@@ -1,8 +1,10 @@
 package content
 
 import (
+	"encoding/json"
 	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/net/html"
+	"strconv"
 )
 
 type WidgetRegistry struct {
@@ -21,6 +23,10 @@ func (w *WidgetRegistry) Expand(node *html.Node) {
 		w.writeError(node, "no 'name' attribute")
 		return
 	}
+	if name == "book-preview" {
+		w.expandBookPreview(node, attr["data"])
+		return
+	}
 
 	clearElement(node)
 	node.Data = "div"
@@ -32,6 +38,36 @@ func (w *WidgetRegistry) Expand(node *html.Node) {
 		Type: html.TextNode,
 		Data: "widget " + name,
 	})
+}
+
+func (w *WidgetRegistry) expandBookPreview(node *html.Node, data string) {
+	var reference struct {
+		BookID string `json:"bookId"`
+	}
+	if err := json.Unmarshal([]byte(data), &reference); err != nil {
+		w.writeError(node, "invalid book reference")
+		return
+	}
+	id, err := strconv.ParseInt(reference.BookID, 10, 64)
+	if err != nil || id <= 0 {
+		w.writeError(node, "invalid book reference")
+		return
+	}
+	bookID := strconv.FormatInt(id, 10)
+	clearElement(node)
+	node.Data = "div"
+	node.Attr = []html.Attribute{
+		{Key: "class", Val: "BookPreviewWidget"},
+		{Key: "data-widget", Val: "book-preview"},
+		{Key: "data-book-id", Val: bookID},
+	}
+	link := &html.Node{
+		Type: html.ElementNode,
+		Data: "a",
+		Attr: []html.Attribute{{Key: "href", Val: "/book/" + bookID}},
+	}
+	link.AppendChild(&html.Node{Type: html.TextNode, Data: "/book/" + bookID})
+	node.AppendChild(link)
 }
 
 func (w *WidgetRegistry) ConfigureSanitizer(policy *bluemonday.Policy) {

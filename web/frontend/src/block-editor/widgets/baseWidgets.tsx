@@ -70,4 +70,9 @@ export const getBaseWidgets: () => Widget[] = () => [
     icon: <i className="fa-solid fa-minus" />,
     apply: (editor) => editor.chain().focus().setHorizontalRule().run(),
   },
+  {
+    name: window._('editor.bookPreview.title'),
+    icon: <i className="fa-solid fa-book" />,
+    apply: (editor) => editor.chain().focus().insertContent({ type: 'bookPreview' }).run(),
+  },
 ]

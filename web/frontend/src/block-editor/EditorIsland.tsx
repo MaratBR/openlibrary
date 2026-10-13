@@ -13,13 +13,15 @@ import { MoreFonts } from './MoreFonts'
 import { DraftDto } from '@/backend-types'
 
 export default function EditorIslandComponent({ data }: ReactIslandProps) {
-  const { draft, allowedFontSizes, initialFonts, maxChapterNameLength } = useMemo(
-    () => data as {
-      draft: DraftDto
-      allowedFontSizes: string[]
-      initialFonts: string[]
-      maxChapterNameLength: number
-    },
+  const { draft, allowedFontSizes, initialFonts, maxChapterNameLength, bookPreviews } = useMemo(
+    () =>
+      data as {
+        draft: DraftDto
+        allowedFontSizes: string[]
+        initialFonts: string[]
+        maxChapterNameLength: number
+        bookPreviews: Record<string, string>
+      },
     [data],
   )
   useMemo(() => {
@@ -28,7 +30,12 @@ export default function EditorIslandComponent({ data }: ReactIslandProps) {
   }, [draft, maxChapterNameLength])
 
   return (
-    <EditorIsland draft={draft} allowedFontSizes={allowedFontSizes} initialFonts={initialFonts} />
+    <EditorIsland
+      draft={draft}
+      allowedFontSizes={allowedFontSizes}
+      initialFonts={initialFonts}
+      bookPreviews={bookPreviews}
+    />
   )
 }
 
@@ -36,10 +43,12 @@ function EditorIsland({
   draft,
   allowedFontSizes,
   initialFonts,
+  bookPreviews,
 }: {
   draft: DraftDto
   allowedFontSizes: string[]
   initialFonts: string[]
+  bookPreviews: Record<string, string>
 }) {
   const [leftOpen, setLeftOpen] = useState(true)
   const [rightOpen, setRightOpen] = useState(true)
@@ -90,7 +99,11 @@ function EditorIsland({
           <div className="BeLayout-center">
             <EditorToolbar allowedFontSizes={allowedFontSizes} />
             <div className="BeLayout-content">
-              <EditorIframe initialContent={draft.content} chapterFonts={initialFonts} />
+              <EditorIframe
+                initialContent={draft.content}
+                chapterFonts={initialFonts}
+                bookPreviews={bookPreviews}
+              />
             </div>
           </div>
           <div

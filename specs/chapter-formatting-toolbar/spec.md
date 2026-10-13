@@ -7,7 +7,7 @@ Replace the selection bubble with a persistent Word-like toolbar in the center p
 - Font family and size, bold, italic, underline, and strike apply to the selection or subsequent typing.
 - Paragraph, headings 1–6, bullet and ordered lists, and all four alignments are available.
 - Controls reflect cursor/selection formatting and preserve selection when used outside the content iframe.
-- The bubble menu no longer appears. The sidebar shows only tools absent from the toolbar (code, code block, blockquote, divider). Slash commands retain all tools.
+- The bubble menu no longer appears. The sidebar shows only tools absent from the toolbar (code, code block, blockquote, divider). Slash commands share the sidebar insertion tools (see ../editor-book-preview/spec.md).
 - Toolbar controls have translated accessible labels and remain reachable on narrow screens.
 
 The user request defines the scope; no open behavior questions.
