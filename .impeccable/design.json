@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-11T16:13:52.231072+00:00",
-  "title": "Design System: OpenLibrary dashboards",
+  "generatedAt": "2026-10-13T15:25:14.995726+00:00",
+  "title": "Design System: OpenLibrary",
   "extensions": {
     "colorMeta": {
       "primary": {
@@ -265,6 +265,22 @@
       "title": {
         "displayName": "Book title",
         "purpose": "Book record identity; mobile reduces to 1rem."
+      },
+      "library-display": {
+        "displayName": "Library Display",
+        "purpose": "Library page heading."
+      },
+      "library-section": {
+        "displayName": "Library Section",
+        "purpose": "Reading status and gallery collection heading."
+      },
+      "library-book-title": {
+        "displayName": "Library Book Title",
+        "purpose": "Fully wrapping saved-book title."
+      },
+      "library-tab": {
+        "displayName": "Library Tab",
+        "purpose": "Library navigation; 0.85rem on mobile."
       }
     },
     "shadows": [
@@ -287,6 +303,16 @@
         "name": "shared-overlay",
         "value": "var(--shadow-md)",
         "purpose": "Existing dropdown overlays."
+      },
+      {
+        "name": "library-cover",
+        "value": "0 4px 10px rgb(0 0 0 / 12%)",
+        "purpose": "Saved book cover at rest."
+      },
+      {
+        "name": "library-cover-hover",
+        "value": "0 8px 18px rgb(0 0 0 / 20%)",
+        "purpose": "Saved book cover hover."
       }
     ],
     "motion": [
@@ -299,6 +325,11 @@
         "name": "loader",
         "value": "1.2s ease-in-out infinite",
         "purpose": "Existing dashboard loading bar; reduced motion removes animation."
+      },
+      {
+        "name": "library-cover",
+        "value": "180ms ease-out",
+        "purpose": "Cover shadow feedback; disabled with reduced motion."
       }
     ],
     "breakpoints": [
@@ -309,6 +340,10 @@
       {
         "name": "compact-desktop-max",
         "value": "1100px"
+      },
+      {
+        "name": "library-mobile-max",
+        "value": "480px"
       }
     ]
   },
@@ -368,34 +403,66 @@
       "description": "A ruled row for scanning and opening a record.",
       "html": "<a class=\"ds-record\" href=\"#record\"><h3>Record title</h3><span>Supporting record information</span></a>",
       "css": ".ds-record{display:block;padding:20px 12px;border-bottom:1px solid var(--border);background:transparent;color:var(--foreground);text-decoration:none;font-family:var(--font-text);font-variant-numeric:tabular-nums;transition:background var(--transition-fast)}.ds-record h3{margin:0 0 8px;font-size:.95rem;font-weight:600;letter-spacing:-.02em}.ds-record:hover{background:var(--surface)}.ds-record:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}"
+    },
+    {
+      "name": "Library tab",
+      "kind": "nav",
+      "refersTo": "library-tab-current",
+      "description": "Current library route, marked by an underline.",
+      "html": "<a class=\"ds-library-tab\" href=\"#library\" aria-current=\"page\">My library</a>",
+      "css": ".ds-library-tab{display:inline-flex;align-items:center;min-height:48px;padding:8px 0 16px;border-bottom:2px solid var(--primary);color:var(--primary);font-family:var(--font-text);font-size:.95rem;font-weight:500;text-decoration:none;transition:color 140ms ease,border-color 140ms ease}.ds-library-tab:hover{border-color:var(--border-strong)}.ds-library-tab:focus-visible{outline:2px solid var(--ring);outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-library-tab{transition:none}}"
+    },
+    {
+      "name": "Library book",
+      "kind": "card",
+      "refersTo": "library-cover",
+      "description": "Cover silhouette and wrapping title; actual book covers come from saved records.",
+      "html": "<a class=\"ds-library-book\" href=\"#book\"><div class=\"ds-library-cover\" aria-hidden=\"true\"></div><div class=\"ds-library-title\">Book title</div></a>",
+      "css": ".ds-library-book{display:block;width:160px;color:var(--foreground);text-decoration:none;font-family:var(--font-text)}.ds-library-cover{aspect-ratio:2/3;background:var(--secondary);border-radius:3px;box-shadow:0 4px 10px rgb(0 0 0 / 12%);transition:box-shadow 180ms ease-out}.ds-library-title{margin-top:14px;font-size:.875rem;font-weight:500;line-height:1.5;overflow-wrap:anywhere}.ds-library-book:hover .ds-library-cover{box-shadow:0 8px 18px rgb(0 0 0 / 20%)}.ds-library-book:hover .ds-library-title{color:var(--primary);text-decoration:underline;text-underline-offset:4px}.ds-library-book:focus-visible{outline:2px solid var(--ring);outline-offset:6px;border-radius:3px}@media(prefers-reduced-motion:reduce){.ds-library-cover{transition:none}}"
+    },
+    {
+      "name": "Create collection",
+      "kind": "button",
+      "refersTo": "library-create",
+      "description": "Full-width library action that reveals the collection form.",
+      "html": "<button class=\"ds-library-create\"><span class=\"ds-library-plus\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 2v12M2 8h12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg></span>Create collection</button>",
+      "css": ".ds-library-create{display:flex;align-items:center;gap:16px;padding:20px 0;width:100%;text-align:left;color:var(--primary);background:transparent;border:0;border-bottom:1px solid var(--border);font-family:var(--font-text);font-size:1.125rem;font-weight:500}.ds-library-plus{display:grid;place-items:center;width:44px;height:44px;background:var(--accent);border-radius:50%}.ds-library-create:hover{background:var(--secondary)}.ds-library-create:focus-visible{outline:2px solid var(--ring);outline-offset:4px}"
     }
   ],
   "narrative": {
     "northStar": "Publishing production desk",
-    "overview": "A publishing production desk: calm, compact work surfaces with persistent navigation and clearly divided records. Forest navigation, warm neutral surfaces, and restrained green states support sustained scanning in light and dark themes.\n\nThis system applies only to administration, book management, and moderation. The public library and reading interface keep their incumbent visual system. Shared theme tokens and existing input controls are dependencies, not redesigned assets.",
+    "overview": "A publishing production desk: calm, compact work surfaces with persistent navigation and clearly divided records. Forest navigation, warm neutral surfaces, and restrained green states support sustained scanning in light and dark themes.\n\nThe publishing production desk applies to administration, book management, and moderation. The scoped **Reading gallery** applies to `/library`, `/library/archive`, and `/library/collections`: serif headings, real covers, readable titles, and flat sections help readers recognize and open saved books. Other public pages and the reading interface retain their incumbent styling. Shared theme tokens and existing input controls are dependencies, not redesigned assets.",
     "keyCharacteristics": [
       "Persistent navigation with stable state geometry.",
       "Flat, ruled records and cover-led book rows.",
       "Sans-serif dashboard hierarchy in both themes.",
-      "Existing controls, copy, and workflows preserved."
+      "Existing controls, copy, and workflows preserved.",
+      "Reader gallery with serif headings and fully wrapping book titles."
     ],
     "rules": [
       {
         "name": "The Semantic Theme Rule",
         "body": "Use the existing semantic CSS variables; the dashboard must adapt to the current theme without replacing global tokens.",
         "section": "colors"
+      },
+      {
+        "name": "The Gallery Scope Rule",
+        "body": "Apply gallery collection geometry only to library collections; profile collections retain their incumbent compact treatment.",
+        "section": "components"
       }
     ],
     "dos": [
       "Do use shared semantic theme variables so both themes stay coherent.",
       "Do distinguish record groups with rules and spacing.",
       "Do keep keyboard focus visible and allow long record names to wrap.",
-      "Do retain existing input controls and public-site styling."
+      "Do retain existing input controls and styling outside the approved surfaces.",
+      "Do preserve real covers, complete book titles, and visible gallery keyboard focus."
     ],
     "donts": [
       "Don't apply dashboard heading or layout overrides outside the dashboard shell.",
       "Don't turn working records into oversized floating tiles.",
-      "Don't move navigation geometry when a link becomes active."
+      "Don't move navigation geometry when a link becomes active.",
+      "Don't apply gallery collection overrides to profile collections."
     ]
   }
 }

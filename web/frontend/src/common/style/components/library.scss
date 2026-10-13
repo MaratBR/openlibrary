@@ -1,58 +1,137 @@
 .LibraryHeader {
-  > .OlContainer {
-    @apply flex flex-wrap gap-1 sm:gap-4;
-    min-width: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+
+  &-inner { padding-top: clamp(32px, 5vw, 64px); }
+  &-title {
+    font-family: var(--font-title);
+    font-size: clamp(2.25rem, 4vw, 3.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    font-weight: 500;
+    margin-bottom: 32px;
   }
-
+  &-tabs { display: flex; gap: clamp(20px, 4vw, 40px); }
   &-item {
-    @apply text-base sm:text-2xl md:text-3xl font-medium p-2 rounded-xl font-text;
-    min-width: 0;
-    overflow-wrap: anywhere;
-
-    &:not([aria-current="true"]) {
-      @apply transition-colors duration-75 hover:bg-primary/20 hover:text-primary active:bg-primary/15;
-    }
-
-    &[aria-current="true"] {
-      @apply underline;
-    }
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 8px 0 16px;
+    border-bottom: 2px solid transparent;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--secondary-foreground);
+    transition: color 140ms ease, border-color 140ms ease;
+    &[aria-current="page"] { color: var(--primary); border-color: var(--primary); }
+    &:hover { color: var(--primary); border-color: var(--border-strong); }
+    &:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
   }
 }
 
 .library-body {
-  @apply pb-10 space-y-12;
+  padding: clamp(28px, 4vw, 48px) 0 64px;
+  display: grid;
+  gap: 56px;
+  min-width: 0;
 }
 
 .LibrarySection {
-  @apply relative;
-
+  min-width: 0;
   &-header {
-    @apply text-2xl font-medium mb-4 whitespace-nowrap
-            2xl:absolute 2xl:right-full 2xl:text-right 2xl:py-2 2xl:px-3 2xl:rounded-full 2xl:bg-secondary 2xl:mr-4;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    h2 { font-family: var(--font-title); font-size: 1.6rem; font-weight: 500; }
+    &::after { content: ''; height: 1px; flex: 1; background: var(--border); }
   }
-
   &-books {
-    @apply lg:flex lg:gap-4 lg:items-start lg:flex-wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 32px 24px;
+    align-items: start;
+    > * { min-width: 0; }
   }
 }
 
+.LibraryBook {
+  display: block;
+  min-width: 0;
+  &-cover {
+    aspect-ratio: 2 / 3;
+    background: var(--secondary);
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
+    transition: box-shadow 180ms ease-out;
+    img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  }
+  &-title {
+    margin-top: 14px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  &:hover &-cover { box-shadow: 0 8px 18px rgb(0 0 0 / 20%); }
+  &:hover &-title { color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
+  &:focus-visible { outline: 2px solid var(--ring); outline-offset: 6px; border-radius: 3px; }
+}
+
+.LibraryCreate {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  width: 100%;
+  text-align: left;
+  color: var(--primary);
+  border-bottom: 1px solid var(--border);
+  &:hover { background: var(--secondary); }
+  &:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+  &-icon { display: grid; place-items: center; width: 44px; height: 44px; background: var(--accent); border-radius: 50%; }
+}
+.LibraryCollections { display: grid; gap: 40px; }
 .LibraryUserCollection {
   @apply bg-surface p-3 -mx-3 rounded-xl;
-
-  &-header {
-    @apply py-2 px-3 -mx-3 block rounded-lg active:bg-highlight;
+  &-header { @apply py-2 px-3 -mx-3 block rounded-lg active:bg-highlight; }
+  &-name { @apply text-2xl font-semibold; }
+  &-header:hover &-name { text-decoration: underline; text-underline-offset: 4px; }
+  &-header:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+  &-books {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+    img { width: 60px; height: 90px; object-fit: cover; border-radius: 3px; background: var(--secondary); }
+    a { display: block; }
+    a:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
   }
-
-  &-name {
-    @apply text-2xl font-semibold;
+  &--gallery {
+    min-width: 0;
+    padding: 0 0 32px;
+    margin: 0;
+    background: transparent;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border);
   }
-
-  &-header:hover &-name {
-    @apply underline underline-offset-2;
-    text-decoration-thickness: 0.1em;
+  &--gallery &-header { padding: 0; margin: 0 0 20px; }
+  &--gallery &-name { font-family: var(--font-title); font-size: 1.6rem; font-weight: 500; overflow-wrap: anywhere; }
+  &--gallery &-books {
+    gap: 16px;
+    img { width: 100px; height: 150px; }
   }
-
-  & ul {
-    @apply mt-2;
+}
+@media (max-width: 480px) {
+  .LibraryHeader {
+    &-title { margin-bottom: 20px; }
+    &-tabs { gap: 24px; }
+    &-item { font-size: 0.85rem; }
   }
+  .LibrarySection {
+    &-books { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .LibraryBook-cover, .LibraryHeader-item { transition: none; }
 }

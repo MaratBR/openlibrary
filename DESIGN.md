@@ -1,6 +1,6 @@
 ---
-name: OpenLibrary dashboards
-description: A restrained publishing production desk for library management.
+name: OpenLibrary
+description: A publishing production desk for managers and a reading gallery for readers.
 colors:
   primary: "#123f31"
   primary-dark: "#a5c4b5"
@@ -21,6 +21,25 @@ colors:
   border-strong: "#c8c0b1"
   border-strong-dark: "#50544e"
 typography:
+  library-display:
+    fontFamily: "Literata, Iowan Old Style, Palatino Linotype, Georgia, serif"
+    fontSize: "clamp(2.25rem, 4vw, 3.5rem)"
+    fontWeight: 500
+    lineHeight: 1.15
+    letterSpacing: "-0.03em"
+  library-section:
+    fontFamily: "Literata, Iowan Old Style, Palatino Linotype, Georgia, serif"
+    fontSize: "1.6rem"
+    fontWeight: 500
+  library-book-title:
+    fontFamily: "Poppins, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 500
+    lineHeight: 1.5
+  library-tab:
+    fontFamily: "Poppins, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.95rem"
+    fontWeight: 500
   headline:
     fontFamily: "Poppins, Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "2rem"
@@ -56,6 +75,30 @@ spacing:
   header: "28px"
   large: "40px"
 components:
+  library-header:
+    backgroundColor: "{colors.surface}"
+    typography: "{typography.library-display}"
+  library-tab:
+    textColor: "{colors.secondary-foreground}"
+    typography: "{typography.library-tab}"
+    padding: "8px 0 16px"
+  library-tab-current:
+    textColor: "{colors.primary}"
+    typography: "{typography.library-tab}"
+    padding: "8px 0 16px"
+  library-cover:
+    backgroundColor: "{colors.secondary}"
+    rounded: "{rounded.cover}"
+  library-book-title:
+    textColor: "{colors.foreground}"
+    typography: "{typography.library-book-title}"
+  library-create:
+    textColor: "{colors.primary}"
+    padding: "20px 0"
+  library-collection:
+    typography: "{typography.library-section}"
+    rounded: "{rounded.flat}"
+    padding: "0 0 32px"
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.primary-foreground}"
@@ -71,7 +114,7 @@ components:
     rounded: "{rounded.container}"
 ---
 
-# Design System: OpenLibrary dashboards
+# Design System: OpenLibrary
 
 ## Overview
 
@@ -79,7 +122,7 @@ components:
 
 A publishing production desk: calm, compact work surfaces with persistent navigation and clearly divided records. Forest navigation, warm neutral surfaces, and restrained green states support sustained scanning in light and dark themes.
 
-This system applies only to administration, book management, and moderation. The public library and reading interface keep their incumbent visual system. Shared theme tokens and existing input controls are dependencies, not redesigned assets.
+The publishing production desk applies to administration, book management, and moderation. The scoped **Reading gallery** applies to `/library`, `/library/archive`, and `/library/collections`: serif headings, real covers, readable titles, and flat sections help readers recognize and open saved books. Other public pages and the reading interface retain their incumbent styling. Shared theme tokens and existing input controls are dependencies, not redesigned assets.
 
 **Key Characteristics:**
 
@@ -87,6 +130,7 @@ This system applies only to administration, book management, and moderation. The
 - Flat, ruled records and cover-led book rows.
 - Sans-serif dashboard hierarchy in both themes.
 - Existing controls, copy, and workflows preserved.
+- Reader gallery with serif headings and fully wrapping book titles.
 
 ## Colors
 
@@ -104,9 +148,13 @@ The light rail mixes primary (92%) with foreground; the dark rail mixes surface 
 
 **The Semantic Theme Rule.** Use the existing semantic CSS variables; the dashboard must adapt to the current theme without replacing global tokens.
 
+The reading gallery uses the same semantic palette in both themes: surface for its header, secondary for cover wells, primary for active tabs and title hover, and border for section rules. It introduces no new color primitives.
+
 ## Typography
 
 Dashboard headings and text use the shared sans-serif stack from the frontmatter. Page headings use the headline role, book titles the title role, and navigation the label role. Mobile page headings reduce to (1.6rem); mobile book titles reduce to (1rem). Supporting text stays subordinate, with descriptions limited to (70ch) where implemented. Tables and record lists use tabular numerals.
+
+Library display and section roles use the existing Literata stack. Book titles and tabs use the shared sans-serif stack; mobile tabs reduce to (0.85rem). Titles wrap completely rather than clamp.
 
 ## Layout
 
@@ -114,13 +162,19 @@ Desktop navigation occupies a sticky left rail (248px), with brand above links a
 
 Content uses fluid horizontal padding `clamp(24px, 4vw, 64px)` and top padding (40px). Mobile content uses (20px) horizontal and (28px) top padding. Administration content caps at (1344px); book management and moderation at (1440px). Divided page headers precede ruled directories, horizontal book records, or moderation sections and tables.
 
+The reading gallery retains the public `OlContainer`. Header top padding is `clamp(32px, 5vw, 64px)`; body top padding is `clamp(28px, 4vw, 48px)` with (64px) below and (56px) between reading-status sections. Books use an auto-fill grid with a (150px) minimum column and (32px × 24px) gaps. At (480px) and below, two equal columns use (28px × 20px) gaps. Collections remain flat groups separated by (40px), with wrapping (100px × 150px) cover strips.
+
 ## Elevation & Depth
 
 Dashboard cards, record lists, and action bars are flat. Tonal surfaces and one-pixel rules establish grouping. Existing shared buttons and fields retain their incumbent small shadows and focus treatment; dropdown overlays retain their shared elevation. Do not remove those control affordances to enforce flatness.
 
+Library covers alone carry resting shadows (`0 4px 10px rgb(0 0 0 / 12%)`), deepening on hover (`0 8px 18px rgb(0 0 0 / 20%)`). Sections and collection groups remain flat. Cover shadow transitions use (180ms ease-out); tab transitions use (140ms ease). Reduced motion removes both transitions.
+
 ## Shapes
 
 Working records have square corners; contained sections use the container radius. Navigation and cover wells use the navigation radius; covers use the smaller cover radius. Existing control radii remain unchanged. Nested cards lose their outer frame and become divided sections.
+
+Library covers use a (2:3) aspect ratio and the cover radius. The collection-create icon has a circular (44px) accent well. Gallery collection groups have square corners and bottom rules.
 
 ## Components
 
@@ -144,6 +198,12 @@ Containers have no dashboard shadow. Nested containers become transparent, squar
 
 Administration directories and moderation records are full-width ruled rows. Book records place cover, identity, metadata, and actions in aligned columns; tablet and mobile move the footer below the text while retaining cover identity. Hover uses the shared surface; focus on linked records uses a two-pixel primary outline inset (2px).
 
+### Reading gallery
+
+Underlined tabs expose the current page with `aria-current="page"`; their minimum height is (48px). Book links combine covers and complete titles; hover deepens cover shadow and underlines the primary-colored title. Keyboard focus outlines the whole book with the shared ring, offset (6px). Collection headers underline on hover, and their links and cover links retain visible ring focus. The full-width create action reveals the existing labeled collection form and focuses its input. Existing preview and censorship wrappers remain attached to books.
+
+**The Gallery Scope Rule.** Apply gallery collection geometry only to library collections; profile collections retain their incumbent compact treatment.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -151,10 +211,12 @@ Administration directories and moderation records are full-width ruled rows. Boo
 - Do use shared semantic theme variables so both themes stay coherent.
 - Do distinguish record groups with rules and spacing.
 - Do keep keyboard focus visible and allow long record names to wrap.
-- Do retain existing input controls and public-site styling.
+- Do retain existing input controls and styling outside the approved surfaces.
+- Do preserve real covers, complete book titles, and visible gallery keyboard focus.
 
 ### Don't:
 
 - Don't apply dashboard heading or layout overrides outside the dashboard shell.
 - Don't turn working records into oversized floating tiles.
 - Don't move navigation geometry when a link becomes active.
+- Don't apply gallery collection overrides to profile collections.

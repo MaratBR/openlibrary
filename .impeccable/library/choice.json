@@ -1,0 +1,221 @@
+{
+  "title": "A cover-led library",
+  "question": "Choose the reading gallery, steer the direction, or ask for a fresh set. This covers My library, Archive, and Collections.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "The reading gallery",
+      "kicker": "THE ROLL",
+      "thesis": "Your books form a quiet exhibition, grouped by where you are in your reading.",
+      "palette": [
+        "#fffdf8",
+        "#2e342f",
+        "#123f31",
+        "#ddd7ca"
+      ],
+      "materials": [
+        "uncoated exhibition guide",
+        "crisp cover reproductions"
+      ],
+      "viewport": "A generous library title, compact tab navigation, and a ruled Reading heading above an evenly spaced cover wall.",
+      "risk": "More restrained than a playful bookshelf; covers must carry its character.",
+      "raised": [
+        {
+          "from": "Type specimen",
+          "raise": "Consistent scale and baseline alignment."
+        },
+        {
+          "from": "Record sleeve index",
+          "raise": "Strong grouping without floating card containers."
+        },
+        {
+          "from": "Monochrome product",
+          "raise": "Every section earns its space with actual content."
+        },
+        {
+          "from": "Character roster",
+          "raise": "Whole cover cells reflow cleanly at every width."
+        },
+        {
+          "from": "Star atlas",
+          "raise": "Clear anchors orient readers in long collections."
+        },
+        {
+          "from": "Terminal wayfinding",
+          "raise": "Unambiguous active navigation and repeated section cues."
+        }
+      ],
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          {
+            "label": "My library / Archive / Collections",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 2
+          },
+          {
+            "label": "Reading",
+            "x": 0,
+            "y": 2,
+            "w": 12,
+            "h": 1,
+            "accent": true
+          },
+          {
+            "label": "Cover gallery",
+            "x": 0,
+            "y": 3,
+            "w": 12,
+            "h": 6
+          },
+          {
+            "label": "Want to read",
+            "x": 0,
+            "y": 9,
+            "w": 12,
+            "h": 1
+          }
+        ]
+      },
+      "comp": ".impeccable/mocks/decision/library-gallery.webp"
+    },
+    {
+      "id": "variable-font-specimen",
+      "label": "Type specimen",
+      "verdict": "declined",
+      "thesis": "A precise specimen grid becomes a book-cover grid.",
+      "case": "Typography-led exploration competes with recognizing covers.",
+      "kept": "Consistent scale and baseline alignment.",
+      "palette": [
+        "#fafafa",
+        "#111111"
+      ],
+      "materials": [
+        "flat graphic surfaces"
+      ],
+      "viewport": "A precise specimen grid becomes a book-cover grid.",
+      "risk": "Typography-led exploration competes with recognizing covers.",
+      "hero": "https://impeccable.style/worlds/cards/variable-font-specimen-hero.webp"
+    },
+    {
+      "id": "brand-identity-canon-saville-catalog-sleeve",
+      "label": "Record sleeve index",
+      "verdict": "declined",
+      "thesis": "A numbered sleeve archive frames the saved books.",
+      "case": "Encoded labels obscure reading statuses and familiar titles.",
+      "kept": "Strong grouping without floating card containers.",
+      "palette": [
+        "#111111",
+        "#eeeeee"
+      ],
+      "materials": [
+        "flat graphic surfaces"
+      ],
+      "viewport": "A numbered sleeve archive frames the saved books.",
+      "risk": "Encoded labels obscure reading statuses and familiar titles.",
+      "hero": "https://impeccable.style/worlds/cards/brand-identity-canon-saville-catalog-sleeve-hero.webp"
+    },
+    {
+      "id": "digital-design-canon-monochrome-product-marketing",
+      "label": "Monochrome product",
+      "verdict": "declined",
+      "thesis": "Reading groups alternate clear labels with real books.",
+      "case": "Marketing pacing adds distance between books readers came to find.",
+      "kept": "Every section earns its space with actual content.",
+      "palette": [
+        "#fafafa",
+        "#222222"
+      ],
+      "materials": [
+        "flat graphic surfaces"
+      ],
+      "viewport": "Reading groups alternate clear labels with real books.",
+      "risk": "Marketing pacing adds distance between books readers came to find.",
+      "hero": "https://impeccable.style/worlds/cards/digital-design-canon-monochrome-product-marketing-hero.webp"
+    },
+    {
+      "id": "pop-culture-shelf-character-goods-catalog",
+      "label": "Character roster",
+      "verdict": "declined",
+      "thesis": "A finite portrait roster becomes a book collection.",
+      "case": "Pastel rank and character metadata misrepresent an unranked reading list.",
+      "kept": "Whole cover cells reflow cleanly at every width.",
+      "palette": [
+        "#ffe7ec",
+        "#d8e8fa"
+      ],
+      "materials": [
+        "flat graphic surfaces"
+      ],
+      "viewport": "A finite portrait roster becomes a book collection.",
+      "risk": "Pastel rank and character metadata misrepresent an unranked reading list.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-character-goods-catalog-hero.webp"
+    },
+    {
+      "id": "notation-diagram-systems-star-atlas",
+      "label": "Star atlas",
+      "verdict": "declined",
+      "thesis": "Reading groups become mapped clusters of covers.",
+      "case": "Spatial coordinates slow a straightforward browsing task.",
+      "kept": "Clear anchors orient readers in long collections.",
+      "palette": [
+        "#111c35",
+        "#f4eee0"
+      ],
+      "materials": [
+        "flat graphic surfaces"
+      ],
+      "viewport": "Reading groups become mapped clusters of covers.",
+      "risk": "Spatial coordinates slow a straightforward browsing task.",
+      "hero": "https://impeccable.style/worlds/cards/notation-diagram-systems-star-atlas-hero.webp"
+    },
+    {
+      "id": "wayfinding-cartography-signage-terminal-yellow-wayfinding",
+      "label": "Terminal wayfinding",
+      "verdict": "declined",
+      "thesis": "Status signs guide readers from shelf to shelf.",
+      "case": "Urgent travel signage overstates a relaxed reading task.",
+      "kept": "Unambiguous active navigation and repeated section cues.",
+      "palette": [
+        "#ffda00",
+        "#141414"
+      ],
+      "materials": [
+        "flat graphic surfaces"
+      ],
+      "viewport": "Status signs guide readers from shelf to shelf.",
+      "risk": "Urgent travel signage overstates a relaxed reading task.",
+      "hero": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-terminal-yellow-wayfinding-hero.webp"
+    }
+  ],
+  "reroll": {
+    "registers": [
+      "safer",
+      "bolder"
+    ]
+  },
+  "steer": true,
+  "canon": true,
+  "canonCard": {
+    "label": "A conventional bookshelf",
+    "thesis": "Familiar book tiles and standard tabs.",
+    "palette": [
+      "#fffdf8",
+      "#2e342f",
+      "#123f31"
+    ],
+    "materials": [
+      "flat cards"
+    ],
+    "viewport": "Title, tabs, and a regular cover grid.",
+    "risk": "Familiar by design, with less distinctive hierarchy.",
+    "comp": ".impeccable/mocks/decision/library-canon.webp"
+  },
+  "buildPath": {
+    "value": "code",
+    "toggle": true
+  }
+}

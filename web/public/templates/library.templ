@@ -17,11 +17,14 @@ templ Library(wantToRead, reading, paused []app.BookLibraryDto) {
             Title: l.T("library.title"),
         },
     }) {
-        <header class="Hero Hero--header LibraryHeader">
-            <div class="OlContainer flex gap-4">
-                @libraryTab(l.T("library.title"), "/library", true)
-                @libraryTab(l.T("library.archive"), "/library/archive", false)
-                @libraryTab(l.T("library.collections"), "/library/collections", false)
+        <header class="LibraryHeader">
+            <div class="OlContainer LibraryHeader-inner">
+                <h1 class="LibraryHeader-title">{l.T("library.title")}</h1>
+                <nav class="LibraryHeader-tabs" aria-label={l.T("library.title")}>
+                    @libraryTab(l.T("library.title"), "/library", true)
+                    @libraryTab(l.T("library.archive"), "/library/archive", false)
+                    @libraryTab(l.T("library.collections"), "/library/collections", false)
+                </nav>
             </div>
         </header>
         <main class="OlContainer">
@@ -56,7 +59,7 @@ templ libraryTab(
     active bool,
 ) {
     if active {
-        <a href="#" aria-current="true" class="LibraryHeader-item LibraryHeaderItem--active">{title}</a>
+        <a href={templ.SafeURL(url)} aria-current="page" class="LibraryHeader-item LibraryHeaderItem--active">{title}</a>
     } else {
         <a href={templ.SafeURL(url)} class="LibraryHeader-item">{title}</a>
     }
@@ -66,7 +69,7 @@ templ libraryTab(
 templ librarySection(label string, books []app.BookLibraryDto) {
     <section class="LibrarySection">
         <header class="LibrarySection-header">
-            { label }
+            <h2>{ label }</h2>
         </header>
         <div class="LibrarySection-books">
             for _, book := range books {
@@ -81,10 +84,10 @@ templ libraryBookCard(bookID int64, name string, cover app.BookCover) {
     @censoredContent(bookID) {
     <a 
         href={ templ.SafeURL(fmt.Sprintf("/book/%d?ol.from=library", bookID)) } 
-        class="ProfileBookCardSm" 
+        class="LibraryBook"
         data-book-card-preview={ fmt.Sprintf("%d", bookID) }>
-        @bookCover(cover.URL, name, 300)
-        <div class="ProfileBookCardSm-title">
+        <div class="LibraryBook-cover"><img src={cover.URL} alt="" loading="lazy" width="200" height="300" /></div>
+        <div class="LibraryBook-title">
             { name }
         </div>
     </a>
@@ -103,11 +106,14 @@ templ LibraryArchive(read, dnf []app.BookLibraryDto) {
             Title: l.T("library.title"),
         },
     }) {
-        <header class="Hero Hero--header LibraryHeader">
-            <div class="OlContainer flex gap-4">
-                @libraryTab(l.T("library.title"), "/library", false)
-                @libraryTab(l.T("library.archive"), "/library/archive", true)
-                @libraryTab(l.T("library.collections"), "/library/collections", false)
+        <header class="LibraryHeader">
+            <div class="OlContainer LibraryHeader-inner">
+                <h1 class="LibraryHeader-title">{l.T("library.archive")}</h1>
+                <nav class="LibraryHeader-tabs" aria-label={l.T("library.title")}>
+                    @libraryTab(l.T("library.title"), "/library", false)
+                    @libraryTab(l.T("library.archive"), "/library/archive", true)
+                    @libraryTab(l.T("library.collections"), "/library/collections", false)
+                </nav>
             </div>
         </header>
 
@@ -145,11 +151,14 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
             Title: l.T("library.title"),
         },
     }) {
-        <header class="Hero Hero--header LibraryHeader">
-            <div class="OlContainer flex gap-4">
-                @libraryTab(l.T("library.title"), "/library", false)
-                @libraryTab(l.T("library.archive"), "/library/archive", false)
-                @libraryTab(l.T("library.collections"), "/library/collections", true)
+        <header class="LibraryHeader">
+            <div class="OlContainer LibraryHeader-inner">
+                <h1 class="LibraryHeader-title">{l.T("library.collections")}</h1>
+                <nav class="LibraryHeader-tabs" aria-label={l.T("library.title")}>
+                    @libraryTab(l.T("library.title"), "/library", false)
+                    @libraryTab(l.T("library.archive"), "/library/archive", false)
+                    @libraryTab(l.T("library.collections"), "/library/collections", true)
+                </nav>
             </div>
         </header>
 
@@ -168,8 +177,8 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
                     <button 
                         x-show="!open" 
                         @click="open=true;$nextTick(()=>$refs.input.focus())" 
-                        class="flex items-center gap-4 h-18 hover:bg-highlight w-full transition-colors px-2 rounded-lg">
-                        <div class="bg-secondary text-2xl rounded-full size-16 flex items-center justify-center">
+                        class="LibraryCreate">
+                        <div class="LibraryCreate-icon">
                             <i class="fa-solid fa-plus"></i>
                         </div>
 
@@ -180,15 +189,17 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
 
                     <section class="bg-surface rounded-lg relative" x-cloak x-show="open">
                         <form method="post" class="m-2">
+                            <label for="library-collection-name" class="block px-6 pt-4 font-medium">{l.T("collection.namePlaceholder")}</label>
                             @csrf.CSRFInputTempl(ctx)
                             <input 
+                                id="library-collection-name"
                                 x-model="name"
                                 x-ref="input"
                                 @blur="if (!$event.target.value) open=false" 
                                 name="name" 
                                 required 
                                 maxlength="255"
-                                class="w-full block text-3xl px-6 h-18 font-medium !outline-none bg-transparent" 
+                                class="w-full block text-3xl px-6 h-18 font-medium focus-visible:outline-2 focus-visible:outline-primary bg-transparent"
                                 placeholder={l.T("collection.namePlaceholder")} />
                             <div x-collapse x-cloak x-show="name.trim().length>0">
                                 <button type="submit" class="Btn Btn--outline Btn--lg my-4">
@@ -205,7 +216,7 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
                             @pagination
                         </div>
                     }
-                    @collectionsList(result.Collections, booksMap)
+                    @collectionsList(result.Collections, booksMap, true)
                     if result.TotalPages > 1 {
                         <div class="mt-2">
                             @pagination
@@ -217,19 +228,19 @@ templ LibraryCollections(result app.GetUserCollectionsResult, booksMap map[int64
     }
 }
 
-templ collectionsList(collections []app.CollectionDto, booksMap map[int64][]app.CollectionBookDto) {
-    <ul class="space-y-2">
+templ collectionsList(collections []app.CollectionDto, booksMap map[int64][]app.CollectionBookDto, gallery bool) {
+    <ul class={templ.KV("LibraryCollections", gallery), templ.KV("space-y-2", !gallery)}>
         for _, col := range collections {
             {{
                 books, _ := booksMap[col.ID]
             }}
-            @libraryCollectionCard(col, books)
+            @libraryCollectionCard(col, books, gallery)
         }
     </ul>
 }
 
-templ libraryCollectionCard(collection app.CollectionDto, books []app.CollectionBookDto) {
-    <li class="LibraryUserCollection">
+templ libraryCollectionCard(collection app.CollectionDto, books []app.CollectionBookDto, gallery bool) {
+    <li class={"LibraryUserCollection", templ.KV("LibraryUserCollection--gallery", gallery)}>
         <a href={ templ.SafeURL(fmt.Sprintf("/col/%d", collection.ID)) } class="LibraryUserCollection-header">
             {{
                 name := collection.Name
@@ -250,12 +261,12 @@ templ libraryCollectionCard(collection app.CollectionDto, books []app.Collection
         </a>
 
         if len(books) > 0 {
-            <ul class="flex gap-1">
+            <ul class="LibraryUserCollection-books">
                 for _, book := range books {
                     <li>
                         @censoredContent(book.ID) {
                         <a href={ templ.SafeURL(fmt.Sprintf("/book/%d", book.ID)) }>
-                            <img src={ book.Cover.URL } class="rounded-r-md" style="height: 90px;" />
+                            <img src={ book.Cover.URL } alt={book.Name} loading="lazy" width="100" height="150" />
                         </a>
                         }
                     </li>

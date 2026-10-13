@@ -12,7 +12,7 @@ target-host = "localhost"
 target-protocol = "http"
 
 [init]
-create-default-users = true
+create-default-users = false
 import-predefined-tags = true
 import-predefined-tags-path = "./oldata/tags"
 
