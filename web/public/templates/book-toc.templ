@@ -25,7 +25,7 @@ templ BookTOC(
             </section>
         } else {
             <ol-scroll-blocker />
-            <div class="BookToc" role="listbox">
+            <div class="BookToc">
                 <ul class="contain-layout p-1 contain-paint">
                     for i, chapter := range chapters {
                         <li role="listitem" aria-label={ chapter.Name }>
@@ -46,7 +46,7 @@ templ BookTOC(
                                     }
                                 </div>
                                 <div>
-                                    <div class="mb-1">
+                                    <div class="BookToc-title">
                                         { chapter.Name }
                                     </div>
                                     <span class="text-sm text-secondary-foreground">
@@ -56,6 +56,7 @@ templ BookTOC(
                                         }) }
                                     </span>
                                 </div>
+                                <i class="BookToc-arrow fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </a>
 
                             // if chapter.Summary != "" {

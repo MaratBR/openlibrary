@@ -77,31 +77,38 @@ templ BookPage(
             @serverData(map[string]any{
                 "bookId": fmt.Sprintf("%d", book.ID),
             })
-            <div class="BookPage-left">
-                <div class="BookPage-cover">
-                    if book.Cover.URL != "" {
-                        @bookCover(book.Cover.URL, book.Name, 300)
-                    } else {
-                        <div class="BookPage-coverFallback">{book.Name}</div>
-                    }
+            <header class="BookPage-header">
+                <div class="BookPage-heading">
+                    <h1 class="BookPage-title">{book.Name}</h1>
+                    @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), Class: "Btn Btn--ghost Btn--icon", IconOnly: true})
                 </div>
-                @bookReadingList(&book, readingListStatus)
-            </div>
+                <div class="BookPage-byline">
+                    <a class="BookPage-author Link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
+                    @bookRating(&book, views)
+                </div>
+            </header>
+            <aside class="BookPage-left" aria-label={l.T("book.details")}>
+                <div class="BookPage-coverWell">
+                    <div class="BookPage-cover">
+                        if book.Cover.URL != "" {
+                            @bookCover(book.Cover.URL, book.Name, 300)
+                        } else {
+                            <div class="BookPage-coverFallback">{book.Name}</div>
+                        }
+                    </div>
+                </div>
+                <div class="BookPage-readingActions">
+                    if book.FirstChapterID.Valid {
+                        <a class="Btn Btn--primary BookPage-startReading" href={templ.SafeURL(publicBookURL(ctx, fmt.Sprintf("/book/%d/chapters/%d", book.ID, book.FirstChapterID.Value), book.AdminOverride))}>
+                            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                            <span>{l.T("readingList.startReading")}</span>
+                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    }
+                    @bookReadingList(&book, readingListStatus)
+                </div>
+            </aside>
             <div class="BookPage-right">
-                <header class="PageHeader">
-                    <div class="PageHeader-body">
-                        <h1 class="PageHeader-title">{book.Name}</h1>
-                        <p class="PageHeader-meta">
-                            <a class="Link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
-                        </p>
-                    </div>
-                    <div class="PageHeader-actions">
-                        @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), Class: "Btn Btn--ghost Btn--icon", IconOnly: true})
-                    </div>
-                </header>
-
-                @bookRating(&book, views)
-
                 <main class="contents" id="slot-book-page">
                     <section class="BookPage-details" aria-label={l.T("book.details")}>
                         <div class="BookPage-metadata">
@@ -222,7 +229,7 @@ templ bookRating(book *app.BookDetailsDto, views analytics.MetricValue) {
     {{ l := i18n.GetLocalizer(ctx) }}
     <div id="rating-card" class="BookPage-ratingCard">
         <div class="BookPage-ratingSummary">
-            @starRating(book.Rating.Value, 0.34)
+            @starRating(book.Rating.Value, 0.18)
             <span class="BookPage-ratingValue">{fmt.Sprintf("%.1f", book.Rating.Value)}</span>
             <span class="BookPage-ratingScale">/ 10</span>
         </div>

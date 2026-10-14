@@ -99,6 +99,13 @@ func TestBookPagePanelsAndOptionalContent(t *testing.T) {
 					t.Errorf("missing %s", expected)
 				}
 			}
+			if current.FirstChapterID.Valid {
+				if !strings.Contains(html, `/book/6707299548257058898/chapters/1`) || !strings.Contains(html, `BookPage-startReading`) {
+					t.Fatal("first chapter action missing")
+				}
+			} else if strings.Contains(html, `BookPage-startReading`) {
+				t.Fatal("first chapter action rendered without a chapter")
+			}
 			if scenario != "populated" && !strings.Contains(html, `BookPage-coverFallback`) {
 				t.Fatal("missing cover fallback")
 			}

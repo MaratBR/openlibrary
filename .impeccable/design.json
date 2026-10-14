@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-13T15:25:14.995726+00:00",
+  "generatedAt": "2026-10-14T16:37:46.991844+00:00",
   "title": "Design System: OpenLibrary",
   "extensions": {
     "colorMeta": {
@@ -281,6 +281,14 @@
       "library-tab": {
         "displayName": "Library Tab",
         "purpose": "Library navigation; 0.85rem on mobile."
+      },
+      "book-display": {
+        "displayName": "Book detail masthead",
+        "purpose": "Scoped literary dossier title; responsive phone clamp begins at 2rem."
+      },
+      "book-summary": {
+        "displayName": "Book summary",
+        "purpose": "Book detail summary; 0.9375rem on mobile, 1.85 line height."
       }
     },
     "shadows": [
@@ -313,6 +321,16 @@
         "name": "library-cover-hover",
         "value": "0 8px 18px rgb(0 0 0 / 20%)",
         "purpose": "Saved book cover hover."
+      },
+      {
+        "name": "book-detail-cover",
+        "value": "4px 8px 12px rgb(0 0 0 / 12%), 12px 20px 30px rgb(0 0 0 / 14%)",
+        "purpose": "Scoped book detail cover material."
+      },
+      {
+        "name": "book-detail-spine",
+        "value": "inset 5px 0 8px rgb(0 0 0 / 18%)",
+        "purpose": "Scoped book detail cover spine."
       }
     ],
     "motion": [
@@ -330,6 +348,11 @@
         "name": "library-cover",
         "value": "180ms ease-out",
         "purpose": "Cover shadow feedback; disabled with reduced motion."
+      },
+      {
+        "name": "book-chapter",
+        "value": "180ms ease-out",
+        "purpose": "Chapter background feedback; disabled with reduced motion."
       }
     ],
     "breakpoints": [
@@ -344,6 +367,18 @@
       {
         "name": "library-mobile-max",
         "value": "480px"
+      },
+      {
+        "name": "book-compact-max",
+        "value": "1000px"
+      },
+      {
+        "name": "book-mobile-max",
+        "value": "767px"
+      },
+      {
+        "name": "book-narrow-max",
+        "value": "359px"
       }
     ]
   },
@@ -427,17 +462,26 @@
       "description": "Full-width library action that reveals the collection form.",
       "html": "<button class=\"ds-library-create\"><span class=\"ds-library-plus\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 2v12M2 8h12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg></span>Create collection</button>",
       "css": ".ds-library-create{display:flex;align-items:center;gap:16px;padding:20px 0;width:100%;text-align:left;color:var(--primary);background:transparent;border:0;border-bottom:1px solid var(--border);font-family:var(--font-text);font-size:1.125rem;font-weight:500}.ds-library-plus{display:grid;place-items:center;width:44px;height:44px;background:var(--accent);border-radius:50%}.ds-library-create:hover{background:var(--secondary)}.ds-library-create:focus-visible{outline:2px solid var(--ring);outline-offset:4px}"
+    },
+    {
+      "name": "Book chapter record",
+      "kind": "custom",
+      "refersTo": "book-chapter",
+      "description": "Single sequential chapter row in the literary dossier.",
+      "html": "<a class=\"ds-book-chapter\" href=\"#chapter\"><span>01</span><span>Chapter title</span><span aria-hidden=\"true\">\u2192</span></a>",
+      "css": ".ds-book-chapter{display:grid;grid-template-columns:36px minmax(0,1fr) 20px;align-items:center;gap:12px;min-height:88px;padding:18px 8px;border-bottom:1px solid var(--border);color:var(--foreground);font-family:var(--font-text);font-size:.9375rem;text-decoration:none;transition:background 180ms ease-out}.ds-book-chapter:hover{background:var(--secondary)}.ds-book-chapter:focus-visible{outline:2px solid var(--ring);outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-book-chapter{transition:none}}"
     }
   ],
   "narrative": {
     "northStar": "Publishing production desk",
-    "overview": "A publishing production desk: calm, compact work surfaces with persistent navigation and clearly divided records. Forest navigation, warm neutral surfaces, and restrained green states support sustained scanning in light and dark themes.\n\nThe publishing production desk applies to administration, book management, and moderation. The scoped **Reading gallery** applies to `/library`, `/library/archive`, and `/library/collections`: serif headings, real covers, readable titles, and flat sections help readers recognize and open saved books. Other public pages and the reading interface retain their incumbent styling. Shared theme tokens and existing input controls are dependencies, not redesigned assets.",
+    "overview": "A publishing production desk: calm, compact work surfaces with persistent navigation and clearly divided records. Forest navigation, warm neutral surfaces, and restrained green states support sustained scanning in light and dark themes.\n\nThe publishing production desk applies to administration, book management, and moderation. The scoped **Reading gallery** applies to `/library`, `/library/archive`, and `/library/collections`: serif headings, real covers, readable titles, and flat sections help readers recognize and open saved books. The scoped **Literary dossier** applies to public book detail routes (`/book/:slug`): a cover shelf and serif masthead lead into flat metadata and sequential chapters. Other public pages and the reading interface retain their incumbent styling. Shared theme tokens and existing input controls are dependencies, not redesigned assets.",
     "keyCharacteristics": [
       "Persistent navigation with stable state geometry.",
       "Flat, ruled records and cover-led book rows.",
       "Sans-serif dashboard hierarchy in both themes.",
       "Existing controls, copy, and workflows preserved.",
-      "Reader gallery with serif headings and fully wrapping book titles."
+      "Reader gallery with serif headings and fully wrapping book titles.",
+      "Book detail dossier with a cover shelf, direct reading action, and sequential chapter records."
     ],
     "rules": [
       {
@@ -448,6 +492,11 @@
       {
         "name": "The Gallery Scope Rule",
         "body": "Apply gallery collection geometry only to library collections; profile collections retain their incumbent compact treatment.",
+        "section": "components"
+      },
+      {
+        "name": "The Dossier Scope Rule",
+        "body": "Apply book masthead, cover, and chapter geometry only to public book detail and its table of contents; preserve global navigation, theme, search results, and the reading interface.",
         "section": "components"
       }
     ],

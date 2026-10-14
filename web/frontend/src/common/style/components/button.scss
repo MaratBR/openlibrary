@@ -169,12 +169,16 @@
     @apply rounded-l-none;
   }
 
-  & > .Btn:not(:last-child)::after {
-    content: ' ';
-    @apply block border-r-1 absolute border-current/30;
-    top: 0%;
-    bottom: 0%;
-    right: 0;
+  & > .Btn:not(:last-child) {
+    @apply relative;
+
+    &::after {
+      content: ' ';
+      @apply block border-r-1 absolute border-current/30;
+      top: 0%;
+      bottom: 0%;
+      right: 0;
+    }
   }
 
   &--roundedMd {
