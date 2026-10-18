@@ -138,7 +138,10 @@ export function NotificationsMenu() {
         >
           <header className="NotificationMenu-header">
             <h2 id={titleId}>{t('title')}</h2>
-            <Popover.Close className="HeaderPopover-close" aria-label={t('close')}>
+            <Popover.Close
+              className="HeaderPopover-close NotificationMenu-close"
+              aria-label={t('close')}
+            >
               <svg
                 width="20"
                 height="20"

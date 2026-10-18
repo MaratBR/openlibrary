@@ -53,37 +53,41 @@ function UserMenuBody({ hiddenLinks = [] }: { hiddenLinks?: UserMenuLink[] }) {
   return (
     <div className="UserMenu-body">
       <div className="UserMenu-identity">
-        <img className="avatar UserMenu-avatar" src={user.avatar.md} alt="" />
         <div className="UserMenu-account">
           <div className="UserMenu-name">{user.name}</div>
           {user.email && <div className="UserMenu-email">{user.email}</div>}
         </div>
+        <img className="avatar UserMenu-avatar" src={user.avatar.md} alt="" />
       </div>
 
-      <ul className="UserMenu-items">
+      <ul className="UserMenu-shortcuts">
         <MenuItem icon="fa-solid fa-user" href={`/users/${user.id}`}>
           {window._('common.profile')}
         </MenuItem>
         <MenuItem icon="fa-solid fa-gear" href="/account/settings">
           {window._('common.settings')}
         </MenuItem>
-        {showWorkspaces && <li className="UserMenu-separator" aria-hidden="true" />}
-        {visible('bookManager', '/books-manager') && (
-          <MenuItem icon="fa-solid fa-book-open" href="/books-manager">
-            {window._('common.bookManager')}
-          </MenuItem>
-        )}
-        {isModerator && visible('moderation', '/moderation') && (
-          <MenuItem icon="fa-solid fa-shield" href="/moderation/">
-            {window._('common.moderationPortal')}
-          </MenuItem>
-        )}
-        {isAdmin && visible('admin', '/admin') && (
-          <MenuItem icon="fa-solid fa-shield-halved" href="/admin">
-            {window._('common.adminDashboard')}
-          </MenuItem>
-        )}
-        <li className="UserMenu-separator" aria-hidden="true" />
+      </ul>
+      {showWorkspaces && (
+        <ul className="UserMenu-items">
+          {visible('bookManager', '/books-manager') && (
+            <MenuItem icon="fa-solid fa-book-open" href="/books-manager">
+              {window._('common.bookManager')}
+            </MenuItem>
+          )}
+          {isModerator && visible('moderation', '/moderation') && (
+            <MenuItem icon="fa-solid fa-shield" href="/moderation/">
+              {window._('common.moderationPortal')}
+            </MenuItem>
+          )}
+          {isAdmin && visible('admin', '/admin') && (
+            <MenuItem icon="fa-solid fa-shield-halved" href="/admin">
+              {window._('common.adminDashboard')}
+            </MenuItem>
+          )}
+        </ul>
+      )}
+      <ul className="UserMenu-footer">
         <MenuItem icon="fa-solid fa-right-from-bracket" href="/logout" logout>
           {window._('common.logout')}
         </MenuItem>

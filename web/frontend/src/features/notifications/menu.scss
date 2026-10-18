@@ -1,6 +1,7 @@
 .NotificationMenu {
   display: flex;
   flex-direction: column;
+  outline: none;
   height: min(560px, var(--radix-popover-content-available-height));
 
   &-trigger {
@@ -26,12 +27,27 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 16px 16px 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid color-mix(in srgb, var(--primary-foreground) 18%, var(--primary));
+    background: var(--primary);
+    color: var(--primary-foreground);
   }
   &-header h2 {
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 600;
+    color: inherit;
+    font-family: var(--font-title);
+    font-size: 1.6rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+  }
+  &-close {
+    color: var(--primary-foreground);
+    &:hover {
+      background: color-mix(in srgb, var(--primary-foreground) 12%, var(--primary));
+      color: var(--primary-foreground);
+    }
+    &:focus-visible {
+      outline-color: var(--primary-foreground);
+    }
   }
   &-body {
     min-height: 0;
@@ -83,6 +99,7 @@
     display: block;
     flex-shrink: 0;
     border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--secondary) 45%, var(--surface));
     text-align: center;
     width: 100%;
     padding: 16px;
