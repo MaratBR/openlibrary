@@ -356,6 +356,9 @@ function commentReportConfig(targetId: string, authenticated: boolean): ReportBu
     authenticated,
     label: window._('common.report'),
     labels: {
+      excerpt: window._('report.excerpt'),
+      selectionHint: window._('report.selectionHint'),
+      submitting: window._('report.submitting'),
       title: window._('report.title'),
       reason: window._('report.reason'),
       description: window._('report.description'),

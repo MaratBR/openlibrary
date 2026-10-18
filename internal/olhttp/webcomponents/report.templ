@@ -35,6 +35,8 @@ templ ReportButton(props ReportButtonProps) {
             "authenticated": authenticated,
             "triggerId": triggerID,
             "labels": map[string]string{
+                "excerpt": l.T("report.excerpt"), "selectionHint": l.T("report.selectionHint"),
+                "submitting": l.T("report.submitting"),
                 "title": l.T("report.title"), "reason": l.T("report.reason"),
                 "description": l.T("report.description"), "submit": l.T("report.submit"),
                 "cancel": l.T("common.cancel"), "success": l.T("report.success"),

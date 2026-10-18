@@ -1,0 +1,145 @@
+.ReportDialog {
+  --dialog-width: 560px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  box-shadow: var(--shadow-md);
+
+  &-form {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 32px);
+    min-height: 0;
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px;
+    flex-shrink: 0;
+    background: var(--primary);
+    color: var(--primary-foreground);
+
+    h2 {
+      font-family: var(--font-title);
+      font-size: 2rem;
+      line-height: 1.25;
+      font-weight: 500;
+      color: inherit;
+    }
+
+    button {
+      flex-shrink: 0;
+      min-width: 44px;
+      min-height: 44px;
+    }
+  }
+
+  &-close {
+    color: inherit;
+    background: transparent;
+
+    &:hover {
+      background: color-mix(in srgb, var(--primary-foreground) 12%, var(--primary));
+    }
+
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: -4px;
+    }
+  }
+
+  &-body {
+    display: grid;
+    gap: 24px;
+    padding: 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+    scrollbar-color: var(--border-strong) var(--surface);
+  }
+
+  &-selection {
+    h3 {
+      margin: 0 0 10px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    blockquote {
+      margin: 0;
+      padding: 16px 20px;
+      background: var(--secondary);
+      border-radius: var(--radius);
+      font-family: var(--font-book);
+      font-size: 1rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      max-height: min(28dvh, 240px);
+      overflow-y: auto;
+    }
+  }
+
+  &-hint {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--secondary-foreground);
+  }
+
+  &-field {
+    display: grid;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      font-size: 1rem;
+      font-weight: 400;
+      resize: vertical;
+    }
+  }
+
+  &-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--secondary) 45%, var(--surface));
+    flex-shrink: 0;
+
+    button {
+      min-height: 44px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    &.Dialog {
+      width: 100%;
+      max-width: 100%;
+      margin: auto 0 0;
+      padding: 0;
+      border-radius: 16px 16px 0 0;
+    }
+
+    &-header {
+      padding: 20px;
+    }
+
+    &-body {
+      padding: 20px;
+    }
+
+    &-actions {
+      flex-direction: column-reverse;
+      gap: 8px;
+      padding: 16px 20px max(16px, env(safe-area-inset-bottom));
+    }
+  }
+}

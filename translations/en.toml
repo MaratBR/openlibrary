@@ -44,6 +44,9 @@ logout = "Logout"
 close = "Close"
 
 [report]
+excerpt = "Selected passage"
+selectionHint = "To include a passage, close this dialog and highlight the text before reporting."
+submitting = "Submitting…"
 title = "Report content"
 reason = "Reason"
 description = "Tell us what is wrong"

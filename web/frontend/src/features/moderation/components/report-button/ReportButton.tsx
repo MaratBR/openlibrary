@@ -1,6 +1,7 @@
 import type { ReactIslandProps } from '@/islands/common/react-island'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
-import { FormEvent, MouseEvent, useEffect, useRef, useState } from 'react'
+import { FormEvent, MouseEvent, useEffect, useId, useRef, useState } from 'react'
+import './report-dialog.scss'
 
 export type ReportButtonConfig = {
   targetType: 'user' | 'book' | 'comment'
@@ -14,6 +15,9 @@ export type ReportButtonConfig = {
   triggerId?: string
   labels: {
     title: string
+    excerpt: string
+    selectionHint: string
+    submitting: string
     reason: string
     description: string
     submit: string
@@ -25,32 +29,36 @@ export type ReportButtonConfig = {
 export function ReportButtonIsland({ data }: ReactIslandProps) {
   const config = data as ReportButtonConfig
   const [open, setOpen] = useState(false)
-  const excerpt = useRef('')
+  const [excerpt, setExcerpt] = useState('')
+  const pendingSelection = useRef<string | null>(null)
 
   useEffect(() => {
     const trigger = config.triggerId ? document.getElementById(config.triggerId) : null
     if (!trigger) return
+    const readSelection = () => window.getSelection()?.toString().trim().slice(0, 2000) || ''
+    // Pointer focus can collapse the selection before the click is dispatched.
+    const capture = () => {
+      pendingSelection.current = config.captureSelection ? readSelection() : ''
+    }
     const show = () => {
       if (!config.authenticated) {
         location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`
         return
       }
-      excerpt.current = config.captureSelection
-        ? window.getSelection()?.toString().trim().slice(0, 2000) || ''
-        : ''
+      setExcerpt(config.captureSelection ? (pendingSelection.current ?? readSelection()) : '')
+      pendingSelection.current = null
       setOpen(true)
     }
+    trigger.addEventListener('pointerdown', capture)
     trigger.addEventListener('click', show)
-    return () => trigger.removeEventListener('click', show)
+    return () => {
+      trigger.removeEventListener('pointerdown', capture)
+      trigger.removeEventListener('click', show)
+    }
   }, [config])
 
   return (
-    <ReportPopup
-      config={config}
-      open={open}
-      excerpt={excerpt.current}
-      onClose={() => setOpen(false)}
-    />
+    <ReportPopup config={config} open={open} excerpt={excerpt} onClose={() => setOpen(false)} />
   )
 }
 
@@ -65,6 +73,9 @@ export function ReportPopup({
   excerpt: string
   onClose: () => void
 }) {
+  const titleId = useId()
+  const reasonId = useId()
+  const excerptId = useId()
   const [submitting, setSubmitting] = useState(false)
   const [reasons, setReasons] = useState<string[]>([])
   const [reason, setReason] = useState('')
@@ -131,46 +142,62 @@ export function ReportPopup({
   }
 
   return open ? (
-    <dialog ref={setDialog} className="Modal" onCancel={close} onClick={backdropClick}>
-      <form className="Modal-content grid gap-4" onSubmit={submit}>
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="font-title text-2xl font-semibold">{config.labels.title}</h2>
+    <dialog
+      ref={setDialog}
+      className="Dialog ReportDialog"
+      aria-labelledby={titleId}
+      onCancel={close}
+      onClick={backdropClick}
+    >
+      <form className="ReportDialog-form" onSubmit={submit} aria-busy={submitting}>
+        <header className="ReportDialog-header">
+          <h2 id={titleId}>{config.labels.title}</h2>
           <button
             type="button"
-            className="Btn Btn--icon Btn--ghost"
+            className="Btn Btn--icon ReportDialog-close"
             aria-label={config.labels.cancel}
             onClick={close}
           >
-            <i className="fa-solid fa-xmark" />
+            <i className="fa-solid fa-xmark" aria-hidden="true" />
           </button>
+        </header>
+        <div className="ReportDialog-body">
+          {excerpt ? (
+            <section className="ReportDialog-selection" aria-labelledby={excerptId}>
+              <h3 id={excerptId}>{config.labels.excerpt}</h3>
+              <blockquote>{excerpt}</blockquote>
+            </section>
+          ) : config.captureSelection ? (
+            <p className="ReportDialog-hint">{config.labels.selectionHint}</p>
+          ) : null}
+          <div className="ReportDialog-field">
+            <label id={reasonId}>{config.labels.reason}</label>
+            <Select value={reason} onValueChange={setReason} disabled={!reasons.length}>
+              <SelectTrigger className="w-full" aria-labelledby={reasonId}>
+                <SelectValue placeholder={config.labels.reason} />
+              </SelectTrigger>
+              <SelectContent portalContainer={dialog}>
+                {reasons.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <label className="ReportDialog-field">
+            <span>{config.labels.description}</span>
+            <textarea className="textarea" name="description" rows={4} maxLength={2000} />
+          </label>
         </div>
-        <label className="grid gap-2">
-          <span className="font-medium">{config.labels.reason}</span>
-          <Select value={reason} onValueChange={setReason}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent portalContainer={dialog}>
-              {reasons.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </label>
-        <label className="grid gap-2">
-          <span className="font-medium">{config.labels.description}</span>
-          <textarea className="textarea min-h-28" name="description" maxLength={2000} />
-        </label>
-        <div className="flex justify-end gap-2">
+        <footer className="ReportDialog-actions">
           <button type="button" className="Btn Btn--outline" onClick={close}>
             {config.labels.cancel}
           </button>
           <button className="Btn Btn--primary" type="submit" disabled={submitting || !reason}>
-            {config.labels.submit}
+            {submitting ? config.labels.submitting : config.labels.submit}
           </button>
-        </div>
+        </footer>
       </form>
     </dialog>
   ) : null
