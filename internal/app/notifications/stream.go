@@ -17,6 +17,9 @@ type Event struct {
 	Type      string    `json:"type"`
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
+	Category  string    `json:"category"`
+	Urgent    bool      `json:"urgent"`
+	Icon      *Icon     `json:"icon,omitempty"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
@@ -31,7 +34,7 @@ func (s *StreamReader) Read(ctx context.Context, userID uuid.UUID, after int64) 
 	}
 	events := make([]Event, 0, len(rows))
 	for _, row := range rows {
-		events = append(events, Event{ID: row.ID, Key: row.Key, Type: row.Type, Title: row.Title, Content: row.Content, CreatedAt: row.CreatedAt.Time})
+		events = append(events, eventFromRow(row))
 	}
 	return events, nil
 }
@@ -43,9 +46,26 @@ func (s *StreamReader) History(ctx context.Context, userID uuid.UUID, before int
 	}
 	events := make([]Event, 0, len(rows))
 	for _, row := range rows {
-		events = append(events, Event{ID: row.ID, Key: row.Key, Type: row.Type, Title: row.Title, Content: row.Content, CreatedAt: row.CreatedAt.Time})
+		events = append(events, eventFromRow(row))
 	}
 	return events, nil
+}
+
+func eventFromRow(row store.Notification) Event {
+	// Historical metadata may contain non-string values; ignore unknown values.
+	var raw map[string]json.RawMessage
+	_ = json.Unmarshal(row.Metadata, &raw)
+	data := make(map[string]string, len(raw))
+	for key, value := range raw {
+		var text string
+		if json.Unmarshal(value, &text) == nil {
+			data[key] = text
+		}
+	}
+	category, urgent, icon := presentation(data)
+	return Event{ID: row.ID, Key: row.Key, Type: row.Type, Title: row.Title,
+		Content: SanitizeContent(row.Content), CreatedAt: row.CreatedAt.Time,
+		Category: category, Urgent: urgent, Icon: icon}
 }
 
 // Name and Poll adapt notification persistence to the shared user event stream.

@@ -2,6 +2,7 @@ package notifications
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"uuid"
@@ -14,7 +15,7 @@ var ErrInvalidSend = errors.New("invalid notification")
 
 // Send persists a notification for a user or a snapshot of all users with a role.
 // One INSERT statement makes role broadcasts atomic.
-func (s *StreamReader) Send(ctx context.Context, userID, role, title, content string) (int64, error) {
+func (s *StreamReader) Send(ctx context.Context, userID, role, title, content string, options ...Options) (int64, error) {
 	if (userID == "") == (role == "") {
 		return 0, fmt.Errorf("%w: choose exactly one recipient or role", ErrInvalidSend)
 	}
@@ -27,7 +28,26 @@ func (s *StreamReader) Send(ctx context.Context, userID, role, title, content st
 	if err := validateContent(content); err != nil {
 		return 0, fmt.Errorf("%w: %v", ErrInvalidSend, err)
 	}
-	params := store.Notification_SendParams{Key: newGenericNotificationKey(), Title: title, Content: content}
+	option := Options{}
+	if len(options) > 0 {
+		option = options[0]
+	}
+	if option.Type == "" {
+		option.Type = DefaultType
+	}
+	if err := validateType(option.Type); err != nil {
+		return 0, fmt.Errorf("%w: %v", ErrInvalidSend, err)
+	}
+	metadata, err := option.metadata()
+	if err != nil {
+		return 0, fmt.Errorf("%w: %v", ErrInvalidSend, err)
+	}
+	raw, err := json.Marshal(metadata)
+	if err != nil {
+		return 0, err
+	}
+	params := store.Notification_SendParams{Key: newGenericNotificationKey(), Title: title,
+		Content: SanitizeContent(content), Type: option.Type, Metadata: raw}
 	if userID != "" {
 		id, err := uuid.Parse(userID)
 		if err != nil {

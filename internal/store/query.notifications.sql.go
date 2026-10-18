@@ -90,6 +90,25 @@ func (q *Queries) Notification_History(ctx context.Context, arg Notification_His
 	return items, nil
 }
 
+const notification_MarkRead = `-- name: Notification_MarkRead :exec
+insert into user_data (user_id, key, data)
+values ($1, 'notifications:last-read-at',
+        to_jsonb(least($2::timestamptz, statement_timestamp())))
+on conflict (key, user_id) do update
+set data = to_jsonb(greatest((user_data.data #>> '{}')::timestamptz,
+                           (excluded.data #>> '{}')::timestamptz))
+`
+
+type Notification_MarkReadParams struct {
+	UserID      pgtype.UUID
+	ReadThrough pgtype.Timestamptz
+}
+
+func (q *Queries) Notification_MarkRead(ctx context.Context, arg Notification_MarkReadParams) error {
+	_, err := q.db.Exec(ctx, notification_MarkRead, arg.UserID, arg.ReadThrough)
+	return err
+}
+
 const notification_Query = `-- name: Notification_Query :many
 select id, key, user_id, created_at, type, title, content, metadata
 from notifications
@@ -220,16 +239,18 @@ func (q *Queries) Notification_QueryBefore(ctx context.Context, arg Notification
 
 const notification_Send = `-- name: Notification_Send :execrows
 insert into notifications (key, user_id, created_at, "type", title, content, metadata)
-select $1, users.id, now(), 'info', $2, $3, '{}'::jsonb
+select $1, users.id, now(), $2, $3, $4, $5
 from users
-where ($4::uuid is not null and users.id = $4::uuid)
-   or ($5::text is not null and users.role::text = $5::text)
+where ($6::uuid is not null and users.id = $6::uuid)
+   or ($7::text is not null and users.role::text = $7::text)
 `
 
 type Notification_SendParams struct {
 	Key           string
+	Type          string
 	Title         string
 	Content       string
+	Metadata      []byte
 	RecipientID   pgtype.UUID
 	RecipientRole pgtype.Text
 }
@@ -237,8 +258,10 @@ type Notification_SendParams struct {
 func (q *Queries) Notification_Send(ctx context.Context, arg Notification_SendParams) (int64, error) {
 	result, err := q.db.Exec(ctx, notification_Send,
 		arg.Key,
+		arg.Type,
 		arg.Title,
 		arg.Content,
+		arg.Metadata,
 		arg.RecipientID,
 		arg.RecipientRole,
 	)
@@ -246,6 +269,31 @@ func (q *Queries) Notification_Send(ctx context.Context, arg Notification_SendPa
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const notification_Status = `-- name: Notification_Status :one
+select
+    (select count(*) from notifications n
+     where n.user_id = $1
+       and n.created_at > coalesce((select (data #>> '{}')::timestamptz from user_data
+                                   where user_id = $1 and key = 'notifications:last-read-at'), '-infinity'::timestamptz)
+       and n.created_at <= statement_timestamp())::bigint as unread_count,
+    (select (data #>> '{}')::timestamptz from user_data
+     where user_id = $1 and key = 'notifications:last-read-at')::timestamptz as last_read_at,
+    statement_timestamp()::timestamptz as observed_at
+`
+
+type Notification_StatusRow struct {
+	UnreadCount int64
+	LastReadAt  pgtype.Timestamptz
+	ObservedAt  pgtype.Timestamptz
+}
+
+func (q *Queries) Notification_Status(ctx context.Context, userID pgtype.UUID) (Notification_StatusRow, error) {
+	row := q.db.QueryRow(ctx, notification_Status, userID)
+	var i Notification_StatusRow
+	err := row.Scan(&i.UnreadCount, &i.LastReadAt, &i.ObservedAt)
+	return i, err
 }
 
 const notification_Stream = `-- name: Notification_Stream :many
@@ -296,7 +344,8 @@ on conflict (user_id, key) do update set
     created_at = EXCLUDED.created_at,
     content = EXCLUDED.content,
     metadata = EXCLUDED.metadata,
-    title = EXCLUDED.title
+    title = EXCLUDED.title,
+    "type" = EXCLUDED."type"
 returning id
 `
 

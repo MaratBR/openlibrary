@@ -1,10 +1,11 @@
 package notifications
 
 import (
+	"encoding/json"
+	"fmt"
+	"strconv"
 	"strings"
 	"uuid"
-
-	"encoding/json"
 )
 
 type builder struct {
@@ -34,19 +35,25 @@ func (b *builder) Data(key, value string) *builder {
 	return b
 }
 
+func (b *builder) Type(value string) *builder {
+	b.notificationType = value
+	return b
+}
+
+func (b *builder) Category(value string) *builder  { return b.Data("category", value) }
+func (b *builder) Urgent(value bool) *builder      { return b.Data("urgent", strconv.FormatBool(value)) }
+func (b *builder) IconEmoji(emoji string) *builder { return b.icon(IconEmoji, emoji) }
+
 func (b *builder) IconImg(url string) *builder {
-	return b.icon(0, url)
+	return b.icon(IconImage, url)
 }
 
 func (b *builder) IconFontAwesome(classes string) *builder {
-	return b.icon(1, classes)
+	return b.icon(IconFontAwesome, classes)
 }
 
 func (b *builder) icon(kind byte, payload string) *builder {
-	data, _ := json.Marshal(struct {
-		Type    byte   `json:"type"`
-		Payload string `json:"payload"`
-	}{kind, payload})
+	data, _ := json.Marshal(Icon{Type: kind, Payload: payload})
 	return b.Data(dataKeyIcon, string(data))
 }
 
@@ -61,6 +68,16 @@ func (b builder) Build() (Notification, error) {
 		notificationType = DefaultType
 	}
 
+	var icon *Icon
+	if raw, ok := b.data[dataKeyIcon]; ok {
+		icon = &Icon{}
+		if err := json.Unmarshal([]byte(raw), icon); err != nil {
+			return Notification{}, err
+		}
+	}
+	if _, err := (Options{Category: b.data["category"], Icon: icon}).metadata(); err != nil {
+		return Notification{}, fmt.Errorf("%w: %v", ErrInvalidSend, err)
+	}
 	return newNotification(
 		key,
 		notificationType,

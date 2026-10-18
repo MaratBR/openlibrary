@@ -70,15 +70,15 @@ func TestSendRecipientRules(t *testing.T) {
 	count, err := NewStreamReader(db).Send(context.Background(), "", "moderator", "Title", "Body")
 	require.NoError(t, err)
 	require.EqualValues(t, 2, count)
-	require.False(t, db.args[3].(pgtype.UUID).Valid)
-	require.Equal(t, "moderator", db.args[4].(pgtype.Text).String)
+	require.False(t, db.args[5].(pgtype.UUID).Valid)
+	require.Equal(t, "moderator", db.args[6].(pgtype.Text).String)
 	// PostgreSQL cannot compare its user_role enum directly with a text parameter.
-	require.Contains(t, db.query, "users.role::text = $5::text")
+	require.Contains(t, db.query, "users.role::text = $7::text")
 	count, err = NewStreamReader(db).Send(context.Background(), id, "", "Title", "Body")
 	require.NoError(t, err)
 	require.EqualValues(t, 2, count)
-	require.True(t, db.args[3].(pgtype.UUID).Valid)
-	require.False(t, db.args[4].(pgtype.Text).Valid)
+	require.True(t, db.args[5].(pgtype.UUID).Valid)
+	require.False(t, db.args[6].(pgtype.Text).Valid)
 }
 
 type emptyNotificationRows struct{ pgx.Rows }

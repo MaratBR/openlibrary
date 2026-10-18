@@ -1,6 +1,7 @@
 package notifications
 
 import (
+	"maps"
 	"regexp"
 	"time"
 	"unicode/utf8"
@@ -44,6 +45,21 @@ func (n Notification) UserID() uuid.UUID {
 	return n.userID
 }
 
+func (n Notification) Category() string {
+	category, _, _ := presentation(n.Data)
+	return category
+}
+
+func (n Notification) Urgent() bool {
+	_, urgent, _ := presentation(n.Data)
+	return urgent
+}
+
+func (n Notification) Icon() *Icon {
+	_, _, icon := presentation(n.Data)
+	return icon
+}
+
 func newNotification(key, notificationType, content, title string, userID uuid.UUID, data map[string]string) (Notification, error) {
 	if err := validateKey(key); err != nil {
 		return Notification{}, err
@@ -68,9 +84,9 @@ func newNotification(key, notificationType, content, title string, userID uuid.U
 	return Notification{
 		key:              key,
 		notificationType: notificationType,
-		Content:          content,
+		Content:          SanitizeContent(content),
 		Title:            title,
-		Data:             data,
+		Data:             maps.Clone(data),
 		userID:           userID,
 		CreatedAt:        time.Now(),
 	}, nil
@@ -97,8 +113,8 @@ func validateType(notificationType string) error {
 		return InvalidNotificationType.New("type cannot be empty")
 	}
 
-	if !regexAlphanumeric.Match([]byte(notificationType)) {
-		return InvalidNotificationType.New("%s", "type must match "+regexAlphanumeric.String())
+	if utf8.RuneCountInString(notificationType) > 100 {
+		return InvalidNotificationType.New("type is too long")
 	}
 
 	return nil

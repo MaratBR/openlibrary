@@ -29,7 +29,7 @@ func (s *sqlStore) Add(ctx context.Context, notification Notification) error {
 		UserID:    store.PgtypeUUID(notification.UserID()),
 		Metadata:  metadata,
 		Type:      notification.Type(),
-		Content:   notification.Content,
+		Content:   SanitizeContent(notification.Content),
 		Title:     notification.Title,
 		CreatedAt: pgtype.Timestamptz{Valid: true, Time: notification.CreatedAt},
 	})

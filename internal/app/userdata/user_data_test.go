@@ -32,3 +32,13 @@ func TestUserDataSizeLimitCannotBeBypassed(t *testing.T) {
 		t.Fatalf("expected size limit error, got %v", err)
 	}
 }
+
+func TestNotificationReadStateCannotBeChangedThroughGenericUserData(t *testing.T) {
+	service := &userDataService{}
+	err := service.Set(context.Background(), SetUserDataQuery{
+		Key: "notifications:last-read-at", Data: json.RawMessage(`"2099-01-01T00:00:00Z"`),
+	})
+	if !errors.Is(err, ErrUserDataKeyNotAllowed) {
+		t.Fatalf("expected private notification read state to be rejected, got %v", err)
+	}
+}
