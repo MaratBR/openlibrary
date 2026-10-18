@@ -1,9 +1,14 @@
 # Spec-driven development
 
-Use a spec for new features and substantial changes to existing behavior. A
-small fix with an obvious expected result does not need one. The spec captures
-what users and other callers should observe; implementation details belong in
-the plan.
+Use this workflow only for end-to-end feature implementation or when the user
+explicitly requests spec-based development, as required by the root
+[AGENTS.md](../../AGENTS.md). End-to-end work delivers a complete feature
+across the application layers it needs, from entry point to observable outcome.
+Bug fixes, refactors, isolated component or layer changes, documentation, and
+tooling work do not require a spec unless explicitly requested.
+
+The spec captures what users and other callers should observe; implementation
+details belong in the plan.
 
 ## Start a feature
 
