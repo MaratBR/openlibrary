@@ -121,7 +121,7 @@ func (q *Queries) Moderation_CountUserLoginHistory(ctx context.Context, arg Mode
 }
 
 const moderation_GetChapter = `-- name: Moderation_GetChapter :one
-select id, name, book_id, content, content_updated_at, "order", created_at, updated_at, words, summary, fonts, is_publicly_visible from book_chapters where id = $1
+select id, name, book_id, content, content_updated_at, "order", created_at, updated_at, words, summary, fonts, is_publicly_visible from book_chapters where id = $1 for update
 `
 
 func (q *Queries) Moderation_GetChapter(ctx context.Context, id int64) (BookChapter, error) {
@@ -233,6 +233,62 @@ func (q *Queries) Moderation_GetUserLoginHistory(ctx context.Context, userID pgt
 		return nil, err
 	}
 	return items, nil
+}
+
+const moderation_LockComment = `-- name: Moderation_LockComment :one
+select id, chapter_id, user_id, content, created_at, updated_at, deleted_at, parent_id, subcomments, likes, likes_recalculated_at from comments where id = $1 for update
+`
+
+func (q *Queries) Moderation_LockComment(ctx context.Context, id int64) (Comment, error) {
+	row := q.db.QueryRow(ctx, moderation_LockComment, id)
+	var i Comment
+	err := row.Scan(
+		&i.ID,
+		&i.ChapterID,
+		&i.UserID,
+		&i.Content,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.ParentID,
+		&i.Subcomments,
+		&i.Likes,
+		&i.LikesRecalculatedAt,
+	)
+	return i, err
+}
+
+const moderation_LockUser = `-- name: Moderation_LockUser :one
+select id, name, email, email_verified, joined_at, password_hash, role, is_banned, avatar_file, about, gender, profile_css, enable_profile_css, default_theme, privacy_hide_stats, privacy_hide_comments, privacy_hide_email, privacy_allow_searching, show_adult_content, censored_tags, censored_tags_mode from users where id = $1 for update
+`
+
+func (q *Queries) Moderation_LockUser(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, moderation_LockUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.EmailVerified,
+		&i.JoinedAt,
+		&i.PasswordHash,
+		&i.Role,
+		&i.IsBanned,
+		&i.AvatarFile,
+		&i.About,
+		&i.Gender,
+		&i.ProfileCss,
+		&i.EnableProfileCss,
+		&i.DefaultTheme,
+		&i.PrivacyHideStats,
+		&i.PrivacyHideComments,
+		&i.PrivacyHideEmail,
+		&i.PrivacyAllowSearching,
+		&i.ShowAdultContent,
+		&i.CensoredTags,
+		&i.CensoredTagsMode,
+	)
+	return i, err
 }
 
 const moderation_RenameUser = `-- name: Moderation_RenameUser :exec

@@ -321,6 +321,43 @@ export interface ModerationBooksPageResponse {
   total: number;
 }
 
+/** Generated from `internal/app/moderation_investigation.go`. */
+export interface ModerationContentEntry {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: Nullable<string>;
+  visible: boolean;
+  bookId: string;
+  bookName: string;
+  authorId: string;
+  authorName: string;
+  chapterId: string;
+  chapterName: string;
+  parentId: string;
+  content: string;
+  replies: Array<string>;
+}
+
+/** Generated from `internal/app/moderation_investigation.go`. */
+export interface ModerationContentPage {
+  entries: Array<ModerationContentEntry>;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
+}
+
+/** Generated from `internal/app/moderation_investigation.go`. */
+export interface ModerationOverview {
+  unreviewed: number;
+  escalated: number;
+  resolved: number;
+  oldestPending: Nullable<string>;
+  triageAvailable: boolean;
+  notificationsAvailable: boolean;
+}
+
 /** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationReasonRequest {
   reason: string;
@@ -328,6 +365,8 @@ export interface ModerationReasonRequest {
 
 /** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationReportActivityResponse {
+  oldPriority: string;
+  newPriority: string;
   time: string;
   actor: string;
   description: string;
@@ -373,6 +412,7 @@ export interface ModerationReportCommentContextResponse {
 
 /** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationReportDecisionRequest {
+  operationId: string;
   disposition: string;
   action: string;
   policyReason: string;
@@ -383,6 +423,7 @@ export interface ModerationReportDecisionRequest {
 
 /** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationReportDetailResponse {
+  bookChapterId: string;
   id: string;
   number: string;
   time: string;
@@ -403,6 +444,8 @@ export interface ModerationReportDetailResponse {
 
 /** Generated from `web/public/routes_moderation_api.go`. */
 export interface ModerationReportListEntryResponse {
+  status: string;
+  priority: string;
   id: string;
   number: string;
   time: string;
@@ -412,6 +455,13 @@ export interface ModerationReportListEntryResponse {
   targetId: string;
   reason: string;
   description: string;
+}
+
+/** Generated from `web/public/routes_moderation_investigation.go`. */
+export interface ModerationReportNoteRequest {
+  note: string;
+  priority: string;
+  reason: string;
 }
 
 /** Generated from `web/public/routes_moderation_api.go`. */

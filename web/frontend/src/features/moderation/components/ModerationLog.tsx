@@ -17,6 +17,11 @@ type PayloadRenderer = (payload: unknown) => ReactNode
 
 // Action-specific payload renderers can be registered here as audit payload schemas evolve.
 const payloadRenderers: Record<string, PayloadRenderer> = {
+  report_decision: (payload) => <PayloadFields payload={payload} />,
+  report_note: (payload) => <PayloadFields payload={payload} />,
+  report_priority_changed: (payload) => <PayloadFields payload={payload} />,
+  rename_user: (payload) => <PayloadFields payload={payload} />,
+  change_user_about: (payload) => <PayloadFields payload={payload} />,
   rename: (payload) => <PayloadFields payload={payload} />,
   change_about: (payload) => <PayloadFields payload={payload} />,
   change_summary: (payload) => <PayloadFields payload={payload} />,
@@ -94,6 +99,7 @@ export function ModerationLogEntry({
 
 function TargetLink({ type, id }: { type: string; id: string }) {
   const routes: Record<string, string> = {
+    report: `/reports/${id}`,
     user: `/users/${id}`,
     book: `/books/${id}`,
     chapter: `/chapters/${id}`,

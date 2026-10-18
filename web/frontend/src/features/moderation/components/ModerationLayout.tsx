@@ -1,5 +1,5 @@
 import { DashboardNavItem } from '@/components/dashboard-nav-item'
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 import { NavLink } from 'react-router'
 
 const navigation = [
@@ -16,6 +16,16 @@ const navigation = [
     label: 'moderationPortal.loginHistory',
   },
   { to: '/audit-log', icon: 'fa-solid fa-clipboard-list', label: 'moderationPortal.auditLog' },
+  {
+    to: '/triage',
+    icon: 'fa-solid fa-diagram-project',
+    label: 'moderationPortal.workspace.triage',
+  },
+  {
+    to: '/notifications',
+    icon: 'fa-solid fa-bell',
+    label: 'moderationPortal.workspace.notifications',
+  },
 ] as const
 
 export default function ModerationLayout({
@@ -25,6 +35,7 @@ export default function ModerationLayout({
   children: ReactNode
   isAdmin: boolean
 }) {
+  const [navigationOpen, setNavigationOpen] = useState(false)
   return (
     <div className="Moderation DashboardShell">
       <aside className="DashboardShell-sidebar">
@@ -38,7 +49,20 @@ export default function ModerationLayout({
             </span>
           </NavLink>
         </header>
-        <nav className="DashboardShell-nav" aria-label={window._('moderationPortal.title')}>
+        <button
+          className="Btn Btn--rail Btn--outline md:hidden"
+          aria-expanded={navigationOpen}
+          aria-controls="moderation-navigation"
+          onClick={() => setNavigationOpen(!navigationOpen)}
+        >
+          {window._('moderationPortal.workspace.navigation')}
+        </button>
+        <nav
+          id="moderation-navigation"
+          onClick={() => setNavigationOpen(false)}
+          className={`DashboardShell-nav ${navigationOpen ? '' : 'hidden md:block'}`}
+          aria-label={window._('moderationPortal.title')}
+        >
           {navigation.map((item) => (
             <DashboardNavItem dashboard="moderation" key={item.to} to={item.to}>
               <i className={item.icon} aria-hidden="true" />

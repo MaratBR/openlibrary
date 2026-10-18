@@ -1,3 +1,4 @@
+import { t } from './workspace/ui'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'
 import { Pagination } from '@/components/Pagination'
@@ -206,7 +207,15 @@ function Actions({ book }: { book: ModerationBook }) {
     run: () => Promise<unknown>,
     destructive = false,
     onSuccess?: () => void,
-  ) => setConfirmation({ title, description, run, destructive, onSuccess })
+  ) =>
+    setConfirmation({
+      title,
+      description: `${book.name} · ${book.id}. ${description}`,
+      run,
+      destructive,
+      onSuccess,
+    })
+  if (book.isPermanentlyRemoved) return <p className="Notice">{t('permanentlyRemoved')}</p>
   let form: ReactNode
   if (action === 'rating')
     form = (
@@ -263,7 +272,32 @@ function Actions({ book }: { book: ModerationBook }) {
         }
       />
     )
-  else
+  else if (action === 'shadow' || action === 'permanent') {
+    const command =
+      action === 'permanent'
+        ? 'permanent-remove'
+        : book.isShadowBanned
+          ? 'unshadow-ban'
+          : 'shadow-ban'
+    form = (
+      <ModerationReasonActionCard
+        title={t(command)}
+        description={t(`${command}Description`)}
+        submitLabel={t(command)}
+        reasonLabel={t('reason')}
+        destructive={command !== 'unshadow-ban'}
+        onSubmit={(reason, onSuccess) =>
+          request(
+            t(command),
+            t(`${command}Description`),
+            () => performBookModerationAction(book.id, command, reason),
+            command !== 'unshadow-ban',
+            onSuccess,
+          )
+        }
+      />
+    )
+  } else
     form = (
       <ModerationReasonActionCard
         title={
@@ -311,6 +345,8 @@ function Actions({ book }: { book: ModerationBook }) {
             : window._('moderationPortal.book.ban'),
         },
         { value: 'summary', label: window._('moderationPortal.book.changeSummary') },
+        { value: 'shadow', label: t(book.isShadowBanned ? 'unshadow-ban' : 'shadow-ban') },
+        { value: 'permanent', label: t('permanent-remove') },
       ]}
       selectLabel={window._('moderationPortal.book.selectAction')}
       selectId="moderation-book-action"

@@ -22,7 +22,7 @@ function watchExternalPlugin(options: { paths?: string[] } = {}): Plugin {
   }
 }
 
-function minifyLibraryPlugin(enabled: boolean): Plugin {
+function minifyChunksPlugin(enabled: boolean): Plugin {
   return {
     name: 'minify-library',
     renderChunk: {
@@ -47,10 +47,9 @@ const ENTRIES = [
   'block-editor',
 
   // admin stuff
-  'admin-common',
   'admin-alpinejs',
 
-  // moderation
+  // Legacy server-rendered moderation pages still need a stylesheet entry.
   'mod',
 
   // global public API (remove?)
@@ -71,12 +70,10 @@ const ENTRIES = [
   'islands/admin',
 ]
 
-const ENTRY_PATHS: Partial<Record<(typeof ENTRIES)[number], string>> = {
-  mod: 'features/moderation/styles',
-}
-
 export default defineConfig((env) => ({
   cacheDir: '.vite',
+  // Assets are served below /_/assets; resolve lazy CSS relative to its JS module.
+  base: './',
   define: {
     'process.env.NODE_ENV': JSON.stringify(env.mode),
   },
@@ -94,9 +91,8 @@ export default defineConfig((env) => ({
 
     react({}),
 
-    // Vite deliberately preserves whitespace in ES library builds, even with
-    // build.minify enabled. Run a final minification pass for production mode.
-    minifyLibraryPlugin(env.mode === 'production'),
+    // Minify production chunks after other render transforms.
+    minifyChunksPlugin(env.mode === 'production'),
   ],
 
   resolve: {
@@ -108,6 +104,14 @@ export default defineConfig((env) => ({
   build: {
     minify: env.mode === 'production' ? 'esbuild' : false,
     rollupOptions: {
+      // Keep island exports while using Vite's automatic CSS loading for imports.
+      preserveEntrySignatures: 'strict',
+      input: Object.fromEntries(
+        ENTRIES.map((entry) => [
+          entry,
+          resolve(__dirname, 'web/frontend/src', entry === 'mod' ? 'features/moderation/styles' : entry, 'index.ts'),
+        ]),
+      ),
       output: {
         chunkFileNames: 'chunks/[hash].js',
         // Put chunk styles at <output>/assets
@@ -125,16 +129,6 @@ export default defineConfig((env) => ({
       },
     },
     cssCodeSplit: true,
-    lib: {
-      name: 'ol-public-ui',
-      formats: ['es'],
-      entry: Object.fromEntries(
-        ENTRIES.map((entry) => [
-          entry,
-          resolve(__dirname, 'web/frontend/src', ENTRY_PATHS[entry] ?? entry, 'index.ts'),
-        ]),
-      ),
-    },
     sourcemap: SOURCEMAP,
   },
 }))

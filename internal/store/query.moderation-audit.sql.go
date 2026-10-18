@@ -13,11 +13,32 @@ import (
 
 const moderation_CountAuditLog = `-- name: Moderation_CountAuditLog :one
 select count(*) from moderation_logs
-where $1::text = '' or target_type = $1
+where ($1::text = '' or target_type = $1)
+  and ($2::text = '' or target_id = $2)
+  and ($3::text = '' or actor_user_id::text = $3)
+  and ($4::text = '' or type = $4)
+  and ($5::timestamptz is null or time >= $5)
+  and ($6::timestamptz is null or time < $6)
 `
 
-func (q *Queries) Moderation_CountAuditLog(ctx context.Context, targetType string) (int64, error) {
-	row := q.db.QueryRow(ctx, moderation_CountAuditLog, targetType)
+type Moderation_CountAuditLogParams struct {
+	TargetType string
+	TargetID   string
+	ActorID    string
+	Action     string
+	DateFrom   pgtype.Timestamptz
+	DateTo     pgtype.Timestamptz
+}
+
+func (q *Queries) Moderation_CountAuditLog(ctx context.Context, arg Moderation_CountAuditLogParams) (int64, error) {
+	row := q.db.QueryRow(ctx, moderation_CountAuditLog,
+		arg.TargetType,
+		arg.TargetID,
+		arg.ActorID,
+		arg.Action,
+		arg.DateFrom,
+		arg.DateTo,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -27,13 +48,23 @@ const moderation_GetAuditLog = `-- name: Moderation_GetAuditLog :many
 select moderation_logs.id, moderation_logs.time, moderation_logs.type, moderation_logs.target_type, moderation_logs.target_id, moderation_logs.payload, moderation_logs.actor_user_id, moderation_logs.reason, users.name as actor_user_name
 from moderation_logs
 left join users on users.id = moderation_logs.actor_user_id
-where $1::text = '' or moderation_logs.target_type = $1
+where ($1::text = '' or moderation_logs.target_type = $1)
+  and ($2::text = '' or target_id = $2)
+  and ($3::text = '' or actor_user_id::text = $3)
+  and ($4::text = '' or type = $4)
+  and ($5::timestamptz is null or time >= $5)
+  and ($6::timestamptz is null or time < $6)
 order by moderation_logs.time desc, moderation_logs.id desc
-limit $3 offset $2
+limit $8 offset $7
 `
 
 type Moderation_GetAuditLogParams struct {
 	TargetType string
+	TargetID   string
+	ActorID    string
+	Action     string
+	DateFrom   pgtype.Timestamptz
+	DateTo     pgtype.Timestamptz
 	PageOffset int32
 	PageLimit  int32
 }
@@ -51,7 +82,16 @@ type Moderation_GetAuditLogRow struct {
 }
 
 func (q *Queries) Moderation_GetAuditLog(ctx context.Context, arg Moderation_GetAuditLogParams) ([]Moderation_GetAuditLogRow, error) {
-	rows, err := q.db.Query(ctx, moderation_GetAuditLog, arg.TargetType, arg.PageOffset, arg.PageLimit)
+	rows, err := q.db.Query(ctx, moderation_GetAuditLog,
+		arg.TargetType,
+		arg.TargetID,
+		arg.ActorID,
+		arg.Action,
+		arg.DateFrom,
+		arg.DateTo,
+		arg.PageOffset,
+		arg.PageLimit,
+	)
 	if err != nil {
 		return nil, err
 	}

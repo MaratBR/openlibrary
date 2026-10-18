@@ -1,6 +1,6 @@
 # Feature: Complete moderation portal
 
-Status: DRAFT FOR REVIEW. Requirements below are proposed, not yet agreed.
+Status: IMPLEMENTING. Core scope authorized on 2026-10-18; triage and notifications are extension contracts only.
 Audit: [audit.md](audit.md). Plan: [plan.md](plan.md). Progress: [tasks.md](tasks.md).
 
 ## Problem and outcome
@@ -139,27 +139,16 @@ Historical demo-record cleanup requires provenance and a separately reviewed pla
   rules and race/failure regressions have focused tests, and end-to-end core
   scenarios pass against isolated fixtures.
 
-## Open questions — resolve before behavior-changing implementation
+## Implementation decisions — 2026-10-18
 
-1. Is this core release the agreed finish line? In particular, independent notes
-   and priority editing are proposed additions; claiming/assignment, bulk actions
-   and reopening are deferred. Which deferred capability is required for launch?
-2. Should moderators be allowed to act on administrator/system/moderator accounts
-   or themselves? Current role checks are broad. Agree the actor/target action
-   matrix before changing permissions; recommended default is to reserve staff
-   account enforcement for administrators and reject self-enforcement.
-3. Confirm default queue ordering and existing priority labels. This draft proposes
-   highest priority then oldest submission; no automatic SLA or priority scoring.
-4. Is “request changes” acceptable as a recorded resolution with delivery marked
-   unavailable, or must the release include real author communication? The latter
-   expands scope to a notification channel, delivery state, and retry policy.
-5. Existing report evidence cannot reconstruct past full content. Is honest live
-   context plus saved excerpts sufficient for core, or are submission snapshots
-   and actual revision comparisons required? Likewise, core proposes unknown
-   location rather than choosing a paid geolocation provider.
+The request to complete remaining portal features authorizes the core above.
+Preserve existing moderator/admin permissions; do not introduce a new staff role
+hierarchy in this release. Default queues use priority then oldest. Request changes
+records a resolution; notification delivery remains unavailable. Saved excerpts
+and current context are sufficient; unavailable revision history is explicit.
 
-## Review decision
-
-Pending. Record agreed scope and answers here, then align plan/tasks. An elapsed
-wait or an unchecked task is not approval. No application implementation is
-included in this audit/spec change.
+Triage (automatic assignment) and notifications are added as capability contracts
+and clearly unavailable portal surfaces. No scheduler, assignment algorithm,
+notification sender, polling, SSE or WebSocket transport is implemented. Manual
+report review remains available. UI uses reusable controls and semantic classes,
+with UnoCSS for local composition.

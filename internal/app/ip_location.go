@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"math/rand/v2"
 )
 
 type IPLocation struct {
@@ -17,18 +16,9 @@ type IPLocationService interface {
 
 type placeholderIPLocationService struct{}
 
-var placeholderIPLocations = []IPLocation{
-	{Country: "United States", Region: "California", City: "San Francisco"},
-	{Country: "Germany", Region: "Berlin", City: "Berlin"},
-	{Country: "Japan", Region: "Tokyo", City: "Tokyo"},
-	{Country: "Brazil", Region: "São Paulo", City: "São Paulo"},
-	{Country: "Australia", Region: "New South Wales", City: "Sydney"},
-	{Country: "Canada", Region: "Ontario", City: "Toronto"},
-}
-
 func (placeholderIPLocationService) Locate(context.Context, string) (IPLocation, error) {
-	// TODO: Replace placeholder data with a real IP geolocation provider.
-	return placeholderIPLocations[rand.IntN(len(placeholderIPLocations))], nil
+	// No verified provider is configured. Never manufacture location evidence.
+	return IPLocation{}, nil
 }
 
 func NewIPLocationService() IPLocationService { return placeholderIPLocationService{} }

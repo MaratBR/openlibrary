@@ -19,9 +19,11 @@ type ModerationAuditLogEntry struct {
 }
 
 type ModerationAuditLogQuery struct {
-	ActorUserID    uuid.UUID
-	TargetType     string
-	Page, PageSize uint32
+	ActorUserID                     uuid.UUID
+	TargetType                      string
+	TargetID, FilterActorID, Action string
+	DateFrom, DateTo                Nullable[time.Time]
+	Page, PageSize                  uint32
 }
 type ModerationAuditLogService interface {
 	GetAuditLog(context.Context, ModerationAuditLogQuery) (ModerationPage[ModerationAuditLogEntry], error)
@@ -36,12 +38,15 @@ func (s *moderationAuditLogService) GetAuditLog(ctx context.Context, query Moder
 	if err := s.auth.AuthorizeModerator(ctx, query.ActorUserID); err != nil {
 		return ModerationPage[ModerationAuditLogEntry]{}, err
 	}
+	if query.DateFrom.Valid && query.DateTo.Valid && !query.DateFrom.Value.Before(query.DateTo.Value) {
+		return ModerationPage[ModerationAuditLogEntry]{}, ErrModerationFilter
+	}
 	page, size, limit, offset := normalizeModerationPage(query.Page, query.PageSize)
-	total, err := s.queries.Moderation_CountAuditLog(ctx, query.TargetType)
+	total, err := s.queries.Moderation_CountAuditLog(ctx, store.Moderation_CountAuditLogParams{TargetType: query.TargetType, TargetID: query.TargetID, ActorID: query.FilterActorID, Action: query.Action, DateFrom: loginHistoryTime(query.DateFrom), DateTo: loginHistoryTime(query.DateTo)})
 	if err != nil {
 		return ModerationPage[ModerationAuditLogEntry]{}, apperror.WrapUnexpectedDBError(err)
 	}
-	rows, err := s.queries.Moderation_GetAuditLog(ctx, store.Moderation_GetAuditLogParams{TargetType: query.TargetType, PageLimit: limit, PageOffset: offset})
+	rows, err := s.queries.Moderation_GetAuditLog(ctx, store.Moderation_GetAuditLogParams{TargetType: query.TargetType, TargetID: query.TargetID, ActorID: query.FilterActorID, Action: query.Action, DateFrom: loginHistoryTime(query.DateFrom), DateTo: loginHistoryTime(query.DateTo), PageLimit: limit, PageOffset: offset})
 	if err != nil {
 		return ModerationPage[ModerationAuditLogEntry]{}, apperror.WrapUnexpectedDBError(err)
 	}

@@ -74,12 +74,25 @@ from reports
 join users on users.id = reports.reporter_user_id
 where
     (sqlc.arg('search')::text = ''
+        or reports.id::text = sqlc.arg('search')
         or reports.number ilike '%' || sqlc.arg('search') || '%'
         or reports.reason ilike '%' || sqlc.arg('search') || '%'
         or reports.description ilike '%' || sqlc.arg('search') || '%'
         or reports.target_id ilike '%' || sqlc.arg('search') || '%')
     and (sqlc.arg('target_type')::text = '' or reports.target_type = sqlc.arg('target_type'))
-order by reports."time" desc, reports.id desc
+    and (sqlc.arg('target_id')::text = '' or reports.target_id = sqlc.arg('target_id'))
+    and (sqlc.arg('chapter_id')::text = '' or reports.book_chapter_id::text = sqlc.arg('chapter_id'))
+    and (sqlc.arg('status')::text = 'all' or reports.status = sqlc.arg('status')
+         or (sqlc.arg('status') = 'pending' and reports.status in ('unreviewed', 'escalated')))
+    and (sqlc.arg('priority')::text = '' or reports.priority = sqlc.arg('priority'))
+    and (sqlc.narg('date_from')::timestamptz is null or reports.time >= sqlc.narg('date_from'))
+    and (sqlc.narg('date_to')::timestamptz is null or reports.time < sqlc.narg('date_to'))
+order by
+    case when sqlc.arg('sort')::text = 'priority' then
+      case reports.priority when 'critical' then 0 when 'high' then 1 when 'medium' then 2 else 3 end end,
+    case when sqlc.arg('sort') = 'newest' then reports.time end desc,
+    case when sqlc.arg('sort') <> 'newest' then reports.time end asc,
+    reports.id asc
 limit sqlc.arg('page_limit') offset sqlc.arg('page_offset');
 
 -- name: Report_CountSearch :one
@@ -87,11 +100,19 @@ select count(*)
 from reports
 where
     (sqlc.arg('search')::text = ''
+        or reports.id::text = sqlc.arg('search')
         or reports.number ilike '%' || sqlc.arg('search') || '%'
         or reports.reason ilike '%' || sqlc.arg('search') || '%'
         or reports.description ilike '%' || sqlc.arg('search') || '%'
         or reports.target_id ilike '%' || sqlc.arg('search') || '%')
-    and (sqlc.arg('target_type')::text = '' or reports.target_type = sqlc.arg('target_type'));
+    and (sqlc.arg('target_type')::text = '' or reports.target_type = sqlc.arg('target_type'))
+    and (sqlc.arg('target_id')::text = '' or reports.target_id = sqlc.arg('target_id'))
+    and (sqlc.arg('chapter_id')::text = '' or reports.book_chapter_id::text = sqlc.arg('chapter_id'))
+    and (sqlc.arg('status')::text = 'all' or reports.status = sqlc.arg('status')
+         or (sqlc.arg('status') = 'pending' and reports.status in ('unreviewed', 'escalated')))
+    and (sqlc.arg('priority')::text = '' or reports.priority = sqlc.arg('priority'))
+    and (sqlc.narg('date_from')::timestamptz is null or reports.time >= sqlc.narg('date_from'))
+    and (sqlc.narg('date_to')::timestamptz is null or reports.time < sqlc.narg('date_to'));
 
 -- name: Report_UserExists :one
 select exists(select 1 from users where id = $1);
@@ -111,10 +132,30 @@ from moderation_logs
 join users on users.id = moderation_logs.actor_user_id
 where moderation_logs.target_type = 'report'
   and moderation_logs.target_id = sqlc.arg('report_id')::bigint::text
-  and moderation_logs.type = 'report_decision'
+  and moderation_logs.type in ('report_decision', 'report_note', 'report_priority_changed')
 order by moderation_logs.time, moderation_logs.id;
 
 -- name: Report_SetStatus :execrows
 update reports
 set status = sqlc.arg('new_status')
 where id = sqlc.arg('report_id') and status in ('unreviewed', 'escalated');
+
+-- name: Report_Lock :one
+select id from reports where id = $1 for update;
+
+-- name: Report_SetPriority :exec
+update reports set priority = $2 where id = $1;
+
+-- name: Report_Overview :one
+select count(*) filter (where status = 'unreviewed') as unreviewed,
+       count(*) filter (where status = 'escalated') as escalated,
+       count(*) filter (where status = 'resolved') as resolved,
+       min(time) filter (where status in ('unreviewed', 'escalated'))::timestamptz as oldest_pending
+from reports;
+
+-- name: Report_FindOperation :one
+select actor_user_id, coalesce(payload->>'requestHash', '')::text as request_hash
+from moderation_logs
+where target_type = 'report' and target_id = sqlc.arg('report_id')::bigint::text
+  and type = 'report_decision' and payload->>'operationId' = sqlc.arg('operation_id')::text
+limit 1;

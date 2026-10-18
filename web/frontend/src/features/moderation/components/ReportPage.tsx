@@ -1,3 +1,12 @@
+import { ReportCollaboration } from './workspace/ReportCollaboration'
+import { ReportRecords } from './workspace/ReportRecords'
+import { ModerationLog } from './ModerationLog'
+import { moderationRead } from '../api/workspace'
+import type {
+  ModerationReportsSearchResponse,
+  ModerationAuditLogPageResponse,
+} from '@/backend-types'
+import { t } from './workspace/ui'
 import { decideModerationReport, getModerationReport } from '@/features/moderation/api'
 import type { ModerationReportDecision, ModerationReportDetail } from '@/features/moderation/api'
 import {
@@ -13,7 +22,7 @@ import { FormControl } from '@/components/FormControl'
 import { DashboardContent } from '@/components/dashboard-layout-components'
 import { ErrorDisplay } from '@/components/error'
 import { OLAPIResponse } from '@/features/http-client'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState, useRef } from 'react'
 import {
   LoaderFunctionArgs,
   NavLink,
@@ -34,13 +43,26 @@ async function responseData<T>(request: Promise<OLAPIResponse<T>>) {
   return response.data
 }
 
-export async function reportRouteLoader({ params }: LoaderFunctionArgs) {
+export async function reportRouteLoader({ params, request }: LoaderFunctionArgs) {
   if (!params.reportId) throw new Error(window._('moderationPortal.report.loadError'))
-  return responseData(getModerationReport(params.reportId))
+  const report = await responseData(getModerationReport(params.reportId))
+  const [related, history] = await Promise.all([
+    moderationRead<ModerationReportsSearchResponse>(
+      'reports',
+      { targetType: report.targetType, targetId: report.targetId, status: 'all', pageSize: '10' },
+      request.signal,
+    ),
+    moderationRead<ModerationAuditLogPageResponse>(
+      'audit-log',
+      { targetType: report.targetType, targetId: report.targetId, pageSize: '10' },
+      request.signal,
+    ),
+  ])
+  return { ...report, related, history }
 }
 
 export default function ReportPage() {
-  const report = useLoaderData<ModerationReportDetail>()
+  const report = useLoaderData<typeof reportRouteLoader>()
   const target = targetPresentation(report)
 
   return (
@@ -67,13 +89,42 @@ export default function ReportPage() {
 
       <div className="w-full max-w-360 mx-auto px-4 md:px-8 py-5">
         <div className="grid xl:grid-cols-[minmax(0,1fr)_22rem] gap-4 items-start">
-          <main className="grid gap-4">
+          <div className="grid gap-4">
             <ReportSummary report={report} />
             <ReportedContent report={report} target={target} />
             {report.bookContext && <BookContext report={report} />}
+            <section>
+              <h2 className="text-lg font-semibold mb-3">{t('relatedReports')}</h2>
+              <ReportRecords
+                reports={report.related.entries.filter((entry) => entry.id !== report.id)}
+              />
+              <NavLink
+                className="Link"
+                to={`/reports?status=all&targetType=${report.targetType}&targetId=${report.targetId}`}
+              >
+                {t('viewAll')}
+              </NavLink>
+            </section>
+            <section>
+              <h2 className="text-lg font-semibold mb-3">{t('history')}</h2>
+              <ModerationLog entries={report.history.entries} emptyText={t('noActivity')} />
+              <NavLink
+                className="Link"
+                to={`/audit-log?targetType=${report.targetType}&targetId=${report.targetId}`}
+              >
+                {t('viewAll')}
+              </NavLink>
+            </section>
             <Activity report={report} />
-          </main>
-          <DecisionPanel report={report} />
+            {report.status !== 'resolved' && (
+              <ReportCollaboration
+                key={report.id}
+                reportId={report.id}
+                priority={report.priority}
+              />
+            )}
+          </div>
+          <DecisionPanel key={report.id} report={report} />
         </div>
       </div>
     </DashboardContent.Root>
@@ -228,7 +279,7 @@ function ReportedContent({
               })}
             </span>
           </div>
-          <blockquote className="rounded-lg border-l-4 border-primary bg-secondary/45 px-5 py-4 whitespace-pre-wrap">
+          <blockquote className="rounded-lg border border-border bg-secondary/45 px-5 py-4 whitespace-pre-wrap">
             {report.commentContext.content}
           </blockquote>
           <div className="grid sm:grid-cols-2 gap-4 mt-4 text-sm">
@@ -278,19 +329,7 @@ function BookContext({ report }: { report: ModerationReportDetail }) {
   const book = report.bookContext!
   return (
     <>
-      <div className="rounded-xl border border-amber-400 bg-amber-50 dark:bg-amber-950/25 px-5 py-3 flex items-center gap-3">
-        <i className="fa-regular fa-clock text-amber-700" />
-        <span className="font-medium flex-1">
-          TODO: Finish this (NOT IMPLEMENTED){' '}
-          {window._('moderationPortal.report.editedAfter', {
-            minutes: String(book.editedAfterMinutes),
-          })}
-        </span>
-        <button className="Link">
-          {window._('moderationPortal.report.compareChanges')}{' '}
-          <i className="fa-solid fa-chevron-right ml-2" />
-        </button>
-      </div>
+      <p className="Notice Notice--panel">{t('revisionUnavailable')}</p>
       <div className="grid md:grid-cols-2 gap-4">
         <section className="Card Card--dashboard">
           <h2 className="text-lg font-semibold mb-4">
@@ -327,7 +366,9 @@ function BookContext({ report }: { report: ModerationReportDetail }) {
           </p>
           <p className="mt-3">
             <i className="fa-solid fa-shield-halved mr-3" />
-            {window._('moderationPortal.report.noPreviousEnforcement')}
+            <NavLink className="Link" to={`/audit-log?targetType=book&targetId=${report.targetId}`}>
+              {t('history')}
+            </NavLink>
           </p>
         </section>
       </div>
@@ -348,6 +389,7 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
   const [until, setUntil] = useState('')
   const [confirmation, setConfirmation] = useState<ModerationConfirmation>()
   const [pending, setPending] = useState(false)
+  const operation = useRef({ payload: '', id: '' })
   const actions = report.availableActions
   const resolved = report.status === 'resolved'
   const needsValue = [
@@ -362,6 +404,7 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
     if (needsValue) payload.value = value
     if (action === 'user.temporary_ban') payload.until = new Date(until).toISOString()
     const body: ModerationReportDecision = {
+      operationId: '',
       disposition,
       action: disposition === 'action_taken' ? action : '',
       policyReason: policyReason.trim(),
@@ -369,6 +412,10 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
       notifyTarget,
       payload,
     }
+    const serialized = JSON.stringify(body)
+    if (operation.current.payload !== serialized)
+      operation.current = { payload: serialized, id: crypto.randomUUID() }
+    body.operationId = operation.current.id
     setConfirmation({
       title: window._('moderationPortal.report.confirmDecision'),
       description: window._('moderationPortal.report.confirmDecisionHelp'),
@@ -377,7 +424,7 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
     })
   }
   const confirm = async () => {
-    if (!confirmation) return
+    if (!confirmation || pending) return
     setPending(true)
     try {
       const response = (await confirmation.run()) as { throwIfError?: () => void }
@@ -505,7 +552,10 @@ function DecisionPanel({ report }: { report: ModerationReportDetail }) {
             </span>
           </label>
           <button
-            disabled={disposition === 'action_taken' && !action}
+            disabled={
+              pending ||
+              (disposition === 'action_taken' && (!action || (needsValue && !value.trim())))
+            }
             className="Btn Btn--primary w-full"
           >
             <i className="fa-solid fa-shield-halved mr-2" />
@@ -537,15 +587,15 @@ function Activity({ report }: { report: ModerationReportDetail }) {
             key={`${activity.time}-${activity.kind}`}
             marker={
               <i
-                className={`fa-solid ${activity.kind === 'decision' ? 'fa-gavel' : 'fa-flag'} text-xs`}
+                className={`fa-solid ${activity.kind === 'decision' || activity.kind === 'report_decision' ? 'fa-gavel' : 'fa-flag'} text-xs`}
               />
             }
           >
             <p>
               <b>{activity.actor}</b>{' '}
-              {activity.kind === 'decision'
+              {activity.kind === 'decision' || activity.kind === 'report_decision'
                 ? window._(`moderationPortal.report.disposition_${activity.disposition}`)
-                : activity.description}
+                : t(activity.kind === 'created' ? 'createdEvent' : activity.kind)}
             </p>
             {activity.action && (
               <p className="text-sm mt-1">
@@ -554,6 +604,11 @@ function Activity({ report }: { report: ModerationReportDetail }) {
             )}
             {activity.policyReason && (
               <p className="text-sm text-secondary-foreground mt-1">{activity.policyReason}</p>
+            )}
+            {activity.newPriority && (
+              <p className="text-sm mt-2">
+                {t(activity.oldPriority)} → {t(activity.newPriority)}
+              </p>
             )}
             {activity.internalNote && (
               <p className="mt-2 whitespace-pre-wrap">{activity.internalNote}</p>
@@ -598,7 +653,7 @@ function targetPresentation(report: ModerationReportDetail) {
     return {
       icon: 'fa-book',
       label: window._('moderationPortal.report.targetBook'),
-      to: `/books/${report.targetId}`,
+      to: report.bookChapterId ? `/chapters/${report.bookChapterId}` : `/books/${report.targetId}`,
     }
   return {
     icon: 'fa-comment',

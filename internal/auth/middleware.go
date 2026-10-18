@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"encoding/json"
 	"go.uber.org/zap"
 	"net/http"
 
@@ -47,44 +46,17 @@ func NewAuthorizationMiddleware(
 			// get session info
 			sessionID := sessionInstance.ID()
 
-			var sessionInfo *app.SessionInfo
-
-			{
-				stringValue, ok := sessionInstance.Get(_CTX_SESSION_INFO_SESSION_KEY)
-
-				var err error
-				if !ok || stringValue == "" {
-					sessionInfo, err = sessionService.GetBySID(r.Context(), sessionID)
-					if err != nil {
-						if err == app.ErrSessionNotFound {
-							// we have a valid session id that does not correspond to existing session
-							// meaning that we should probably remove it
-							session.ResetSession(r, w)
-							next.ServeHTTP(w, r)
-						} else {
-							log.Errorw("unexpected error when trying to retrieve user's session", "err", err)
-							options.OnFail(w, r, err)
-						}
-						return
-					}
-					b, err := json.Marshal(sessionInfo)
-					if err == nil {
-						sessionInstance.Put(_CTX_SESSION_INFO_SESSION_KEY, string(b))
-						err = sessionInstance.Save(r.Context())
-						if err != nil {
-							log.Errorw("error while saving session", "err", err)
-						}
-					}
+			// Session revocation and moderation bans must take effect on the next request.
+			sessionInfo, err := sessionService.GetBySID(r.Context(), sessionID)
+			if err != nil {
+				if err == app.ErrSessionNotFound || err == app.ErrUserBanned {
+					session.ResetSession(r, w)
+					next.ServeHTTP(w, r)
 				} else {
-					sessionInfo = new(app.SessionInfo)
-					err = json.Unmarshal([]byte(stringValue), sessionInfo)
-					if err != nil {
-						// perhaps session was corrupted or the schema changed
-						log.Errorw("error while parsing session info", "err", err)
-						next.ServeHTTP(w, r)
-						return
-					}
+					log.Errorw("failed to retrieve session", "err", err)
+					options.OnFail(w, r, err)
 				}
+				return
 			}
 
 			user, err := userService.GetUserSelfData(r.Context(), sessionInfo.UserID)

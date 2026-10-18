@@ -34,7 +34,7 @@ func (m *moderationBookService) SearchBooks(ctx context.Context, query SearchMod
 		searchID = pgtype.Int8{Int64: id, Valid: true}
 	}
 	page, size, limit, offset := normalizeModerationPage(query.Page, query.PageSize)
-	q := store.New(m.db)
+	q := store.New(moderationDB(ctx, m.db))
 	params := store.ModSearchBooksParams{Search: query.Search, SearchID: searchID, ExactName: query.ExactName, IncludeBanned: query.IncludeBanned, IncludeDeleted: query.IncludeDeleted, PageLimit: limit, PageOffset: offset}
 	rows, err := q.ModSearchBooks(ctx, params)
 	if err != nil {
@@ -52,7 +52,7 @@ func (m *moderationBookService) SearchBooks(ctx context.Context, query SearchMod
 
 // GetBookInfo implements ModerationBookService.
 func (m *moderationBookService) GetBookInfo(ctx context.Context, query GetBookInfoQuery) (BookModerationInfo, error) {
-	queries := store.New(m.db)
+	queries := store.New(moderationDB(ctx, m.db))
 
 	if err := m.authorize(ctx, query.ActorUserID); err != nil {
 		return BookModerationInfo{}, err
@@ -96,7 +96,7 @@ func (m *moderationBookService) GetBookChapters(ctx context.Context, query GetBo
 	if err := m.authorize(ctx, query.ActorUserID); err != nil {
 		return nil, err
 	}
-	rows, err := store.New(m.db).ModGetBookChapters(ctx, query.BookID)
+	rows, err := store.New(moderationDB(ctx, m.db)).ModGetBookChapters(ctx, query.BookID)
 	if err != nil {
 		return nil, apperror.WrapUnexpectedDBError(err)
 	}
@@ -114,11 +114,23 @@ func (m *moderationBookService) changeBookValue(ctx context.Context, cmd Moderat
 	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
 		return err
 	}
-	tx, err := m.db.Begin(ctx)
+	tx, err := moderationDB(ctx, m.db).Begin(ctx)
 	if err != nil {
 		return apperror.WrapUnexpectedDBError(err)
 	}
-	queries := store.New(m.db).WithTx(tx)
+	queries := store.New(moderationDB(ctx, m.db)).WithTx(tx)
+	defer tx.Rollback(ctx)
+	book, err := queries.ModLockBook(ctx, cmd.BookID)
+	if err == store.ErrNoRows {
+		return ModerationBookNotFoundError.New("book not found")
+	}
+	if err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if book.IsPermRemoved || (action == BookActionTypeBan && book.IsBanned) || (action == BookActionTypeUnBan && !book.IsBanned) || (action == BookActionTypeShadowBan && book.IsShadowBanned) || (action == BookActionTypeUnShadowBan && !book.IsShadowBanned) {
+		return ErrModerationStateChanged
+	}
+
 	if err = change(queries); err == nil {
 		err = m.addBookLog(ctx, queries, cmd.BookID, action, cmd.Reason, cmd.ActorUserID)
 	}
@@ -149,7 +161,7 @@ func (m *moderationBookService) GetBookLog(ctx context.Context, query GetBookLog
 	if err := m.authorize(ctx, query.ActorUserID); err != nil {
 		return BookLogResult{}, err
 	}
-	queries := store.New(m.db)
+	queries := store.New(moderationDB(ctx, m.db))
 
 	var (
 		page     int32
@@ -231,42 +243,10 @@ func bookActionTypesToStrings(types []BookActionType) []string {
 	return result
 }
 
-// BanBook implements ModerationBookService.
 func (m *moderationBookService) BanBook(ctx context.Context, cmd ModerationPerformBookActionCommand) error {
-	if err := cmd.Validate(); err != nil {
-		return err
-	}
-	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
-		return err
-	}
-
-	tx, err := m.db.Begin(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-	queries := store.New(m.db).WithTx(tx)
-
-	err = queries.ModSetBookBanned(ctx, store.ModSetBookBannedParams{
-		ID:       cmd.BookID,
-		IsBanned: true,
+	return m.changeBookValue(ctx, cmd, BookActionTypeBan, func(q *store.Queries) error {
+		return q.ModSetBookBanned(ctx, store.ModSetBookBannedParams{ID: cmd.BookID, IsBanned: true})
 	})
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypeBan, cmd.Reason, cmd.ActorUserID)
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	return nil
 }
 
 func (m *moderationBookService) addBookLog(ctx context.Context, queries *store.Queries, bookID int64, actionType BookActionType, reason string, actorUserID uuid.UUID) error {
@@ -286,164 +266,32 @@ func (m *moderationBookService) addBookLog(ctx context.Context, queries *store.Q
 	return nil
 }
 
-// PermanentlyRemoveBook implements ModerationBookService.
 func (m *moderationBookService) PermanentlyRemoveBook(ctx context.Context, cmd ModerationPerformBookActionCommand) error {
-	if err := cmd.Validate(); err != nil {
-		return err
-	}
-	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
-		return err
-	}
-	tx, err := m.db.Begin(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-	queries := store.New(m.db).WithTx(tx)
-
-	// The system user owns anonymized books after permanent removal.
-	systemUser, err := queries.User_FindByLogin(ctx, "system")
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return apperror.WrapUnexpectedDBError(err)
-	}
-	if UserRole(systemUser.Role) != RoleSystem {
-		dal.RollbackTx(ctx, tx)
-		return ErrModerationForbidden
-	}
-	err = queries.ModPermRemoveBook(ctx, store.ModPermRemoveBookParams{ID: cmd.BookID, AuthorUserID: systemUser.ID})
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypePermRemoval, cmd.Reason, cmd.ActorUserID)
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	return nil
-
+	return m.changeBookValue(ctx, cmd, BookActionTypePermRemoval, func(q *store.Queries) error {
+		systemUser, err := q.User_FindByLogin(ctx, "system")
+		if err != nil {
+			return err
+		}
+		if UserRole(systemUser.Role) != RoleSystem {
+			return ErrModerationForbidden
+		}
+		return q.ModPermRemoveBook(ctx, store.ModPermRemoveBookParams{ID: cmd.BookID, AuthorUserID: systemUser.ID})
+	})
 }
-
-// ShadowBanBook implements ModerationBookService.
 func (m *moderationBookService) ShadowBanBook(ctx context.Context, cmd ModerationPerformBookActionCommand) error {
-	if err := cmd.Validate(); err != nil {
-		return err
-	}
-	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
-		return err
-	}
-
-	tx, err := m.db.Begin(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-	queries := store.New(m.db).WithTx(tx)
-
-	err = queries.ModSetBookShadowBanned(ctx, store.ModSetBookShadowBannedParams{
-		ID:             cmd.BookID,
-		IsShadowBanned: true,
+	return m.changeBookValue(ctx, cmd, BookActionTypeShadowBan, func(q *store.Queries) error {
+		return q.ModSetBookShadowBanned(ctx, store.ModSetBookShadowBannedParams{ID: cmd.BookID, IsShadowBanned: true})
 	})
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypeShadowBan, cmd.Reason, cmd.ActorUserID)
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	return nil
-
 }
-
-// UnBanBook implements ModerationBookService.
 func (m *moderationBookService) UnBanBook(ctx context.Context, cmd ModerationPerformBookActionCommand) error {
-	if err := cmd.Validate(); err != nil {
-		return err
-	}
-	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
-		return err
-	}
-
-	tx, err := m.db.Begin(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-	queries := store.New(m.db).WithTx(tx)
-
-	err = queries.ModSetBookBanned(ctx, store.ModSetBookBannedParams{
-		ID:       cmd.BookID,
-		IsBanned: false,
+	return m.changeBookValue(ctx, cmd, BookActionTypeUnBan, func(q *store.Queries) error {
+		return q.ModSetBookBanned(ctx, store.ModSetBookBannedParams{ID: cmd.BookID, IsBanned: false})
 	})
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypeUnBan, cmd.Reason, cmd.ActorUserID)
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	return nil
 }
-
-// UnShadowBanBook implements ModerationBookService.
 func (m *moderationBookService) UnShadowBanBook(ctx context.Context, cmd ModerationPerformBookActionCommand) error {
-	if err := cmd.Validate(); err != nil {
-		return err
-	}
-	if err := m.authorize(ctx, cmd.ActorUserID); err != nil {
-		return err
-	}
-
-	tx, err := m.db.Begin(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-	queries := store.New(m.db).WithTx(tx)
-
-	err = queries.ModSetBookShadowBanned(ctx, store.ModSetBookShadowBannedParams{
-		ID:             cmd.BookID,
-		IsShadowBanned: false,
+	return m.changeBookValue(ctx, cmd, BookActionTypeUnShadowBan, func(q *store.Queries) error {
+		return q.ModSetBookShadowBanned(ctx, store.ModSetBookShadowBannedParams{ID: cmd.BookID, IsShadowBanned: false})
 	})
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	err = m.addBookLog(ctx, queries, cmd.BookID, BookActionTypeUnShadowBan, cmd.Reason, cmd.ActorUserID)
-	if err != nil {
-		dal.RollbackTx(ctx, tx)
-		return err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return apperror.WrapUnexpectedDBError(err)
-	}
-
-	return nil
 }
 
 func NewModerationBookService(db DB, auth ModerationAuthorizer) ModerationBookService {

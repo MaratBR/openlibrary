@@ -1,5 +1,5 @@
 -- name: Moderation_GetChapter :one
-select * from book_chapters where id = $1;
+select * from book_chapters where id = $1 for update;
 
 -- name: Moderation_SetChapterVisibility :exec
 update book_chapters set is_publicly_visible = $2, updated_at = now() where id = $1;
@@ -81,3 +81,9 @@ select created_at, location_country, location_region, location_city
 from sessions
 where user_id = $1
 order by created_at desc;
+
+-- name: Moderation_LockComment :one
+select * from comments where id = $1 for update;
+
+-- name: Moderation_LockUser :one
+select * from users where id = $1 for update;

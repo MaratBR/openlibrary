@@ -131,8 +131,8 @@ func newI18N(
 	log *zap.SugaredLogger,
 ) (*goeasyi18n.I18n, *keyDef) {
 	i18nInstance := goeasyi18n.NewI18n(goeasyi18n.Config{
-		FallbackLanguageName:    lang.String(),
-		DisableConsistencyCheck: false,
+		FallbackLanguageName:    language.English.String(),
+		DisableConsistencyCheck: true,
 	})
 
 	allLangDef := &keyDef{}

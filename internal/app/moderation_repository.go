@@ -17,11 +17,11 @@ type contentModerationRepository struct {
 }
 
 func (r *contentModerationRepository) transaction(ctx context.Context, run func(*store.Queries) error) error {
-	tx, err := r.db.Begin(ctx)
+	tx, err := moderationDB(ctx, r.db).Begin(ctx)
 	if err != nil {
 		return apperror.WrapUnexpectedDBError(err)
 	}
-	if err = run(store.New(r.db).WithTx(tx)); err != nil {
+	if err = run(store.New(moderationDB(ctx, r.db)).WithTx(tx)); err != nil {
 		dal.RollbackTx(ctx, tx)
 		return err
 	}
@@ -39,6 +39,9 @@ func (r *contentModerationRepository) SetChapterVisibilityAndLog(ctx context.Con
 				return ErrTypeChapterDoesNotExist.New("chapter not found")
 			}
 			return apperror.WrapUnexpectedDBError(err)
+		}
+		if chapter.IsPubliclyVisible == visible {
+			return ErrModerationStateChanged
 		}
 		if err = q.Moderation_SetChapterVisibility(ctx, store.Moderation_SetChapterVisibilityParams{ID: chapterID, IsPubliclyVisible: visible}); err != nil {
 			return apperror.WrapUnexpectedDBError(err)
@@ -65,16 +68,20 @@ func addPersistedBookLog(ctx context.Context, q *store.Queries, bookID int64, lo
 
 func (r *contentModerationRepository) SetCommentRemovedAndLog(ctx context.Context, commentID int64, removed bool, log ModerationAuditEntry) error {
 	return r.transaction(ctx, func(q *store.Queries) error {
-		if _, err := q.Comment_GetByID(ctx, commentID); err != nil {
+		comment, err := q.Moderation_LockComment(ctx, commentID)
+		if err != nil {
 			if err == pgx.ErrNoRows {
 				return ErrTypeCommentNotFound.New("comment not found")
 			}
 			return apperror.WrapUnexpectedDBError(err)
 		}
+		if comment.DeletedAt.Valid == removed {
+			return ErrModerationStateChanged
+		}
 		if err := q.Moderation_SetCommentRemoved(ctx, store.Moderation_SetCommentRemovedParams{ID: commentID, Removed: removed}); err != nil {
 			return apperror.WrapUnexpectedDBError(err)
 		}
-		err := q.Moderation_AddLog(ctx, store.Moderation_AddLogParams{
+		err = q.Moderation_AddLog(ctx, store.Moderation_AddLogParams{
 			ID: log.ID, Time: timeToTimestamptz(log.Time), Type: string(log.Action),
 			TargetType: log.TargetType, TargetID: log.TargetID, Payload: log.Payload,
 			ActorUserID: uuidDomainToDb(log.ActorUserID), Reason: log.Reason,
@@ -88,7 +95,7 @@ func (r *contentModerationRepository) SetCommentRemovedAndLog(ctx context.Contex
 
 func (r *contentModerationRepository) SetUserBanAndLog(ctx context.Context, userID uuid.UUID, expiresAt time.Time, banned bool, log ModerationAuditEntry) error {
 	return r.transaction(ctx, func(q *store.Queries) error {
-		if _, err := q.User_Get(ctx, uuidDomainToDb(userID)); err != nil {
+		if _, err := q.Moderation_LockUser(ctx, uuidDomainToDb(userID)); err != nil {
 			if err == pgx.ErrNoRows {
 				return ErrUserNotFound
 			}
@@ -116,7 +123,7 @@ func (r *contentModerationRepository) SetUserBanAndLog(ctx context.Context, user
 
 func (r *contentModerationRepository) RenameUserAndLog(ctx context.Context, userID uuid.UUID, name string, log ModerationAuditEntry) error {
 	return r.transaction(ctx, func(q *store.Queries) error {
-		user, err := q.User_Get(ctx, uuidDomainToDb(userID))
+		user, err := q.Moderation_LockUser(ctx, uuidDomainToDb(userID))
 		if err != nil {
 			if err == pgx.ErrNoRows {
 				return ErrUserNotFound
@@ -132,7 +139,7 @@ func (r *contentModerationRepository) RenameUserAndLog(ctx context.Context, user
 
 func (r *contentModerationRepository) ChangeUserAboutAndLog(ctx context.Context, userID uuid.UUID, about string, log ModerationAuditEntry) error {
 	return r.transaction(ctx, func(q *store.Queries) error {
-		user, err := q.User_Get(ctx, uuidDomainToDb(userID))
+		user, err := q.Moderation_LockUser(ctx, uuidDomainToDb(userID))
 		if err != nil {
 			if err == pgx.ErrNoRows {
 				return ErrUserNotFound

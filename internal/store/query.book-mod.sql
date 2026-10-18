@@ -129,3 +129,6 @@ join users on users.id = moderation_logs.actor_user_id
 where 
     target_type = 'book' and target_id = sqlc.arg('bookID')::bigint::text and
     ("type" = ANY(CAST(sqlc.arg('actionTypes') as text[])) or sqlc.arg('actionTypes') is null);
+
+-- name: ModLockBook :one
+select * from books where id = $1 for update;

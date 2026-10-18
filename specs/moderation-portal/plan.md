@@ -1,6 +1,6 @@
 # Implementation plan
 
-Status: proposed; depends on review of [spec.md](spec.md). Findings and baseline
+Status: implementing the authorized core in [spec.md](spec.md). Findings and baseline
 verification are in [audit.md](audit.md). Execute complete slices in this order.
 
 ## Affected areas
@@ -138,3 +138,8 @@ failures separately. Use writable `/tmp` Go caches if needed. Existing focused
 checks pass; old notes mention an unrelated chapter-name test failure, but it has
 not been revalidated. Database integration harness/fixtures must be established
 before marking concurrency and visibility criteria complete.
+
+## Deferred integrations
+
+Add explicit unavailable triage and notification capability contracts and pages.
+Keep transport and auto-assignment implementation out of the core.

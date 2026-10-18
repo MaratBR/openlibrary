@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -16,11 +18,13 @@ type GetModerationReportQuery struct {
 }
 
 type SearchModerationReportsQuery struct {
-	ActorUserID uuid.UUID
-	Search      string
-	TargetType  string
-	Page        uint32
-	PageSize    uint32
+	ActorUserID                                 uuid.UUID
+	Search                                      string
+	TargetType                                  string
+	TargetID, ChapterID, Status, Priority, Sort string
+	DateFrom, DateTo                            Nullable[time.Time]
+	Page                                        uint32
+	PageSize                                    uint32
 }
 
 type ModerationReportListEntry struct {
@@ -67,6 +71,7 @@ type ModerationReportService interface {
 	GetReport(context.Context, GetModerationReportQuery) (ModerationReportDetail, error)
 	SearchReports(context.Context, SearchModerationReportsQuery) (ModerationPage[ModerationReportListEntry], error)
 	DecideReport(context.Context, DecideModerationReportCommand) error
+	AddNote(context.Context, ReportNoteCommand) error
 }
 
 const (
@@ -84,6 +89,7 @@ var (
 )
 
 type DecideModerationReportCommand struct {
+	OperationID  string
 	ActorUserID  uuid.UUID
 	ReportID     int64
 	Disposition  string
@@ -98,8 +104,11 @@ func (s *moderationReportService) SearchReports(ctx context.Context, query Searc
 	if err := s.auth.AuthorizeModerator(ctx, query.ActorUserID); err != nil {
 		return ModerationPage[ModerationReportListEntry]{}, err
 	}
+	if err := validateReportSearch(&query); err != nil {
+		return ModerationPage[ModerationReportListEntry]{}, err
+	}
 	page, size, limit, offset := normalizeModerationPage(query.Page, query.PageSize)
-	entries, total, err := s.repo.Search(ctx, query.Search, query.TargetType, limit, offset)
+	entries, total, err := s.repo.Search(ctx, query, limit, offset)
 	if err != nil {
 		return ModerationPage[ModerationReportListEntry]{}, err
 	}
@@ -136,7 +145,7 @@ func (s *moderationReportService) GetReport(ctx context.Context, query GetModera
 	}
 	for i := range events {
 		event := events[i]
-		detail.Activities = append(detail.Activities, ModerationReportActivity{Time: event.Time, Actor: event.ActorUserName, Description: "recorded a report decision", Kind: "decision", Decision: &event})
+		detail.Activities = append(detail.Activities, ModerationReportActivity{Time: event.Time, Actor: event.ActorUserName, Description: "recorded a report decision", Kind: event.Kind, Decision: &event})
 	}
 	if report.TargetType == ReportTargetBook {
 		err = s.loadBookReportContext(ctx, report, &detail)
@@ -153,6 +162,44 @@ func (s *moderationReportService) GetReport(ctx context.Context, query GetModera
 	if err != nil {
 		return ModerationReportDetail{}, err
 	}
+	if report.Status == "resolved" {
+		detail.AvailableActions = []string{}
+	} else {
+		filtered := []string{}
+		for _, action := range detail.AvailableActions {
+			keep := true
+			switch report.TargetType {
+			case ReportTargetUser:
+				if detail.UserContext == nil {
+					keep = false
+				} else if action == "user.unban" {
+					keep = detail.UserContext.IsBanned
+				}
+			case ReportTargetComment:
+				if detail.CommentContext == nil {
+					keep = false
+				} else if action == "comment.remove" {
+					keep = !detail.CommentContext.DeletedAt.Valid
+				} else if action == "comment.restore" {
+					keep = detail.CommentContext.DeletedAt.Valid
+				}
+			case ReportTargetBook:
+				if detail.BookContext == nil || detail.BookContext.PublicationState == "Permanently removed" {
+					keep = false
+				}
+				if detail.BookContext != nil && action == "book.restrict" {
+					keep = detail.BookContext.PublicationState != "Banned" && detail.BookContext.PublicationState != "Permanently removed"
+				}
+				if detail.BookContext != nil && action == "book.restore" {
+					keep = detail.BookContext.PublicationState == "Banned"
+				}
+			}
+			if keep {
+				filtered = append(filtered, action)
+			}
+		}
+		detail.AvailableActions = filtered
+	}
 	return detail, nil
 }
 
@@ -160,6 +207,31 @@ func (s *moderationReportService) DecideReport(ctx context.Context, cmd DecideMo
 	if err := s.auth.AuthorizeModerator(ctx, cmd.ActorUserID); err != nil {
 		return err
 	}
+	return s.repo.WithLockedReport(ctx, cmd.ReportID, func(ctx context.Context) error { return s.decideLocked(ctx, cmd) })
+}
+
+func (s *moderationReportService) decideLocked(ctx context.Context, cmd DecideModerationReportCommand) error {
+	if len(cmd.OperationID) > 128 {
+		return ErrInvalidReportDisposition
+	}
+	encoded, err := json.Marshal(cmd)
+	if err != nil {
+		return ErrInvalidReportDisposition
+	}
+	hash := fmt.Sprintf("%x", sha256.Sum256(encoded))
+	if cmd.OperationID != "" {
+		actor, previousHash, found, err := s.repo.FindOperation(ctx, cmd.ReportID, cmd.OperationID)
+		if err != nil {
+			return err
+		}
+		if found {
+			if actor == cmd.ActorUserID && previousHash == hash {
+				return nil
+			}
+			return ErrModerationStateChanged
+		}
+	}
+
 	report, _, err := s.repo.GetByID(ctx, cmd.ReportID)
 	if err != nil {
 		return err
@@ -196,7 +268,7 @@ func (s *moderationReportService) DecideReport(ctx context.Context, cmd DecideMo
 	default:
 		return ErrInvalidReportDisposition
 	}
-	return s.repo.AddDecision(ctx, cmd.ReportID, status, ReportDecision{Time: time.Now(), ActorUserID: cmd.ActorUserID, Disposition: cmd.Disposition, Action: cmd.Action, PolicyReason: cmd.PolicyReason, InternalNote: cmd.InternalNote, NotifyTarget: cmd.NotifyTarget, Payload: cmd.Payload})
+	return s.repo.AddDecision(ctx, cmd.ReportID, status, ReportDecision{OperationID: cmd.OperationID, RequestHash: hash, Time: time.Now(), ActorUserID: cmd.ActorUserID, Disposition: cmd.Disposition, Action: cmd.Action, PolicyReason: cmd.PolicyReason, InternalNote: cmd.InternalNote, NotifyTarget: cmd.NotifyTarget, Payload: cmd.Payload})
 }
 
 func (s *moderationReportService) loadBookReportContext(ctx context.Context, report Report, detail *ModerationReportDetail) error {
@@ -253,4 +325,67 @@ func (s *moderationReportService) loadBookReportContext(ctx context.Context, rep
 
 func NewModerationReportService(auth ModerationAuthorizer, repo ReportRepository, uploads *UploadService, actions ReportActionExecutor) ModerationReportService {
 	return &moderationReportService{auth: auth, repo: repo, uploads: uploads, actions: actions}
+}
+
+var ErrModerationFilter = apperror.AppErrors.NewType("invalid_moderation_filter").New("invalid moderation filter or date range")
+
+func validateReportSearch(q *SearchModerationReportsQuery) error {
+	q.Search = strings.TrimSpace(q.Search)
+	if q.Status == "" {
+		q.Status = "pending"
+	}
+	if q.Sort == "" {
+		q.Sort = "priority"
+	}
+	if !oneOf(q.Status, "pending", "all", "unreviewed", "escalated", "resolved") ||
+		!oneOf(q.Sort, "priority", "oldest", "newest") ||
+		!oneOf(q.Priority, "", "low", "medium", "high", "critical") ||
+		!oneOf(q.TargetType, "", "user", "book", "comment") ||
+		(q.DateFrom.Valid && q.DateTo.Valid && !q.DateFrom.Value.Before(q.DateTo.Value)) {
+		return ErrModerationFilter
+	}
+	return nil
+}
+func oneOf(value string, options ...string) bool {
+	for _, option := range options {
+		if value == option {
+			return true
+		}
+	}
+	return false
+}
+
+type ReportNoteCommand struct {
+	ActorUserID            uuid.UUID
+	ReportID               int64
+	Note, Priority, Reason string
+}
+
+func (s *moderationReportService) AddNote(ctx context.Context, cmd ReportNoteCommand) error {
+	if err := s.auth.AuthorizeModerator(ctx, cmd.ActorUserID); err != nil {
+		return err
+	}
+	cmd.Note, cmd.Reason = strings.TrimSpace(cmd.Note), strings.TrimSpace(cmd.Reason)
+	if len([]rune(cmd.Note)) > 1000 {
+		return ErrReportInternalNote
+	}
+	if cmd.Priority == "" && cmd.Note == "" {
+		return ErrModerationReason
+	}
+	if !oneOf(cmd.Priority, "", "low", "medium", "high", "critical") {
+		return ErrModerationFilter
+	}
+	if cmd.Priority != "" && cmd.Reason == "" {
+		return ErrReportPolicyReason
+	}
+	return s.repo.WithLockedReport(ctx, cmd.ReportID, func(ctx context.Context) error {
+		report, _, err := s.repo.GetByID(ctx, cmd.ReportID)
+		if err != nil {
+			return err
+		}
+		if report.Status == "resolved" {
+			return ErrReportAlreadyResolved
+		}
+		return s.repo.AddNote(ctx, cmd.ReportID, ReportDecision{Time: time.Now(), ActorUserID: cmd.ActorUserID, InternalNote: cmd.Note, PolicyReason: cmd.Reason}, cmd.Priority)
+	})
 }

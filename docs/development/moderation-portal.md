@@ -46,6 +46,13 @@ The implementation is currently uncommitted. Relevant files are:
 
 ## Verification baseline
 
+- Dashboard styles are imported by their owning island entry points (admin,
+  Book Manager, and moderation). Vite's application build automatically loads CSS
+  for dynamic imports, including shared dashboard styles, before mounting islands.
+  Keep dashboard imports out of `common/style/index.ts` and page stylesheet lists;
+  library build mode disables this automatic CSS loading. The legacy server-rendered
+  moderation pages retain an explicit `mod.css` link because they have no island.
+
 - `pnpm run build` passes (with existing Browserslist and unresolved runtime-image warnings).
 - Focused moderation/report/login-history tests pass, and `go test -vet=off ./web/public` passes.
 - `go test -vet=off ./...` compiles all packages but fails the unrelated existing `internal/app` case `TestValidateChapterName/too_long` because `validateChapterName` currently accepts that fixture.

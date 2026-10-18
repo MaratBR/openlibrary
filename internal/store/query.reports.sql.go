@@ -54,20 +54,43 @@ select count(*)
 from reports
 where
     ($1::text = ''
+        or reports.id::text = $1
         or reports.number ilike '%' || $1 || '%'
         or reports.reason ilike '%' || $1 || '%'
         or reports.description ilike '%' || $1 || '%'
         or reports.target_id ilike '%' || $1 || '%')
     and ($2::text = '' or reports.target_type = $2)
+    and ($3::text = '' or reports.target_id = $3)
+    and ($4::text = '' or reports.book_chapter_id::text = $4)
+    and ($5::text = 'all' or reports.status = $5
+         or ($5 = 'pending' and reports.status in ('unreviewed', 'escalated')))
+    and ($6::text = '' or reports.priority = $6)
+    and ($7::timestamptz is null or reports.time >= $7)
+    and ($8::timestamptz is null or reports.time < $8)
 `
 
 type Report_CountSearchParams struct {
 	Search     string
 	TargetType string
+	TargetID   string
+	ChapterID  string
+	Status     string
+	Priority   string
+	DateFrom   pgtype.Timestamptz
+	DateTo     pgtype.Timestamptz
 }
 
 func (q *Queries) Report_CountSearch(ctx context.Context, arg Report_CountSearchParams) (int64, error) {
-	row := q.db.QueryRow(ctx, report_CountSearch, arg.Search, arg.TargetType)
+	row := q.db.QueryRow(ctx, report_CountSearch,
+		arg.Search,
+		arg.TargetType,
+		arg.TargetID,
+		arg.ChapterID,
+		arg.Status,
+		arg.Priority,
+		arg.DateFrom,
+		arg.DateTo,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -119,6 +142,31 @@ func (q *Queries) Report_Create(ctx context.Context, arg Report_CreateParams) (R
 	)
 	var i Report_CreateRow
 	err := row.Scan(&i.ID, &i.Number)
+	return i, err
+}
+
+const report_FindOperation = `-- name: Report_FindOperation :one
+select actor_user_id, coalesce(payload->>'requestHash', '')::text as request_hash
+from moderation_logs
+where target_type = 'report' and target_id = $1::bigint::text
+  and type = 'report_decision' and payload->>'operationId' = $2::text
+limit 1
+`
+
+type Report_FindOperationParams struct {
+	ReportID    int64
+	OperationID string
+}
+
+type Report_FindOperationRow struct {
+	ActorUserID pgtype.UUID
+	RequestHash string
+}
+
+func (q *Queries) Report_FindOperation(ctx context.Context, arg Report_FindOperationParams) (Report_FindOperationRow, error) {
+	row := q.db.QueryRow(ctx, report_FindOperation, arg.ReportID, arg.OperationID)
+	var i Report_FindOperationRow
+	err := row.Scan(&i.ActorUserID, &i.RequestHash)
 	return i, err
 }
 
@@ -297,7 +345,7 @@ from moderation_logs
 join users on users.id = moderation_logs.actor_user_id
 where moderation_logs.target_type = 'report'
   and moderation_logs.target_id = $1::bigint::text
-  and moderation_logs.type = 'report_decision'
+  and moderation_logs.type in ('report_decision', 'report_note', 'report_priority_changed')
 order by moderation_logs.time, moderation_logs.id
 `
 
@@ -378,24 +426,81 @@ func (q *Queries) Report_GetUserContext(ctx context.Context, id int64) (Report_G
 	return i, err
 }
 
+const report_Lock = `-- name: Report_Lock :one
+select id from reports where id = $1 for update
+`
+
+func (q *Queries) Report_Lock(ctx context.Context, id int64) (int64, error) {
+	row := q.db.QueryRow(ctx, report_Lock, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
+const report_Overview = `-- name: Report_Overview :one
+select count(*) filter (where status = 'unreviewed') as unreviewed,
+       count(*) filter (where status = 'escalated') as escalated,
+       count(*) filter (where status = 'resolved') as resolved,
+       min(time) filter (where status in ('unreviewed', 'escalated'))::timestamptz as oldest_pending
+from reports
+`
+
+type Report_OverviewRow struct {
+	Unreviewed    int64
+	Escalated     int64
+	Resolved      int64
+	OldestPending pgtype.Timestamptz
+}
+
+func (q *Queries) Report_Overview(ctx context.Context) (Report_OverviewRow, error) {
+	row := q.db.QueryRow(ctx, report_Overview)
+	var i Report_OverviewRow
+	err := row.Scan(
+		&i.Unreviewed,
+		&i.Escalated,
+		&i.Resolved,
+		&i.OldestPending,
+	)
+	return i, err
+}
+
 const report_Search = `-- name: Report_Search :many
 select reports.id, reports.number, reports.time, reports.reporter_user_id, reports.target_type, reports.target_id, reports.reason, reports.description, reports.book_chapter_id, reports.book_excerpt, reports.status, reports.priority, users.name as reporter_user_name
 from reports
 join users on users.id = reports.reporter_user_id
 where
     ($1::text = ''
+        or reports.id::text = $1
         or reports.number ilike '%' || $1 || '%'
         or reports.reason ilike '%' || $1 || '%'
         or reports.description ilike '%' || $1 || '%'
         or reports.target_id ilike '%' || $1 || '%')
     and ($2::text = '' or reports.target_type = $2)
-order by reports."time" desc, reports.id desc
-limit $4 offset $3
+    and ($3::text = '' or reports.target_id = $3)
+    and ($4::text = '' or reports.book_chapter_id::text = $4)
+    and ($5::text = 'all' or reports.status = $5
+         or ($5 = 'pending' and reports.status in ('unreviewed', 'escalated')))
+    and ($6::text = '' or reports.priority = $6)
+    and ($7::timestamptz is null or reports.time >= $7)
+    and ($8::timestamptz is null or reports.time < $8)
+order by
+    case when $9::text = 'priority' then
+      case reports.priority when 'critical' then 0 when 'high' then 1 when 'medium' then 2 else 3 end end,
+    case when $9 = 'newest' then reports.time end desc,
+    case when $9 <> 'newest' then reports.time end asc,
+    reports.id asc
+limit $11 offset $10
 `
 
 type Report_SearchParams struct {
 	Search     string
 	TargetType string
+	TargetID   string
+	ChapterID  string
+	Status     string
+	Priority   string
+	DateFrom   pgtype.Timestamptz
+	DateTo     pgtype.Timestamptz
+	Sort       string
 	PageOffset int32
 	PageLimit  int32
 }
@@ -420,6 +525,13 @@ func (q *Queries) Report_Search(ctx context.Context, arg Report_SearchParams) ([
 	rows, err := q.db.Query(ctx, report_Search,
 		arg.Search,
 		arg.TargetType,
+		arg.TargetID,
+		arg.ChapterID,
+		arg.Status,
+		arg.Priority,
+		arg.DateFrom,
+		arg.DateTo,
+		arg.Sort,
 		arg.PageOffset,
 		arg.PageLimit,
 	)
@@ -453,6 +565,20 @@ func (q *Queries) Report_Search(ctx context.Context, arg Report_SearchParams) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const report_SetPriority = `-- name: Report_SetPriority :exec
+update reports set priority = $2 where id = $1
+`
+
+type Report_SetPriorityParams struct {
+	ID       int64
+	Priority string
+}
+
+func (q *Queries) Report_SetPriority(ctx context.Context, arg Report_SetPriorityParams) error {
+	_, err := q.db.Exec(ctx, report_SetPriority, arg.ID, arg.Priority)
+	return err
 }
 
 const report_SetStatus = `-- name: Report_SetStatus :execrows

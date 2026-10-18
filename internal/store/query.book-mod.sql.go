@@ -327,6 +327,40 @@ func (q *Queries) ModGetBookModState(ctx context.Context, id int64) (ModGetBookM
 	return i, err
 }
 
+const modLockBook = `-- name: ModLockBook :one
+select id, name, slug, summary, author_user_id, created_at, age_rating, is_publicly_visible, is_banned, is_trashed, words, chapters, tag_ids, cached_parent_tag_ids, cover, view, rating, total_reviews, total_ratings, is_pinned, is_perm_removed, is_shadow_banned from books where id = $1 for update
+`
+
+func (q *Queries) ModLockBook(ctx context.Context, id int64) (Book, error) {
+	row := q.db.QueryRow(ctx, modLockBook, id)
+	var i Book
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Summary,
+		&i.AuthorUserID,
+		&i.CreatedAt,
+		&i.AgeRating,
+		&i.IsPubliclyVisible,
+		&i.IsBanned,
+		&i.IsTrashed,
+		&i.Words,
+		&i.Chapters,
+		&i.TagIds,
+		&i.CachedParentTagIds,
+		&i.Cover,
+		&i.View,
+		&i.Rating,
+		&i.TotalReviews,
+		&i.TotalRatings,
+		&i.IsPinned,
+		&i.IsPermRemoved,
+		&i.IsShadowBanned,
+	)
+	return i, err
+}
+
 const modPermRemoveBook = `-- name: ModPermRemoveBook :exec
 update books
 set 

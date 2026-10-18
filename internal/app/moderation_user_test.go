@@ -43,15 +43,15 @@ func (r *moderationUserRepoStub) CreateTemporaryRandomReports(_ context.Context,
 	return nil
 }
 
-func TestModerationUserReportsTemporarilySeedsFourBelowThreshold(t *testing.T) {
+func TestModerationUserReportReadsNeverSeed(t *testing.T) {
 	repo := &moderationUserRepoStub{reportsTotal: 49}
 	svc := NewModerationUserService(moderationAuthStub{}, repo)
 	result, err := svc.GetReports(context.Background(), ModerationUserPageQuery{Page: 1, PageSize: 10})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if repo.seeded != 4 || result.Total != 53 {
-		t.Fatalf("expected four generated reports and total 53, got seeded=%d total=%d", repo.seeded, result.Total)
+	if repo.seeded != 0 || result.Total != 49 {
+		t.Fatalf("expected unchanged reports and total 49, got seeded=%d total=%d", repo.seeded, result.Total)
 	}
 }
 

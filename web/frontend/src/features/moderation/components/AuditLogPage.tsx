@@ -1,62 +1,48 @@
-import { getModerationAuditLog } from '@/features/moderation/api'
-import type { ModerationAuditLogPage } from '@/features/moderation/api'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
-import { DashboardContent } from '@/components/dashboard-layout-components'
-import { ErrorDisplay } from '@/components/error'
-import { FormControl } from '@/components/FormControl'
-import { LoaderFunctionArgs, useLoaderData, useNavigate, useRouteError } from 'react-router'
+import { LoaderFunctionArgs, useLoaderData } from 'react-router'
+import type { ModerationAuditLogPageResponse } from '@/backend-types'
+import { moderationRead } from '../api/workspace'
 import { ModerationLog } from './ModerationLog'
-
+import {
+  WorkspacePage,
+  SearchForm,
+  FilterInput,
+  FilterSelect,
+  PageNavigation,
+  filtersFrom,
+  t,
+  targetOptions,
+  WorkspaceError,
+} from './workspace/ui'
 export async function auditLogLoader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url)
-  const targetType = url.searchParams.get('targetType') ?? ''
-  const page = Math.max(1, Number(url.searchParams.get('page')) || 1)
-  const response = await getModerationAuditLog(targetType, page)
-  response.throwIfError()
-  return { log: response.data, targetType }
+  const filters = filtersFrom(request)
+  return {
+    filters,
+    log: await moderationRead<ModerationAuditLogPageResponse>('audit-log', filters, request.signal),
+  }
 }
 export default function AuditLogPage() {
-  const { log, targetType } = useLoaderData<{ log: ModerationAuditLogPage; targetType: string }>()
-  const navigate = useNavigate()
-  const change = (value: string) =>
-    navigate({ search: value === 'all' ? '' : `?targetType=${value}` })
+  const { log, filters: f } = useLoaderData<typeof auditLogLoader>()
   return (
-    <DashboardContent.Root>
-      <DashboardContent.Header title={window._('moderationPortal.auditLog')} />
-      <div className="grid gap-5 max-w-360 mx-auto">
-        <section className="Card Card--dashboard">
-          <FormControl label={window._('moderationPortal.audit.targetType')}>
-            <Select value={targetType || 'all'} onValueChange={change}>
-              <SelectTrigger className="w-full sm:w-72">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{window._('moderationPortal.audit.allTargets')}</SelectItem>
-                {['user', 'book', 'chapter', 'comment'].map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {window._(`moderationPortal.audit.${type}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormControl>
-        </section>
-        <ModerationLog
-          entries={log.entries}
-          emptyText={window._('moderationPortal.audit.empty')}
-          page={log.page}
-          totalPages={log.totalPages}
+    <WorkspacePage title={t('auditLog')}>
+      <SearchForm>
+        <FilterSelect
+          name="targetType"
+          value={f.targetType}
+          label={t('targetType')}
+          options={targetOptions()}
         />
-      </div>
-    </DashboardContent.Root>
+        <FilterInput name="targetId" value={f.targetId} label={t('targetId')} />
+        <FilterInput name="actorId" value={f.actorId} label={t('actorId')} />
+        <FilterInput name="action" value={f.action} label={t('actionCode')} />
+        <FilterInput name="dateFrom" value={f.dateFrom} label={t('from')} type="date" />
+        <FilterInput name="dateTo" value={f.dateTo} label={t('to')} type="date" />
+      </SearchForm>
+      <p className="text-sm text-secondary-foreground">
+        {log.total.toLocaleString()} {t('results')}
+      </p>
+      <ModerationLog entries={log.entries} emptyText={t('noActivity')} />
+      <PageNavigation page={log.page} totalPages={log.totalPages} />
+    </WorkspacePage>
   )
 }
-export function AuditLogErrorPage() {
-  return (
-    <DashboardContent.Root>
-      <div className="Card Card--dashboard">
-        <ErrorDisplay error={useRouteError()} />
-      </div>
-    </DashboardContent.Root>
-  )
-}
+export const AuditLogErrorPage = WorkspaceError

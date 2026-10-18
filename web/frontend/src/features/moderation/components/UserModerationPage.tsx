@@ -176,7 +176,7 @@ function UserTab({
 }) {
   return (
     <li>
-      <NavLink end={end} className={`tab ${active ? 'Tab--active' : ''}`} to={to}>
+      <NavLink end={end} className={`Tab${active ? ' Tab--active' : ''}`} to={to}>
         {children}
       </NavLink>
     </li>

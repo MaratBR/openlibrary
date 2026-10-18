@@ -31,7 +31,7 @@ func (r *loginHistoryRepository) Search(ctx context.Context, query GetLoginHisto
 		return nil, 0, apperror.WrapUnexpectedDBError(err)
 	}
 	entries := MapSlice(rows, func(row store.Moderation_SearchUserLoginHistoryRow) LoginHistoryEntry {
-		return LoginHistoryEntry{ID: row.ID, UserID: uuidDbToDomain(row.UserID), UserName: row.UserName, IPAddress: row.IpAddress, UserAgent: row.UserAgent, Location: IPLocation{Country: row.LocationCountry, Region: row.LocationRegion, City: row.LocationCity}, LoggedInAt: timeDbToDomain(row.CreatedAt), ExpiresAt: timeDbToDomain(row.ExpiresAt), IsTerminated: row.IsTerminated}
+		return LoginHistoryEntry{ID: row.ID, UserID: uuidDbToDomain(row.UserID), UserName: row.UserName, IPAddress: row.IpAddress, UserAgent: row.UserAgent, Location: IPLocation{}, LoggedInAt: timeDbToDomain(row.CreatedAt), ExpiresAt: timeDbToDomain(row.ExpiresAt), IsTerminated: row.IsTerminated}
 	})
 	return entries, total, nil
 }
@@ -42,7 +42,7 @@ func (r *loginHistoryRepository) RecentLocations(ctx context.Context, userID uui
 		return nil, apperror.WrapUnexpectedDBError(err)
 	}
 	return MapSlice(rows, func(row store.Moderation_GetRecentLoginSessionsRow) LoginLocation {
-		return LoginLocation{IPLocation: IPLocation{Country: row.LocationCountry, Region: row.LocationRegion, City: row.LocationCity}, LastSeenAt: timeDbToDomain(row.CreatedAt)}
+		return LoginLocation{IPLocation: IPLocation{}, LastSeenAt: timeDbToDomain(row.CreatedAt)}
 	}), nil
 }
 

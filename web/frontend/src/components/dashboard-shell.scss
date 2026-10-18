@@ -1,4 +1,5 @@
-@import './dashboard-records.scss';
+@use './dashboard-navigation.scss';
+@use './dashboard-records.scss';
 
 // Shared dashboard frame; component styles belong to their owners.
 .DashboardShell {

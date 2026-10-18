@@ -1,0 +1,89 @@
+.ModWorkspace {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+
+  &-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 1rem;
+    padding-block: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  &-field {
+    display: grid;
+    gap: 0.5rem;
+    flex: 1 1 11rem;
+    min-width: 0;
+    label {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    input,
+    button {
+      min-height: 2.75rem;
+      width: 100%;
+    }
+  }
+  &-empty {
+    padding-block: 2rem;
+    color: var(--secondary-foreground);
+  }
+  &-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    &[data-state='escalated'],
+    &[data-state='high'],
+    &[data-state='critical'] {
+      color: var(--primary);
+      background: var(--accent);
+    }
+  }
+  &-record {
+    display: grid;
+    gap: 0.625rem;
+    padding: 1.25rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    min-width: 0;
+    &:hover {
+      background: var(--secondary);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  }
+  &-queue {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    &:hover {
+      background: var(--secondary);
+    }
+    strong {
+      font-variant-numeric: tabular-nums;
+    }
+  }
+  &-content {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-width: 75ch;
+    line-height: 1.8;
+  }
+  .Btn {
+    min-height: 2.75rem;
+  }
+}

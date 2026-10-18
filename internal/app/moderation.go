@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	ErrModerationStateChanged    = apperror.AppErrors.NewType("moderation_state_changed").New("target state changed; reload before applying this action")
 	ErrModerationForbidden       = apperror.AppErrors.NewType("moderation_forbidden", apperror.ErrTraitAuthorizationIssue).New("moderator privileges are required")
 	ErrModerationReason          = apperror.AppErrors.NewType("moderation_reason_required").New("a moderation reason is required")
 	ErrInvalidLoginHistoryFilter = apperror.AppErrors.NewType("invalid_login_history_filter").New("invalid login history filter")

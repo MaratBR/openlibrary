@@ -53,7 +53,7 @@ func (r *reportRepoStub) GetCommentContext(context.Context, int64) (*ModerationR
 	return r.comment, nil
 }
 
-func (r *reportRepoStub) Search(context.Context, string, string, int32, int32) ([]ModerationReportListEntry, int64, error) {
+func (r *reportRepoStub) Search(context.Context, SearchModerationReportsQuery, int32, int32) ([]ModerationReportListEntry, int64, error) {
 	return nil, 0, nil
 }
 
@@ -228,4 +228,16 @@ func TestReportServiceRejectsUnsupportedOrMissingTargets(t *testing.T) {
 	if err != ErrReportTargetMissing {
 		t.Fatalf("expected missing target error, got %v", err)
 	}
+}
+
+func (r *reportRepoStub) WithLockedReport(ctx context.Context, _ int64, run func(context.Context) error) error {
+	return run(ctx)
+}
+func (r *reportRepoStub) AddNote(_ context.Context, _ int64, event ReportDecision, _ string) error {
+	r.events = append(r.events, event)
+	return nil
+}
+
+func (r *reportRepoStub) FindOperation(context.Context, int64, string) (uuid.UUID, string, bool, error) {
+	return uuid.Nil(), "", false, nil
 }

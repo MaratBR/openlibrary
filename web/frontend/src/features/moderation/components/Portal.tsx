@@ -4,7 +4,15 @@ import { RouterProvider } from 'react-router/dom'
 import { ReactIslandProps } from '@/islands/common/react-island'
 import { useMemo } from 'react'
 import ModerationLayout from './ModerationLayout'
-import PlaceholderPage from './PlaceholderPage'
+import OverviewPage, { overviewLoader, IntegrationPage } from './workspace/OverviewPage'
+import SearchPage, { globalSearchLoader } from './workspace/SearchPage'
+import {
+  ContentListPage,
+  ContentDetailPage,
+  contentListLoader,
+  contentDetailLoader,
+} from './workspace/ContentPages'
+import { WorkspaceError } from './workspace/ui'
 import UserModerationPage, {
   UserModerationErrorPage,
   userModerationRouteLoader,
@@ -20,17 +28,6 @@ import AuditLogPage, { AuditLogErrorPage, auditLogLoader } from './AuditLogPage'
 import ModerationBooks, { ModerationBooksErrorPage, moderationBooksLoader } from './ModerationBooks'
 import LoginHistoryPage, { LoginHistoryErrorPage, loginHistoryLoader } from './LoginHistoryPage'
 
-const routes = [
-  ['overview', 'moderationPortal.overview'],
-  ['books', 'moderationPortal.books'],
-  ['search', 'moderationPortal.search'],
-  ['chapters', 'moderationPortal.chapters'],
-  ['comments', 'moderationPortal.comments'],
-  ['users', 'moderationPortal.users'],
-  ['login-history', 'moderationPortal.loginHistory'],
-  ['audit-log', 'moderationPortal.auditLog'],
-] as const
-
 function createModerationRouter(roles: string[], isAdmin: boolean) {
   return createHashRouter([
     {
@@ -45,18 +42,34 @@ function createModerationRouter(roles: string[], isAdmin: boolean) {
           path: '/',
           element: <Navigate to="/overview" replace />,
         },
-        ...routes
-          .filter(
-            ([path]) =>
-              path !== 'users' &&
-              path !== 'books' &&
-              path !== 'login-history' &&
-              path !== 'audit-log',
-          )
-          .map(([path, translationKey]) => ({
-            path: `/${path}`,
-            element: <PlaceholderPage title={window._(translationKey)} />,
-          })),
+        {
+          path: '/overview',
+          element: <OverviewPage />,
+          loader: overviewLoader,
+          errorElement: <WorkspaceError />,
+        },
+        {
+          path: '/search',
+          element: <SearchPage />,
+          loader: globalSearchLoader,
+          errorElement: <WorkspaceError />,
+        },
+        { path: '/triage', element: <IntegrationPage feature="triage" /> },
+        { path: '/notifications', element: <IntegrationPage feature="notifications" /> },
+        ...(['chapters', 'comments'] as const).flatMap((kind) => [
+          {
+            path: `/${kind}`,
+            element: <ContentListPage kind={kind} />,
+            loader: contentListLoader(kind),
+            errorElement: <WorkspaceError />,
+          },
+          {
+            path: `/${kind}/:contentId`,
+            element: <ContentDetailPage key={kind} kind={kind} />,
+            loader: contentDetailLoader(kind),
+            errorElement: <WorkspaceError />,
+          },
+        ]),
         {
           path: '/users',
           element: <ModerationUsers roles={roles} />,
@@ -92,11 +105,13 @@ function createModerationRouter(roles: string[], isAdmin: boolean) {
         },
         {
           path: '/reports',
-          element: <ReportsPage view="overview" />,
+          element: <ReportsPage />,
+          loader: reportsSearchLoader,
+          errorElement: <ReportsErrorPage />,
         },
         {
           path: '/reports/search',
-          element: <ReportsPage view="search" />,
+          element: <ReportsPage />,
           errorElement: <ReportsErrorPage />,
           loader: reportsSearchLoader,
         },
@@ -160,14 +175,9 @@ function createModerationRouter(roles: string[], isAdmin: boolean) {
             (data) => data.book.name,
           ),
         })),
-        // TODO: Replace this placeholder when comment moderation is implemented.
-        {
-          path: '/comments/:commentId',
-          element: <PlaceholderPage title={window._('moderationPortal.comments')} />,
-        },
         {
           path: '*',
-          element: <div>404</div>,
+          element: <WorkspaceError />,
         },
       ],
     },

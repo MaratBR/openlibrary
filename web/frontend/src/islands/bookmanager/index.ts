@@ -1,3 +1,5 @@
+import './manager.scss'
+import '@/components/dashboard-shell.scss'
 import NewBook from './new-book'
 import { ReactIsland } from '../common/react-island'
 import BM from './BM'

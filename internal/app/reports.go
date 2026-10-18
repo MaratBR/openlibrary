@@ -48,15 +48,17 @@ type Report struct {
 }
 
 type ReportDecision struct {
-	Time          time.Time
-	ActorUserID   uuid.UUID
-	ActorUserName string
-	Disposition   string
-	Action        string
-	PolicyReason  string
-	InternalNote  string
-	NotifyTarget  bool
-	Payload       []byte
+	OperationID, RequestHash, OldPriority, NewPriority string
+	Kind                                               string
+	Time                                               time.Time
+	ActorUserID                                        uuid.UUID
+	ActorUserName                                      string
+	Disposition                                        string
+	Action                                             string
+	PolicyReason                                       string
+	InternalNote                                       string
+	NotifyTarget                                       bool
+	Payload                                            []byte
 }
 
 type ModerationReportBookContextData struct {
@@ -109,9 +111,12 @@ type ReportRepository interface {
 	GetBookContext(context.Context, int64) (*ModerationReportBookContextData, error)
 	GetUserContext(context.Context, int64) (*ModerationReportUserContextData, error)
 	GetCommentContext(context.Context, int64) (*ModerationReportCommentContextData, error)
-	Search(context.Context, string, string, int32, int32) ([]ModerationReportListEntry, int64, error)
+	Search(context.Context, SearchModerationReportsQuery, int32, int32) ([]ModerationReportListEntry, int64, error)
 	GetEvents(context.Context, int64) ([]ReportDecision, error)
 	AddDecision(context.Context, int64, string, ReportDecision) error
+	WithLockedReport(context.Context, int64, func(context.Context) error) error
+	FindOperation(context.Context, int64, string) (uuid.UUID, string, bool, error)
+	AddNote(context.Context, int64, ReportDecision, string) error
 }
 
 type ReportService interface {

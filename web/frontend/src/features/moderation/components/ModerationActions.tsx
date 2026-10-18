@@ -1,7 +1,6 @@
 import { FormControl } from '@/components/FormControl'
-import Modal from '@/components/Modal'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
-import { FormEvent, ReactNode, useEffect, useState } from 'react'
+import { FormEvent, ReactNode, useEffect, useState, useRef, useId } from 'react'
 import { useRevalidator } from 'react-router'
 import clsx from 'clsx'
 
@@ -63,10 +62,28 @@ export function ModerationConfirmationDialog({
   onConfirm: () => void
   confirmLabel: string
 }) {
+  const dialog = useRef<HTMLDialogElement>(null)
+  const titleId = useId()
+  useEffect(() => {
+    const node = dialog.current
+    if (!node) return
+    if (confirmation && !node.open) node.showModal()
+    if (!confirmation && node.open) node.close()
+  }, [confirmation])
   return (
-    <Modal open={Boolean(confirmation)} onClose={() => !pending && onClose()}>
+    <dialog
+      ref={dialog}
+      className="Dialog"
+      aria-labelledby={titleId}
+      onCancel={(event) => {
+        event.preventDefault()
+        if (!pending) onClose()
+      }}
+    >
       <div className="max-w-128">
-        <h2 className="text-xl font-semibold">{confirmation?.title}</h2>
+        <h2 id={titleId} className="text-xl font-semibold">
+          {confirmation?.title}
+        </h2>
         <p className="my-3 text-secondary-foreground">{confirmation?.description}</p>
         <div className="flex justify-end gap-2 mt-5">
           <button disabled={pending} className="Btn Btn--outline" onClick={onClose}>
@@ -82,7 +99,7 @@ export function ModerationConfirmationDialog({
           </button>
         </div>
       </div>
-    </Modal>
+    </dialog>
   )
 }
 
@@ -112,7 +129,7 @@ export function ModerationActionsPanel({
   const revalidator = useRevalidator()
   const [pending, setPending] = useState(false)
   const confirm = async () => {
-    if (!confirmation) return
+    if (!confirmation || pending) return
     setPending(true)
     try {
       const response = (await confirmation.run()) as { throwIfError?: () => void }

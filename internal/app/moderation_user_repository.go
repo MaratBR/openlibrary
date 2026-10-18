@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
 	"github.com/MaratBR/openlibrary/internal/store"
@@ -104,23 +103,6 @@ func (r *moderationUserRepository) GetReports(ctx context.Context, userID uuid.U
 	return MapSlice(rows, func(row store.Moderation_GetUserReportsRow) ModerationUserReport {
 		return ModerationUserReport{ID: row.ID, Number: row.Number, Time: timeDbToDomain(row.Time), TargetType: ReportTargetType(row.TargetType), TargetID: row.TargetID, Reason: row.Reason, Description: row.Description, ReporterUserID: uuidDbToDomain(row.ReporterUserID), ReporterUserName: row.ReporterUserName.String}
 	}), total, nil
-}
-
-func (r *moderationUserRepository) CreateTemporaryRandomReports(ctx context.Context, userID uuid.UUID, count int) error {
-	for range count {
-		reporterUserID, err := r.queries.Moderation_GetRandomUserID(ctx)
-		if err != nil {
-			return apperror.WrapUnexpectedDBError(err)
-		}
-		reason, description := temporaryRandomReportValues()
-		if _, err = r.queries.Report_Create(ctx, store.Report_CreateParams{
-			Time: timeToTimestamptz(time.Now()), ReporterUserID: reporterUserID,
-			TargetType: string(ReportTargetUser), TargetID: userID.String(), Reason: reason, Description: description,
-		}); err != nil {
-			return apperror.WrapUnexpectedDBError(err)
-		}
-	}
-	return nil
 }
 
 func NewModerationUserRepository(db DB) ModerationUserRepository {

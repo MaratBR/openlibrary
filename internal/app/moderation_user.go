@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"math"
-	"math/rand/v2"
 	"time"
 
 	"uuid"
@@ -109,7 +108,6 @@ type ModerationUserRepository interface {
 	GetComments(context.Context, uuid.UUID, int32, int32) ([]ModerationUserComment, error)
 	GetHistory(context.Context, uuid.UUID, int32, int32) ([]ModerationUserHistoryEntry, int64, error)
 	GetReports(context.Context, uuid.UUID, int32, int32) ([]ModerationUserReport, int64, error)
-	CreateTemporaryRandomReports(context.Context, uuid.UUID, int) error
 }
 
 type ModerationUserService interface {
@@ -125,6 +123,14 @@ func (s *moderationUserService) SearchUsers(ctx context.Context, query Moderatio
 	if err := s.auth.AuthorizeModerator(ctx, query.ActorUserID); err != nil {
 		return ModerationPage[ModerationUserListEntry]{}, err
 	}
+	if !oneOf(query.Banned, "", "banned", "active") {
+		return ModerationPage[ModerationUserListEntry]{}, ErrModerationFilter
+	}
+	if query.Role != "" {
+		if _, err := ParseUserRole(query.Role); err != nil {
+			return ModerationPage[ModerationUserListEntry]{}, ErrModerationFilter
+		}
+	}
 	page, size, limit, offset := normalizeModerationPage(query.Page, query.PageSize)
 	var searchID *uuid.UUID
 	if parsed, err := uuid.Parse(query.Search); err == nil {
@@ -138,7 +144,7 @@ func (s *moderationUserService) SearchUsers(ctx context.Context, query Moderatio
 }
 
 func normalizeModerationPage(page, pageSize uint32) (uint32, uint32, int32, int32) {
-	page = max(1, page)
+	page = min(max(1, page), 1000000)
 	pageSize = min(max(1, pageSize), 100)
 	return page, pageSize, int32(pageSize), int32((page - 1) * pageSize)
 }
@@ -201,29 +207,12 @@ func (s *moderationUserService) GetReports(ctx context.Context, query Moderation
 	if _, err := s.repo.GetUserInfo(ctx, query.UserID); err != nil {
 		return ModerationPage[ModerationUserReport]{}, err
 	}
-	// TEMPORARY: Seed demo reports until real report creation is connected to controllers.
-	_, total, err := s.repo.GetReports(ctx, query.UserID, 1, 0)
-	if err != nil {
-		return ModerationPage[ModerationUserReport]{}, err
-	}
-	if total < 50 {
-		if err = s.repo.CreateTemporaryRandomReports(ctx, query.UserID, 4); err != nil {
-			return ModerationPage[ModerationUserReport]{}, err
-		}
-	}
 	page, size, limit, offset := normalizeModerationPage(query.Page, query.PageSize)
 	entries, total, err := s.repo.GetReports(ctx, query.UserID, limit, offset)
 	if err != nil {
 		return ModerationPage[ModerationUserReport]{}, err
 	}
 	return moderationPage(entries, page, size, total), nil
-}
-
-var temporaryReportReasons = []string{"Spam", "Harassment", "Inappropriate content", "Impersonation", "Other"}
-var temporaryReportDescriptions = []string{"Automatically generated temporary report.", "Flagged for moderator review.", "Multiple users reported this activity.", "Potential policy violation."}
-
-func temporaryRandomReportValues() (string, string) {
-	return temporaryReportReasons[rand.IntN(len(temporaryReportReasons))], temporaryReportDescriptions[rand.IntN(len(temporaryReportDescriptions))]
 }
 
 type moderationUserService struct {
