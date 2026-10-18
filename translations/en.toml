@@ -513,6 +513,7 @@ ratherNotSay = "Rather not say"
 o = "Other"
 
 [accountSettings]
+automaticSave = "Changes are saved automatically."
 navigation = "Settings sections"
 saving = "Saving…"
 saved = "Saved"
