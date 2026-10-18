@@ -1156,6 +1156,8 @@ right = "Align right"
 justify = "Justify"
 
 [admin.ui]
+systemRoleReserved = "System roles are reserved for system accounts and cannot be assigned or removed here."
+modified = "Modified"
 title = "Administration"
 subtitle = "OpenLibrary workspace"
 homeTitle = "Library administration"

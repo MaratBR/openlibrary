@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import { Link, LoaderFunctionArgs, useLoaderData, useLocation, useSearchParams } from 'react-router'
 import { AdminUser, loadUser, loadUsers, roles, save } from '@/features/admin/api'
 import {
@@ -39,7 +40,7 @@ export function Users() {
             const search = String(fields.get('q') || '').trim()
             const role = String(fields.get('role') || '')
             if (search) q.set('q', search)
-            if (role) q.set('usersFilter.role', role)
+            if (role && role !== 'all') q.set('usersFilter.role', role)
             setParams(q)
           }}
         >
@@ -54,19 +55,19 @@ export function Users() {
             />
           </Field>
           <Field id="role-filter" label={t('admin.users.role')}>
-            <select
-              className="Select"
-              name="role"
-              id="role-filter"
-              defaultValue={params.get('usersFilter.role') || ''}
-            >
-              <option value="">{t('admin.ui.allRoles')}</option>
-              {roles.map((role) => (
-                <option value={role} key={role}>
-                  {t(`role.${role}`)}
-                </option>
-              ))}
-            </select>
+            <Select name="role" defaultValue={params.get('usersFilter.role') || 'all'}>
+              <SelectTrigger id="role-filter">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('admin.ui.allRoles')}</SelectItem>
+                {roles.map((role) => (
+                  <SelectItem value={role} key={role}>
+                    {t(`role.${role}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
           <button type="submit" className="Btn Btn--primary">
             {t('common.search')}
@@ -221,25 +222,37 @@ function UserForm({ user, back }: { user: AdminUser; back: string }) {
                   aria-describedby="user-name-help"
                 />
               </Field>
-              <Field id="user-gender" label={t('admin.users.gender')}>
-                <select
-                  id="user-gender"
-                  className="Select"
-                  value={genderType}
-                  onChange={(event) => {
-                    const next = event.target.value
+              <Field
+                id="user-gender"
+                label={t('admin.users.gender')}
+                modified={values.gender !== baseline.gender}
+              >
+                <Select
+                  disabled={state.pending}
+                  value={genderType || 'unspecified'}
+                  onValueChange={(value) => {
+                    const next = value === 'unspecified' ? '' : value
                     setGenderType(next)
                     change({ gender: next === 'other' ? '' : next })
                   }}
                 >
-                  <option value="">{t('gender.ratherNotSay')}</option>
-                  <option value="male">{t('gender.m')}</option>
-                  <option value="female">{t('gender.f')}</option>
-                  <option value="other">{t('gender.o')}</option>
-                </select>
+                  <SelectTrigger id="user-gender">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unspecified">{t('gender.ratherNotSay')}</SelectItem>
+                    <SelectItem value="male">{t('gender.m')}</SelectItem>
+                    <SelectItem value="female">{t('gender.f')}</SelectItem>
+                    <SelectItem value="other">{t('gender.o')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </Field>
               {genderType === 'other' && (
-                <Field id="custom-gender" label={t('admin.ui.customGender')}>
+                <Field
+                  id="custom-gender"
+                  label={t('admin.ui.customGender')}
+                  modified={values.gender !== baseline.gender}
+                >
                   <input
                     id="custom-gender"
                     className="input"
@@ -248,7 +261,11 @@ function UserForm({ user, back }: { user: AdminUser; back: string }) {
                   />
                 </Field>
               )}
-              <Field id="user-about" label={t('admin.users.about')}>
+              <Field
+                id="user-about"
+                label={t('admin.users.about')}
+                modified={values.about !== baseline.about}
+              >
                 <textarea
                   id="user-about"
                   className="textarea"
@@ -279,6 +296,7 @@ function UserForm({ user, back }: { user: AdminUser; back: string }) {
                     id="new-password"
                     label={t('admin.ui.password')}
                     help={t('admin.ui.passwordHelp')}
+                    modified={values.password !== baseline.password}
                   >
                     <input
                       id="new-password"
@@ -346,19 +364,33 @@ function UserForm({ user, back }: { user: AdminUser; back: string }) {
               title={t('admin.users.rolesAndPermissions')}
               description={t('admin.ui.permissionsDescription')}
             >
-              <Field id="user-role" label={t('admin.users.role')}>
-                <select
-                  id="user-role"
-                  className="Select"
+              <Field
+                id="user-role"
+                label={t('admin.users.role')}
+                modified={values.role !== baseline.role}
+                help={user.role === 'system' ? t('admin.ui.systemRoleReserved') : undefined}
+              >
+                <Select
+                  disabled={state.pending || user.role === 'system'}
                   value={values.role}
-                  onChange={(event) => change({ role: event.target.value as AdminUser['role'] })}
+                  onValueChange={(role) => change({ role: role as AdminUser['role'] })}
                 >
-                  {roles.map((role) => (
-                    <option key={role} value={role}>
-                      {t(`role.${role}`)}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    id="user-role"
+                    aria-describedby={user.role === 'system' ? 'user-role-help' : undefined}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles
+                      .filter((role) => role !== 'system' || user.role === 'system')
+                      .map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {t(`role.${role}`)}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </Field>
             </Card>
           </div>

@@ -276,7 +276,17 @@ func (u *userService) UpdateUser(ctx context.Context, cmd UpdateUserCommand) err
 }
 
 func (u *userService) updateUserRole(ctx context.Context, queries *store.Queries, userID uuid.UUID, role UserRole) error {
-	err := queries.User_UpdateRole(ctx, store.User_UpdateRoleParams{
+	user, err := queries.User_Get(ctx, uuidDomainToDb(userID))
+	if err != nil {
+		return apperror.WrapUnexpectedDBError(err)
+	}
+	if err := ValidateUserRoleChange(UserRole(user.Role), role); err != nil {
+		return err
+	}
+	if UserRole(user.Role) == role {
+		return nil
+	}
+	err = queries.User_UpdateRole(ctx, store.User_UpdateRoleParams{
 		ID:   uuidDomainToDb(userID),
 		Role: store.UserRole(role),
 	})

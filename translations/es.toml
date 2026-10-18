@@ -849,6 +849,10 @@ insertChapterAfter = "Insert {{.ChapterName}} after {{.Another}}"
 [admin]
 goBackToSite = "Go back to site"
 
+[admin.ui]
+systemRoleReserved = "El rol de sistema está reservado para las cuentas del sistema y no se puede asignar ni quitar aquí."
+modified = "Modificado"
+
 [admin.login]
 redirectNotice = "You will be redirected to admin panel once you login"
 

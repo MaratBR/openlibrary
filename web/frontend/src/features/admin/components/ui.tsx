@@ -57,15 +57,22 @@ export function Field({
   label,
   children,
   help,
+  modified = false,
 }: {
   id: string
   label: string
   children: ReactNode
   help?: string
+  modified?: boolean
 }) {
   return (
     <div className="Admin-field">
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id}>
+        {label}
+        {modified && (
+          <span className="Admin-badge Admin-badge--accent ml-2">{t('admin.ui.modified')}</span>
+        )}
+      </label>
       {children}
       {help && (
         <p id={`${id}-help`} className="Admin-help">

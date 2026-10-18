@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import { useQuery } from '@tanstack/react-query'
 import { Link, LoaderFunctionArgs, useLoaderData, useLocation, useSearchParams } from 'react-router'
 import { AdminTag, categories, loadTag, loadTags, save } from '@/features/admin/api'
@@ -293,18 +294,22 @@ function TagForm({ tag, back }: { tag: AdminTag; back: string }) {
               />
             </Field>
             <Field id="tag-category" label={t('admin.tags.type')}>
-              <select
-                className="Select"
-                id="tag-category"
+              <Select
+                disabled={state.pending}
                 value={values.type}
-                onChange={(event) => change({ type: event.target.value as AdminTag['category'] })}
+                onValueChange={(type) => change({ type: type as AdminTag['category'] })}
               >
-                {categories.map((category) => (
-                  <option value={category} key={category}>
-                    {t(`tag.${category}`)}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="tag-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem value={category} key={category}>
+                      {t(`tag.${category}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
           </Card>
           <div className="Admin-stack">

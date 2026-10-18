@@ -49,6 +49,18 @@ func ParseUserRole(role string) (UserRole, error) {
 	}
 }
 
+// ValidateUserRoleChange reserves system roles for provisioning and prevents
+// normal account updates from removing an existing system role.
+func ValidateUserRoleChange(current, next UserRole) error {
+	if _, err := ParseUserRole(string(next)); err != nil {
+		return err
+	}
+	if current != next && (current == RoleSystem || next == RoleSystem) {
+		return ErrInvalidUserRole
+	}
+	return nil
+}
+
 func ValidateUserName(value string) error {
 	if len(value) < 2 {
 		return ErrUserNameInvalid.New("name is too short - at least one character is required")
