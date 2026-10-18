@@ -1,44 +1,123 @@
 .UserMenu {
-  @apply fixed z-50 border bg-surface text-foreground shadow-2xl p-2;
-  top: calc(var(--header-height) + var(--spacing));
-  right: var(--spacing);
-  width: min(20rem, calc(100vw - var(--spacing) * 2));
-  border-color: var(--border);
-  border-radius: var(--radius);
+  width: min(304px, calc(100vw - 24px));
+  padding: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--surface);
 
-  @media (min-width: 1024px) {
-    right: max(var(--spacing), calc((100vw - var(--ol-container-big-width)) / 2));
-  }
-
-  &-items {
-    @apply flex flex-col gap-1 mt-2;
+  &-trigger .avatar {
+    width: 32px;
+    height: 32px;
   }
 
   &-identity {
-    @apply flex items-center gap-3 p-3 bg-secondary;
-    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 8px 8px;
+    padding: 16px 4px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  &-avatar {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+
+  &-account {
+    min-width: 0;
+  }
+
+  &-name {
+    overflow: hidden;
+    color: var(--foreground);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &-email {
+    margin-top: 2px;
+    overflow: hidden;
+    color: var(--secondary-foreground);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &-items {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   &-item {
-    @apply px-3 py-2.5 font-medium min-h-11 flex items-center gap-3 w-full
-            text-foreground hover:bg-foreground/5 active:bg-accent;
-    border-radius: var(--radius);
-    transition:
-      color var(--transition-fast),
-      background var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 46px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: var(--foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    text-decoration: none;
 
-    &:hover .UserMenu-itemIcon {
-      @apply text-primary;
+    &:hover {
+      background: var(--secondary);
+      color: var(--primary);
+    }
+    &:active {
+      background: var(--accent);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+      background: var(--secondary);
+    }
+
+    &:is(:hover, :focus-visible) .UserMenu-itemIcon,
+    &:is(:hover, :focus-visible) .UserMenu-itemArrow {
+      color: var(--primary);
+    }
+
+    &--logout {
+      color: var(--secondary-foreground);
+      font-weight: 400;
     }
   }
 
+  &-itemLabel {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &-itemArrow {
+    flex-shrink: 0;
+    color: var(--secondary-foreground);
+    font-size: 0.625rem;
+  }
+
   &-itemIcon {
-    @apply w-5 text-center text-secondary-foreground;
-    transition: color var(--transition-fast);
+    width: 20px;
+    flex-shrink: 0;
+    text-align: center;
+    color: var(--secondary-foreground);
+    font-size: 0.875rem;
   }
 
   &-separator {
-    @apply my-1 border-t;
-    border-color: var(--border);
+    margin: 8px 12px;
+    border-top: 1px solid var(--border);
   }
 }

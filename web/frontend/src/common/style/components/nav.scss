@@ -15,6 +15,17 @@
     @apply lg:items-stretch;
   }
 
+  &-actions {
+    display: flex;
+    align-items: center;
+    margin-left: 12px;
+    margin-right: 12px;
+    @media (max-width: 1023px) {
+      margin-left: auto;
+      margin-right: 56px;
+    }
+  }
+
   &-logo {
     // main site logo
     @apply px-2 inline-block focus:outline focus:outline-2 outline-offset-[-2px] lg:mr-4 active:bg-surface;
@@ -98,7 +109,10 @@
   visibility: hidden;
   pointer-events: none;
   transform: translateY(-4px);
-  transition: opacity 150ms ease, transform 150ms ease, visibility 150ms ease;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease,
+    visibility 150ms ease;
 
   &[data-open='true'] {
     opacity: 1;
@@ -120,7 +134,9 @@
     border-radius: 12px;
     color: var(--foreground);
     font-weight: 600;
-    transition: background 150ms ease, color 150ms ease;
+    transition:
+      background 150ms ease,
+      color 150ms ease;
 
     &:hover,
     &:focus-visible {
@@ -155,14 +171,5 @@
 @media (prefers-reduced-motion: reduce) {
   .NavSubmenu {
     transition: none;
-  }
-}
-
-.NavUser {
-  @apply relative h-full ml-4 mt-0 w-full
-        lg:min-w-12 lg:max-w-24;
-
-  &-btn {
-    @apply lg:h-full;
   }
 }

@@ -1,3 +1,4 @@
+import { DashboardHeader } from '@/components/dashboard-header'
 import { DashboardNavItem } from '@/components/dashboard-nav-item'
 import { DashboardLoader } from '@/components/dashboard-loader'
 import { ReactNode } from 'react'
@@ -10,8 +11,8 @@ export default function BMLayout({ children }: { children: ReactNode }) {
   return (
     <div className="BM DashboardShell">
       {busy && <DashboardLoader label={window._('bookManager.ui.loading')} />}
-      <aside className="DashboardShell-sidebar">
-        <header className="DashboardShell-brand">
+      <DashboardHeader>
+        <div className="DashboardShell-brand">
           <NavLink to="/books" className="DashboardShell-brandLink">
             <img className="dark:hidden" src="/_/embed-assets/logo.svg" alt="" />
             <img className="hidden dark:block" src="/_/embed-assets/logo-dark.svg" alt="" />
@@ -20,7 +21,9 @@ export default function BMLayout({ children }: { children: ReactNode }) {
               <small>OpenLibrary</small>
             </span>
           </NavLink>
-        </header>
+        </div>
+      </DashboardHeader>
+      <aside className="DashboardShell-sidebar">
         <nav className="DashboardShell-nav" aria-label={window._('bookManager.title')}>
           <DashboardNavItem dashboard="bookmanager" to="/books" exclude="/books/new">
             <i className="fa-solid fa-book" aria-hidden="true" />

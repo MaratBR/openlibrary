@@ -1,0 +1,104 @@
+.NotificationMenu {
+  display: flex;
+  flex-direction: column;
+  height: min(560px, var(--radix-popover-content-available-height));
+
+  &-trigger {
+    position: relative;
+  }
+  &-badge {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    min-width: 18px;
+    padding: 1px 4px;
+    border-radius: 12px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+  &-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  &-header h2 {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  &-body {
+    min-height: 0;
+    flex: 1;
+    scrollbar-width: thin;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--border) var(--surface);
+  }
+  &-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  &-item + &-item {
+    border-top: 1px solid var(--border);
+  }
+  &-empty {
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  &-empty svg {
+    margin-inline: auto;
+    width: 40px;
+    height: 40px;
+    color: var(--secondary-foreground);
+  }
+  &-empty p {
+    margin-top: 16px;
+    font-weight: 600;
+  }
+  &-empty span {
+    display: block;
+    margin-top: 6px;
+    color: var(--secondary-foreground);
+    font-size: 0.875rem;
+  }
+  &-status {
+    padding: 24px;
+    color: var(--secondary-foreground);
+    text-align: center;
+  }
+  &-more {
+    display: block;
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    width: 100%;
+    padding: 16px;
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    &:hover {
+      background: var(--secondary);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: -4px;
+    }
+    &:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+  }
+}

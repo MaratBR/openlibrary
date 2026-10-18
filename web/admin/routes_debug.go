@@ -15,11 +15,11 @@ type debugActionDescriptor struct {
 
 type debugController struct {
 	fullReindexService app.BookReindexService
-	notifications      *notifications.StreamReader
+	notifications      notifications.Service
 	actions            map[string]debugActionDescriptor
 }
 
-func newDebugController(fullReindexService app.BookReindexService, notifications *notifications.StreamReader) *debugController {
+func newDebugController(fullReindexService app.BookReindexService, notifications notifications.Service) *debugController {
 	c := &debugController{
 		fullReindexService: fullReindexService,
 		notifications:      notifications,
@@ -45,7 +45,28 @@ func (c *debugController) sendNotification(w http.ResponseWriter, r *http.Reques
 		adminAPIError(w, http.StatusBadRequest)
 		return
 	}
-	count, err := c.notifications.Send(r.Context(), r.FormValue("userId"), r.FormValue("role"), r.FormValue("title"), r.FormValue("content"))
+	options := notifications.Options{
+		Category: r.FormValue("category"), Type: r.FormValue("type"), Urgent: r.FormValue("urgent") == "true",
+	}
+	if payload := r.FormValue("icon"); payload != "" {
+		kind := notifications.IconEmoji
+		switch r.FormValue("iconType") {
+		case "", "emoji":
+		case "fontAwesome":
+			kind = notifications.IconFontAwesome
+		case "image":
+			kind = notifications.IconImage
+		default:
+			adminAPIError(w, http.StatusBadRequest)
+			return
+		}
+		options.Icon = &notifications.Icon{Type: kind, Payload: payload}
+	}
+	if urgent := r.FormValue("urgent"); urgent != "" && urgent != "true" && urgent != "false" {
+		adminAPIError(w, http.StatusBadRequest)
+		return
+	}
+	count, err := c.notifications.Send(r.Context(), r.FormValue("userId"), r.FormValue("role"), r.FormValue("title"), r.FormValue("content"), options)
 	if err != nil {
 		if errors.Is(err, notifications.ErrInvalidSend) {
 			adminJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})

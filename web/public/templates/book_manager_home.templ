@@ -22,6 +22,7 @@ templ bmLayout(title string, additionalCSS ...string) {
 			l := i18n.GetLocalizer(ctx)
 		}}
 		@i18nExtractKeysByPrefix(l, "common")
+        @i18nExtractKeysByPrefix(l, "notifications")
 		@i18nExtractKeysByPrefix(l, "bookManager")
 		@i18nExtractKeys(l, []string{"search.removeTag", "search.tags", "search.findTags", "search.tagsLoading", "search.tagsError", "search.noResults"})
 		// TODO optimize?

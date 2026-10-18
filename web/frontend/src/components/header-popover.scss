@@ -1,0 +1,67 @@
+// Shared floating surface for account navigation and notification history.
+.HeaderPopover {
+  z-index: 80;
+  width: min(360px, calc(100vw - 24px));
+  max-height: var(--radix-popover-content-available-height);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-text);
+  box-shadow:
+    0 8px 16px color-mix(in srgb, var(--foreground) 7%, transparent),
+    0 24px 56px color-mix(in srgb, var(--foreground) 14%, transparent);
+  overflow: hidden;
+  transform-origin: var(--radix-popover-content-transform-origin);
+
+  &[data-state='open'] {
+    animation: header-popover-enter 160ms ease-out;
+  }
+
+  &-trigger,
+  &-close {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--secondary-foreground);
+    cursor: pointer;
+
+    &:hover,
+    &[data-state='open'] {
+      background: var(--secondary);
+      color: var(--primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  }
+
+  &-close {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@keyframes header-popover-enter {
+  from {
+    opacity: 0.5;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .HeaderPopover[data-state='open'] {
+    animation: none;
+  }
+}

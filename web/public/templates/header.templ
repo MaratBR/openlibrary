@@ -61,9 +61,7 @@ templ siteHeader() {
                 _, isAuthorized := auth.GetSession(ctx)
             }}
             <div class="SiteNav-user">
-                if isAuthorized {
-                    @navUser()
-                } else {
+                if !isAuthorized {
                     <a class="nav-link" href="/login">
                         { l.T("login.login") }
                         <i class="fa-solid fa-right-to-bracket"></i>
@@ -71,6 +69,9 @@ templ siteHeader() {
                 }
             </div>
         </nav>
+        if _, ok := auth.GetSession(ctx); ok {
+            @navUser()
+        }
         <div id="NavBar_LibrarySubMenu" class="NavSubmenu" data-open="false" data-nav-portal inert></div>
         <div class="site-nav-overlay" @click="navOpen=false" :data-open="navOpen" />
     }
@@ -79,13 +80,16 @@ templ siteHeader() {
 templ navUser() {
     {{
         user := auth.RequireUser(ctx)
+        l := i18n.GetLocalizer(ctx)
     }}
-    <div id="nav-user" class="NavUser">
-        <button class="NavUser-btn">
-            <img class="avatar size-12 border hover:ring-2 ring-primary -ring-offset-1" src={user.Avatar.MD} /> 
-        </button>
-        @webcomponents.Island2(webcomponents.Island2Props{
-            Name: "header-user-menu",
-        })
-    </div>
+    @i18nExtractKeysByPrefix(l, "common")
+    @i18nExtractKeysByPrefix(l, "notifications")
+    @webcomponents.Island2(webcomponents.Island2Props{
+        Name: "header-actions",
+        Attributes: templ.Attributes{"class": "SiteHeader-actions"},
+    }) {
+        <a class="HeaderPopover-trigger UserMenu-trigger" href={ templ.URL("/users/" + user.ID.String()) } aria-label={ l.T("common.profile") }>
+            <img class="avatar" src={ user.Avatar.MD } alt=""/>
+        </a>
+    }
 }

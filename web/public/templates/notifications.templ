@@ -1,0 +1,15 @@
+package templates
+
+import "github.com/MaratBR/openlibrary/internal/i18n"
+
+templ NotificationsCenter() {
+    {{ l := i18n.GetLocalizer(ctx) }}
+    @standardPageLayout(standardPageLayoutProps{
+        htmlLayoutProps: htmlLayoutProps{Title: l.T("notifications.center")},
+    }) {
+        <main class="OlContainer py-10">
+            <h1 class="font-title text-3xl mb-6">{ l.T("notifications.center") }</h1>
+            <p class="text-secondary-foreground">{ l.T("notifications.centerTodo") }</p>
+        </main>
+    }
+}

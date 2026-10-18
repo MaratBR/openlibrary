@@ -1,3 +1,4 @@
+import { DashboardHeader } from '@/components/dashboard-header'
 import SendNotifications from '@/features/admin/pages/notifications'
 import { dashboardItem } from '@/components/dashboard-nav-item'
 import { DashboardNavItem } from '@/components/dashboard-nav-item'
@@ -29,8 +30,8 @@ function Layout() {
   return (
     <div className="Admin DashboardShell">
       {loading && <Loading />}
-      <aside className="DashboardShell-sidebar">
-        <header className="DashboardShell-brand">
+      <DashboardHeader>
+        <div className="DashboardShell-brand">
           <Link to="/" className="DashboardShell-brandLink">
             <img src="/_/embed-assets/logo.svg" className="dark:hidden" alt="" />
             <img src="/_/embed-assets/logo-dark.svg" className="hidden dark:block" alt="" />
@@ -39,7 +40,9 @@ function Layout() {
               <small>{t('admin.ui.subtitle')}</small>
             </span>
           </Link>
-        </header>
+        </div>
+      </DashboardHeader>
+      <aside className="DashboardShell-sidebar">
         <nav className="DashboardShell-nav" aria-label={t('admin.ui.section')}>
           {[
             ['/', 'home', 'fa-house'],

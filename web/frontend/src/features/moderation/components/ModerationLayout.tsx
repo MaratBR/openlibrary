@@ -1,3 +1,4 @@
+import { DashboardHeader } from '@/components/dashboard-header'
 import { DashboardNavItem } from '@/components/dashboard-nav-item'
 import { ReactNode, useState } from 'react'
 import { NavLink } from 'react-router'
@@ -38,8 +39,8 @@ export default function ModerationLayout({
   const [navigationOpen, setNavigationOpen] = useState(false)
   return (
     <div className="Moderation DashboardShell">
-      <aside className="DashboardShell-sidebar">
-        <header className="DashboardShell-brand">
+      <DashboardHeader>
+        <div className="DashboardShell-brand">
           <NavLink className="DashboardShell-brandLink" to="/overview">
             <img className="dark:hidden" src="/_/embed-assets/logo.svg" alt="" />
             <img className="hidden dark:block" src="/_/embed-assets/logo-dark.svg" alt="" />
@@ -48,7 +49,9 @@ export default function ModerationLayout({
               <small>OpenLibrary</small>
             </span>
           </NavLink>
-        </header>
+        </div>
+      </DashboardHeader>
+      <aside className="DashboardShell-sidebar">
         <button
           className="Btn Btn--rail Btn--outline md:hidden"
           aria-expanded={navigationOpen}
@@ -87,7 +90,9 @@ export default function ModerationLayout({
           </button>
         </div>
       </aside>
-      <main className="DashboardShell-content">{children}</main>
+      <main className="DashboardShell-content">
+        {children}
+      </main>
     </div>
   )
 }

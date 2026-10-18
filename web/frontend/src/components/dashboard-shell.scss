@@ -7,8 +7,11 @@
   --dashboard-rail-ink: var(--primary-foreground);
   --dashboard-rail-muted: color-mix(in srgb, var(--dashboard-rail-ink) 76%, var(--dashboard-rail));
   --dashboard-canvas: color-mix(in srgb, var(--surface) 96%, var(--foreground));
+  --dashboard-header-height: 76px;
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  padding-top: var(--dashboard-header-height);
   min-height: 100dvh;
   background: var(--dashboard-canvas);
   color: var(--foreground);
@@ -18,28 +21,33 @@
     color: var(--accent-foreground);
   }
   &-sidebar {
+    grid-column: 1;
+    grid-row: 1;
     position: sticky;
-    top: 0;
-    height: 100dvh;
+    top: var(--dashboard-header-height);
+    height: calc(100dvh - var(--dashboard-header-height));
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 28px;
-    padding: 32px 16px 20px;
+    padding: 24px 16px 20px;
     background: var(--dashboard-rail);
     color: var(--dashboard-rail-ink);
     scrollbar-width: thin;
     scrollbar-color: var(--dashboard-rail-muted) var(--dashboard-rail);
   }
   &-brand {
-    padding: 0 12px 28px;
-    border-bottom: 1px solid color-mix(in srgb, var(--dashboard-rail-ink) 18%, transparent);
+    min-width: 0;
   }
   &-brandLink {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: var(--dashboard-rail-ink);
+    min-width: 0;
+    color: var(--foreground);
+    span {
+      min-width: 0;
+    }
     img {
       width: 28px;
       height: 36px;
@@ -55,7 +63,7 @@
     small {
       display: block;
       margin-top: 4px;
-      color: var(--dashboard-rail-muted);
+      color: var(--secondary-foreground);
       font-size: 0.72rem;
       line-height: 1.5;
     }
@@ -128,7 +136,23 @@
     padding-top: 16px;
     border-top: 1px solid color-mix(in srgb, var(--dashboard-rail-ink) 18%, transparent);
   }
+  &-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    height: var(--dashboard-header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--foreground);
+  }
   &-content {
+    grid-column: 2;
+    grid-row: 1;
     min-width: 0;
     width: 100%;
     background: var(--dashboard-canvas);
@@ -152,14 +176,29 @@
 @media (max-width: 760px) {
   .DashboardShell {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    &-header {
+      padding-inline: 16px;
+    }
+    &-content {
+      grid-column: 1;
+      grid-row: 2;
+    }
     &-sidebar {
+      grid-row: 1;
       position: static;
       height: auto;
       padding: 20px 16px 16px;
       gap: 16px;
     }
-    &-brand {
-      padding: 0 0 16px;
+    &-brandLink {
+      gap: 8px;
+      strong,
+      small {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
     &-nav {
       flex-direction: row;

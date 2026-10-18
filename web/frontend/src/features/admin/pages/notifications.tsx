@@ -19,6 +19,7 @@ export function DebugNavigation() {
 
 export default function SendNotifications() {
   const [target, setTarget] = useState('user')
+  const [iconType, setIconType] = useState('emoji')
   const [pending, setPending] = useState(false)
   const [count, setCount] = useState<number>()
   const [error, setError] = useState<unknown>()
@@ -108,6 +109,57 @@ export default function SendNotifications() {
               disabled={pending}
             />
           </label>
+          <p className="text-sm text-secondary-foreground">{t('admin.notifications.formatHint')}</p>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="grid gap-2">
+              {t('admin.notifications.category')}
+              <select className="input" name="category" defaultValue="system" disabled={pending}>
+                {['system', 'moderation', 'admin'].map((category) => (
+                  <option key={category} value={category}>
+                    {t(`notifications.category.${category}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-2">
+              {t('admin.notifications.type')}
+              <input className="input" name="type" maxLength={100} disabled={pending} />
+            </label>
+          </div>
+          <label className="flex items-center gap-3">
+            <input type="checkbox" name="urgent" value="true" disabled={pending} />
+            {t('admin.notifications.urgent')}
+          </label>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="grid gap-2">
+              {t('admin.notifications.iconType')}
+              <select
+                className="input"
+                name="iconType"
+                value={iconType}
+                onChange={(event) => setIconType(event.target.value)}
+                disabled={pending}
+              >
+                {['emoji', 'fontAwesome', 'image'].map((type) => (
+                  <option key={type} value={type}>
+                    {t(`admin.notifications.icon.${type}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-2">
+              {t('admin.notifications.iconOverride')}
+              <input
+                className="input"
+                name="icon"
+                maxLength={iconType === 'emoji' ? 32 : 256}
+                disabled={pending}
+              />
+            </label>
+          </div>
+          <p className="text-sm text-secondary-foreground">
+            {t(`admin.notifications.iconHint.${iconType}`)}
+          </p>
           {target === 'role' && (
             <p className="text-secondary-foreground">{t('admin.notifications.broadcastHint')}</p>
           )}

@@ -3,9 +3,12 @@ package public
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 	"uuid"
 
 	"github.com/MaratBR/openlibrary/internal/app"
@@ -20,9 +23,12 @@ import (
 )
 
 type fixtureNotificationReader struct {
-	user   uuid.UUID
-	after  int64
-	cancel context.CancelFunc
+	user      uuid.UUID
+	after     int64
+	cancel    context.CancelFunc
+	through   time.Time
+	statusErr error
+	markErr   error
 }
 
 func (f *fixtureNotificationReader) Read(_ context.Context, user uuid.UUID, after int64) ([]notifications.Event, error) {
@@ -34,6 +40,18 @@ func (f *fixtureNotificationReader) Read(_ context.Context, user uuid.UUID, afte
 }
 func (f *fixtureNotificationReader) History(ctx context.Context, user uuid.UUID, before int64) ([]notifications.Event, error) {
 	return f.Read(ctx, user, before)
+}
+
+func (f *fixtureNotificationReader) Status(_ context.Context, user uuid.UUID) (notifications.Status, error) {
+	f.user = user
+	return notifications.Status{UnreadCount: 3, ObservedAt: time.Unix(1700000000, 0).UTC()}, f.statusErr
+}
+func (f *fixtureNotificationReader) MarkRead(_ context.Context, user uuid.UUID, through time.Time) (notifications.Status, error) {
+	f.user, f.through = user, through
+	return notifications.Status{LastReadAt: &through, ObservedAt: time.Unix(1700000000, 0).UTC()}, f.markErr
+}
+func (f *fixtureNotificationReader) Send(context.Context, string, string, string, string, ...notifications.Options) (int64, error) {
+	return 0, nil
 }
 
 func notificationTestRouter(role app.UserRole, reader *fixtureNotificationReader) http.Handler {
@@ -74,6 +92,8 @@ func TestNotificationAccessAndCapability(t *testing.T) {
 					} else {
 						require.JSONEq(t, `{"sseAllowed":false}`, w.Body.String())
 					}
+				} else if path == "/_api/notifications" && tc.authenticated {
+					require.Equal(t, 200, w.Code)
 				} else {
 					require.Equal(t, tc.status, w.Code)
 				}
@@ -121,4 +141,67 @@ func (f *fixtureNotificationReader) Poll(ctx context.Context, user uuid.UUID, af
 		result = append(result, events.StoredEvent{Cursor: record.ID, Event: events.Event{Type: "notification", Data: data}})
 	}
 	return result, nil
+}
+
+func TestNotificationStatusAndReadUseAuthenticatedRecipient(t *testing.T) {
+	reader := &fixtureNotificationReader{}
+	router := notificationTestRouter(app.RoleUser, reader)
+	for _, path := range []string{"/_api/notifications/status", "/_api/notifications/read"} {
+		method, body := "GET", ""
+		if strings.HasSuffix(path, "/read") {
+			method, body = "POST", `{"readThrough":"2023-11-14T22:13:20Z"}`
+		}
+		for _, authenticated := range []bool{false, true} {
+			r := httptest.NewRequest(method, path, strings.NewReader(body))
+			if authenticated {
+				r.AddCookie(&http.Cookie{Name: session.CookieName, Value: "fixture"})
+			}
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, r)
+			if !authenticated {
+				require.Equal(t, 401, w.Code)
+				continue
+			}
+			require.Equal(t, 200, w.Code)
+			require.Equal(t, uuid.Nil(), reader.user)
+			require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
+			if method == "POST" {
+				require.Equal(t, time.Unix(1700000000, 0).UTC(), reader.through)
+				require.Contains(t, w.Body.String(), `"unreadCount":0`)
+			} else {
+				require.Contains(t, w.Body.String(), `"unreadCount":3`)
+			}
+		}
+	}
+}
+
+func TestNotificationReadRejectsInvalidBody(t *testing.T) {
+	router := notificationTestRouter(app.RoleModerator, &fixtureNotificationReader{})
+	for _, body := range []string{"", "{}", `{"readThrough":"bad"}`, `{"readThrough":null}`,
+		`{"readThrough":"2023-11-14T22:13:20Z","userId":"other"}`,
+		`{"readThrough":"2023-11-14T22:13:20Z"} {}`, strings.Repeat("x", 1025)} {
+		r := httptest.NewRequest("POST", "/_api/notifications/read", strings.NewReader(body))
+		r.AddCookie(&http.Cookie{Name: session.CookieName, Value: "fixture"})
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, r)
+		require.Equal(t, 400, w.Code, body)
+	}
+}
+
+func TestNotificationStatusAndReadStorageErrors(t *testing.T) {
+	for _, tc := range []struct {
+		method, path, body string
+		reader             *fixtureNotificationReader
+		status             int
+	}{
+		{"GET", "/_api/notifications/status", "", &fixtureNotificationReader{statusErr: errors.New("db unavailable")}, 500},
+		{"POST", "/_api/notifications/read", `{"readThrough":"2023-11-14T22:13:20Z"}`, &fixtureNotificationReader{markErr: errors.New("db unavailable")}, 500},
+		{"POST", "/_api/notifications/read", `{"readThrough":"2023-11-14T22:13:20Z"}`, &fixtureNotificationReader{markErr: notifications.ErrInvalidReadTime}, 400},
+	} {
+		r := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
+		r.AddCookie(&http.Cookie{Name: session.CookieName, Value: "fixture"})
+		w := httptest.NewRecorder()
+		notificationTestRouter(app.RoleAdmin, tc.reader).ServeHTTP(w, r)
+		require.Equal(t, tc.status, w.Code)
+	}
 }
