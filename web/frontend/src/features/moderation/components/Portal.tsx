@@ -1,3 +1,4 @@
+import NotificationsPage, { notificationsLoader } from '@/features/notifications/NotificationsPage'
 import { dashboardItem } from '@/components/dashboard-nav-item'
 import { createHashRouter, Navigate, Outlet, redirect } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
@@ -55,7 +56,12 @@ function createModerationRouter(roles: string[], isAdmin: boolean) {
           errorElement: <WorkspaceError />,
         },
         { path: '/triage', element: <IntegrationPage feature="triage" /> },
-        { path: '/notifications', element: <IntegrationPage feature="notifications" /> },
+        {
+          path: '/notifications',
+          element: <NotificationsPage />,
+          loader: notificationsLoader,
+          errorElement: <WorkspaceError />,
+        },
         ...(['chapters', 'comments'] as const).flatMap((kind) => [
           {
             path: `/${kind}`,

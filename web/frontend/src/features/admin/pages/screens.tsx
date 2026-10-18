@@ -1,3 +1,4 @@
+import { DebugNavigation } from './notifications'
 import { useRef, useState } from 'react'
 import { Link, LoaderFunctionArgs, useLoaderData } from 'react-router'
 import { loadDebug, save } from '@/features/admin/api'
@@ -87,6 +88,7 @@ export function Debug() {
         title={t('admin.sidebar.debugActions')}
         description={t('admin.ui.debugDescription')}
       />
+      <DebugNavigation />
       {actions.includes('books:elastic:reindex') ? (
         <Card title={t('admin.ui.reindex')} description={t('admin.ui.reindexDescription')}>
           <button

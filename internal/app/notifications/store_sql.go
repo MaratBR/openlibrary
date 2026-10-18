@@ -19,9 +19,15 @@ type sqlStore struct {
 
 // Add implements [Store].
 func (s *sqlStore) Add(ctx context.Context, notification Notification) error {
+	metadata, err := json.Marshal(notification.Data)
+	if err != nil {
+		return err
+	}
 	queries := store.New(s.db)
-	_, err := queries.Notification_Upsert(ctx, store.Notification_UpsertParams{
+	_, err = queries.Notification_Upsert(ctx, store.Notification_UpsertParams{
 		Key:       notification.Key(),
+		UserID:    store.PgtypeUUID(notification.UserID()),
+		Metadata:  metadata,
 		Type:      notification.Type(),
 		Content:   notification.Content,
 		Title:     notification.Title,
@@ -118,7 +124,8 @@ func (s *sqlStore) Query(ctx context.Context, query StoreQuery) (NotificationsRe
 
 func NewSQLStore(db dal.DB) Store {
 	return &sqlStore{
-		db: db,
+		db:  db,
+		log: zap.S(),
 	}
 }
 
@@ -156,7 +163,7 @@ func (s *sqlStore) newNotificationFromRow(row store.Notification) (Notification,
 		s.log.Warnw("failed to parse metadata of notification", "notification_id", row.ID, "metadata", string(row.Metadata))
 	}
 
-	return newNotification(
+	notification, err := newNotification(
 		row.Key,
 		row.Type,
 		row.Content,
@@ -164,4 +171,6 @@ func (s *sqlStore) newNotificationFromRow(row store.Notification) (Notification,
 		store.PgtypeUUIDToDomain(row.UserID),
 		data,
 	)
+	notification.CreatedAt = row.CreatedAt.Time
+	return notification, err
 }

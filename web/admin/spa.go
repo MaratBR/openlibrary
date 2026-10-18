@@ -39,6 +39,7 @@ func setupSPA(r chi.Router, users *usersController, tags *tagsController, debug 
 		r.Post("/tags/{id}", tags.updateJSON)
 		r.Get("/debug", debug.listJSON)
 		r.Post("/debug", debug.runJSON)
+		r.Post("/debug/notifications", debug.sendNotification)
 	})
 }
 

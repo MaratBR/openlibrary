@@ -1,18 +1,12 @@
 package notifications
 
 import (
-	"context"
-	"encoding/json"
-	"io"
 	"regexp"
 	"time"
 	"unicode/utf8"
 	"uuid"
 
 	"github.com/MaratBR/openlibrary/internal/app/apperror"
-	"github.com/MaratBR/openlibrary/internal/app/htmlbag"
-	"github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
-	"github.com/a-h/templ"
 )
 
 const (
@@ -63,7 +57,7 @@ func newNotification(key, notificationType, content, title string, userID uuid.U
 		return Notification{}, err
 	}
 
-	if err := validateTitle(content); err != nil {
+	if err := validateTitle(title); err != nil {
 		return Notification{}, err
 	}
 
@@ -124,31 +118,4 @@ func validateTitle(title string) error {
 	}
 
 	return nil
-}
-
-func (n Notification) Render(ctx context.Context, w io.Writer) error {
-	return webcomponents.Notification(
-		n.Title, n.Content,
-		n.icon(),
-	).Render(ctx, w)
-}
-
-func (n Notification) icon() templ.Component {
-
-	if n.Data == nil {
-		return nil
-	}
-
-	icon, ok := n.Data[dataKeyIcon]
-	if !ok {
-		return nil
-	}
-
-	var img htmlbag.Image
-	err := json.Unmarshal([]byte(icon), &img)
-	if err != nil {
-		return nil
-	}
-
-	return img
 }

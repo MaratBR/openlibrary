@@ -1,0 +1,15 @@
+# Persistent SSE notifications
+
+Authenticated admins and moderators (including the system super-admin role) automatically connect to their own notification stream. Anonymous callers receive 401; other roles receive 403. The separate SSE feature exposes `/_api/sse/stream` and `/_api/sse/capabilities`, whose `sseAllowed` flag is available to all visitors. Recipient storage and transport support any user ID, with eligibility controlled separately.
+
+The stream is a generalized per-user transport with `{type, data}` event envelopes, independent of notifications. Features can send arbitrary JSON through `events.Hub.Send(userID, type, data)` and register independent durable sources. Generic live events are process-local and not replayed. Notifications are a durable source, not a special transport endpoint. The frontend SSE feature owns connection lifecycle and exposes `subscribeUserEvent` independently of the notifications feature.
+
+Notifications are stored before delivery. Streams deliver stored notifications in ID order and resume from Last-Event-ID or an opaque explicit cursor that keeps each durable source independent. A fresh stream receives existing history. The browser keeps a per-user cursor in session storage to avoid repeating notifications across page navigation, retries temporary failures, and displays plain-text toasts. Connections periodically recheck authorization, send heartbeats, and release resources on disconnect. Database errors end the stream for retry. Edits to already delivered notifications are not new events.
+
+The moderation Notifications page lists the current user's stored history, newest first, loads older entries in bounded pages, and receives live updates. Empty and loading/error states are supported.
+
+The admin Debug section contains the existing debug actions and a Notifications page. Admins can send a custom title and message to a specific user UUID or broadcast to every account with a selected role. The selected role is matched exactly at send time, and the broadcast is stored atomically. Invalid recipients, roles, empty titles and oversized content are rejected. The UI reports the recipient count, including no matching users, and prevents duplicate submissions while sending. Moderators and anonymous users cannot send. Users outside current SSE eligibility can receive stored notifications but cannot stream them yet.
+
+Read/unread management and automated notification-producing business workflows are outside this feature. No database schema changes or manual database modifications are required.
+
+Acceptance verification: focused Go tests cover persistence, recipient query scoping, recipient/role validation, title validation, role gating, capability flags, resume cursor handling, disconnects, generic event recipient isolation, bounded subscriptions, independent cursor namespaces and admin endpoint access/CSRF. Frontend type checking, production bundling and UI inspection cover auto-connection, safe rendering, moderation history and admin controls.

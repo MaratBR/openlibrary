@@ -4,6 +4,8 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app/analytics"
 	"github.com/MaratBR/openlibrary/internal/app/bookfont"
 	"github.com/MaratBR/openlibrary/internal/app/content"
+	"github.com/MaratBR/openlibrary/internal/app/events"
+	"github.com/MaratBR/openlibrary/internal/app/notifications"
 	"github.com/MaratBR/openlibrary/internal/app/reader"
 	"github.com/MaratBR/openlibrary/internal/app/siteconfig"
 	"github.com/MaratBR/openlibrary/internal/app/tags"
@@ -15,6 +17,8 @@ import (
 
 var FXModule = fx.Module("ol_app", fx.Decorate(),
 	analytics.FXModule,
+	notifications.FXModule,
+	events.FXModule,
 	bookfont.FXModule,
 	content.FXModule,
 	siteconfig.FXModule,
@@ -48,7 +52,7 @@ var FXModule = fx.Module("ol_app", fx.Decorate(),
 		NewModerationAuthorizer,
 		NewModerationBookService,
 		NewModerationAuditLogService,
- NewModerationInvestigationService,
+		NewModerationInvestigationService,
 		NewContentModerationRepository,
 		NewContentModerationService,
 		NewLoginHistoryRepository,

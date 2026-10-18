@@ -888,7 +888,7 @@ siteSettings = "Site settings"
 home = "Home page"
 logout = "Logout"
 books = "Books"
-debugActions = "Debug actions"
+debugActions = "Debug"
 
 [admin.tags]
 name = "Name"
@@ -1287,6 +1287,11 @@ failed = "Setup could not be saved. Please try again."
 unavailable = "Setup is temporarily unavailable. Please try again."
 
 [moderationPortal.workspace]
+notificationsLive = "Stored notifications for your account. New notifications arrive automatically while connected."
+notificationsEmpty = "You have no notifications yet."
+notificationsError = "Notifications could not be loaded. Try again."
+notificationsMore = "Load more notifications"
+
 overview = "Overview"
 reports = "Reports"
 search = "Search"
@@ -1393,3 +1398,19 @@ shadow-banDescription = "Limit public discovery of this book. Its content is ret
 unshadow-banDescription = "Remove the shadow restriction. Other publication restrictions still apply."
 permanent-removeDescription = "Permanently remove this book and transfer it to the system account. This action cannot be undone here."
 permanentlyRemoved = "This book has been permanently removed. Further changes are unavailable."
+
+[admin.notifications]
+title = "Notifications"
+actions = "Debug actions"
+description = "Send a stored notification to a user or everyone with a selected role. Live delivery is currently available to administrators and moderators."
+target = "Recipients"
+user = "One user"
+role = "Users with a role"
+userId = "User ID (UUID)"
+subject = "Title"
+content = "Message"
+broadcastHint = "This sends to every account with the selected role at the time of sending."
+send = "Send notification"
+sending = "Sending…"
+sent = "Notifications stored:"
+noRecipients = "No matching users. No notifications were sent."

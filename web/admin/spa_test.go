@@ -236,7 +236,7 @@ func TestAdminMutationsRetainCSRFProtection(t *testing.T) {
 	users := &testUsers{role: app.RoleAdmin}
 	handler := olhttp.ReqCtxMiddleware(csrf.NewHandler("test-secret").Middleware(testAdminRouter(users, &testTags{}, &debugController{})))
 	// Root middleware rejects missing tokens before any service is called.
-	for _, path := range []string{"/admin/api/users/416f17a0-1740-4e61-99e0-e9e5309c8030", "/admin/api/tags/1", "/admin/api/debug"} {
+	for _, path := range []string{"/admin/api/users/416f17a0-1740-4e61-99e0-e9e5309c8030", "/admin/api/tags/1", "/admin/api/debug", "/admin/api/debug/notifications"} {
 		w := httptest.NewRecorder()
 		handler.ServeHTTP(w, adminRequest("POST", path, "role=user&gender=&about=", true))
 		require.Equal(t, 403, w.Code)
@@ -251,4 +251,17 @@ func TestAdminMutationsRetainCSRFProtection(t *testing.T) {
 	handler.ServeHTTP(w, request)
 	require.Equal(t, 200, w.Code)
 	require.NotNil(t, users.updated)
+}
+
+func TestAdminNotificationSendingRequiresAdmin(t *testing.T) {
+	for _, role := range []app.UserRole{app.RoleUser, app.RoleModerator} {
+		handler := testAdminRouter(&testUsers{role: role}, &testTags{}, &debugController{})
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, adminRequest("POST", "/admin/api/debug/notifications", "role=admin&title=Hello", true))
+		require.Equal(t, http.StatusForbidden, w.Code)
+	}
+	handler := testAdminRouter(&testUsers{role: app.RoleAdmin}, &testTags{}, &debugController{})
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, adminRequest("POST", "/admin/api/debug/notifications", "role=admin&title=Hello", false))
+	require.Equal(t, http.StatusUnauthorized, w.Code)
 }

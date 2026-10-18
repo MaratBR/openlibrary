@@ -4,7 +4,7 @@ import (
 	"strings"
 	"uuid"
 
-	"github.com/MaratBR/openlibrary/internal/app/htmlbag"
+	"encoding/json"
 )
 
 type builder struct {
@@ -15,7 +15,7 @@ type builder struct {
 }
 
 func NewBuilder(title string, userID uuid.UUID) *builder {
-	return &builder{title: title}
+	return &builder{title: title, userID: userID}
 }
 
 func (b *builder) Content(content string) *builder {
@@ -35,16 +35,19 @@ func (b *builder) Data(key, value string) *builder {
 }
 
 func (b *builder) IconImg(url string) *builder {
-	return b.icon(htmlbag.NewURLImage(url))
+	return b.icon(0, url)
 }
 
 func (b *builder) IconFontAwesome(classes string) *builder {
-	return b.icon(htmlbag.NewFontAwesomeImage(classes))
+	return b.icon(1, classes)
 }
 
-func (b *builder) icon(icon htmlbag.Image) *builder {
-	text := icon.MarshalText()
-	return b.Data(dataKeyIcon, text)
+func (b *builder) icon(kind byte, payload string) *builder {
+	data, _ := json.Marshal(struct {
+		Type    byte   `json:"type"`
+		Payload string `json:"payload"`
+	}{kind, payload})
+	return b.Data(dataKeyIcon, string(data))
 }
 
 func (b builder) Build() (Notification, error) {

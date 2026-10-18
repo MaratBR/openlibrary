@@ -31,6 +31,8 @@ var FXModule = fx.Module("public_ui_handler",
 
 		newHomeController,
 		newDebugController,
+		newNotificationsController,
+		newEventsController,
 		newAuthController,
 		newBookController,
 		newChaptersController,
@@ -68,6 +70,8 @@ func newHandler(
 
 	homeController *homeController,
 	debugController *debugController,
+	notificationsController *notificationsController,
+	eventsController *eventsController,
 	authController *authController,
 	bookController *bookController,
 	bookManagerController *bookManagerController,
@@ -103,7 +107,16 @@ func newHandler(
 	h := &handler{}
 
 	h.r = chi.NewRouter()
-	h.r.Use(gziphandler.GzipHandler)
+	h.r.Use(func(next http.Handler) http.Handler {
+		compressed := gziphandler.GzipHandler(next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/_api/sse/stream" {
+				next.ServeHTTP(w, r)
+				return
+			}
+			compressed.ServeHTTP(w, r)
+		})
+	})
 	h.r.Use(flashMiddleware)
 
 	h.r.NotFound(notFoundHandler)
@@ -121,6 +134,8 @@ func newHandler(
 
 	homeController.Register(h.r)
 	debugController.Register(h.r)
+	notificationsController.Register(h.r)
+	eventsController.Register(h.r)
 	authController.Register(h.r)
 	bookController.Register(h.r)
 	bookManagerController.Register(h.r)

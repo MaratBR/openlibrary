@@ -1,3 +1,4 @@
+import SendNotifications from '@/features/admin/pages/notifications'
 import { dashboardItem } from '@/components/dashboard-nav-item'
 import { DashboardNavItem } from '@/components/dashboard-nav-item'
 import { useLayoutEffect } from 'react'
@@ -141,6 +142,7 @@ const router = createHashRouter([
         errorElement: <RouteError />,
         hydrateFallbackElement: <Loading />,
       },
+      { path: 'debug/notifications', element: <SendNotifications />, errorElement: <RouteError /> },
       { path: 'debug', element: <Debug />, loader: debugLoader, errorElement: <RouteError /> },
       { path: '*', element: <NotFound /> },
     ],

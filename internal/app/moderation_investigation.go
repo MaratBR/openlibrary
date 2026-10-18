@@ -48,8 +48,8 @@ type ModerationOverview struct {
 	NotificationsAvailable bool                `json:"notificationsAvailable"`
 }
 
-// ModerationTriage and ModerationNotifications are integration ports only.
-// There is deliberately no default assignment policy or delivery transport.
+// ModerationTriage and ModerationNotifications are report workflow integration ports.
+// Notification history and delivery are provided separately by the notifications package.
 type ModerationTriage interface {
 	AssignReport(context.Context, int64) error
 }
@@ -84,7 +84,7 @@ func (s *moderationInvestigationService) Overview(ctx context.Context, actor uui
 	if err != nil {
 		return ModerationOverview{}, apperror.WrapUnexpectedDBError(err)
 	}
-	return ModerationOverview{Unreviewed: row.Unreviewed, Escalated: row.Escalated, Resolved: row.Resolved, OldestPending: timeNullableDbToDomain(row.OldestPending)}, nil
+	return ModerationOverview{Unreviewed: row.Unreviewed, Escalated: row.Escalated, Resolved: row.Resolved, OldestPending: timeNullableDbToDomain(row.OldestPending), NotificationsAvailable: true}, nil
 }
 func (s *moderationInvestigationService) Search(ctx context.Context, f ModerationContentQuery) (ModerationContentPage, error) {
 	if err := s.auth.AuthorizeModerator(ctx, f.ActorUserID); err != nil {

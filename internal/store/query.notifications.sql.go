@@ -49,6 +49,47 @@ func (q *Queries) Notification_Get(ctx context.Context, key string) (Notificatio
 	return i, err
 }
 
+const notification_History = `-- name: Notification_History :many
+select id, key, user_id, created_at, type, title, content, metadata from notifications
+where user_id = $1 and ($2::bigint = 0 or id < $2::bigint)
+order by id desc
+limit 100
+`
+
+type Notification_HistoryParams struct {
+	UserID   pgtype.UUID
+	BeforeID int64
+}
+
+func (q *Queries) Notification_History(ctx context.Context, arg Notification_HistoryParams) ([]Notification, error) {
+	rows, err := q.db.Query(ctx, notification_History, arg.UserID, arg.BeforeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Notification
+	for rows.Next() {
+		var i Notification
+		if err := rows.Scan(
+			&i.ID,
+			&i.Key,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.Type,
+			&i.Title,
+			&i.Content,
+			&i.Metadata,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const notification_Query = `-- name: Notification_Query :many
 select id, key, user_id, created_at, type, title, content, metadata
 from notifications
@@ -150,6 +191,77 @@ type Notification_QueryBeforeParams struct {
 
 func (q *Queries) Notification_QueryBefore(ctx context.Context, arg Notification_QueryBeforeParams) ([]Notification, error) {
 	rows, err := q.db.Query(ctx, notification_QueryBefore, arg.UserID, arg.CreatedAt, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Notification
+	for rows.Next() {
+		var i Notification
+		if err := rows.Scan(
+			&i.ID,
+			&i.Key,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.Type,
+			&i.Title,
+			&i.Content,
+			&i.Metadata,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const notification_Send = `-- name: Notification_Send :execrows
+insert into notifications (key, user_id, created_at, "type", title, content, metadata)
+select $1, users.id, now(), 'info', $2, $3, '{}'::jsonb
+from users
+where ($4::uuid is not null and users.id = $4::uuid)
+   or ($5::text is not null and users.role::text = $5::text)
+`
+
+type Notification_SendParams struct {
+	Key           string
+	Title         string
+	Content       string
+	RecipientID   pgtype.UUID
+	RecipientRole pgtype.Text
+}
+
+func (q *Queries) Notification_Send(ctx context.Context, arg Notification_SendParams) (int64, error) {
+	result, err := q.db.Exec(ctx, notification_Send,
+		arg.Key,
+		arg.Title,
+		arg.Content,
+		arg.RecipientID,
+		arg.RecipientRole,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const notification_Stream = `-- name: Notification_Stream :many
+select id, key, user_id, created_at, type, title, content, metadata from notifications
+where user_id = $1 and id > $2
+order by id asc
+limit 100
+`
+
+type Notification_StreamParams struct {
+	UserID pgtype.UUID
+	ID     int64
+}
+
+func (q *Queries) Notification_Stream(ctx context.Context, arg Notification_StreamParams) ([]Notification, error) {
+	rows, err := q.db.Query(ctx, notification_Stream, arg.UserID, arg.ID)
 	if err != nil {
 		return nil, err
 	}

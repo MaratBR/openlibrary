@@ -37,3 +37,21 @@ from notifications
 where user_id = $1
 order by created_at desc
 limit $2;
+-- name: Notification_Stream :many
+select * from notifications
+where user_id = $1 and id > $2
+order by id asc
+limit 100;
+
+-- name: Notification_Send :execrows
+insert into notifications (key, user_id, created_at, "type", title, content, metadata)
+select sqlc.arg(key), users.id, now(), 'info', sqlc.arg(title), sqlc.arg(content), '{}'::jsonb
+from users
+where (sqlc.narg(recipient_id)::uuid is not null and users.id = sqlc.narg(recipient_id)::uuid)
+   or (sqlc.narg(recipient_role)::text is not null and users.role::text = sqlc.narg(recipient_role)::text);
+
+-- name: Notification_History :many
+select * from notifications
+where user_id = $1 and (sqlc.arg(before_id)::bigint = 0 or id < sqlc.arg(before_id)::bigint)
+order by id desc
+limit 100;

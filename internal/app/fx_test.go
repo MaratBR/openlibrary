@@ -6,6 +6,8 @@ import (
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/app/dal"
 	"github.com/MaratBR/openlibrary/internal/app/email"
+	"github.com/MaratBR/openlibrary/internal/app/events"
+	"github.com/MaratBR/openlibrary/internal/app/notifications"
 	"github.com/MaratBR/openlibrary/internal/app/reader"
 	"github.com/MaratBR/openlibrary/internal/app/tags"
 	"github.com/MaratBR/openlibrary/internal/app/upload"
@@ -33,6 +35,9 @@ func TestApplicationFeatureWiring(t *testing.T) {
 		),
 		fx.Invoke(func(
 			reader.ReaderPreferencesService,
+			*notifications.StreamReader,
+			events.Hub,
+			notifications.Sink,
 			reader.ReaderFontService,
 			tags.TagsService,
 			*upload.UploadService,

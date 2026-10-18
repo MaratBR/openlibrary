@@ -1,6 +1,8 @@
 import '../lib/island'
 import '../lib/ScrollBlocker'
 import '../toast'
+import '@/features/notifications/connect'
+import '@/features/sse'
 import './__server__'
 import './cookies'
 import './delay'
