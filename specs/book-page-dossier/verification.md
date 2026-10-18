@@ -18,3 +18,12 @@
 Screenshots: `.impeccable/review/book/{desktop,mobile,dark}.png` (local artifacts).
 Browser evidence uses the live anonymous page. Authenticated and empty states
 remain covered by template tests rather than these live captures.
+
+## Density refinement
+
+User feedback: preserve the overall design, reduce its empty feeling. Enlarged
+the cover, narrowed the page, tightened section gaps, increased synopsis type,
+and moved book facts below the actions. Live desktop/mobile/dark captures show
+no horizontal overflow, three chapter links, and working review tab selection.
+Public Go tests and Vite build pass. The same unrelated TypeScript blocker remains.
+Layout detector returned no findings.

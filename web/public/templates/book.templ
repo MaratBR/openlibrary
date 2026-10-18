@@ -107,9 +107,6 @@ templ BookPage(
                     }
                     @bookReadingList(&book, readingListStatus)
                 </div>
-            </aside>
-            <div class="BookPage-right">
-                <main class="contents" id="slot-book-page">
                     <section class="BookPage-details" aria-label={l.T("book.details")}>
                         <div class="BookPage-metadata">
                             <span>{_tt(l, "book.chapters", map[string]string{"count": formatNumber(int64(book.Chapters))})}</span>
@@ -126,6 +123,10 @@ templ BookPage(
                             </div>
                         }
                     </section>
+            </aside>
+            <div class="BookPage-right">
+                <main class="contents" id="slot-book-page">
+
 
                     if book.Summary != "" {
                         <section class="BookPage-summarySection" aria-labelledby="book-summary-title">

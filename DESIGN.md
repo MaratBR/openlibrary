@@ -23,14 +23,14 @@ colors:
 typography:
   book-display:
     fontFamily: "Literata, Iowan Old Style, Palatino Linotype, Georgia, serif"
-    fontSize: "clamp(2.5rem, 4.6vw, 4.25rem)"
+    fontSize: "clamp(2.5rem, 4.2vw, 3.75rem)"
     fontWeight: 500
     lineHeight: 1.14
     letterSpacing: "-0.035em"
   book-summary:
     fontFamily: "Poppins, Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1rem"
-    lineHeight: 1.85
+    fontSize: "1.0625rem"
+    lineHeight: 1.8
   library-display:
     fontFamily: "Literata, Iowan Old Style, Palatino Linotype, Georgia, serif"
     fontSize: "clamp(2.25rem, 4vw, 3.5rem)"
@@ -85,7 +85,7 @@ spacing:
   section: "24px"
   header: "28px"
   large: "40px"
-  book-column: "64px"
+  book-column: "48px"
 components:
   book-masthead:
     typography: "{typography.book-display}"
@@ -193,7 +193,7 @@ Content uses fluid horizontal padding `clamp(24px, 4vw, 64px)` and top padding (
 
 The reading gallery retains the public `OlContainer`. Header top padding is `clamp(32px, 5vw, 64px)`; body top padding is `clamp(28px, 4vw, 48px)` with (64px) below and (56px) between reading-status sections. Books use an auto-fill grid with a (150px) minimum column and (32px × 24px) gaps. At (480px) and below, two equal columns use (28px × 20px) gaps. Collections remain flat groups separated by (40px), with wrapping (100px × 150px) cover strips.
 
-Book detail caps its grid at (1200px), with a sticky (300px) cover/action rail, (64px) column gap, and (40px) row gap. At (1000px) and below, the rail becomes (248px) with a (36px) column gap. At (767px) and below, one content column places a compact cover beside the actions; below (360px), the cover reduces further. Metadata stays a flat two-column grid; summary measure caps at (68ch). Chapters remain a single sequential column.
+Book detail caps its grid at (1120px), with a sticky (320px) cover/action rail, (48px) column gap, and (32px) row gap. The cover is (240px × 360px), reducing to (208px) wide at intermediate widths. Book facts sit below the reading actions, so the synopsis aligns with the top of the cover. At (1000px) and below, the rail becomes (248px) with a (36px) column gap. At (767px) and below, one content column places a compact cover beside the actions; below (360px), the cover reduces further. Metadata stays a flat two-column grid; summary measure caps at (68ch). Chapters remain a single sequential column.
 
 ## Elevation & Depth
 
