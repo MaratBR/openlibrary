@@ -126,7 +126,7 @@ templ SearchResultFragment(
                         }
                     }}
 
-                    @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.Author.Name, book.Author.ID, tagsList) {
+                    @bookSearchCard(book.ID, book.Name, book.Slug, book.Summary, book.Cover, book.Author.Name, book.Author.ID, tagsList, book.NameParts) {
                         if showAdminSearchLinks(ctx) {
                             <div class="BookSearchCard-actions">
                                 <a class="Chip Chip--primary BookSearchCard-adminAction" href={ templ.URL(fmt.Sprintf("/admin#/books/%d", book.ID)) }>
@@ -146,7 +146,7 @@ templ SearchResultFragment(
     </main>
 }
 
-templ bookSearchCard(id int64, name, slug, summary string, cover app.BookCover, authorName string, authorID uuid.UUID, tags []app.DefinedTagDto) {
+templ bookSearchCard(id int64, name, slug, summary string, cover app.BookCover, authorName string, authorID uuid.UUID, tags []app.DefinedTagDto, nameParts ...[]app.SearchTextPart) {
 
     <li role="listitem" id={ fmt.Sprintf("book-%d", id) } class="w-full">
         @censoredContent(id) {
@@ -159,7 +159,19 @@ templ bookSearchCard(id int64, name, slug, summary string, cover app.BookCover, 
         </div>
         
         <div class="BookSearchCard-right">
-            <a href={ templ.SafeURL(publicBookURL(ctx, fmt.Sprintf("/book/%s-%d", slug, id), false)) } class="Link BookSearchCard-link">{ name }</a>
+            <a href={ templ.SafeURL(publicBookURL(ctx, fmt.Sprintf("/book/%s-%d", slug, id), false)) } class="Link BookSearchCard-link">
+                if len(nameParts) > 0 && len(nameParts[0]) > 0 {
+                    for _, part := range nameParts[0] {
+                        if part.Matched {
+                            <mark>{ part.Text }</mark>
+                        } else {
+                            { part.Text }
+                        }
+                    }
+                } else {
+                    { name }
+                }
+            </a>
             <br />
             by
             <a class="Link BookSearchCard-author" href={ templ.SafeURL(fmt.Sprintf("/users/%s", authorID.String())) }>

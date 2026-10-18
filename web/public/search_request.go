@@ -1,7 +1,10 @@
 package public
 
 import (
+	"math"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/MaratBR/openlibrary/internal/app"
 	"github.com/MaratBR/openlibrary/internal/olhttp"
@@ -9,6 +12,7 @@ import (
 )
 
 type booksSearchRequest struct {
+	app.BookSearchFilters
 	Query string
 	Sort  app.BookSearchSort
 
@@ -49,18 +53,31 @@ func getBooksSearchRequest(r *http.Request, opts *bookSearchRequestParsingOption
 
 	// pagination and page size
 	search.Page = olhttp.GetPage(source, "p")
-	pageSize := olhttp.GetInt32FromQuery(source, "ps")
-	if pageSize.Valid {
-		if pageSize.Int32 <= 0 {
-			search.PageSize = 20
-		} else if pageSize.Int32 > 100 {
-			search.PageSize = 100
-		} else {
-			search.PageSize = uint(pageSize.Int32)
-		}
-	} else {
-		search.PageSize = 20
+	search.PageSize = uint(olhttp.GetPageSize(source, "ps", 1, 100, 20))
+	search.Rating = source.Get("rating")
+	switch search.Rating {
+	case "?", "G", "PG", "PG-13", "R", "NC-17":
+	default:
+		search.Rating = ""
 	}
-
+	for key, target := range map[string]*app.SearchNumberRange{
+		"views": &search.Views, "readers": &search.Readers, "reviews": &search.Reviews,
+		"popularity": &search.Popularity, "weightedRating": &search.WeightedRating,
+	} {
+		for suffix, bound := range map[string]*app.Nullable[float64]{"min": &target.Min, "max": &target.Max} {
+			v, err := strconv.ParseFloat(source.Get(key+"."+suffix), 64)
+			if err == nil && !math.IsNaN(v) && !math.IsInf(v, 0) && v >= 0 {
+				*bound = app.Value(v)
+			}
+		}
+	}
+	for key, target := range map[string]*app.SearchDateRange{"createdAt": &search.CreatedAt, "updatedAt": &search.UpdatedAt} {
+		for suffix, bound := range map[string]*string{"min": &target.Min, "max": &target.Max} {
+			v := source.Get(key + "." + suffix)
+			if _, err := time.Parse("2006-01-02", v); err == nil {
+				*bound = v
+			}
+		}
+	}
 	return
 }

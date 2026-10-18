@@ -24,7 +24,16 @@ func (r Range) Has() bool {
 	return r.Max.Valid || r.Min.Valid
 }
 
+type DateRangeQuery struct {
+	Gte    string `json:"gte,omitempty"`
+	Lte    string `json:"lte,omitempty"`
+	Format string `json:"format,omitempty"`
+}
+
 type SearchRequest struct {
+	Rating          string
+	NumberFilters   map[string]*NumberRangeQuery
+	DateFilters     map[string]DateRangeQuery
 	Query           string
 	Sort            SearchSort
 	IncludeUsers    []string
@@ -62,7 +71,8 @@ func (s SearchSort) field() string {
 
 type SearchRow struct {
 	BookIndex
-	ID int64
+	ID            int64
+	NameHighlight string
 }
 
 type SearchResult struct {
@@ -124,11 +134,7 @@ func createNegativeAndTermQuery(term string, values []FieldValue) Query {
 	}
 }
 
-func Search(
-	ctx context.Context,
-	client *opensearchapi.Client,
-	req SearchRequest,
-) (SearchResult, error) {
+func buildSearchRequest(req SearchRequest) (opensearchapi.SearchReq, error) {
 	must := []Query{
 		{
 			Term: map[string]TermQuery{
@@ -157,7 +163,17 @@ func Search(
 		})
 	}
 
+	if req.Rating != "" {
+		must = append(must, Query{Term: map[string]TermQuery{"rating": {Value: req.Rating}}})
+	}
 	rangeQueries := map[string]RangeQuery{}
+	for field, r := range req.NumberFilters {
+		rangeQueries[field] = r
+	}
+	for field, r := range req.DateFilters {
+		r.Format = "yyyy-MM-dd"
+		rangeQueries[field] = r
+	}
 
 	if req.Words.Has() {
 		rangeQueries["words"] = createNumberRangeQuery(req.Words)
@@ -170,9 +186,9 @@ func Search(
 	}
 
 	if len(rangeQueries) > 0 {
-		must = append(must, Query{
-			Range: rangeQueries,
-		})
+		for field, bounds := range rangeQueries {
+			must = append(must, Query{Range: map[string]RangeQuery{field: bounds}})
+		}
 	}
 
 	if len(req.IncludeUsers) > 0 {
@@ -184,7 +200,7 @@ func Search(
 	}
 
 	if len(req.ExcludeUsers) > 0 {
-		ids := make([]FieldValue, len(req.IncludeUsers))
+		ids := make([]FieldValue, len(req.ExcludeUsers))
 		for i := 0; i < len(req.ExcludeUsers); i++ {
 			ids[i] = req.ExcludeUsers[i]
 		}
@@ -222,6 +238,19 @@ func Search(
 		From: from,
 		Size: size,
 	}
+	if req.Query != "" {
+		searchReqBody.Highlight = &HighlightRequest{
+			PreTags: []string{"<mark>"}, PostTags: []string{"</mark>"}, Encoder: "html",
+			Fields: map[string]HighlightField{"name": {NumberOfFragments: 0}},
+		}
+		// Reward titles containing every query word without typo corrections.
+		// The required fuzzy match still admits misspellings as fallback results.
+		searchReqBody.Query.Bool.Should = []Query{{
+			Match: map[string]MatchQuery{
+				"name": {Query: req.Query, Operator: "and", Boost: 10},
+			},
+		}}
+	}
 	if sortField := req.Sort.field(); sortField != "" {
 		searchReqBody.Sort = []map[string]SortOption{{
 			sortField: {Order: "desc"},
@@ -229,12 +258,23 @@ func Search(
 	}
 	searchReqBodyBytes, err := json.Marshal(searchReqBody)
 	if err != nil {
-		return SearchResult{}, err
+		return opensearchapi.SearchReq{}, err
 	}
 
-	searchRequest := opensearchapi.SearchReq{
+	return opensearchapi.SearchReq{
 		Indices: []string{BOOKS_INDEX_NAME},
 		Body:    bytes.NewReader(searchReqBodyBytes),
+	}, nil
+}
+
+func Search(
+	ctx context.Context,
+	client *opensearchapi.Client,
+	req SearchRequest,
+) (SearchResult, error) {
+	searchRequest, err := buildSearchRequest(req)
+	if err != nil {
+		return SearchResult{}, err
 	}
 	resp, err := client.Search(ctx, &searchRequest)
 
@@ -243,11 +283,15 @@ func Search(
 		return SearchResult{}, err
 	}
 
-	results := make([]SearchRow, 0, len(resp.Hits.Hits))
-
 	if len(resp.Hits.Hits) == 0 {
 		onSearchEmpty(searchRequest)
 	}
+
+	return mapSearchResult(resp), nil
+}
+
+func mapSearchResult(resp *opensearchapi.SearchResp) SearchResult {
+	results := make([]SearchRow, 0, len(resp.Hits.Hits))
 
 	for i := 0; i < len(resp.Hits.Hits); i++ {
 		hit := resp.Hits.Hits[i]
@@ -269,6 +313,9 @@ func Search(
 		}
 
 		result.ID = id
+		if highlights := hit.Highlight["name"]; len(highlights) > 0 {
+			result.NameHighlight = highlights[0]
+		}
 
 		results = append(results, result)
 	}
@@ -277,7 +324,7 @@ func Search(
 		Hits:   results,
 		TookMS: int64(resp.Took),
 		Total:  int64(resp.Hits.Total.Value),
-	}, nil
+	}
 }
 
 func onSearchFail(req opensearchapi.SearchReq, err error) {

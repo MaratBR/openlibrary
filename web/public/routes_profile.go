@@ -53,7 +53,8 @@ func (c *profileController) GetBooks(w http.ResponseWriter, r *http.Request) {
 	})
 
 	searchQuery := app.BookSearchQuery{
-		UserID: auth.GetNullableUserID(r.Context()),
+		BookSearchFilters: search.BookSearchFilters,
+		UserID:            auth.GetNullableUserID(r.Context()),
 
 		Query: search.Query,
 

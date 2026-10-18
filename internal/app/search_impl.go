@@ -29,16 +29,17 @@ type searchService struct {
 // ExplainSearchQuery implements SearchService.
 func (s *searchService) ExplainSearchQuery(ctx context.Context, req BookSearchQuery) (DetailedBookSearchQuery, error) {
 	detailed := DetailedBookSearchQuery{
-		Query:           req.Query,
-		Sort:            req.Sort,
-		Words:           req.Words,
-		WordsPerChapter: req.WordsPerChapter,
-		Chapters:        req.Chapters,
-		IncludeBanned:   req.IncludeBanned,
-		IncludeHidden:   req.IncludeHidden,
-		IncludeEmpty:    req.IncludeEmpty,
-		Page:            req.Page,
-		PageSize:        req.PageSize,
+		BookSearchFilters: req.BookSearchFilters,
+		Query:             req.Query,
+		Sort:              req.Sort,
+		Words:             req.Words,
+		WordsPerChapter:   req.WordsPerChapter,
+		Chapters:          req.Chapters,
+		IncludeBanned:     req.IncludeBanned,
+		IncludeHidden:     req.IncludeHidden,
+		IncludeEmpty:      req.IncludeEmpty,
+		Page:              req.Page,
+		PageSize:          req.PageSize,
 	}
 
 	tagIds := commonutil.MergeArrays(req.IncludeTags, req.ExcludeTags)
@@ -153,6 +154,19 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (s
 		PageSize: int32(req.PageSize),
 	}
 
+	esReq.Rating = req.Rating
+	esReq.NumberFilters = map[string]*elasticstore.NumberRangeQuery{}
+	for field, r := range map[string]SearchNumberRange{"views": req.Views, "readersCount": req.Readers, "reviewsCount": req.Reviews, "popularity": req.Popularity, "weightedRating": req.WeightedRating} {
+		if r.Min.Valid || r.Max.Valid {
+			esReq.NumberFilters[field] = &elasticstore.NumberRangeQuery{Gte: r.Min.Ptr(), Lte: r.Max.Ptr()}
+		}
+	}
+	esReq.DateFilters = map[string]elasticstore.DateRangeQuery{}
+	for field, r := range map[string]SearchDateRange{"createdAt": req.CreatedAt, "updatedAt": req.UpdatedAt} {
+		if r.Min != "" || r.Max != "" {
+			esReq.DateFilters[field] = elasticstore.DateRangeQuery{Gte: r.Min, Lte: r.Max}
+		}
+	}
 	now := time.Now()
 	result, err := elasticstore.Search(ctx, s.osClient, esReq)
 	tookTotal := time.Since(now).Microseconds()
@@ -230,9 +244,10 @@ func (s *searchService) SearchBooks(ctx context.Context, req BookSearchQuery) (s
 		bookData, _ := booksDbData[book.ID]
 
 		searchResult.Books[i] = BookSearchItem{
-			ID:   book.ID,
-			Name: book.Name,
-			Slug: book.Slug,
+			ID:        book.ID,
+			Name:      book.Name,
+			NameParts: searchNameParts(book.Name, book.NameHighlight),
+			Slug:      book.Slug,
 			Author: BookDetailsAuthorDto{
 				ID:   book.AuthorID,
 				Name: authorName,

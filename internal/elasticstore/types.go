@@ -10,11 +10,23 @@ type Query struct {
 	Range       map[string]RangeQuery `json:"range,omitempty"`
 }
 
+type HighlightRequest struct {
+	PreTags  []string                  `json:"pre_tags"`
+	PostTags []string                  `json:"post_tags"`
+	Encoder  string                    `json:"encoder"`
+	Fields   map[string]HighlightField `json:"fields"`
+}
+
+type HighlightField struct {
+	NumberOfFragments int `json:"number_of_fragments"`
+}
+
 type SearchReqBody struct {
-	Query Query                   `json:"query"`
-	From  int                     `json:"from,omitempty"`
-	Size  int                     `json:"size,omitempty"`
-	Sort  []map[string]SortOption `json:"sort,omitempty"`
+	Highlight *HighlightRequest       `json:"highlight,omitempty"`
+	Query     Query                   `json:"query"`
+	From      int                     `json:"from,omitempty"`
+	Size      int                     `json:"size,omitempty"`
+	Sort      []map[string]SortOption `json:"sort,omitempty"`
 }
 
 type SortOption struct {
@@ -26,13 +38,16 @@ type TermQuery struct {
 }
 
 type MatchQuery struct {
-	Query     string `json:"query"`
-	Fuzziness string `json:"fuzziness,omitempty"`
+	Query     string  `json:"query"`
+	Fuzziness string  `json:"fuzziness,omitempty"`
+	Boost     float64 `json:"boost,omitempty"`
+	Operator  string  `json:"operator,omitempty"`
 }
 
 type BoolQuery struct {
 	Must    []Query `json:"must,omitempty"`
 	MustNot []Query `json:"must_not,omitempty"`
+	Should  []Query `json:"should,omitempty"`
 }
 
 type QueryStringQuery struct {

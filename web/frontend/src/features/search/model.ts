@@ -21,6 +21,14 @@ export type BookSearchSort =
   | 'random'
 
 export type DetailedBookSearchQuery = {
+  rating: string
+  createdAt: { min: string; max: string }
+  updatedAt: { min: string; max: string }
+  views: NumberRange
+  readers: NumberRange
+  reviews: NumberRange
+  popularity: NumberRange
+  weightedRating: NumberRange
   sort: BookSearchSort
   words: NumberRange
   chapters: NumberRange
@@ -38,6 +46,14 @@ export type DetailedBookSearchQuery = {
 
 export function getDefaultDetailedBookSearchQuery(): DetailedBookSearchQuery {
   return {
+    rating: '',
+    createdAt: { min: '', max: '' },
+    updatedAt: { min: '', max: '' },
+    views: { min: null, max: null },
+    readers: { min: null, max: null },
+    reviews: { min: null, max: null },
+    popularity: { min: null, max: null },
+    weightedRating: { min: null, max: null },
     sort: '',
     words: { min: null, max: null },
     chapters: { min: null, max: null },
@@ -50,13 +66,28 @@ export function getDefaultDetailedBookSearchQuery(): DetailedBookSearchQuery {
     includeHidden: false,
     includeEmpty: false,
     page: 1,
-    pageSize: 10,
+    pageSize: 20,
   }
 }
 
 export function getQueryParams(query: DetailedBookSearchQuery): URLSearchParams {
   const params = new URLSearchParams()
 
+  if (query.rating) params.set('rating', query.rating)
+  for (const key of [
+    'views',
+    'readers',
+    'reviews',
+    'popularity',
+    'weightedRating',
+    'createdAt',
+    'updatedAt',
+  ] as const) {
+    for (const bound of ['min', 'max'] as const) {
+      const value = query[key][bound]
+      if (value !== null && value !== '') params.set(`${key}.${bound}`, String(value))
+    }
+  }
   if (query.sort) params.set('sort', query.sort)
 
   if (query.words.min !== null) params.set('w.min', query.words.min.toString())
@@ -74,8 +105,8 @@ export function getQueryParams(query: DetailedBookSearchQuery): URLSearchParams 
   if (query.excludeUsers.length > 0)
     params.set('eu', query.excludeUsers.map((user) => user.id).join(','))
 
-  if (query.page > 1) params.set('page', query.page.toString())
-  if (query.pageSize !== 20) params.set('pageSize', query.pageSize.toString())
+  if (query.page > 1) params.set('p', query.page.toString())
+  if (query.pageSize !== 20) params.set('ps', query.pageSize.toString())
 
   return params
 }

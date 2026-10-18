@@ -11,6 +11,8 @@ export type RangeInputProps = {
   onInput: (value: NumberRange) => void
 
   disableNegative?: boolean
+  allowDecimal?: boolean
+  label?: string
 }
 
 function getValue(event: InputEvent): number | null | undefined {
@@ -37,11 +39,17 @@ function normalizeValue(
   return value
 }
 
-export default function RangeInput({ value, onInput, disableNegative = false }: RangeInputProps) {
+export default function RangeInput({
+  value,
+  onInput,
+  disableNegative = false,
+  allowDecimal = false,
+  label,
+}: RangeInputProps) {
   function handleKeyDown(event: KeyboardEvent) {
     if (
       (event.key === '-' && disableNegative) ||
-      event.key === '.' ||
+      (event.key === '.' && !allowDecimal) ||
       event.key === 'e' ||
       event.key === 'E'
     ) {
@@ -74,6 +82,9 @@ export default function RangeInput({ value, onInput, disableNegative = false }: 
       <input
         className="input input--joined-start"
         type="number"
+        step={allowDecimal ? 'any' : 1}
+        min={disableNegative ? 0 : undefined}
+        aria-label={`${label || window._('search.range')} — ${window._('search.from')}`}
         value={value.min ?? ''}
         onInput={handleMinChange}
         onKeyDown={handleKeyDown}
@@ -81,6 +92,9 @@ export default function RangeInput({ value, onInput, disableNegative = false }: 
       <input
         className="input input--joined-end"
         type="number"
+        step={allowDecimal ? 'any' : 1}
+        min={disableNegative ? 0 : undefined}
+        aria-label={`${label || window._('search.range')} — ${window._('search.to')}`}
         value={value.max ?? ''}
         onInput={handleMaxChange}
         onKeyDown={handleKeyDown}

@@ -51,7 +51,8 @@ func (c *searchController) simpleSearch(w http.ResponseWriter, r *http.Request) 
 func (c *searchController) search(w http.ResponseWriter, r *http.Request) {
 	search := getBooksSearchRequest(r, nil)
 	query := app.BookSearchQuery{
-		UserID: auth.GetNullableUserID(r.Context()),
+		BookSearchFilters: search.BookSearchFilters,
+		UserID:            auth.GetNullableUserID(r.Context()),
 
 		Query: search.Query,
 		Sort:  search.Sort,

@@ -96,7 +96,30 @@ func (s BookSearchSort) IsImplemented() bool {
 	}
 }
 
+// SearchNumberRange supports both count and fractional index fields.
+type SearchNumberRange struct {
+	Min Nullable[float64] `json:"min"`
+	Max Nullable[float64] `json:"max"`
+}
+
+type SearchDateRange struct {
+	Min string `json:"min"`
+	Max string `json:"max"`
+}
+
+type BookSearchFilters struct {
+	Rating         string            `json:"rating"`
+	CreatedAt      SearchDateRange   `json:"createdAt"`
+	UpdatedAt      SearchDateRange   `json:"updatedAt"`
+	Views          SearchNumberRange `json:"views"`
+	Readers        SearchNumberRange `json:"readers"`
+	Reviews        SearchNumberRange `json:"reviews"`
+	Popularity     SearchNumberRange `json:"popularity"`
+	WeightedRating SearchNumberRange `json:"weightedRating"`
+}
+
 type BookSearchQuery struct {
+	BookSearchFilters
 	UserID Nullable[uuid.UUID]
 
 	Query string
@@ -119,7 +142,13 @@ type BookSearchQuery struct {
 	PageSize uint
 }
 
+type SearchTextPart struct {
+	Text    string `json:"text"`
+	Matched bool   `json:"matched"`
+}
+
 type BookSearchItem struct {
+	NameParts       []SearchTextPart     `json:"nameParts,omitempty"`
 	ID              int64                `json:"id,string"`
 	Name            string               `json:"name"`
 	Slug            string               `json:"slug"`
@@ -188,6 +217,7 @@ type UserFromSearchRequestDto struct {
 }
 
 type DetailedBookSearchQuery struct {
+	BookSearchFilters
 	Query string         `json:"query"`
 	Sort  BookSearchSort `json:"sort"`
 
@@ -210,6 +240,19 @@ type DetailedBookSearchQuery struct {
 
 func (d *DetailedBookSearchQuery) ActiveFilters() int {
 	var count int
+	if d.Rating != "" {
+		count++
+	}
+	for _, r := range []SearchNumberRange{d.Views, d.Readers, d.Reviews, d.Popularity, d.WeightedRating} {
+		if r.Min.Valid || r.Max.Valid {
+			count++
+		}
+	}
+	for _, r := range []SearchDateRange{d.CreatedAt, d.UpdatedAt} {
+		if r.Min != "" || r.Max != "" {
+			count++
+		}
+	}
 
 	if d.Words.Min.Valid || d.Words.Max.Valid {
 		count++

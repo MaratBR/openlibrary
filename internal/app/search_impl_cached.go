@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"io"
 	"time"
@@ -87,6 +88,11 @@ func writeInt32Range(w io.Writer, r Int32Range) {
 
 func getSearchRequestCacheKey(req *BookSearchQuery) string {
 	h := sha512.New()
+	io.WriteString(h, "book-title-highlights-v1\x00")
+	filters, _ := json.Marshal(req.BookSearchFilters)
+	h.Write(filters)
+	io.WriteString(h, req.Query)
+	h.Write([]byte{0})
 	io.WriteString(h, string(req.Sort))
 	h.Write([]byte{0})
 	writeInt32Range(h, req.Words)
