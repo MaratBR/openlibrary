@@ -722,6 +722,10 @@ applyChanges = "Apply changes"
 
 
 [search]
+searchPlaceholder = "Search books…"
+results = "Results"
+advancedFilters = "More filters"
+resetFilters = "Reset filters"
 pageSize = "Results per page"
 ageRating = "Age rating"
 anyRating = "Any rating"

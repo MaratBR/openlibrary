@@ -17,7 +17,7 @@ const merge = (current: NotificationEvent[], incoming: NotificationEvent[]) =>
     BigInt(a.id) > BigInt(b.id) ? -1 : BigInt(a.id) < BigInt(b.id) ? 1 : 0,
   )
 
-function Bell() {
+export function Bell() {
   return (
     <svg
       width="22"
@@ -30,8 +30,7 @@ function Bell() {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-      <path d="M10 21h4" />
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /> <path d="M10 21h4" />
     </svg>
   )
 }

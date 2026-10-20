@@ -62,11 +62,15 @@ templ Island2(props Island2Props) {
     }}
     
     <div x-data={xData} { props.Attributes... }>
-        <div class="contents" x-ref="loader" x-show="_loading">
-            if props.ShowLoader {
-                <span class="loader" />
-            }
+        if props.Attributes["data-react-hydrate"] == "true" {
             { children... }
-        </div>
+        } else {
+            <div class="contents" x-ref="loader" x-show="_loading">
+                if props.ShowLoader {
+                    <span class="loader" />
+                }
+                { children... }
+            </div>
+        }
     </div>
 }

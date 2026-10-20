@@ -10,8 +10,7 @@
   --dashboard-header-height: 76px;
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
-  grid-template-rows: 1fr;
-  padding-top: var(--dashboard-header-height);
+  @apply 'grid-rows-[1fr] pt-[var(--dashboard-header-height)]';
   min-height: 100dvh;
   background: var(--dashboard-canvas);
   color: var(--foreground);
@@ -21,32 +20,29 @@
     color: var(--accent-foreground);
   }
   &-sidebar {
-    grid-column: 1;
-    grid-row: 1;
+    @apply '[grid-column:1] [grid-row:1]';
     position: sticky;
-    top: var(--dashboard-header-height);
-    height: calc(100dvh - var(--dashboard-header-height));
+    @apply 'top-[var(--dashboard-header-height)] h-[calc(100dvh_-_var(--dashboard-header-height))]';
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 28px;
-    padding: 24px 16px 20px;
+    @apply 'p-[24px_16px_20px]';
     background: var(--dashboard-rail);
     color: var(--dashboard-rail-ink);
     scrollbar-width: thin;
     scrollbar-color: var(--dashboard-rail-muted) var(--dashboard-rail);
   }
   &-brand {
-    min-width: 0;
+    @apply 'min-w-0';
   }
   &-brandLink {
     display: flex;
     align-items: center;
     gap: 12px;
-    min-width: 0;
-    color: var(--foreground);
+    @apply 'min-w-0 text-foreground';
     span {
-      min-width: 0;
+      @apply 'min-w-0';
     }
     img {
       width: 28px;
@@ -63,7 +59,7 @@
     small {
       display: block;
       margin-top: 4px;
-      color: var(--secondary-foreground);
+      @apply 'text-secondary-foreground';
       font-size: 0.72rem;
       line-height: 1.5;
     }
@@ -137,22 +133,10 @@
     border-top: 1px solid color-mix(in srgb, var(--dashboard-rail-ink) 18%, transparent);
   }
   &-header {
-    position: fixed;
-    inset: 0 0 auto;
-    z-index: 60;
-    height: var(--dashboard-header-height);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 8px 28px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--foreground);
+    @apply 'fixed [inset:0_0_auto] z-60 h-[var(--dashboard-header-height)] flex items-center justify-between gap-4 p-[8px_28px] [border-bottom:1px_solid_var(--border)] bg-surface text-foreground';
   }
   &-content {
-    grid-column: 2;
-    grid-row: 1;
+    @apply '[grid-column:2] [grid-row:1]';
     min-width: 0;
     width: 100%;
     background: var(--dashboard-canvas);
@@ -176,28 +160,25 @@
 @media (max-width: 760px) {
   .DashboardShell {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
+    @apply 'grid-rows-[auto_1fr]';
     &-header {
-      padding-inline: 16px;
+      @apply 'px-4';
     }
     &-content {
-      grid-column: 1;
-      grid-row: 2;
+      @apply '[grid-column:1] [grid-row:2]';
     }
     &-sidebar {
-      grid-row: 1;
+      @apply '[grid-row:1]';
       position: static;
       height: auto;
       padding: 20px 16px 16px;
       gap: 16px;
     }
     &-brandLink {
-      gap: 8px;
+      @apply 'gap-2';
       strong,
       small {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        @apply 'overflow-hidden text-ellipsis whitespace-nowrap';
       }
     }
     &-nav {

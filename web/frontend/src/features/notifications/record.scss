@@ -1,99 +1,64 @@
 .NotificationRecord {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 18px 20px;
-  overflow-wrap: anywhere;
+  @apply 'flex items-start gap-3 p-[18px_20px] [overflow-wrap:anywhere]';
 
   &-icon {
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-    width: 24px;
-    min-height: 24px;
-    color: var(--secondary-foreground);
-    font-size: 1.125rem;
+    @apply 'grid place-items-center shrink-0 w-6 min-h-6 text-secondary-foreground [font-size:1.125rem]';
     img {
-      width: 24px;
-      height: 24px;
-      object-fit: contain;
+      @apply 'w-6 h-6 object-contain';
     }
   }
   &-details {
-    flex: 1;
-    min-width: 0;
+    @apply 'flex-1 min-w-0';
   }
   &-title {
-    font-family: inherit;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    line-height: 1.5;
+    @apply '[font-family:inherit] [font-size:0.9375rem] font-semibold leading-[1.5]';
   }
   &-content {
-    margin-top: 6px;
-    font-size: 0.875rem;
-    line-height: 1.6;
-    white-space: pre-wrap;
+    @apply 'mt-1.5 [font-size:0.875rem] leading-[1.6] whitespace-pre-wrap';
     a {
-      color: var(--primary);
-      text-decoration: underline;
-      text-underline-offset: 3px;
+      @apply 'text-primary underline underline-offset-[3px]';
     }
     a:focus-visible {
-      outline: 2px solid var(--primary);
-      outline-offset: 2px;
+      @apply '[outline:2px_solid_var(--primary)] outline-offset-[2px]';
     }
     b,
     strong {
-      font-weight: 700;
+      @apply 'font-bold';
     }
     i,
     em {
-      font-style: italic;
+      @apply 'italic';
     }
     sub,
     sup {
-      font-size: 0.75em;
-      line-height: 0;
-      position: relative;
-      vertical-align: baseline;
+      @apply '[font-size:0.75em] leading-[0] relative [vertical-align:baseline]';
     }
     sub {
-      bottom: -0.25em;
+      @apply 'bottom-[-0.25em]';
     }
     sup {
-      top: -0.5em;
+      @apply 'top-[-0.5em]';
     }
     code {
-      font-family: monospace;
-      background: var(--secondary);
-      padding-inline: 3px;
+      @apply '[font-family:monospace] bg-secondary px-[3px]';
     }
   }
   &-time {
-    display: block;
-    margin-top: 8px;
-    color: var(--secondary-foreground);
-    font-size: 0.75rem;
+    @apply 'block mt-2 text-secondary-foreground [font-size:0.75rem]';
   }
   &-urgent {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--destructive);
+    @apply 'block mb-1 [font-size:0.75rem] font-semibold text-destructive';
   }
   &--urgent {
-    background: var(--destructive-soft);
+    @apply '[background:var(--destructive-soft)]';
     .NotificationRecord-title {
-      color: var(--destructive);
-      font-size: 1rem;
+      @apply 'text-destructive [font-size:1rem]';
     }
     .NotificationRecord-content {
-      font-size: 0.9375rem;
+      @apply '[font-size:0.9375rem]';
     }
     .NotificationRecord-icon {
-      color: var(--destructive);
+      @apply 'text-destructive';
     }
   }
 }

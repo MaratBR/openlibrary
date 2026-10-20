@@ -46,8 +46,8 @@ export default function SearchFilters({ data }: ReactIslandProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6">
+    <form id="search-filters-form" className="SearchFilters" onSubmit={handleSubmit}>
+      <div className="SearchFilters-fields">
         <div className="mb-4">
           <label htmlFor="search-sort" className="label font-semibold mb-2 text-md">
             {window._('search.sortBy')}
@@ -117,20 +117,22 @@ export default function SearchFilters({ data }: ReactIslandProps) {
         </div>
 
         <div className="mb-4">
-          <label className="label font-semibold mb-2 text-md">
+          <label htmlFor="search-include-tags" className="label font-semibold mb-2 text-md">
             {window._('search.includeTags')}
           </label>
           <TagsInput
+            id="search-include-tags"
             tags={filters.includeTags}
             onInput={(tags) => setFilters({ ...filters, includeTags: tags })}
           />
         </div>
 
         <div className="mb-4">
-          <label className="label font-semibold mb-2 text-md">
+          <label htmlFor="search-exclude-tags" className="label font-semibold mb-2 text-md">
             {window._('search.excludeTags')}
           </label>
           <TagsInput
+            id="search-exclude-tags"
             tags={filters.excludeTags}
             onInput={(tags) => setFilters({ ...filters, excludeTags: tags })}
           />
@@ -171,49 +173,76 @@ export default function SearchFilters({ data }: ReactIslandProps) {
             ))}
           </select>
         </div>
-        {(['views', 'readers', 'reviews', 'popularity', 'weightedRating'] as const).map((key) => (
-          <div className="mb-4" key={key}>
-            <label className="label font-semibold mb-2 text-md">{window._(`search.${key}`)}</label>
-            <RangeInput
-              disableNegative
-              allowDecimal={key === 'popularity' || key === 'weightedRating'}
-              label={window._(`search.${key}`)}
-              value={filters[key]}
-              onInput={(value) => setFilters({ ...filters, [key]: value })}
-            />
-          </div>
-        ))}
-        {(['createdAt', 'updatedAt'] as const).map((key) => (
-          <fieldset className="mb-4 min-w-0" key={key}>
-            <legend className="label font-semibold mb-2 text-md">
-              {window._(`search.${key}`)}
-            </legend>
-            <div className="grid grid-cols-2 gap-2">
-              {(['min', 'max'] as const).map((bound) => (
-                <label key={bound} className="min-w-0">
-                  <span className="label">
-                    {window._(bound === 'min' ? 'search.from' : 'search.to')}
-                  </span>
-                  <input
-                    className="input w-full min-w-0"
-                    type="date"
-                    value={filters[key][bound]}
-                    onChange={(event) =>
-                      setFilters({
-                        ...filters,
-                        [key]: { ...filters[key], [bound]: event.target.value },
-                      })
-                    }
-                  />
-                </label>
-              ))}
+        <details
+          className="SearchFilters-advanced"
+          open={
+            (['views', 'readers', 'reviews', 'popularity', 'weightedRating'] as const).some(
+              (key) => filters[key].min !== null || filters[key].max !== null,
+            ) ||
+            Boolean(
+              filters.createdAt.min ||
+                filters.createdAt.max ||
+                filters.updatedAt.min ||
+                filters.updatedAt.max,
+            )
+          }
+        >
+          <summary>{window._('search.advancedFilters')}</summary>
+          {(['views', 'readers', 'reviews', 'popularity', 'weightedRating'] as const).map((key) => (
+            <div className="mb-4" key={key}>
+              <label className="label font-semibold mb-2 text-md">
+                {window._(`search.${key}`)}
+              </label>
+              <RangeInput
+                disableNegative
+                allowDecimal={key === 'popularity' || key === 'weightedRating'}
+                label={window._(`search.${key}`)}
+                value={filters[key]}
+                onInput={(value) => setFilters({ ...filters, [key]: value })}
+              />
             </div>
-          </fieldset>
-        ))}
+          ))}
+          {(['createdAt', 'updatedAt'] as const).map((key) => (
+            <fieldset className="mb-4 min-w-0" key={key}>
+              <legend className="label font-semibold mb-2 text-md">
+                {window._(`search.${key}`)}
+              </legend>
+              <div className="grid grid-cols-2 gap-2">
+                {(['min', 'max'] as const).map((bound) => (
+                  <label key={bound} className="min-w-0">
+                    <span className="label">
+                      {window._(bound === 'min' ? 'search.from' : 'search.to')}
+                    </span>
+                    <input
+                      className="input w-full min-w-0"
+                      type="date"
+                      value={filters[key][bound]}
+                      onChange={(event) =>
+                        setFilters({
+                          ...filters,
+                          [key]: { ...filters[key], [bound]: event.target.value },
+                        })
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </details>
       </div>
-      <button type="submit" className="Btn Btn--lg Btn--primary">
-        {window._('search.doSearch')}
-      </button>
+      <div className="SearchFilters-actions">
+        <button type="submit" className="Btn Btn--primary">
+          {window._('search.doSearch')}
+        </button>
+        <button
+          type="button"
+          className="Btn Btn--ghost"
+          onClick={() => setFilters(getDefaultDetailedBookSearchQuery())}
+        >
+          {window._('search.resetFilters')}
+        </button>
+      </div>
     </form>
   )
 }

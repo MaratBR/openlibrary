@@ -1,7 +1,7 @@
 import { OLIsland, OLIslandMounted } from '@/lib/island'
 import { ReactIslandSetup } from './setup'
 import { ComponentType, ReactElement, useState } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 
 export type ReactIslandProps = { data?: unknown; rootElement: HTMLElement }
 
@@ -25,8 +25,9 @@ abstract class ReactIslandBase implements OLIsland {
       return <this._component rootElement={el} data={innerData} />
     }
 
-    const root = createRoot(el)
-    root.render(this.wrap(<StateProxy />))
+    const element = this.wrap(<StateProxy />)
+    const root = el.hasAttribute('data-react-hydrate') ? hydrateRoot(el, element) : createRoot(el)
+    if (!el.hasAttribute('data-react-hydrate')) root.render(element)
 
     return {
       dispose() {

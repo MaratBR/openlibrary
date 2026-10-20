@@ -12,6 +12,7 @@ The dashboard areas serve administrators, book managers, and moderators working
 with library accounts, books, chapters, reports, and activity records. Readers use
 their personal library to find saved books by reading status and manage collections.
 Public book detail pages help readers assess a book, choose a chapter, and start reading.
+Public search helps readers discover books through queries, filters, and cover-led results.
 
 ## Product Purpose
 
@@ -30,8 +31,10 @@ and `/library/collections`: existing statuses, previews, censorship, collection
 creation, pagination, routes, and permissions remain intact. The separately approved
 public book detail redesign covers `/book/:slug`, preserving metadata, summaries,
 tags, ratings, chapters, reviews, external links, status controls, and permissions.
-Start reading links directly to the first chapter only when one exists. Other public
-pages and the reading interface are outside this scope.
+Start reading links directly to the first chapter only when one exists. The approved
+public search redesign covers `/search`, preserving queries, sorting, ranges, tags,
+pagination, censorship, and permission-dependent links. Other public pages and the
+reading interface are outside this scope.
 
 ## Evidence on Hand
 
@@ -45,3 +48,8 @@ The book detail direction is recorded in `.impeccable/surfaces/book.md`, impleme
 in `web/public/templates/book.templ`, `book-toc.templ`, and
 `web/frontend/src/common/style/components/book.scss`. Code-first remains the
 recorded preference; existing covers supply the visual material.
+
+The public search direction is recorded in `.impeccable/surfaces/search.md`,
+implemented in `web/public/templates/search.templ`,
+`web/frontend/src/common/style/components/search.scss`, `book.scss`, and
+`web/frontend/src/islands/search-filters/SearchFilters.tsx`.

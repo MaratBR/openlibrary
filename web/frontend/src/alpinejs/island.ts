@@ -62,7 +62,8 @@ Alpine.data(
     },
 
     _mount(island: OLIsland) {
-      this._unmount()
+      // Hydration must retain the server-rendered DOM on the first mount.
+      if (this._mounted || !this.$root.hasAttribute('data-react-hydrate')) this._unmount()
       try {
         this._mounted = island.mount(this.$root, data)
       } catch (err: unknown) {

@@ -1,121 +1,64 @@
 .NotificationMenu {
-  display: flex;
-  flex-direction: column;
-  outline: none;
-  height: min(560px, var(--radix-popover-content-available-height));
+  @apply 'flex flex-col [outline:none] h-[min(560px,_var(--radix-popover-content-available-height))]';
 
   &-trigger {
-    position: relative;
+    @apply 'relative';
   }
   &-badge {
-    position: absolute;
-    top: 0;
-    right: -4px;
-    min-width: 18px;
-    padding: 1px 4px;
-    border-radius: 12px;
-    background: var(--primary);
-    color: var(--primary-foreground);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1.5;
-    font-variant-numeric: tabular-nums;
+    @apply 'absolute top-0 right-[-4px] min-w-4.5 p-[1px_4px] rounded-[12px] bg-primary text-primary-foreground [font-size:0.6875rem] font-semibold leading-[1.5] tabular-nums';
   }
   &-header {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 16px 16px 20px;
-    border-bottom: 1px solid color-mix(in srgb, var(--primary-foreground) 18%, var(--primary));
-    background: var(--primary);
-    color: var(--primary-foreground);
+    @apply 'shrink-0 flex items-center justify-between p-[16px_16px_16px_20px] [border-bottom:1px_solid_color-mix(in_srgb,_var(--primary-foreground)_18%,_var(--primary))] bg-primary text-primary-foreground';
   }
   &-header h2 {
-    color: inherit;
-    font-family: var(--font-title);
-    font-size: 1.6rem;
-    font-weight: 500;
-    line-height: 1.2;
-    letter-spacing: -0.03em;
+    @apply 'text-inherit font-title [font-size:1.6rem] font-medium leading-[1.2] tracking-[-0.03em]';
   }
   &-close {
-    color: var(--primary-foreground);
+    @apply 'text-primary-foreground';
     &:hover {
-      background: color-mix(in srgb, var(--primary-foreground) 12%, var(--primary));
-      color: var(--primary-foreground);
+      @apply '[background:color-mix(in_srgb,_var(--primary-foreground)_12%,_var(--primary))] text-primary-foreground';
     }
     &:focus-visible {
-      outline-color: var(--primary-foreground);
+      @apply 'outline-primary-foreground';
     }
   }
   &-body {
-    min-height: 0;
-    flex: 1;
+    @apply 'min-h-0 flex-1';
     scrollbar-width: thin;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    @apply 'overflow-y-auto overscroll-contain';
     scrollbar-color: var(--border) var(--surface);
   }
   &-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+    @apply 'list-none m-0 p-0';
   }
   &-item + &-item {
-    border-top: 1px solid var(--border);
+    @apply '[border-top:1px_solid_var(--border)]';
   }
   &-empty {
-    display: flex;
-    min-height: 100%;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-    text-align: center;
+    @apply 'flex min-h-full flex-col items-center justify-center p-[40px_24px] text-center';
   }
   &-empty svg {
-    margin-inline: auto;
-    width: 40px;
-    height: 40px;
-    color: var(--secondary-foreground);
+    @apply 'mx-auto w-10 h-10 text-secondary-foreground';
   }
   &-empty p {
-    margin-top: 16px;
-    font-weight: 600;
+    @apply 'mt-4 font-semibold';
   }
   &-empty span {
-    display: block;
-    margin-top: 6px;
-    color: var(--secondary-foreground);
-    font-size: 0.875rem;
+    @apply 'block mt-1.5 text-secondary-foreground [font-size:0.875rem]';
   }
   &-status {
-    padding: 24px;
-    color: var(--secondary-foreground);
-    text-align: center;
+    @apply 'p-6 text-secondary-foreground text-center';
   }
   &-more {
-    display: block;
-    flex-shrink: 0;
-    border-top: 1px solid var(--border);
-    background: color-mix(in srgb, var(--secondary) 45%, var(--surface));
-    text-align: center;
-    width: 100%;
-    padding: 16px;
-    color: var(--primary);
-    font-size: 0.875rem;
-    font-weight: 600;
+    @apply 'block shrink-0 [border-top:1px_solid_var(--border)] [background:color-mix(in_srgb,_var(--secondary)_45%,_var(--surface))] text-center w-full p-4 text-primary [font-size:0.875rem] font-semibold';
     &:hover {
-      background: var(--secondary);
+      @apply 'bg-secondary';
     }
     &:focus-visible {
-      outline: 2px solid var(--primary);
-      outline-offset: -4px;
+      @apply '[outline:2px_solid_var(--primary)] outline-offset-[-4px]';
     }
     &:disabled {
-      opacity: 0.6;
-      cursor: wait;
+      @apply '[opacity:0.6] cursor-wait';
     }
   }
 }

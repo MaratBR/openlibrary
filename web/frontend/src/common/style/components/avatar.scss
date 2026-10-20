@@ -1,3 +1,8 @@
 .avatar {
   @apply size-[84px] rounded-full;
+
+  // The server-rendered header appears before the menu island's styles load.
+  .UserMenu-trigger & {
+    @apply 'w-8 h-8 shrink-0 object-cover';
+  }
 }

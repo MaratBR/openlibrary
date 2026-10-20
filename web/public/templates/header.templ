@@ -86,10 +86,18 @@ templ navUser() {
     @i18nExtractKeysByPrefix(l, "notifications")
     @webcomponents.Island2(webcomponents.Island2Props{
         Name: "header-actions",
-        Attributes: templ.Attributes{"class": "SiteHeader-actions"},
+        Attributes: templ.Attributes{"class": "SiteHeader-actions", "data-react-hydrate": "true"},
     }) {
-        <a class="HeaderPopover-trigger UserMenu-trigger" href={ templ.URL("/users/" + user.ID.String()) } aria-label={ l.T("common.profile") }>
-            <img class="avatar" src={ user.Avatar.MD } alt=""/>
-        </a>
+        <div class="flex items-center gap-2">
+            <a class="HeaderPopover-trigger UserMenu-trigger" href={ templ.URL("/users/" + user.ID.String()) } aria-label={ l.T("common.profile") }>
+                <img class="avatar" src={ user.Avatar.MD } alt=""/>
+            </a>
+            <a class="HeaderPopover-trigger NotificationMenu-trigger" href="/notifications" aria-label={ l.T("notifications.title") }>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                    <path d="M10 21h4"></path>
+                </svg>
+            </a>
+        </div>
     }
 }

@@ -25,7 +25,7 @@ templ SearchPage(
     }) {
         @i18nExtractKeysByPrefix(l, "search")
 
-        <div class="OlContainer my-12 px-2" x-data={ fmt.Sprintf("{ openFilters: %t, filtersReady: false }", len(result.Books) == 0) }>
+        <div class="OlContainer SearchPage" x-data="{ openFilters: false }">
             @SearchResultFragment(result, explainedQuery, false)
         </div>
     }
@@ -54,13 +54,13 @@ templ SearchResultFragment(
     }}
 
 
-    <main id="PaginationAjaxSlot">
+    <main id="PaginationAjaxSlot" class="SearchPage-main">
         @jsonTemplate("data-search-explained-query", explainedQuery)
 
         if !disableHeader {
-            <header class="PageHeader">
-                <div class="PageHeader-body">
-                    <h1 class="PageHeader-title">
+            <header class="SearchPage-header">
+                <div class="SearchPage-heading">
+                    <h1 class="SearchPage-title">
                         if activeFilters == 1 && len(explainedQuery.IncludeTags) == 1 {
                             {{ firstTag := explainedQuery.IncludeTags[0] }}
                             { firstTag.Name }
@@ -72,41 +72,47 @@ templ SearchResultFragment(
             </header>
         }
 
-        <form>
+        <form class="SearchPage-query" method="get" role="search" @submit="if (document.getElementById('search-filters-form')) { $event.preventDefault(); document.getElementById('search-filters-form').requestSubmit() }">
             if showAdminSearchLinks(ctx) {
                 <input type="hidden" name="admin.link" value="1" />
             }
-            <input id="search-input" name="q" class="input input--search" value={ explainedQuery.Query } />
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="search-input" name="q" type="search" aria-label={ l.T("search.search") } placeholder={ l.T("search.searchPlaceholder") } value={ explainedQuery.Query } />
+            <button type="submit" class="Btn Btn--primary">{ l.T("search.doSearch") }</button>
         </form>
 
-        <div class="flex gap-2 my-4">
-            <button @click="openFilters=!openFilters" class="Btn Btn--outline">
-                <i class="fa-solid fa-filter"></i>
-                {l.T("search.filters")}
-                if activeFilters > 0 {
-                    ({ formatInt32(int32(activeFilters)) })
-                }
-            </button>
-        </div>
-
-
-        <section class="search-filters mb-2" x-cloak x-show="openFilters && filtersReady" x-collapse>
-            <div class="p-4">
-                @webcomponents.Island2(webcomponents.Island2Props{
-                    Name: "search/filters",
-                    Data: map[string]string{"searchInputId": "search-input"},
-                    Attributes: templ.Attributes{
-                        "@island:mount": "filtersReady=true",
-                    },
-                })
-            </div>
-        </section>
-
+        <div class="SearchPage-layout">
+            <aside class="SearchPage-sidebar" aria-label={ l.T("search.filters") }>
+                <button type="button" class="SearchPage-filterToggle Btn Btn--outline" @click="openFilters=!openFilters" :aria-expanded="openFilters" aria-controls="search-filter-panel">
+                    <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                    { l.T("search.filters") }
+                    if activeFilters > 0 {
+                        <span class="SearchPage-filterCount">{ formatInt32(int32(activeFilters)) }</span>
+                    }
+                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div id="search-filter-panel" class="SearchPage-filterPanel" :class="{ 'SearchPage-filterPanel--open': openFilters }">
+                    <div class="SearchPage-filterHeading">
+                        <h2>{ l.T("search.filters") }</h2>
+                        if activeFilters > 0 {
+                            <span class="SearchPage-filterCount">{ formatInt32(int32(activeFilters)) }</span>
+                        }
+                    </div>
+                    @webcomponents.Island2(webcomponents.Island2Props{
+                        Name: "search/filters",
+                        Data: map[string]string{"searchInputId": "search-input"},
+                    })
+                </div>
+            </aside>
+            <section class="SearchPage-results" aria-label={ l.T("search.results") }>
+                <div class="SearchPage-resultsHeading">
+                    <h2>{ l.T("search.results") } <span>{ formatInt32(int32(result.Total)) }</span></h2>
+                </div>
         if len(result.Books) == 0 {
             @searchNoResultsCard()
         } else {
             @pagination
-            <ul role="listbox" id="results" class="book-search-results mt-2">
+            <ul id="results" class="book-search-results">
                 {{
                     tags := make(map[int64]app.DefinedTagDto, len(result.Tags))
                     for _, tag := range result.Tags {
@@ -143,6 +149,8 @@ templ SearchResultFragment(
                 @pagination
             </div>
         }
+            </section>
+        </div>
     </main>
 }
 
@@ -150,7 +158,7 @@ templ bookSearchCard(id int64, name, slug, summary string, cover app.BookCover, 
 
     <li role="listitem" id={ fmt.Sprintf("book-%d", id) } class="w-full">
         @censoredContent(id) {
-        <div class="BookSearchCard">
+        <div class={ "BookSearchCard", templ.KV("BookSearchCard--search", len(nameParts) > 0) }>
 
         <div class="BookSearchCard-left">
             <a class="BookSearchCard-imglink" href={ templ.SafeURL(publicBookURL(ctx, fmt.Sprintf("/book/%d", id), false)) }>
@@ -199,8 +207,9 @@ templ bookSearchCard(id int64, name, slug, summary string, cover app.BookCover, 
 templ searchNoResultsCard() {
     {{ l := i18n.GetLocalizer(ctx) }}
 
-    <div class="relative">
-        <p class="text-center px-2 rounded-md inline-block leading-8">{ l.T("search.noResults") }</p>
+    <div class="SearchPage-empty">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <p>{ l.T("search.noResults") }</p>
     </div>
 }
 

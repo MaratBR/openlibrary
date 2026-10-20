@@ -49,6 +49,12 @@ Never edit generated sources directly:
 - `make codegen` runs SQLC and templ generation together. Generated templ files
   are ignored and should not be committed.
 
+React islands can opt into hydration with `data-react-hydrate="true"` in
+`Island2Props.Attributes`. Supply markup matching the component's initial render;
+these islands retain their initial HTML while JavaScript loads. Keep styles for
+pre-rendered controls in the common stylesheet. Header actions start as links
+and attach their popovers after hydration.
+
 ## Local checks
 
 Run the narrowest relevant check first, then broaden it when useful:
