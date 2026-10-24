@@ -33,7 +33,7 @@ body:has(.BookPage) {
     &::before {
       position: absolute;
       top: 0;
-      left: clamp(22px, 3vw, 36px);
+      left: 0;
       width: min(144px, 28%);
       height: 4px;
       content: '';
