@@ -155,8 +155,8 @@ templ BookMyReview(
 
             <div class="my-4 rounded-xl py-4" x-show="!edit">
                 if authorized {
-                    <div class="flex flex-wrap items-center gap-4">
-                        <span class="block text-2xl font-title font-semibold">
+                    <div class="flex flex-col items-center gap-4">
+                        <span class="block text-3xl font-title font-semibold">
                             @templ.Raw(l.T("book.whatDoYouThink"))
                         </span>
                         <div class="flex flex-wrap gap-4 items-center">

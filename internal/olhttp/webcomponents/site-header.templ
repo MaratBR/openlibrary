@@ -1,9 +1,20 @@
 package webcomponents
 
+import "fmt"
+import "strconv"
+
+templ SiteLogo(size int) {
+    {{
+        sizeStr := strconv.FormatInt(int64(size), 10)
+        style := fmt.Sprintf("width:%spx;height:%spx;min-width:%spx;min-height:%spx", sizeStr, sizeStr, sizeStr, sizeStr)
+    }}
+    <img style={style} width={sizeStr} height={sizeStr} class="dark:hidden" src="/_/embed-assets/logo.svg" />
+    <img style={style} width={sizeStr} height={sizeStr} class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
+}
+
 templ SiteHeaderLogo() {
     <a href="/" class="SiteHeader-logo">
-        <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:hidden" src="/_/embed-assets/logo.svg" />
-        <img style="width:64px;height:64px;min-width:64px;min-height:64px" width="64" height="64" class="dark:block hidden" src="/_/embed-assets/logo-dark.svg" />
+        @SiteLogo(64)
     </a>
 }
 

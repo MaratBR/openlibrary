@@ -39,7 +39,6 @@ func (b *bookController) Register(r chi.Router) {
 	// book page and its fragments
 	r.Get("/book/{bookID}", b.book)
 	r.Get("/book/{bookID}/__fragment/preview-card", b.bookPreview)
-	r.Get("/book/{bookID}/__fragment/toc", b.bookTOC)
 	r.Get("/book/{bookID}/__fragment/review", b.bookReview)
 }
 
@@ -78,6 +77,7 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 
 	var (
 		reviews           []app.ReviewDto
+		chapters          []app.ChapterListDto
 		ratingAndReview   app.RatingAndReview
 		readingListStatus app.Nullable[app.BookReadingListDto]
 	)
@@ -97,6 +97,21 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 			write500(w, r, err)
 			return
 		}
+	}
+
+	chapters, err = b.bookService.GetBookChapters(r.Context(), app.GetBookChaptersQuery{
+		ID:            bookID,
+		ActorUserID:   userID,
+		AdminOverride: adminBookOverride(r),
+	})
+	if err != nil {
+		writeApplicationError(w, r, err)
+		return
+	}
+
+	var activeChapterID int64
+	if readingListStatus.Valid && readingListStatus.Value.ChapterID.Valid {
+		activeChapterID = int64(readingListStatus.Value.ChapterID.Value)
 	}
 
 	{
@@ -132,44 +147,11 @@ func (b *bookController) book(w http.ResponseWriter, r *http.Request) {
 		ratingAndReview,
 		readingListStatus,
 		reviews,
+		chapters,
+		activeChapterID,
 		replaceURLWithSlug,
 		showAdultWarning,
 	).Render(r.Context(), w)
-}
-
-func (b *bookController) bookTOC(w http.ResponseWriter, r *http.Request) {
-	bookID, err := olhttp.URLParamInt64(r, "bookID")
-	if err != nil {
-		w.WriteHeader(404)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	chapters, err := b.bookService.GetBookChapters(r.Context(), app.GetBookChaptersQuery{
-		ID:            bookID,
-		ActorUserID:   auth.GetNullableUserID(r.Context()),
-		AdminOverride: adminBookOverride(r),
-	})
-	if err != nil {
-		writeApplicationError(w, r, err)
-		return
-	}
-
-	s, ok := auth.GetSession(r.Context())
-	var (
-		activeChapterID int64
-	)
-
-	if ok {
-		status, err := b.readingListService.GetStatus(r.Context(), s.UserID, bookID)
-		if err != nil {
-			b.log.Errorw("failed to get reading list status", "userID", s.UserID, "bookID", bookID, "err", err)
-		} else if status.Valid && status.Value.ChapterID.Valid {
-			activeChapterID = int64(status.Value.ChapterID.Value)
-		}
-	}
-
-	templates.BookTOC(r.Context(), bookID, chapters, activeChapterID, adminBookOverride(r)).Render(r.Context(), w)
 }
 
 func (b *bookController) bookPreview(w http.ResponseWriter, r *http.Request) {

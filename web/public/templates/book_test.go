@@ -83,7 +83,8 @@ func TestBookPagePanelsAndOptionalContent(t *testing.T) {
 			}
 			frontend.AttachAssetsInliningHandler(os.DirFS("../../frontend/embed-assets"), "embed-assets", router)
 			router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-				if err := BookPage(current, analytics.MetricValue{}, ratingAndReview, readingList, topReviews, false, scenario == "warning").Render(r.Context(), w); err != nil {
+				chapters := []app.ChapterListDto{{ID: 1, Name: "First chapter", CreatedAt: time.Now()}}
+				if err := BookPage(current, analytics.MetricValue{}, ratingAndReview, readingList, topReviews, chapters, 0, false, scenario == "warning").Render(r.Context(), w); err != nil {
 					t.Error(err)
 				}
 			})
@@ -98,6 +99,12 @@ func TestBookPagePanelsAndOptionalContent(t *testing.T) {
 				if !strings.Contains(html, expected) {
 					t.Errorf("missing %s", expected)
 				}
+			}
+			if strings.Contains(html, "__fragment/toc") || strings.Contains(html, `class="Loader mt-4"`) {
+				t.Fatal("TOC is lazy-loaded")
+			}
+			if !strings.Contains(html, "First chapter") {
+				t.Fatal("initial page is missing TOC content")
 			}
 			if current.FirstChapterID.Valid {
 				if !strings.Contains(html, `/book/6707299548257058898/chapters/1`) || !strings.Contains(html, `BookPage-startReading`) {
@@ -120,8 +127,11 @@ func TestBookPagePanelsAndOptionalContent(t *testing.T) {
 		})
 	}
 	var populated bytes.Buffer
-	if err := BookTOC(context.Background(), 1, []app.ChapterListDto{{ID: 1, Name: strings.Repeat("LongChapter", 30), Words: 100, CreatedAt: time.Now()}}, 1).Render(localizedContext(provider), &populated); err != nil {
+	if err := bookTOCPanel(1, []app.ChapterListDto{{ID: 1, Name: strings.Repeat("LongChapter", 30), Words: 100, CreatedAt: time.Now()}}, 1, false).Render(localizedContext(provider), &populated); err != nil {
 		t.Fatal(err)
+	}
+	if !strings.Contains(populated.String(), `aria-current="page"`) {
+		t.Fatal("active chapter is missing its current-page state")
 	}
 	if dir := os.Getenv("BOOK_PAGE_FIXTURE_DIR"); dir != "" {
 		if err := os.WriteFile(filepath.Join(dir, "toc-populated.html"), populated.Bytes(), 0600); err != nil {
@@ -129,7 +139,7 @@ func TestBookPagePanelsAndOptionalContent(t *testing.T) {
 		}
 	}
 	var out bytes.Buffer
-	if err := BookTOC(context.Background(), 1, nil, 0).Render(localizedContext(provider), &out); err != nil {
+	if err := bookTOCPanel(1, nil, 0, false).Render(localizedContext(provider), &out); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(out.String(), `aria-labelledby="book-tab-toc"`) || !strings.Contains(out.String(), `role="tabpanel"`) {
@@ -199,7 +209,7 @@ func TestAdminOverrideWarningAndNavigation(t *testing.T) {
 		}
 	}
 	var out bytes.Buffer
-	if err := BookTOC(ctx, 1, []app.ChapterListDto{{ID: 2, Name: "Hidden chapter"}}, 0, true).Render(ctx, &out); err != nil {
+	if err := bookTOCPanel(1, []app.ChapterListDto{{ID: 2, Name: "Hidden chapter"}}, 0, true).Render(ctx, &out); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(out.String(), "/book/1/chapters/2?admin.override=1") {

@@ -1,26 +1,16 @@
 package templates
 
-import "context"
 import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/internal/i18n"
 import "github.com/MaratBR/openlibrary/internal/commonutil"
 import "fmt"
 
-templ BookTOC(
-    ctx context.Context,
-    bookID int64,
-    chapters []app.ChapterListDto,
-    activeChapterID int64,
-    adminOverride ...bool,
-) {
-
-    @censoredContent(bookID) {
+templ bookTOCPanel(bookID int64, chapters []app.ChapterListDto, activeChapterID int64, adminOverride bool) {
     {{ l := i18n.GetLocalizer(ctx) }}
-
-    <div role="tabpanel" aria-labelledby="book-tab-toc" tabindex="0" class="BookPage-panel" id="slot-book-toc" x-cloak x-show="tab==='toc'">
+    <div role="tabpanel" aria-labelledby="book-tab-toc" tabindex="0" class="BookPage-panel" id="slot-book-toc" x-show="tab==='toc'">
         if len(chapters) == 0 {
-            <section id="empty_toc" class="mt-4 p-2 border rounded-lg bg-surface shadow-md">
-                <h1 class="font-title text-xl font-semibold mb-2">{l.T("book.emptyToc")}</h1>
+            <section id="empty_toc" class="BookToc-empty">
+                <h1>{l.T("book.emptyToc")}</h1>
                 <p>{l.T("book.emptyTocContent")}</p>
             </section>
         } else {
@@ -28,16 +18,16 @@ templ BookTOC(
             <div class="BookToc">
                 <ul class="contain-layout p-1 contain-paint">
                     for i, chapter := range chapters {
-                        <li role="listitem" aria-label={ chapter.Name }>
+                        <li class="BookToc-entry" role="listitem" aria-label={ chapter.Name }>
                             <a
-                                href={ templ.SafeURL(publicBookURL(ctx, fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID), len(adminOverride) > 0 && adminOverride[0])) }
+                                href={ templ.SafeURL(publicBookURL(ctx, fmt.Sprintf("/book/%d/chapters/%d", bookID, chapter.ID), adminOverride)) }
                                 if chapter.ID == activeChapterID {
-                                    class="BookToc-item BookToc-item--readingNow"
+                                    class="BookToc-item BookToc-item--readingNow" aria-current="page"
                                 } else {
                                     class="BookToc-item"
                                 }
                                 >
-                                <div class="BookToc-num">
+                                <div class="BookToc-num" aria-hidden="true">
                                     <span>{ commonutil.FormatInt(i + 1) }</span>
                                     if chapter.ID == activeChapterID {
                                         <span class="BookToc-mark">
@@ -45,32 +35,19 @@ templ BookTOC(
                                         </span>
                                     }
                                 </div>
-                                <div>
-                                    <div class="BookToc-title">
-                                        { chapter.Name }
-                                    </div>
-                                    <span class="text-sm text-secondary-foreground">
+                                <div class="BookToc-copy">
+                                    <div class="BookToc-title">{ chapter.Name }</div>
+                                    <span class="BookToc-meta">
                                         {relativeTime(l, chapter.CreatedAt)},&nbsp;
-                                        { _tt(l, "book.words", map[string]string{
-                                            "count": commonutil.FormatInt(chapter.Words),
-                                        }) }
+                                        { _tt(l, "book.words", map[string]string{"count": commonutil.FormatInt(chapter.Words)}) }
                                     </span>
                                 </div>
                                 <i class="BookToc-arrow fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </a>
-
-                            // if chapter.Summary != "" {
-                            //     <article class="ml-4 mt-1 mb-4 text-sm user-content" x-ignore>
-                            //         @templ.Raw( chapter.Summary )
-                            //     </article>
-                            // }
                         </li>
                     }
                 </ul>
             </div>
         }
-        
     </div>
-
-    }
 }

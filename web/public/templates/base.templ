@@ -1,10 +1,10 @@
 package templates
 
 import "github.com/MaratBR/openlibrary/internal/olhttp"
-import "github.com/MaratBR/openlibrary/internal/app"
 import "github.com/MaratBR/openlibrary/web/frontend"
 import "github.com/MaratBR/openlibrary/internal/flash"
 import "github.com/MaratBR/openlibrary/internal/i18n"
+import "github.com/MaratBR/openlibrary/internal/olhttp/webcomponents"
 
 templ flashes() {
     {{
@@ -30,32 +30,34 @@ templ flashes() {
 
 templ siteFooter() {
     {{ 
-        version := app.AppVersion()
+        // version := app.AppVersion()
         l := i18n.GetLocalizer(ctx)
     }}
 
-    <footer id="site-footer" class="OlContainer mt-8 flex flex-wrap items-center gap-x-8 gap-y-4 border-t px-4 py-6 text-sm text-secondary-foreground">
-        <span class="font-title font-medium text-foreground hover:text-primary">
-            OpenLibrary <span class="font-text font-normal text-secondary-foreground">{ version }</span>
-        </span>
-        <nav class="mr-auto" aria-label={l.T("footer.navigationLabel")}>
-            <ul class="flex flex-wrap items-center gap-x-5 gap-y-2">
-                <li>
-                    <a class="Link" href="https://github.com/MaratBR/openlibrary" target="_blank" rel="noreferrer">
-                        { l.T("footer.github") }
-                    </a>
-                </li>
-                <li>
-                    <a class="Link" href="https://github.com/MaratBR/openlibrary/issues" target="_blank" rel="noreferrer">
-                        { l.T("footer.reportIssue") }
-                    </a>
-                </li>
-                <li>
-                    <a class="Link" href="/cats">{ l.T("footer.cats") }</a>
-                </li>
-            </ul>
-        </nav>
-        @themeSwitcher()
+    <footer id="site-footer" class="mt-8 border-t bg-surface">
+        <div class="OlContainer px-4 py-6 flex flex-wrap items-center gap-x-8 gap-y-4 text-secondary-foreground text-sm">
+            <span class="font-title font-medium text-foreground hover:text-primary">
+                @webcomponents.SiteLogo(48)
+            </span>
+            <nav class="mr-auto" aria-label={l.T("footer.navigationLabel")}>
+                <ul class="flex flex-wrap items-center gap-x-5 gap-y-2">
+                    <li>
+                        <a class="Link" href="https://github.com/MaratBR/openlibrary" target="_blank" rel="noreferrer">
+                            { l.T("footer.github") }
+                        </a>
+                    </li>
+                    <li>
+                        <a class="Link" href="https://github.com/MaratBR/openlibrary/issues" target="_blank" rel="noreferrer">
+                            { l.T("footer.reportIssue") }
+                        </a>
+                    </li>
+                    <li>
+                        <a class="Link" href="/cats">{ l.T("footer.cats") }</a>
+                    </li>
+                </ul>
+            </nav>
+            @themeSwitcher()
+        </div>
     </footer>
 }
 

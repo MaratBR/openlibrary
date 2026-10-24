@@ -38,6 +38,8 @@ templ BookPage(
     ratingAndReview app.RatingAndReview,
     readingListStatus app.Nullable[app.BookReadingListDto],
     topReviews []app.ReviewDto,
+    chapters []app.ChapterListDto,
+    activeChapterID int64,
     replaceURLWithSlug bool,
     showAdultWarning bool,
 ) {
@@ -77,117 +79,121 @@ templ BookPage(
             @serverData(map[string]any{
                 "bookId": fmt.Sprintf("%d", book.ID),
             })
-            <header class="BookPage-header">
-                <div class="BookPage-heading">
-                    <h1 class="BookPage-title">{book.Name}</h1>
-                    @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), Class: "Btn Btn--ghost Btn--icon", IconOnly: true})
-                </div>
-                <div class="BookPage-byline">
-                    <a class="BookPage-author Link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
-                    @bookRating(&book, views)
-                </div>
-            </header>
-            <aside class="BookPage-left" aria-label={l.T("book.details")}>
-                <div class="BookPage-coverWell">
-                    <div class="BookPage-cover">
-                        if book.Cover.URL != "" {
-                            @bookCover(book.Cover.URL, book.Name, 300)
-                        } else {
-                            <div class="BookPage-coverFallback">{book.Name}</div>
-                        }
-                    </div>
-                </div>
-                <div class="BookPage-readingActions">
-                    if book.FirstChapterID.Valid {
-                        <a class="Btn Btn--primary BookPage-startReading" href={templ.SafeURL(publicBookURL(ctx, fmt.Sprintf("/book/%d/chapters/%d", book.ID, book.FirstChapterID.Value), book.AdminOverride))}>
-                            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-                            <span>{l.T("readingList.startReading")}</span>
-                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                        </a>
-                    }
-                    @bookReadingList(&book, readingListStatus)
-                </div>
-                    <section class="BookPage-details" aria-label={l.T("book.details")}>
-                        <div class="BookPage-metadata">
-                            <span>{_tt(l, "book.chapters", map[string]string{"count": formatNumber(int64(book.Chapters))})}</span>
-                            <span>{_tt(l, "book.words", map[string]string{"count": formatNumber(int64(book.Words))})}</span>
-                            <span>{l.T("book.published")} <time datetime={book.CreatedAt.Format("2006-01-02")}>{relativeTime(l, book.CreatedAt)}</time></span>
-                            <span>
-                                {l.T("book.contentRating")}:
-                                @bookRatingBadge(book.AgeRating)
-                            </span>
-                        </div>
-                        if len(book.Tags) > 0 {
-                            <div class="BookPage-tags">
-                                @webcomponents.Tags(webcomponents.TagsProps{Tags: book.Tags, MaxTags: 7})
-                            </div>
-                        }
-                    </section>
-            </aside>
-            <div class="BookPage-right">
-                <main class="contents" id="slot-book-page">
-
-
-                    if book.Summary != "" {
-                        <section class="BookPage-summarySection" aria-labelledby="book-summary-title">
-                            <h2 id="book-summary-title" class="BookPage-sectionTitle">{l.T("book.about")}</h2>
-                            <div x-ignore class="BookPage-summary user-content">
-                                @templ.Raw(book.Summary)
-                            </div>
-                        </section>
-                    }
-
-                    @bookExternalLinks(book.ExternalLinks, l.T("book.sources"))
-
-                    <section x-data={ fmt.Sprintf("{ tab: '%s', once: false }", tab) } class="BookPage-contentTabs">
-                        <header role="tablist" aria-label={l.T("book.details")} class="BookPage-tabList"
-                            @keydown.right.prevent="tab = tab === 'toc' ? 'reviews' : 'toc'; $nextTick(() => $refs[tab].focus())"
-                            @keydown.left.prevent="tab = tab === 'toc' ? 'reviews' : 'toc'; $nextTick(() => $refs[tab].focus())"
-                            @keydown.home.prevent="tab = 'toc'; $nextTick(() => $refs.toc.focus())"
-                            @keydown.end.prevent="tab = 'reviews'; $nextTick(() => $refs.reviews.focus())">
-                            <button type="button" role="tab" id="book-tab-toc" x-ref="toc"
-                                aria-controls="slot-book-toc" aria-selected="true" :aria-selected="tab==='toc'"
-                                tabindex="0" :tabindex="tab==='toc' ? 0 : -1"
-                                @click="tab='toc'" class="BookPage-tab">
-                                {_tt(l, "book.chapters", map[string]string{"count": formatNumber(int64(book.Chapters))})}
-                            </button>
-                            <button type="button" role="tab" id="book-tab-reviews" x-ref="reviews"
-                                aria-controls="book-panel-reviews" aria-selected="false" :aria-selected="tab==='reviews'"
-                                tabindex="-1" :tabindex="tab==='reviews' ? 0 : -1"
-                                @click="tab='reviews'" class="BookPage-tab">
-                                {_tt(l, "book.reviewsWithCount", map[string]string{"count": formatNumber(int64(book.Reviews))})}
-                            </button>
-                        </header>
-
-                        <div
-                            role="tabpanel" id="book-panel-reviews" aria-labelledby="book-tab-reviews" tabindex="0"
-                            if tab != "reviews" {
-                                x-cloak
-                            }
-                            class="BookPage-panel"
-                            x-show="tab==='reviews'">
-                            @BookMyReview(book.ID, ratingAndReview)
-                            @bookTopReviews(topReviews, book.Author.ID)
-                        </div>
-
-                        <div
-                            role="tabpanel" aria-labelledby="book-tab-toc" tabindex="0"
-                            class="BookPage-panel"
-                            id="slot-book-toc"
-                            x-merge="replace"
-                            x-cloak
-                            x-show="tab==='toc'"
-                            x-init={ fmt.Sprintf(`let load=()=>$ajax('%s');tab=='toc'?load():$watch('tab',tab=>{tab==='toc'&&load();})`, publicBookURL(ctx, fmt.Sprintf("/book/%d/__fragment/toc", book.ID), book.AdminOverride)) }>
-                            <div class="h-[600px] mt-4">
-                                <span class="Loader mt-4"></span>
-                            </div>
-                        </div>
-                    </section>
-                </main>
-            </div>
+            @bookPageHeader(book, views)
+            @bookPageAside(book, readingListStatus)
+            @bookPageContent(book, ratingAndReview, topReviews, chapters, activeChapterID, tab)
         </div>
     }
     }
+}
+
+templ bookPageHeader(book app.BookDetailsDto, views analytics.MetricValue) {
+    <header class="BookPage-header">
+        <div class="BookPage-heading">
+            <h1 class="BookPage-title">{book.Name}</h1>
+            @webcomponents.ReportButton(webcomponents.ReportButtonProps{TargetType: "book", TargetID: fmt.Sprintf("%d", book.ID), Class: "Btn Btn--ghost Btn--icon", IconOnly: true})
+        </div>
+        <div class="BookPage-byline">
+            <a class="BookPage-author Link" href={templ.SafeURL(fmt.Sprintf("/users/%s", book.Author.ID.String()))}>{book.Author.Name}</a>
+            @bookRating(&book, views)
+        </div>
+    </header>
+}
+
+templ bookPageAside(book app.BookDetailsDto, readingListStatus app.Nullable[app.BookReadingListDto]) {
+    {{ l := i18n.GetLocalizer(ctx) }}
+    <aside class="BookPage-left" aria-label={l.T("book.details")}>
+        <div class="BookPage-coverWell">
+            <div class="BookPage-cover">
+                if book.Cover.URL != "" {
+                    @bookCover(book.Cover.URL, book.Name, 300)
+                } else {
+                    <div class="BookPage-coverFallback">{book.Name}</div>
+                }
+            </div>
+        </div>
+        <div class="BookPage-readingActions">
+            if book.FirstChapterID.Valid {
+                <a class="Btn Btn--primary BookPage-startReading" href={templ.SafeURL(publicBookURL(ctx, fmt.Sprintf("/book/%d/chapters/%d", book.ID, book.FirstChapterID.Value), book.AdminOverride))}>
+                    <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                    <span>{l.T("readingList.startReading")}</span>
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            }
+            @bookReadingList(&book, readingListStatus)
+        </div>
+        <section class="BookPage-details" aria-label={l.T("book.details")}>
+            <div class="BookPage-metadata">
+                <span>{_tt(l, "book.chapters", map[string]string{"count": formatNumber(int64(book.Chapters))})}</span>
+                <span>{_tt(l, "book.words", map[string]string{"count": formatNumber(int64(book.Words))})}</span>
+                <span>{l.T("book.published")} <time datetime={book.CreatedAt.Format("2006-01-02")}>{relativeTime(l, book.CreatedAt)}</time></span>
+                <span>
+                    {l.T("book.contentRating")}:
+                    @bookRatingBadge(book.AgeRating)
+                </span>
+            </div>
+            if len(book.Tags) > 0 {
+                <div class="BookPage-tags">
+                    @webcomponents.Tags(webcomponents.TagsProps{Tags: book.Tags, MaxTags: 7})
+                </div>
+            }
+        </section>
+    </aside>
+}
+
+templ bookPageContent(
+    book app.BookDetailsDto,
+    ratingAndReview app.RatingAndReview,
+    topReviews []app.ReviewDto,
+    chapters []app.ChapterListDto,
+    activeChapterID int64,
+    tab string,
+) {
+    {{ l := i18n.GetLocalizer(ctx) }}
+    <div class="BookPage-right">
+        <main class="contents" id="slot-book-page">
+            if book.Summary != "" {
+                <section class="BookPage-summarySection" aria-labelledby="book-summary-title">
+                    <h2 id="book-summary-title" class="BookPage-sectionTitle">{l.T("book.about")}</h2>
+                    <div x-ignore class="BookPage-summary user-content">
+                        @templ.Raw(book.Summary)
+                    </div>
+                </section>
+            }
+
+            @bookExternalLinks(book.ExternalLinks, l.T("book.sources"))
+
+            <section x-data={ fmt.Sprintf("{ tab: '%s' }", tab) } class="BookPage-contentTabs">
+                <header role="tablist" aria-label={l.T("book.details")} class="BookPage-tabList"
+                    @keydown.right.prevent="tab = tab === 'toc' ? 'reviews' : 'toc'; $nextTick(() => $refs[tab].focus())"
+                    @keydown.left.prevent="tab = tab === 'toc' ? 'reviews' : 'toc'; $nextTick(() => $refs[tab].focus())"
+                    @keydown.home.prevent="tab = 'toc'; $nextTick(() => $refs.toc.focus())"
+                    @keydown.end.prevent="tab = 'reviews'; $nextTick(() => $refs.reviews.focus())">
+                    <button type="button" role="tab" id="book-tab-toc" x-ref="toc"
+                        aria-controls="slot-book-toc" aria-selected="true" :aria-selected="tab==='toc'"
+                        tabindex="0" :tabindex="tab==='toc' ? 0 : -1"
+                        @click="tab='toc'" class="BookPage-tab">
+                        {_tt(l, "book.chapters", map[string]string{"count": formatNumber(int64(book.Chapters))})}
+                    </button>
+                    <button type="button" role="tab" id="book-tab-reviews" x-ref="reviews"
+                        aria-controls="book-panel-reviews" aria-selected="false" :aria-selected="tab==='reviews'"
+                        tabindex="-1" :tabindex="tab==='reviews' ? 0 : -1"
+                        @click="tab='reviews'" class="BookPage-tab">
+                        {_tt(l, "book.reviewsWithCount", map[string]string{"count": formatNumber(int64(book.Reviews))})}
+                    </button>
+                </header>
+
+                @bookTOCPanel(book.ID, chapters, activeChapterID, book.AdminOverride)
+                <div
+                    role="tabpanel" id="book-panel-reviews" aria-labelledby="book-tab-reviews" tabindex="0"
+                    class="BookPage-panel"
+                    x-cloak x-show="tab==='reviews'">
+                    @BookMyReview(book.ID, ratingAndReview)
+                    @bookTopReviews(topReviews, book.Author.ID)
+                </div>
+            </section>
+        </main>
+    </div>
 }
 
 templ bookExternalLinks(links []app.BookExternalLinkDto, label string) {

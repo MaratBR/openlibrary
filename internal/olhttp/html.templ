@@ -54,6 +54,7 @@ templ Doc(
         }
         >
     <head>
+        <style>[x-cloak]{ display: none !important; }</style>
         if theme == "" || theme == "system" {
             <script>window.matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.classList.toggle('dark', true)</script>
         }
@@ -76,7 +77,6 @@ templ Doc(
         }
         <!-- Dynamic CSS END -->
         <link rel="stylesheet" href="/_/embed-assets/css/fa/all.min.css">
-        <style>[x-cloak]{ display: none !important; }</style>
         if props.AppendToHead != nil {
             <!-- AppendToHead -->
             @props.AppendToHead
